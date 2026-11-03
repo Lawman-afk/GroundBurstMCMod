@@ -447,6 +447,8 @@ SIGNATURES = [
         + param(QN + "Orientation") + r"(" + C + r")", r"\1BlockPos fromPos_\7"),
     sub(r"\bsuper\.neighborChanged\((\w+), (\w+), (\w+), (\w+), \w+, (\w+)\)", r"super.neighborChanged(\1, \2, \3, \4, fromPos_, \5)"),
     sub(r"\.updateNeighborsAt\(([^,()]+), ([^,()]+), [^,()]+\)", r".updateNeighborsAt(\1, \2)"),
+    # A neighbour update with no orientation (26.x's may be null): 1.21.1 takes where it comes from, which must be given.
+    sub(r"(\b\w+)\.neighborChanged\(([^,()]+), ((?:[^,()]|\([^()]*\))+), null\)", r"\1.neighborChanged(\2, \3, \2)"),
     # Entities inside a block: 26.x adds an effect applier and whether it was a precise check.
     sub(r"(\bprotected void entityInside\(\s*" + param("BlockState") + C + param(QN + "Level") + C + param("BlockPos") + C + param(QN + "Entity") + r")"
         + C + param(QN + "InsideBlockEffectApplier") + C + param("boolean") + r"\s*\)", r"\1)"),
@@ -1241,6 +1243,7 @@ def item_models(files: list[str]) -> dict[str, bytes]:
     out: dict[str, bytes] = {}
     tints: dict[str, list[int]] = {}
     props: dict[str, list[str]] = {}
+    containers: list[str] = []
     present = set(files)
     for path in files:
         m = re.fullmatch(r"src/main/resources/assets/(\w+)/items/(.+)\.json", path)
@@ -1271,6 +1274,7 @@ def item_models(files: list[str]) -> dict[str, bytes]:
             # NeoForge 21.1's bucket model loader takes the same settings.
             model = {"parent": "neoforge:item/bucket", "loader": "neoforge:fluid_container"}
             model.update({k: v for k, v in root.items() if k != "type"})
+            containers.append(item_id)                   # its fluid tinted from code in 1.21.1 (ItemModels)
         elif kind == "special":
             model = {"parent": "builtin/entity"}
             for key in ("textures", "display", "gui_light"):
@@ -1303,15 +1307,16 @@ def item_models(files: list[str]) -> dict[str, bytes]:
         else:
             raise SystemExit(f"port.py: {path}: no 1.21.1 item model for a {kind} on {root.get('property')}")
         out[dest] = (json.dumps(model, indent=2) + "\n").encode("utf-8")
-    out["src/main/java/dev/groundburst/port/render/ItemModelTable.java"] = item_model_table(tints, props).encode("utf-8")
+    out["src/main/java/dev/groundburst/port/render/ItemModelTable.java"] = item_model_table(tints, props, containers).encode("utf-8")
     return out
 
 
-def item_model_table(tints: dict[str, list[int]], props: dict[str, list[str]]) -> str:
+def item_model_table(tints: dict[str, list[int]], props: dict[str, list[str]], containers: list[str]) -> str:
     def hexes(values: list[int]) -> str:
         return ", ".join(f"0x{v & 0xFFFFFFFF:08X}" for v in values)
     tint_rows = ",\n".join(f'            Map.entry("{k}", new int[] {{{hexes(v)}}})' for k, v in sorted(tints.items()))
     prop_rows = ",\n".join(f'            Map.entry("{k}", List.of({", ".join(chr(34) + i + chr(34) for i in v)}))' for k, v in sorted(props.items()))
+    container_rows = ",\n".join(f'            "{i}"' for i in sorted(containers))
     return ("package dev.groundburst.port.render;\n\nimport java.util.List;\nimport java.util.Map;\n\n"
             "/**\n * Written by tools/backport/port.py from main's item model definitions (assets/&lt;ns&gt;/items): what this branch's\n"
             " * item models need from code ({@link ItemModels}). Not edited by hand.\n */\n"
@@ -1319,7 +1324,9 @@ def item_model_table(tints: dict[str, list[int]], props: dict[str, list[str]]) -
             "    /** Items tinted a constant colour, ARGB per tint index. */\n"
             f"    static final Map<String, int[]> TINTS = Map.ofEntries(\n{tint_rows});\n\n"
             "    /** The item properties the models' overrides read, and the items that have them. */\n"
-            f"    static final Map<String, List<String>> PROPERTIES = Map.ofEntries(\n{prop_rows});\n}}\n")
+            f"    static final Map<String, List<String>> PROPERTIES = Map.ofEntries(\n{prop_rows});\n\n"
+            "    /** Fluid containers (buckets): their fluid tinted as the fluid is. */\n"
+            f"    static final List<String> FLUID_CONTAINERS = List.of(\n{container_rows});\n}}\n")
 
 
 def ingredient(v):

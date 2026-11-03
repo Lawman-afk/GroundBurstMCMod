@@ -42,8 +42,14 @@ public final class ItemModels {
         property(ResourceLocation.fromNamespaceAndPath("groundburst", "using_item"),
                 (stack, level, owner, seed) -> owner != null && owner.isUsingItem() && owner.getUseItem() == stack ? 1 : 0);
         modBus.addListener((FMLClientSetupEvent event) -> event.enqueueWork(ItemModels::registerProperties));
-        modBus.addListener((RegisterColorHandlersEvent.Item event) -> ItemModelTable.TINTS.forEach((id, colours) ->
-                event.register((stack, tintIndex) -> tintIndex >= 0 && tintIndex < colours.length ? colours[tintIndex] : -1, item(id))));
+        modBus.addListener((RegisterColorHandlersEvent.Item event) -> {
+            ItemModelTable.TINTS.forEach((id, colours) ->
+                    event.register((stack, tintIndex) -> tintIndex >= 0 && tintIndex < colours.length ? colours[tintIndex] : -1, item(id)));
+            // A bucket's fluid layer (NeoForge's fluid container model draws it in tint 1) in its fluid's colour.
+            event.register((stack, tintIndex) -> tintIndex == 1 && stack.getItem() instanceof net.minecraft.world.item.BucketItem bucket
+                    ? net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(bucket.content).getTintColor() : -1,
+                    ItemModelTable.FLUID_CONTAINERS.stream().map(ItemModels::item).toArray(Item[]::new));
+        });
     }
 
     private static void registerProperties() {

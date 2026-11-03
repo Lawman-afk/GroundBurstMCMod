@@ -20,4 +20,27 @@ final class ItemModelTable {
     static final Map<String, List<String>> PROPERTIES = Map.ofEntries(
             Map.entry("groundburst:dose", List.of("groundburst:dosimeter_badge")),
             Map.entry("groundburst:using_item", List.of("groundburst:laser_designator")));
+
+    /** Fluid containers (buckets): their fluid tinted as the fluid is. */
+    static final List<String> FLUID_CONTAINERS = List.of(
+            "groundburst:argon_bucket",
+            "groundburst:chlorine_bucket",
+            "groundburst:deuterium_bucket",
+            "groundburst:heavy_water_bucket",
+            "groundburst:hydrofluoric_acid_bucket",
+            "groundburst:hydrogen_bucket",
+            "groundburst:hydrogen_chloride_bucket",
+            "groundburst:liquid_nitrogen_bucket",
+            "groundburst:liquid_oxygen_bucket",
+            "groundburst:liquid_rocket_fuel_bucket",
+            "groundburst:napalm_bucket",
+            "groundburst:nitric_acid_bucket",
+            "groundburst:photoresist_bucket",
+            "groundburst:sulfuric_acid_bucket",
+            "groundburst:synthetic_fuel_bucket",
+            "groundburst:thermobaric_slurry_bucket",
+            "groundburst:toxin_bucket",
+            "groundburst:trichlorosilane_bucket",
+            "groundburst:tritium_bucket",
+            "groundburst:uranium_hexafluoride_bucket");
 }

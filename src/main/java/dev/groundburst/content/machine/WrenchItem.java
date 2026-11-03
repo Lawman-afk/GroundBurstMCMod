@@ -142,7 +142,7 @@ public class WrenchItem extends Item {
         BlockState updated = state.setValue(PipeBlock.SIDES.get(d), next);
         level.setBlock(pos, updated, Block.UPDATE_ALL);
         // Re-enabling a side with nothing there any more settles back to "none".
-        level.neighborChanged(pos, state.getBlock(), null);
+        level.neighborChanged(pos, state.getBlock(), pos);
         PipeBlock.changed(level, pos, level.getBlockState(pos));
         String mode = switch (PipeBlock.mode(level.getBlockState(pos), d)) {
             case NORMAL -> MODE_NORMAL;
@@ -167,7 +167,7 @@ public class WrenchItem extends Item {
             level.invalidateCapabilities(other);
         }
         level.setBlock(pos, state.setValue(CableBlock.SIDES.get(d), next), Block.UPDATE_ALL);
-        level.neighborChanged(pos, state.getBlock(), null);
+        level.neighborChanged(pos, state.getBlock(), pos);
         level.invalidateCapabilities(pos);
         CableNetwork.invalidate(level);
         boolean on = CableBlock.side(level.getBlockState(pos), d) == CableBlock.Side.CONNECTED;

@@ -288,123 +288,7 @@
             }
           }
         },
-        "jib_rope0": {
-          "scale": {
-            "0": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "1.5": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "2": {
-              "vector": [
-                1.0,
-                1.4736842105263157,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "2.5": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "4.3": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "4.8": {
-              "vector": [
-                1.0,
-                1.263157894736842,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "5.3": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "7.1": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "7.6": {
-              "vector": [
-                1.0,
-                1.1578947368421053,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "8.1": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "9.7": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "10.2": {
-              "vector": [
-                1.0,
-                1.263157894736842,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "10.7": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "12": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            }
-          }
-        },
-        "jib_rope1": {
+        "jib_rope": {
           "scale": {
             "0": {
               "vector": [
@@ -553,16 +437,7 @@
             ]
           }
         },
-        "jib_rope0": {
-          "scale": {
-            "0": [
-              1.0,
-              1.0,
-              1.0
-            ]
-          }
-        },
-        "jib_rope1": {
+        "jib_rope": {
           "scale": {
             "0": [
               1.0,

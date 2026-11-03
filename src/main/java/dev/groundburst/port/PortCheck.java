@@ -19,9 +19,10 @@ import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * This branch's check that the mod draws on 1.21.1 ({@code gradlew runPortCheck}): makes a flat creative world, sets the
- * mod's blocks out in a row (machines, launchers, guns, charges, warheads), photographs them, opens the Field Manual,
- * sets a blast off and photographs that, then quits. The pictures go to run/screenshots/port_*.png; anything that goes
- * wrong is in the log.
+ * mod's blocks out in a row (machines, launchers, guns, charges, warheads; a Warning Beacon lit by redstone; buckets in
+ * the hotbar), photographs them, opens the Field Manual, sets a blast off and photographs that, brings a Particle Uplink
+ * beam down beside the row and photographs it and its trench, then quits. The pictures go to
+ * run/screenshots/port_*.png; anything that goes wrong is in the log.
  */
 public final class PortCheck {
     private static final boolean ON = Boolean.getBoolean("groundburst.portCheck");
@@ -83,6 +84,11 @@ public final class PortCheck {
         if (mc.level == null || mc.player == null) {
             return;
         }
+        // Never paused (the window may be behind another): a paused game stops its server, and every picture would be the menu.
+        mc.options.pauseOnLostFocus = false;
+        if (mc.screen instanceof net.minecraft.client.gui.screens.PauseScreen) {
+            mc.setScreen(null);
+        }
         ticks++;
         switch (ticks) {
             case 40 -> {
@@ -97,11 +103,13 @@ public final class PortCheck {
                     int x = (i % 5) * 3 - 6, z = (i / 5) * 4;
                     command(mc, "setblock " + x + " -60 " + z + " " + GroundBurst.MODID + ":" + BLOCKS.get(i));
                 }
-                for (String item : List.of("geiger_counter", "dosimeter_badge", "combustion_generator", "atomic_cannon", "frag_grenade",
-                        "laser_designator", "argon_bucket", "he_warhead")) {
+                for (String item : List.of("geiger_counter", "dosimeter_badge", "napalm_bucket", "atomic_cannon", "frag_grenade",
+                        "laser_designator", "argon_bucket", "chlorine_bucket")) {
                     command(mc, "give @s " + GroundBurst.MODID + ":" + item);
                 }
+                command(mc, "setblock -2 -60 -4 " + GroundBurst.MODID + ":warning_beacon");
             }
+            case 60 -> command(mc, "setblock -2 -61 -4 minecraft:redstone_block");   // lights the beacon
             case 130 -> tidy(mc);
             case 140 -> shot(mc, "blocks");
             case 145 -> command(mc, "tp @s 0 -59 -3 0 30");
@@ -125,7 +133,30 @@ public final class PortCheck {
             case 255 -> tidy(mc);
             case 256 -> shot(mc, "blast_early");
             case 280 -> shot(mc, "blast_late");
-            case 400 -> {
+            case 300 -> {
+                var server = mc.getSingleplayerServer();
+                if (server != null) {
+                    server.execute(() -> {
+                        dev.groundburst.blast.ParticleBeams.burnOverride = 80;
+                        try {
+                            dev.groundburst.blast.ParticleBeams.strike(server.overworld(), new net.minecraft.core.BlockPos(-14, -60, 18), null, false);
+                        } finally {
+                            dev.groundburst.blast.ParticleBeams.burnOverride = 0;
+                        }
+                    });
+                }
+            }
+            case 335 -> tidy(mc);
+            case 340 -> shot(mc, "beam");
+            case 415 -> tidy(mc);
+            case 420 -> shot(mc, "beam_after");
+            case 425 -> {                                                         // over its trench, looking down into it
+                command(mc, "setblock -14 -50 8 minecraft:glass");
+                command(mc, "tp @s -14 -49 8 0 55");
+            }
+            case 445 -> tidy(mc);
+            case 450 -> shot(mc, "beam_trench");
+            case 470 -> {
                 GroundBurst.LOGGER.info("Port check: done");
                 mc.stop();
             }

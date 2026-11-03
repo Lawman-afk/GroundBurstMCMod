@@ -319,9 +319,11 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
     // --- the glowmask -------------------------------------------------------------------------------------------------------
     /**
-     * GeckoLib's auto-glow layer (the model's {@code <texture>_glowmask.png} drawn lit), only for models whose mask has a
-     * lit pixel: GeckoLib 4 fails on a missing mask (it would draw as the missing texture) and throws on an empty one
-     * (some masks are empty, for a look with its lights out).
+     * The model's {@code <texture>_glowmask.png} drawn lit over it, as GeckoLib 5 draws a glow mask: the mask is its own
+     * picture of what glows, in the colours it glows (a beacon's red lens, its beams). GeckoLib 4's own glow layer reads
+     * a mask the other way (as which of the texture's pixels glow, in the texture's colours: a dark unlit lens, a beam
+     * clear in the texture), and cuts those pixels out of the texture, so it is not used. Only for models whose mask has
+     * a lit pixel (some are empty, for a look with its lights out).
      */
     private static final class GlowLayer<A extends GeoAnimatable> extends AutoGlowingGeoLayer<A> {
         private static final Map<ResourceLocation, Boolean> GLOWS = new ConcurrentHashMap<>();
@@ -333,8 +335,11 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         @Override
         public void render(PoseStack poseStack, A animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType, MultiBufferSource bufferSource,
                 @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
-            if (GLOWS.computeIfAbsent(getTextureResource(animatable), GlowLayer::glows)) {
-                super.render(poseStack, animatable, bakedModel, renderType, bufferSource, buffer, partialTick, packedLight, packedOverlay);
+            ResourceLocation texture = getTextureResource(animatable);
+            if (GLOWS.computeIfAbsent(texture, GlowLayer::glows)) {
+                RenderType glow = RenderType.entityTranslucentEmissive(software.bernie.geckolib.cache.texture.GeoAbstractTexture.appendToPath(texture, "_glowmask"));
+                getRenderer().reRender(bakedModel, poseStack, bufferSource, animatable, glow, bufferSource.getBuffer(glow), partialTick,
+                        net.minecraft.client.renderer.LightTexture.FULL_BRIGHT, packedOverlay, 0xFFFFFFFF);
             }
         }
 

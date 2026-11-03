@@ -463,9 +463,9 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
     private record TileJob(int ox, int oz, ServerPlayer to, long since) {}
 
     private @Nullable TileJob tile;
-    /** The tiles asked for after it, in turn (a few at most: the furthest behind are dropped, and asked for again). */
+    /** The tiles asked for after it (a few at most: the newest, nearest the aim as it is now, made first; the oldest dropped). */
     private final java.util.ArrayDeque<TileJob> tiles = new java.util.ArrayDeque<>();
-    private static final int TILES_WAITING = 24;
+    private static final int TILES_WAITING = 8;
 
     /** Who holds the chunks a tile is made from (one owner a gun, so its tickets are its own). */
     private java.util.UUID tileOwner() {
@@ -506,9 +506,9 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
         }
     }
 
-    /** Starts on the next tile asked for: its chunks loaded (not ticking) until it is made. */
+    /** Starts on the tile asked for last (the aim has moved on from the older ones): its chunks loaded (not ticking) until it is made. */
     private void nextTile(ServerLevel level) {
-        TileJob next = this.tiles.pollFirst();
+        TileJob next = this.tiles.pollLast();
         if (next == null) {
             return;
         }

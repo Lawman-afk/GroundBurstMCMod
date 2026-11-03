@@ -69,7 +69,7 @@ public class CryoIceBlock extends HalfTransparentBlock {
             return;
         }
         level.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
-        level.neighborChanged(pos, Blocks.WATER, null);
+        level.neighborChanged(pos, Blocks.WATER, pos);
         level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(state));
     }
 

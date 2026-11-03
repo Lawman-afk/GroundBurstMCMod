@@ -8,11 +8,11 @@ import org.jspecify.annotations.Nullable;
 /**
  * A transaction: everything changed through it (each change's journal snapshotted the first time it is touched) is kept
  * when it {@link #commit commits} and undone when it {@link #close closes} without committing. Transactions nest; a root
- * one is opened with {@link #openRoot}, one inside another with {@link #open}. One thread (the server's) at a time, and
- * only the innermost open transaction may be closed.
+ * one is opened with {@link #openRoot}, one inside another with {@link #open}. Each thread has its own (in one game the
+ * client's and the server's run side by side), and only its innermost open transaction may be closed.
  */
 public final class Transaction implements TransactionContext, AutoCloseable {
-    private static @Nullable Transaction current;
+    private static final ThreadLocal<@Nullable Transaction> CURRENT = new ThreadLocal<>();
 
     private final @Nullable Transaction parent;
     private final int depth;
@@ -23,12 +23,12 @@ public final class Transaction implements TransactionContext, AutoCloseable {
     private Transaction(@Nullable Transaction parent) {
         this.parent = parent;
         this.depth = parent == null ? 0 : parent.depth + 1;
-        current = this;
+        CURRENT.set(this);
     }
 
     /** Opens a root transaction (none may be open). */
     public static Transaction openRoot() {
-        if (current != null) {
+        if (CURRENT.get() != null) {
             throw new IllegalStateException("A transaction is already open: open one inside it with Transaction.open(parent)");
         }
         return new Transaction(null);
@@ -39,7 +39,7 @@ public final class Transaction implements TransactionContext, AutoCloseable {
         if (parent == null) {
             return openRoot();
         }
-        if (parent != current) {
+        if (parent != CURRENT.get()) {
             throw new IllegalStateException("Transactions open inside the innermost open one");
         }
         return new Transaction((Transaction) parent);
@@ -47,7 +47,7 @@ public final class Transaction implements TransactionContext, AutoCloseable {
 
     /** The innermost open transaction (null: none). */
     public static @Nullable TransactionContext getCurrentOpenedTransaction() {
-        return current;
+        return CURRENT.get();
     }
 
     @Override
@@ -67,11 +67,11 @@ public final class Transaction implements TransactionContext, AutoCloseable {
         if (this.closed) {
             return;
         }
-        if (current != this) {
+        if (CURRENT.get() != this) {
             throw new IllegalStateException("Close the transactions opened inside this one first");
         }
         this.closed = true;
-        current = this.parent;
+        CURRENT.set(this.parent);
         if (this.committed) {
             for (SnapshotJournal<?> j : this.journals) {
                 j.committed(this);
