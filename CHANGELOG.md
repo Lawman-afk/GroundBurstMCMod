@@ -18,6 +18,11 @@ Both are optional; with either installed, Ground Burst's machines work on the st
   it counts down and launches from wherever the contraption has it, its missiles heading the way it points. Set down
   again, a structure forms where it lands and a launcher stays on its network. Missile launchers, superweapons and both
   interceptor launchers all work this way.
+- **Blasts hit ships and contraptions**: a warhead's, a shell's, a bomb's or a charge's blast breaks the blocks of
+  Create Aeronautics ships and of Create's moving contraptions in its reach, just as it breaks the world's (dense blocks
+  still shield what is behind them), and shoves ships away, turning them by the side that faced it. Antimatter and
+  singularities erase whatever of them they reach. Missiles and shells hit ships and contraptions in their way instead
+  of passing through. A chest or a machine blown off a contraption goes with what it held; a train keeps its wheels.
 - **Create Aeronautics** (Sable ships, planes, cars and boats): a launcher aboard works as it does on the ground. Its
   missiles leave from where the ship is, the way the ship points them, and computers, stations, designators and radars
   see it where the ship has taken it. A Launch Computer, Control Station or Radar Array aboard a ship works there too.
@@ -25,8 +30,8 @@ Both are optional; with either installed, Ground Burst's machines work on the st
   and still held them when set down, doubling them; now nothing drops and nothing is doubled. A pipe set to pull with
   the Wrench lost that setting when a contraption set it down; it keeps it now, turned with the contraption (cables keep
   theirs too).
-- Not yet: blasts do not damage ships' or contraptions' blocks; reactors pause while carried; pipes and cables on a
-  contraption reach only what is on it, not the blocks round it.
+- Not yet: reactors pause while carried; pipes and cables on a contraption reach only what is on it, not the blocks round
+  it; the Particle Uplink Cannon's beam, the cryo freeze and a singularity's pull pass ships and contraptions by.
 
 ## 0.7.0 — 2026-11-03
 

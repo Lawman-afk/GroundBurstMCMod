@@ -2975,7 +2975,9 @@ it spewed out the items in it, then when uncontraptioned, it still had items in 
 vertical launchers. Also I want assemblers, launch computers, everything to work on create contraptions if possible, as
 well as allowing access to their menus. Also the pipe I setup to extract into my launcher whilst being a contraption
 didnt work because it removed the wrenched setting for extracting I put on it." So every machine is carried now, not
-only the launchers, with its menu; a contraption powers its machines and runs its pipes; nothing is had twice.
+only the launchers, with its menu; a contraption powers its machines and runs its pipes; nothing is had twice. Asked
+whether blasts should damage ships and contraptions next: "Yes please. damaging contraptions and ships would be sick."
+So blasts break their blocks where they are seen and shove ships, and missiles and shells strike them (**Hulls**).
 
 **Two ways another mod moves blocks:**
 - *Sable* (Create Aeronautics' airships, planes, cars and boats: "sub-levels"): the blocks stay real blocks, their block
@@ -3020,12 +3022,31 @@ and cables keep their sides (the Wrench's pull and switched-off settings) when t
 them (they were checked against air and lost them), and turn and mirror them with their block (`rotate`, `mirror`), so
 a contraption set down a quarter turned leaves a pipe pulling from the chest it pulled from.
 
+**Hulls** (`Hulls`, `HullBlast`): blocks another mod keeps apart from where they are seen (a ship's in its plot, a
+contraption's in its entity) make a hull, in block coordinates of its own that it maps to the world's where it is now;
+another mod's support finds them for a blast (`Hulls.Finder`). As a blast's front passes a hull's blocks it breaks
+them by the world's rules: everything in its core; in its crater each block as far as a ray's energy carries, the hull's
+blocks between it and the burst taking their cost (those the blast broke on the way too: they stood in the way); light
+blocks blown out to the structural radius where nothing solid stands in front. It shoves a hull that moves freely as it
+shoves entities: every block it reaches in the open is pushed straight away from the burst (20 × the profile's knockback
+× its falloff, in a block's mass times blocks a second, so one block alone flies off as an entity would), all of it at
+the centre of pressure, so a ship is driven off and turned by the face toward the burst. An antimatter sphere and a
+singularity's horizon erase whatever a hull shows inside them as they grow, and shove nothing. A missile's or a shell's
+flight strikes a hull's block where it is seen (`Hulls.clip`); a hit in a ship's plot (where the world's clip sees
+ships) and a blast set off there (a charge aboard) are moved to where the ship is (`Frames.toWorld`). A hull may hold a
+block no blast breaks (a train's wheels), as bedrock is not broken. Not yet: the particle beam and the cryo freeze pass
+hulls by, a singularity does not pull them, and a blast's fires, scorch and rubble stay in the world.
+
 GameTests (`CarryTests`): a Cruise Missile Launcher carried in a frame turned a quarter and moved off fires from its
 box's tail where that is in the world, heading the way its boxes now point, and the computers find it by its key and
 near where it is; a Launch Silo carried off the same way lifts off from where its pad is, on the power it carried; a
 Launch Silo on a network, picked up and set down six blocks off, keeps its place on its network and forms again; a pipe
 set down before the chest it pulls from keeps its pull side; a pipe turned a quarter turns its pull, switched-off and
-connected sides, and mirrored they swap; a machine emptied before a move, as Sable empties it, drops nothing.
+connected sides, and mirrored they swap; a machine emptied before a move, as Sable empties it, drops nothing. And
+(`HullTests`) a stand-in hull keeping its blocks ten blocks over the place it shows them: a blast breaks the open block
+it shows and spares the one behind an obsidian wall it shows, shoves it straight away from the burst at the block it
+reaches, and leaves a block out of its reach alone; an antimatter sphere erases what it shows inside; a line through it
+strikes its block's near face where it is seen.
 
 **In the 1.21.1 build** (`dev.groundburst.compat`, its own files; both mods optional, declared so in its mods.toml):
 - *Sable* (`SableFrames`): a block in a sub-level's plot stands in its ship's frame, the ship's pose read afresh each
@@ -3061,9 +3082,17 @@ connected sides, and mirrored they swap; a machine emptied before a move, as Sab
   port's stand-in for 26.x's drop hook drops them only when the block itself has gone from its place (broken or
   replaced), not when a contraption takes the block entity alone; Sable empties `Clearable` block entities as it
   assembles a ship (`Clearable.tryClear`).
+- *Blasts* (`SableHulls`, `ContraptionHulls`): a ship's blocks are broken in its plot (Sable then works out its mass and
+  shape again, and splits it if it is cut in two) and the ship is shoved through Sable's physics (its `RigidBodyHandle`,
+  as Sable shoves ships for vanilla's explosions: Sable itself, not only its companion, is compiled against for this).
+  A contraption's blocks are broken out of its entity: a machine with all it held (its carried copy let go), a chest's
+  or a tank's contents with it, whoever sat on a seat set down; players are told (`BlocksGone`) and Create draws it and
+  remakes its collisions without them. Contraptions are driven (a bearing, a piston, a train), so they are not shoved; a
+  carriage keeps its bogeys. Vanilla's own explosions already break and shove ships (Sable's doing), and Sable lets the
+  world's clip see ships, so missiles and shells hit them either way.
 - *Not yet*: a carried machine reaches nothing in the world (no pipe, cable or redstone between a contraption and the
-  blocks round it); reactors are held while carried; blasts do not reach ships' or contraptions' blocks (a missile flies
-  through a ship and bursts where it was aimed).
+  blocks round it); reactors are held while carried; the particle beam, the cryo freeze and a singularity's pull do not
+  reach ships or contraptions.
 - *Checked* by `gradlew runCreateCheck -PwithCreate` (`CreateCheck`: Create 6.0.10, Sable 2.0.6, Create Aeronautics
   1.3.2 in a dev client): a Cruise Missile Launcher on a mechanical bearing turned by a creative motor is carried, fires
   from its box's tail where the bearing has it and heads the way its boxes point (-36 degrees, built facing 180); one
@@ -3078,7 +3107,13 @@ connected sides, and mirrored they swap; a machine emptied before a move, as Sab
   missiles. A yard on a third bearing (a Medium Missile Assembler partway through a missile and a Launch Silo holding
   one): nothing dropped, the assembler goes on building aboard and finishes one missile, the silo's menu (clicked on its
   pad) and the assembler's open; set down, nothing dropped, the assembler formed with just its one missile and the silo
-  formed with its own. Pictures in run/screenshots/create_*.png.
+  formed with its own. A wreck on a fourth bearing (a 7x7 stone platform turning with a chest of diamonds and a
+  Combustion Generator on it): a small blast three blocks over its hub breaks the chest, the generator and the hub out
+  of it, its rim kept (51 to 48 blocks), players' copies agree, nothing is spilled and the generator is no longer
+  carried; a mortar shell fired at its rim bursts on it (48 to 36); stopped, it is set down with just what it had left.
+  A second ship (a 5x2x5 block of planks): a mortar shell's blast a block and a half off its side breaks its near side
+  (50 to 30 blocks) and shoves it 5.5 blocks away; a mortar shell fired at it bursts on it (30 to 0). 39 of 39,
+  pictures in run/screenshots/create_*.png.
 
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
@@ -4813,6 +4848,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-04 | **Blasts reach ships and contraptions** (asked whether blasts should damage Create contraptions and Create Aeronautics ships next, the user: "Yes please. damaging contraptions and ships would be sick."): §17.16, hulls. A blast breaks a hull's blocks by the world's own rules (core, a ray's energy through the hull's blocks, light blocks blown out), not vanilla's, so a ship fares as a house would; it shoves a ship as it shoves entities, each block it reaches in the open pushed away from the burst (20 × knockback × falloff a block, at the centre of pressure: one block alone flies as an entity would, a big hull far less, and a ship turns by the face toward the burst); antimatter and singularities erase what they reach. Create's contraptions are driven, so they are broken but not shoved; a chest or a machine blown off one goes with what it held, as in the world, and a train keeps its wheels. Missiles and shells strike ships and contraptions in their way. Main has the hulls and the pass (`Hulls`, `HullBlast`); the 1.21.1 build finds Sable's ships and Create's contraptions for them, and compiles against Sable itself for its physics. |
 | 2026-11-04 | **Every machine works on Create's contraptions, with its menu** (the user, after their first play with it: "assemblers, launch computers, everything to work on create contraptions if possible, as well as allowing access to their menus"): §17.16. One movement behaviour for every machine, run from the contraption's tick; right-clicking any block of a carried machine or structure opens its menu (or the computers' and radar's screens); a carried machine is known by the place it was taken from, so its menu, screen and packets find it wherever it is. A contraption shares its generators' and capacitor banks' power among its machines with no cables (each giver at most its output, each taker at most its intake; an even share first, then the rest round from a different machine each tick: without it a launcher's 8,000 FE intake starved the Launch Computer), and its pipe runs move items and fluids between what it carries, Create's chests, vaults and tanks among them. Reactors are held while carried (their cores are the world's blocks round them); nothing passes between a contraption and the world's blocks round it yet. The 1.21.1 build's Create check: 29 checks, among them a factory (pipes, power, menus) and a Medium Missile Assembler mid-build with a loaded Launch Silo. |
 | 2026-11-04 | **Nothing had twice when another mod moves a machine** (the user: the Medium Missile Assembler, taken by a contraption while it worked, "spewed out the items in it, then when uncontraptioned, it still had items in it, duplicating them, same for the vertical launchers"): on 1.21.1 the port's stand-in for 26.x's drop hook drops only when the block itself has gone from its place, not when a contraption takes the block entity alone; machines and guns are `Clearable`, so Sable empties them after saving them, as `/setblock` does; a structure's parts moved with it tell its controller nothing (they un-formed it). **Pipes and cables keep their Wrench settings** through a move (a pipe set down before the chest it pulled from lost its pull side, "the wrenched setting for extracting") and turn and mirror them with their block. |
 | 2026-11-03 | **Launchers on moving structures** (the user: make the 1.21.1 version work with Create, launchers on Create's moving contraptions, "even better" on Create Aeronautics'): §17.16. A launcher works in its own block coordinates and turns them into the world's through its frame wherever it meets the world (where it lights, the way it heads, reach, sounds, maps), so one on a Sable ship needs nothing more; one on a Create contraption is carried: a copy run from the contraption's tick, kept at the place it was taken from so its network still orders it. Main carries the frames (every one the world's here); the 1.21.1 build adds Create and Sable, both optional. A machine that loads somewhere else has been moved: its structure and network follow it. The howitzer's far-scatter test now checks each shot's point inside the circle and the shell's curve through it (it had worked out the landing from the shell's first velocity, which carries half a tick of gravity, so a shot near the circle's far edge came out past it, and other tests' floors far off could lie under the point). |
