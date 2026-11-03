@@ -1,6 +1,7 @@
 package dev.groundburst.compat.create;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import org.jspecify.annotations.Nullable;
 
@@ -16,19 +17,19 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * A launcher riding a Create contraption (main's DESIGN.md §17.16). The contraption keeps only its saved data; on the
- * server this makes a block entity from it, standing at the place it was taken from (its key: its network and the
- * computers know it by it) in the contraption's frame, ticks it each tick the contraption does ({@code carriedTick}),
- * saves what changes back into the contraption's copy (so it is set down as it is) and sends clients its looks when they
- * change (the countdown, the missile gone). It counts down, launches and reports as it would standing in the world, from
- * where the contraption has it, on the power it was taken away with.
+ * One of the mod's machines riding a Create contraption (main's DESIGN.md §17.16): launchers, assemblers, generators,
+ * computers, every machine. The contraption keeps only its saved data; on the server this makes a block entity from it,
+ * standing at the place it was taken from (its key: its network, its menu and its screen know it by it) in the
+ * contraption's frame, ticks it each tick the contraption does ({@code carriedTick}: it works on what it holds, the power
+ * the contraption's generators give it and what its pipes bring, {@link Aboard}), saves what changes back into the
+ * contraption's copy (so it is set down as it is) and sends clients its looks when they change.
  */
-final class CarriedLauncher implements MovementBehaviour {
+final class CarriedMachine implements MovementBehaviour {
     /** The block entity being carried, kept with its contraption's movement context. */
     private record Carried(MachineBlockEntity machine) {}
 
     /** For the in-game check (dev.groundburst.compat.CreateCheck): told after each carried tick, as the contraption is then. */
-    static java.util.function.@Nullable BiConsumer<ServerLevel, MachineBlockEntity> afterTick;
+    static @Nullable BiConsumer<ServerLevel, MachineBlockEntity> afterTick;
 
     @Override
     public void tick(MovementContext context) {
@@ -40,6 +41,9 @@ final class CarriedLauncher implements MovementBehaviour {
             return;
         }
         machine.carry(new ContraptionFrame(context.contraption.entity, context.contraption.anchor));
+        Aboard aboard = Aboard.of(context.contraption);
+        aboard.carried(context.localPos, machine);
+        aboard.tick(level);                                    // once a tick for the whole contraption: power, pipes
         machine.carriedTick(level);
         if (afterTick != null) {
             afterTick.accept(level, machine);
@@ -59,6 +63,9 @@ final class CarriedLauncher implements MovementBehaviour {
             save(context, carried.machine(), level);
             carried.machine().carry(null);
             context.temporaryData = null;
+            if (context.contraption != null) {
+                Aboard.of(context.contraption).forget(context.localPos);
+            }
         }
     }
 
@@ -69,12 +76,12 @@ final class CarriedLauncher implements MovementBehaviour {
     }
 
     /** The carried block entity: made from the contraption's copy the first time, at the place it was taken from. */
-    private static @Nullable MachineBlockEntity machine(MovementContext context, ServerLevel level) {
+    static @Nullable MachineBlockEntity machine(MovementContext context, ServerLevel level) {
         if (context.temporaryData instanceof Carried carried) {
             return carried.machine();
         }
         CompoundTag saved = context.blockEntityData;
-        if (saved == null) {
+        if (saved == null || context.contraption == null || context.contraption.entity == null) {
             return null;
         }
         BlockPos home = context.contraption.anchor.offset(context.localPos);
@@ -89,6 +96,7 @@ final class CarriedLauncher implements MovementBehaviour {
         machine.setLevel(level);
         machine.carry(new ContraptionFrame(context.contraption.entity, context.contraption.anchor));
         context.temporaryData = new Carried(machine);
+        Aboard.of(context.contraption).carried(context.localPos, machine);
         return machine;
     }
 

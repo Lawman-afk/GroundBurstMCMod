@@ -24,6 +24,16 @@ public class MachineEnergy extends SimpleEnergyHandler {
         return this.capacity;
     }
 
+    /** How much it takes from outside a tick (cables, ports, a contraption's generators): 0 for a generator. */
+    public int maxInsert() {
+        return this.maxInsert;
+    }
+
+    /** How much it gives to outside a tick: 0 for a machine that only uses power. */
+    public int maxExtract() {
+        return this.maxExtract;
+    }
+
     /** Resizes the buffer (a structure that changed size); energy above the new capacity is lost. */
     public void setCapacity(int capacity) {
         this.capacity = Math.max(0, capacity);

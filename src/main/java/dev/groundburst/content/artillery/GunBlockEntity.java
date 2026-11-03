@@ -49,7 +49,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * {@code maxBloom}, as it is when just manned). A shot falls where the tube points, spread over the circle laid on the
  * ground (Ballistics.scatter).
  */
-public abstract class GunBlockEntity extends BlockEntity implements AnimatedMachine {
+public abstract class GunBlockEntity extends BlockEntity implements AnimatedMachine, net.minecraft.world.Clearable {
     /** Ticks a shell may fly while its fall is worked out. */
     public static final int MAX_FLIGHT = 900;
 
@@ -834,6 +834,12 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
         }
     }
 
+    /** Emptied before its block goes without being broken (a ship taking it aboard after saving it): its rack drops nothing. */
+    @Override
+    public void clearContent() {
+        this.rack.clearContent();
+    }
+
     private boolean unloading_;
 
     @Override
@@ -844,7 +850,8 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
 
     @Override
     public void setRemoved() {
-        if (!this.unloading_ && this.level != null && !this.level.isClientSide()) {
+        if (!this.unloading_ && this.level != null && !this.level.isClientSide()
+                && !this.level.getBlockState(this.worldPosition).is(this.getBlockState().getBlock())) {
             preRemoveSideEffects(this.worldPosition, this.getBlockState());
         }
         super.setRemoved();

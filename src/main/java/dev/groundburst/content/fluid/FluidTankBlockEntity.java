@@ -207,7 +207,8 @@ public class FluidTankBlockEntity extends BlockEntity implements TankDisplay {
 
     @Override
     public void setRemoved() {
-        if (!this.unloading_ && this.level != null && !this.level.isClientSide()) {
+        if (!this.unloading_ && this.level != null && !this.level.isClientSide()
+                && !this.level.getBlockState(this.worldPosition).is(this.getBlockState().getBlock())) {
             preRemoveSideEffects(this.worldPosition, this.getBlockState());
         }
         super.setRemoved();

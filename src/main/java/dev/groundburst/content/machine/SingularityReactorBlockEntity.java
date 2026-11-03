@@ -283,7 +283,7 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
         int stage = stage();
         if (stage != this.shownStage && this.level != null && !this.level.isClientSide()) {
             this.shownStage = stage;
-            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+            syncToClients();
         }
     }
 
@@ -382,5 +382,11 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
         super.loadAdditional(input.tag(), input.lookup());
         this.engaged = input.getBooleanOr("engaged", false);
         this.mass = input.getIntOr("mass", 0);
+    }
+
+    /** A reactor waits to be set down while a contraption carries it (DESIGN.md §17.16). */
+    @Override
+    protected boolean runsCarried() {
+        return false;
     }
 }

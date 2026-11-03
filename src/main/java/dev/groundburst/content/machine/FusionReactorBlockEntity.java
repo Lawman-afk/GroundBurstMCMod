@@ -310,4 +310,10 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
         this.lit = input.getBooleanOr("lit", false);
         this.gasDebt = input.getFloatOr("gas_debt", 0);
     }
+
+    /** A reactor waits to be set down while a contraption carries it (DESIGN.md §17.16). */
+    @Override
+    protected boolean runsCarried() {
+        return false;
+    }
 }

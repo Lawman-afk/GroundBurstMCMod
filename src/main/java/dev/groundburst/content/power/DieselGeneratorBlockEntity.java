@@ -113,7 +113,9 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements An
                 this.status = MachineStatus.NO_FUEL;
             }
         }
-        PowerUtil.pushToNeighbours(level, this.worldPosition, this.energy, OUTPUT, side -> this.sides.energy(face(side)));
+        if (!carried()) {                                    // carried: its contraption shares power (DESIGN.md §17.16)
+            PowerUtil.pushToNeighbours(level, this.worldPosition, this.energy, OUTPUT, side -> this.sides.energy(face(side)));
+        }
         this.averageOutput += (generated - this.averageOutput) * 0.05f;
         // A buffer only topped up now and then (the load draws less than 180 FE/t) still counts as running.
         boolean running = level.getGameTime() - this.lastBurn < RUN_ON;

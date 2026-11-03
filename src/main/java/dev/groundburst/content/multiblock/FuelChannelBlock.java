@@ -40,7 +40,7 @@ public class FuelChannelBlock extends Block {
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        if (!oldState.is(this)) {
+        if (!oldState.is(this) && !movedByPiston) {           // moved with its structure: its controller sees to it
             Multiblocks.notifyChanged(level, pos);
         }
     }
@@ -48,7 +48,9 @@ public class FuelChannelBlock extends Block {
     @Override
     protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
         
-        Multiblocks.notifyChanged(level, pos);
+        if (!movedByPiston) {                                 // carried off with its structure (a Create contraption, a ship)
+            Multiblocks.notifyChanged(level, pos);
+        }
     }
 
     @Override

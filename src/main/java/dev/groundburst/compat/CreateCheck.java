@@ -273,7 +273,175 @@ public final class CreateCheck {
                 linked(level, "the set-down launcher", down == null ? null : down.getBlockPos());
             });
             case 545 -> shot(mc, "bearing_set_down");
-            case 550 -> {
+            // --- a factory on a second bearing: power, pipes, menus, nothing dropped -------------------------------------------
+            case 560 -> onServer(mc, CreateCheck::buildFactory);
+            case 561 -> onServer(mc, level -> {
+                level.setBlockAndUpdate(BEARING_2, block("create:mechanical_bearing").setValue(BlockStateProperties.FACING, Direction.UP));
+                level.setBlockAndUpdate(BEARING_2.below(), block("create:creative_motor").setValue(BlockStateProperties.FACING, Direction.UP));
+            });
+            case 562 -> look(mc, new Vec3(-31.5, -53, 23.5), new Vec3(-18.5, -56, 23.5));
+            case 580 -> onServer(mc, level -> {
+                int dropped = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, FACTORY_AREA).size();
+                boolean carried = dev.groundburst.content.machine.Carried.at(level, FACTORY_LAUNCHER) != null
+                        && dev.groundburst.content.machine.Carried.at(level, FACTORY_GENERATOR) != null
+                        && dev.groundburst.content.machine.Carried.at(level, FACTORY_COMPUTER) != null;
+                check(carried && dropped == 0, "the bearing carries the launcher, the generator and the computer, nothing dropped (" + dropped
+                        + " items on the ground)");
+            });
+            case 690 -> shot(mc, "factory_aboard");
+            case 700 -> onServer(mc, level -> {
+                var launcher = dev.groundburst.content.machine.Carried.at(level, FACTORY_LAUNCHER) instanceof CruiseLauncherBlockEntity c ? c : null;
+                var computer = dev.groundburst.content.machine.Carried.at(level, FACTORY_COMPUTER) instanceof dev.groundburst.content.launch.LaunchComputerBlockEntity c ? c : null;
+                check(launcher != null && launcher.loaded() == 2, "the pipe aboard brought a missile from the chest aboard into the Item Port ("
+                        + (launcher == null ? "-" : launcher.loaded()) + " loaded)");
+                var separator = dev.groundburst.content.machine.Carried.at(level, FACTORY_SEPARATOR) instanceof dev.groundburst.content.machine.MachineBlockEntity m ? m : null;
+                check(separator != null && (separator.tank(0).amount() > 0 || separator.tank(1).amount() > 0),
+                        "the fluid pipe aboard brought water from the tank aboard into the separator (" + (separator == null ? "-"
+                                : separator.tank(0).amount() + " mB water, " + separator.tank(1).amount() + " mB out") + ")");
+                check(launcher != null && launcher.energy().stored() > 0 && computer != null && computer.powered(),
+                        "the generator aboard powers the launcher (" + (launcher == null ? "-" : launcher.energy().stored()) + " FE) and the computer ("
+                        + (computer != null && computer.powered()) + ")");
+            });
+            case 705 -> {
+                command(mc, "tp @s -23.5 -60 23.5");             // on the grass, under the turning blocks (they would shove a player off)
+                onServer(mc, level -> {
+                    var player = level.getServer().getPlayerList().getPlayers().getFirst();
+                    check(dev.groundburst.compat.create.CheckScenes.click(player, FACTORY_LAUNCHER), "right-clicking the carried launcher opens its menu");
+                });
+            }
+            case 730 -> {
+                check(mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>, "its menu is open on the client ("
+                        + (mc.screen == null ? "none" : mc.screen.getClass().getSimpleName()) + ")");
+                shot(mc, "factory_menu");
+            }
+            case 735 -> {
+                if (mc.player != null) {
+                    mc.player.closeContainer();
+                }
+                check(dev.groundburst.compat.create.CheckScenes.click(mc.player, FACTORY_COMPUTER), "right-clicking the carried Launch Computer (on the client)");
+            }
+            case 770 -> {
+                check(mc.screen instanceof dev.groundburst.client.screen.LaunchComputerScreen, "its screen is open ("
+                        + (mc.screen == null ? "none" : mc.screen.getClass().getSimpleName()) + ")");
+                shot(mc, "factory_computer");
+            }
+            case 775 -> {
+                mc.setScreen(null);
+                onServer(mc, level -> level.setBlockAndUpdate(BEARING_2.below(), Blocks.AIR.defaultBlockState()));   // the bearing stops
+            }
+            case 815 -> onServer(mc, level -> {
+                int dropped = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, FACTORY_AREA).size();
+                CruiseLauncherBlockEntity launcher = null;
+                boolean pipePulls = false;
+                for (BlockPos p : BlockPos.betweenClosed(BlockPos.containing(FACTORY_AREA.minX, FACTORY_AREA.minY, FACTORY_AREA.minZ),
+                        BlockPos.containing(FACTORY_AREA.maxX, FACTORY_AREA.maxY, FACTORY_AREA.maxZ))) {
+                    if (level.getBlockEntity(p) instanceof CruiseLauncherBlockEntity c && !c.carried()) {
+                        launcher = c;
+                    }
+                    BlockState s = level.getBlockState(p);
+                    if (s.getBlock() instanceof dev.groundburst.content.pipe.ItemPipeBlock) {
+                        for (Direction d : Direction.values()) {
+                            if (dev.groundburst.content.pipe.PipeBlock.mode(s, d) == dev.groundburst.content.pipe.PipeBlock.Mode.PULL
+                                    && level.getBlockState(p.relative(d)).is(Blocks.CHEST)) {
+                                pipePulls = true;
+                            }
+                        }
+                    }
+                }
+                check(dropped == 0, "set down, nothing dropped (" + dropped + " items on the ground)");
+                check(pipePulls, "set down, the pipe still pulls from the chest (its wrench setting kept, turned with it)");
+                check(launcher != null && launcher.isFormed() && launcher.loaded() == 2, "set down, the launcher formed with its two missiles ("
+                        + (launcher == null ? "-" : launcher.isFormed() + ", " + launcher.loaded()) + ")");
+            });
+            case 820 -> shot(mc, "factory_set_down");
+            // --- a yard on a third bearing: a Medium Missile Assembler partway through a missile, a loaded Launch Silo -------
+            case 840 -> onServer(mc, CreateCheck::buildYard);
+            case 841 -> onServer(mc, level -> {
+                level.setBlockAndUpdate(YARD_ASSEMBLER.below(), block("create:mechanical_bearing").setValue(BlockStateProperties.FACING, Direction.UP));
+                level.setBlockAndUpdate(YARD_ASSEMBLER.below(2), block("create:creative_motor").setValue(BlockStateProperties.FACING, Direction.UP));
+            });
+            case 842 -> look(mc, new Vec3(-38.5, -50, -9.5), new Vec3(-18.5, -55, -9.5));
+            case 860 -> onServer(mc, level -> {
+                int dropped = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, YARD_AREA).size();
+                var assembler = yardAssembler(level);
+                yardProgress = assembler == null ? Integer.MAX_VALUE : assembler.progress();
+                check(assembler != null && yardSilo(level) != null && dropped == 0, "the bearing carries the assembler mid-build and the loaded silo, nothing dropped ("
+                        + dropped + " items on the ground)");
+            });
+            case 895 -> shot(mc, "yard_aboard");
+            case 900 -> onServer(mc, level -> {
+                var assembler = yardAssembler(level);
+                var silo = yardSilo(level);
+                check(assembler != null && assembler.assembling() && assembler.progress() > yardProgress, "the assembler goes on building aboard ("
+                        + (assembler == null ? "-" : yardProgress + " -> " + assembler.progress() + " ticks of work, " + assembler.status()) + ")");
+                check(silo != null && !silo.inventory().getItem(dev.groundburst.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE).isEmpty(),
+                        "the silo aboard holds its missile");
+            });
+            case 903 -> command(mc, "tp @s -19.5 -57 -9.5");
+            case 905 -> onServer(mc, level -> {
+                var player = level.getServer().getPlayerList().getPlayers().getFirst();
+                check(dev.groundburst.compat.create.CheckScenes.click(player, yardSiloAt.east()), "right-clicking the carried silo's pad opens the silo's menu");
+            });
+            case 925 -> {
+                check(mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>, "its menu is open on the client ("
+                        + (mc.screen == null ? "none" : mc.screen.getClass().getSimpleName()) + ")");
+                shot(mc, "yard_silo_menu");
+            }
+            case 927 -> {
+                mc.player.closeContainer();
+                onServer(mc, level -> {
+                    var player = level.getServer().getPlayerList().getPlayers().getFirst();
+                    check(dev.groundburst.compat.create.CheckScenes.click(player, YARD_ASSEMBLER), "right-clicking the carried assembler opens its menu");
+                });
+            }
+            case 947 -> {
+                check(mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>, "its menu is open on the client ("
+                        + (mc.screen == null ? "none" : mc.screen.getClass().getSimpleName()) + ")");
+                shot(mc, "yard_assembler_menu");
+            }
+            case 950 -> {
+                mc.player.closeContainer();
+                onServer(mc, level -> {
+                    var assembler = yardAssembler(level);
+                    if (assembler != null) {
+                        assembler.skipToEndForTest();
+                    }
+                });
+            }
+            case 960 -> onServer(mc, level -> {
+                var assembler = yardAssembler(level);
+                check(assembler != null && !assembler.assembling() && builtOne(assembler), "the assembler finished its missile aboard ("
+                        + (assembler == null ? "-" : contents(assembler)) + ")");
+            });
+            case 962 -> look(mc, new Vec3(-38.5, -50, -9.5), new Vec3(-18.5, -55, -9.5));
+            case 965 -> onServer(mc, level -> level.setBlockAndUpdate(YARD_ASSEMBLER.below(2), Blocks.AIR.defaultBlockState()));   // the bearing stops
+            case 1010 -> onServer(mc, level -> {
+                int dropped = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, YARD_AREA).size();
+                dev.groundburst.content.assembler.MissileAssemblerBlockEntity assembler = null;
+                dev.groundburst.content.launch.LaunchSiloBlockEntity silo = null;
+                for (BlockPos p : BlockPos.betweenClosed(BlockPos.containing(YARD_AREA.minX, YARD_AREA.minY, YARD_AREA.minZ),
+                        BlockPos.containing(YARD_AREA.maxX, YARD_AREA.maxY, YARD_AREA.maxZ))) {
+                    if (level.getBlockEntity(p) instanceof dev.groundburst.content.assembler.MissileAssemblerBlockEntity a && !a.carried()) {
+                        assembler = a;
+                    } else if (level.getBlockEntity(p) instanceof dev.groundburst.content.launch.LaunchSiloBlockEntity s && !s.carried()) {
+                        silo = s;
+                    }
+                }
+                if (assembler != null) {
+                    assembler.revalidate();                        // (as its own timer would: is the structure whole where it stands?)
+                }
+                if (silo != null) {
+                    silo.revalidate();
+                }
+                check(dropped == 0, "set down, nothing dropped (" + dropped + " items on the ground)");
+                check(assembler != null && assembler.isFormed() && builtOne(assembler), "set down, the assembler formed with just its one missile ("
+                        + (assembler == null ? "-" : assembler.isFormed() + ", " + contents(assembler)) + ")");
+                check(silo != null && silo.isFormed() && !silo.inventory().getItem(dev.groundburst.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE).isEmpty(),
+                        "set down, the silo formed with its missile (" + (silo == null ? "-" : silo.isFormed() + ", "
+                                + silo.inventory().getItem(dev.groundburst.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE)) + ")");
+            });
+            case 1015 -> shot(mc, "yard_set_down");
+            case 1025 -> {
                 GroundBurst.LOGGER.info("Create check: done, {} of {} checks OK", passed, checks);
                 mc.stop();
             }
@@ -293,6 +461,162 @@ public final class CreateCheck {
                 }
             }
         }
+    }
+
+    /** The factory scene: a second bearing (its motor under it), and on it the things it carries. */
+    private static final BlockPos BEARING_2 = new BlockPos(-20, -59, 23), FACTORY_LAUNCHER = new BlockPos(-20, -58, 21),
+            FACTORY_PIPE = new BlockPos(-18, -58, 22), FACTORY_CHEST = new BlockPos(-17, -58, 22), FACTORY_GENERATOR = new BlockPos(-18, -58, 24),
+            FACTORY_COMPUTER = new BlockPos(-18, -58, 25), FACTORY_SEPARATOR = new BlockPos(-17, -58, 24),
+            FACTORY_FLUID_PIPE = new BlockPos(-17, -58, 23), FACTORY_TANK = new BlockPos(-16, -58, 23);
+    private static final net.minecraft.world.phys.AABB FACTORY_AREA = new net.minecraft.world.phys.AABB(-28, -62, 13, -9, -45, 34);
+
+    /** The yard scene: a third bearing under the assembler's controller (its motor under that), a Launch Silo beside it. */
+    private static final BlockPos YARD_ASSEMBLER = new BlockPos(-20, -58, -10);
+    private static final net.minecraft.world.phys.AABB YARD_AREA = new net.minecraft.world.phys.AABB(-36, -62, -26, -4, -45, 6);
+    private static BlockPos yardSiloAt = BlockPos.ZERO;
+    private static int yardProgress;
+
+    /**
+     * A Medium Missile Assembler (facing north, its controller over the bearing) holding a medium missile's parts and full
+     * power, its build started; a Launch Silo holding a medium missile, its pad against the deck; all glued together.
+     */
+    private static void buildYard(ServerLevel level) {
+        List<MultiblockDefinition.Cell> cells = new java.util.ArrayList<>(build(level, dev.groundburst.content.assembler.GBAssemblers.MEDIUM, YARD_ASSEMBLER));
+        int east = cells.stream().mapToInt(c -> c.pos().getX()).max().orElseThrow();
+        int west = StructureSpawnerItem.buildOrder(GBLaunch.SILO, YARD_ASSEMBLER, Direction.NORTH).stream().mapToInt(c -> c.pos().getX()).min().orElseThrow();
+        yardSiloAt = YARD_ASSEMBLER.east(east + 1 - west);
+        cells.addAll(build(level, GBLaunch.SILO, yardSiloAt));
+
+        var assembler = (dev.groundburst.content.assembler.MissileAssemblerBlockEntity) level.getBlockEntity(YARD_ASSEMBLER);
+        assembler.revalidate();
+        assembler.energy().generate(dev.groundburst.content.assembler.AssemblerClass.MEDIUM.capacity);
+        var inv = assembler.inventory();
+        inv.setItem(dev.groundburst.content.assembler.MissileAssemblerBlockEntity.SLOT_WARHEAD, new ItemStack(GBOrdnance.GAS_WARHEAD.item().get()));
+        inv.setItem(dev.groundburst.content.assembler.MissileAssemblerBlockEntity.SLOT_BODY,
+                new ItemStack(dev.groundburst.content.assembly.GBAssembly.BODIES.get(SizeClass.M.ordinal()).get()));
+        inv.setItem(dev.groundburst.content.assembler.MissileAssemblerBlockEntity.SLOT_MOTOR,
+                new ItemStack(dev.groundburst.content.assembly.GBAssembly.MOTORS.get(MissileAssembly.rocketsFor(SizeClass.M).getLast().ordinal()).get()));
+        inv.setItem(dev.groundburst.content.assembler.MissileAssemblerBlockEntity.SLOT_GUIDANCE,
+                new ItemStack(dev.groundburst.content.assembly.GBAssembly.GPS_GUIDANCE.get()));
+        boolean started = assembler.startAssembly();
+
+        var silo = (dev.groundburst.content.launch.LaunchSiloBlockEntity) level.getBlockEntity(yardSiloAt);
+        silo.revalidate();
+        silo.inventory().setItem(dev.groundburst.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE, MissileAssembly.missile(new MissileSpec(
+                new ItemStack(GBOrdnance.HE_WARHEAD.item().get()), SizeClass.M, MissileParts.Motor.SRM_II, MissileParts.Guidance.GPS, false)));
+        GroundBurst.LOGGER.info("Create check: the yard's assembler formed {}, building {} ({}); its silo at {} formed {}", assembler.isFormed(),
+                started, assembler.problem(), yardSiloAt, silo.isFormed());
+
+        BlockPos lo = cells.getFirst().pos(), hi = lo;
+        for (MultiblockDefinition.Cell c : cells) {
+            if (c.key() != '.') {
+                lo = BlockPos.min(lo, c.pos());
+                hi = BlockPos.max(hi, c.pos());
+            }
+        }
+        dev.groundburst.compat.create.CheckScenes.glue(level, lo, hi);
+    }
+
+    /** The yard's assembler and silo while the bearing carries them. */
+    private static dev.groundburst.content.assembler.@Nullable MissileAssemblerBlockEntity yardAssembler(ServerLevel level) {
+        return dev.groundburst.content.machine.Carried.at(level, YARD_ASSEMBLER) instanceof dev.groundburst.content.assembler.MissileAssemblerBlockEntity a ? a : null;
+    }
+
+    private static dev.groundburst.content.launch.@Nullable LaunchSiloBlockEntity yardSilo(ServerLevel level) {
+        return dev.groundburst.content.machine.Carried.at(level, yardSiloAt) instanceof dev.groundburst.content.launch.LaunchSiloBlockEntity s ? s : null;
+    }
+
+    /** Its parts made into one missile: the missile out, every part slot empty (nothing kept twice). */
+    private static boolean builtOne(dev.groundburst.content.assembler.MissileAssemblerBlockEntity a) {
+        ItemStack out = a.inventory().getItem(dev.groundburst.content.assembler.MissileAssemblerBlockEntity.SLOT_OUTPUT);
+        for (int i = dev.groundburst.content.assembler.MissileAssemblerBlockEntity.SLOT_WARHEAD;
+                i < dev.groundburst.content.assembler.MissileAssemblerBlockEntity.SLOT_OUTPUT; i++) {
+            if (!a.inventory().getItem(i).isEmpty()) {
+                return false;
+            }
+        }
+        return a.isOwnMissile(out) && out.getCount() == 1;
+    }
+
+    private static String contents(dev.groundburst.content.assembler.MissileAssemblerBlockEntity a) {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < a.inventory().getContainerSize(); i++) {
+            if (!a.inventory().getItem(i).isEmpty()) {
+                s.append(s.isEmpty() ? "" : ", ").append(i).append(": ").append(a.inventory().getItem(i));
+            }
+        }
+        return s.isEmpty() ? "empty" : s.toString();
+    }
+
+    /** A structure built whole, facing north, its controller at {@code c}; its cells. */
+    private static List<MultiblockDefinition.Cell> build(ServerLevel level, MultiblockDefinition def, BlockPos c) {
+        List<MultiblockDefinition.Cell> cells = StructureSpawnerItem.buildOrder(def, c, Direction.NORTH);
+        for (MultiblockDefinition.Cell cell : cells) {
+            BlockState state = cell.key() == '.' ? Blocks.AIR.defaultBlockState() : def.legend().get(cell.key()).preview().get();
+            if (cell.key() == MultiblockDefinition.CONTROLLER) {
+                state = state.setValue(MachineBlock.FACING, Direction.NORTH);
+            }
+            level.setBlockAndUpdate(cell.pos(), state);
+        }
+        return cells;
+    }
+
+    private static void check(boolean ok, String what) {
+        checks++;
+        passed += ok ? 1 : 0;
+        GroundBurst.LOGGER.info("Create check: {}: {}", what, ok ? "OK" : "WRONG");
+    }
+
+    /**
+     * A Cruise Missile Launcher holding one missile and no power; a chest of two more beside its Item Port and a pipe
+     * pulling from the chest into the port; a Combustion Generator with coal; a Launch Computer; all glued together.
+     */
+    private static void buildFactory(ServerLevel level) {
+        CruiseLauncherBlockEntity launcher = launcher(level, FACTORY_LAUNCHER);
+        launcher.inventory().setItem(CruiseLauncherBlockEntity.SLOT_A, cruise());
+        level.setBlockAndUpdate(FACTORY_CHEST, Blocks.CHEST.defaultBlockState());
+        if (level.getBlockEntity(FACTORY_CHEST) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
+            chest.setItem(0, cruise());
+            chest.setItem(1, cruise());
+        }
+        level.setBlockAndUpdate(FACTORY_PIPE, block("groundburst:item_pipe"));
+        BlockState pipe = level.getBlockState(FACTORY_PIPE).setValue(dev.groundburst.content.pipe.PipeBlock.SIDES.get(Direction.EAST),
+                dev.groundburst.content.pipe.PipeBlock.Mode.PULL);
+        level.setBlockAndUpdate(FACTORY_PIPE, pipe);
+        level.setBlockAndUpdate(FACTORY_GENERATOR, block("groundburst:combustion_generator"));
+        if (level.getBlockEntity(FACTORY_GENERATOR) instanceof dev.groundburst.content.machine.MachineBlockEntity generator) {
+            generator.inventory().setItem(0, new ItemStack(net.minecraft.world.item.Items.COAL, 8));
+        }
+        MultiblockDefinition def = GBLaunch.COMPUTER;
+        for (MultiblockDefinition.Cell cell : StructureSpawnerItem.buildOrder(def, FACTORY_COMPUTER, Direction.NORTH)) {
+            BlockState state = cell.key() == '.' ? Blocks.AIR.defaultBlockState() : def.legend().get(cell.key()).preview().get();
+            if (cell.key() == MultiblockDefinition.CONTROLLER) {
+                state = state.setValue(MachineBlock.FACING, Direction.NORTH);
+            }
+            level.setBlockAndUpdate(cell.pos(), state);
+        }
+        if (level.getBlockEntity(FACTORY_COMPUTER) instanceof dev.groundburst.content.multiblock.MultiblockController c) {
+            c.revalidate();
+            GroundBurst.LOGGER.info("Create check: the factory's computer formed: {}", c.isFormed());
+        }
+        GroundBurst.LOGGER.info("Create check: the factory's pipe: {}", level.getBlockState(FACTORY_PIPE));
+        // Fluids: a Create tank of water, a fluid pipe pulling from it into an Electrolytic Separator.
+        level.setBlockAndUpdate(FACTORY_TANK, block("create:fluid_tank"));
+        var tank = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK, FACTORY_TANK, null);
+        int filled = tank == null ? 0 : tank.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER, 8000),
+                net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+        level.setBlockAndUpdate(FACTORY_SEPARATOR, block("groundburst:electrolytic_separator"));
+        level.setBlockAndUpdate(FACTORY_FLUID_PIPE, block("groundburst:fluid_pipe"));
+        BlockState fluidPipe = level.getBlockState(FACTORY_FLUID_PIPE).setValue(dev.groundburst.content.pipe.PipeBlock.SIDES.get(Direction.EAST),
+                dev.groundburst.content.pipe.PipeBlock.Mode.PULL);
+        level.setBlockAndUpdate(FACTORY_FLUID_PIPE, fluidPipe);
+        GroundBurst.LOGGER.info("Create check: the factory's tank holds {} mB; its fluid pipe: {}", filled, level.getBlockState(FACTORY_FLUID_PIPE));
+        dev.groundburst.compat.create.CheckScenes.glue(level, new BlockPos(-20, -58, 21), new BlockPos(-16, -54, 26));
+    }
+
+    private static ItemStack cruise() {
+        return MissileAssembly.missile(new MissileSpec(new ItemStack(GBOrdnance.HE_WARHEAD.item().get()), SizeClass.S,
+                MissileParts.Motor.CRUISE, MissileParts.Guidance.GPS, false));
     }
 
     private static BlockState block(String id) {

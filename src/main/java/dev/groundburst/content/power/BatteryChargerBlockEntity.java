@@ -110,7 +110,7 @@ public class BatteryChargerBlockEntity extends MachineBlockEntity implements Ani
         boolean loaded = !this.inventory.getItem(0).isEmpty() || !this.inventory.getItem(1).isEmpty();
         if (loaded != this.showsBattery && this.level != null && !this.level.isClientSide()) {
             this.showsBattery = loaded;
-            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            syncToClients();
         }
     }
 

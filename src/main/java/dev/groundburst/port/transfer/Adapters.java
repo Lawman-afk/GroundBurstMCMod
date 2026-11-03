@@ -25,7 +25,7 @@ import net.neoforged.neoforge.items.IItemHandler;
  * transaction of its own, committed unless simulated. The other, a change is made at once and undone if its transaction
  * closes without committing.
  */
-final class Adapters {
+public final class Adapters {
     private Adapters() {}
 
     /** A transaction inside whatever one is open (a root one if none is). */
@@ -324,7 +324,7 @@ final class Adapters {
         }
     }
 
-    static @Nullable ResourceHandler<ItemResource> foreignItems(@Nullable IItemHandler h) {
+    public static @Nullable ResourceHandler<ItemResource> foreignItems(@Nullable IItemHandler h) {
         if (h == null) {
             return null;
         }
@@ -383,7 +383,7 @@ final class Adapters {
         };
     }
 
-    static @Nullable ResourceHandler<FluidResource> foreignFluids(@Nullable IFluidHandler h) {
+    public static @Nullable ResourceHandler<FluidResource> foreignFluids(@Nullable IFluidHandler h) {
         if (h == null) {
             return null;
         }

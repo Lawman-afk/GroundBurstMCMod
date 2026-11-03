@@ -57,7 +57,7 @@ public class CrystalPullerBlockEntity extends ProcessingBlockEntity implements A
         int step = (int) (progressFraction() * GROWTH_STEPS);
         if (step != this.syncedGrowth) {
             this.syncedGrowth = step;
-            level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+            syncToClients();
         }
     }
 

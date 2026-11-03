@@ -26,12 +26,20 @@ public final class GBCompat {
             }
             if (ModList.get().isLoaded("create")) {
                 dev.groundburst.compat.create.CreateCompat.register();
-                GroundBurst.LOGGER.info("Create found: launchers work on its moving contraptions");
+                GroundBurst.LOGGER.info("Create found: machines and launchers work on its moving contraptions");
             }
         });
     }
 
-    /** The carried launchers' looks for clients (sent only where Create carries one; optional for clients without it). */
+    /** On the client: the copies of carried machines that menus and screens find (Create only). */
+    @SubscribeEvent
+    static void clientSetup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent event) {
+        if (ModList.get().isLoaded("create")) {
+            event.enqueueWork(dev.groundburst.compat.create.CarriedClient::register);
+        }
+    }
+
+    /** The carried machines' looks for clients (sent only where Create carries one; optional for clients without it). */
     @SubscribeEvent
     static void payloads(RegisterPayloadHandlersEvent event) {
         event.registrar("1").optional().playToClient(CarriedSync.TYPE, CarriedSync.CODEC,

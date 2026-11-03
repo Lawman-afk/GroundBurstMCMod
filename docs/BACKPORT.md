@@ -4,8 +4,9 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `1a8fb140` (2026-11-03: launchers on moving structures, main's DESIGN.md §17.16;
-  before it 0.7.0, released for both versions: `groundburst-mc1.21.1-0.7.0.jar` is this branch's).
+- **Last brought up to:** `main` at `c68be581` (2026-11-04: every machine on moving structures, main's DESIGN.md §17.16,
+  after the user's first play with Create; before it 0.7.0, released for both versions: `groundburst-mc1.21.1-0.7.0.jar`
+  is this branch's).
 - **Toolchain:** Minecraft 1.21.1, NeoForge 21.1.265, Java 21, GeckoLib 4.9.3, JEI 19.70 (optional), Create 6.0.10 and
   Sable 2.0.6 / Create Aeronautics 1.3.2 (optional; see below).
 - **Test instance:** a separate 1.21.1 CurseForge instance, named by `deploy_instance_dir_1_21_1` in your own
@@ -72,25 +73,40 @@ Still to do:
 ## Create and Create Aeronautics (this branch only)
 
 Create and Create Aeronautics (and Sable, the library its ships are made with) exist only for 1.21.1, so this branch
-supports them; main has what the launchers need for it (frames, carried and moved machines: main's DESIGN.md §17.16),
+supports them; main has what the machines need for it (frames, carried and moved machines: main's DESIGN.md §17.16),
 where every frame is the world's. Both are optional (`create` [6.0.0,7) and `sable` [2.0.0,3) in the mods.toml), and
 nothing touches either mod's classes unless it is installed.
 
 - **Code**: the branch's own files under `src/main/java/dev/groundburst/compat/`: `GBCompat` (starts what is installed;
   registers the `carried_sync` payload), `sable/SableFrames` (a block in a ship's plot stands in the ship's frame, read
   through Sable Companion), `create/CreateCompat` (Create may move our blocks; formed structures and two-block machines
-  hold together; every launcher's controller gets `CarriedLauncher`), `create/CarriedLauncher` (the carried copy, ticked
-  with the contraption, saved back into it, its looks sent to clients), `create/ContraptionFrame`, `create/CarriedSync`
-  and `CarriedSyncClient`, and `CreateCheck` (the in-game check).
+  hold together; every machine gets `CarriedMachine`, every machine and structure part `OpenOnContraption`),
+  `create/CarriedMachine` (the carried copy of any machine, ticked with the contraption, saved back into it, its looks
+  sent to clients), `create/Aboard` (once a tick for each contraption: its generators' and banks' power shared out fairly
+  among its machines, its pipe runs moving items and fluids between what it carries), `create/OpenOnContraption` (a
+  right-click on a carried machine opens its menu from the server, or the computers' and radar's screens on the client),
+  `create/CarriedClient` (finds a carried machine's client copy by its key, for menus and screens),
+  `create/ContraptionFrame`, `create/CarriedSync` and `CarriedSyncClient`, `create/CheckScenes` (the Create calls the
+  check makes), and `CreateCheck` (the in-game check). `port/transfer/Adapters` sees Create's item and fluid handlers as
+  ours.
+- **Drops**: the port's stand-in for 26.x's `preRemoveSideEffects` (made by `port.py` in every block entity that drops
+  its contents there) drops only when the block itself has left its place; a Create contraption takes the block entity
+  while its block is still there, so nothing is dropped and nothing had twice. Sable empties `Clearable` block entities
+  (machines and guns are) after saving them.
 - **Build**: compiled against Create's release jar from Modrinth's maven (Create's own maven's certificate had expired)
   and Sable Companion 1.6.0 from maven.ryanhcode.dev; neither ships in our jar. `-PwithCreate` puts Create, Sable and
   Create Aeronautics into the dev runs (versions in gradle.properties: Modrinth version ids).
 - **Check**: `gradlew runCreateCheck -PwithCreate`: a Cruise Missile Launcher on a mechanical bearing turned by a
   creative motor, and one made into a Sable ship and turned 30 degrees, each fire; the log says whether each missile
   lit where its launcher is and headed the way it points, whether each launcher stayed on its network, and whether the
-  bearing, stopped at a quarter turn, set its launcher down formed. Pictures: run/screenshots/create_*.png. 7 of 7.
-- **Not yet**: blasts do not reach ships' or contraptions' blocks; Launch Computers, Control Stations and Radar Arrays
-  do nothing on a Create contraption (they work aboard ships); a carried launcher's own screen cannot be opened.
+  bearing, stopped at a quarter turn, set its launcher down formed. A factory on a second bearing: a launcher loaded by
+  a pipe from a chest aboard, a fluid pipe filling a separator from a Create tank, a generator powering the launcher and
+  a Launch Computer, the launcher's menu and the computer's screen opened by right-clicks, set down with nothing dropped
+  and the pipe still pulling. A yard on a third bearing: a Medium Missile Assembler building a missile and a loaded
+  Launch Silo, nothing dropped, the build going on aboard, both menus opened, set down formed with nothing doubled.
+  Pictures: run/screenshots/create_*.png. 29 of 29.
+- **Not yet**: blasts do not reach ships' or contraptions' blocks; reactors are held while carried; nothing passes
+  between a contraption and the world's blocks round it (pipes, cables, redstone).
 
 ## Bringing it up to main
 

@@ -121,8 +121,10 @@ public class CapacitorBankBlockEntity extends MachineBlockEntity implements Anim
 
     @Override
     protected boolean tickMachine(ServerLevel level) {
-        PowerUtil.pushToNeighbours(level, this.worldPosition, this.energy, this.tier.transfer(),
+        if (!carried()) {                                    // carried: its contraption shares power (DESIGN.md §17.16)
+            PowerUtil.pushToNeighbours(level, this.worldPosition, this.energy, this.tier.transfer(),
                 side -> face(side) == SideConfig.Face.FRONT && this.sides.energy(SideConfig.Face.FRONT));
+        }
         int stored = this.energy.stored();
         this.net = this.lastStored < 0 ? 0 : stored - this.lastStored;
         if (this.tier == Tier.CREATIVE) {
@@ -134,8 +136,10 @@ public class CapacitorBankBlockEntity extends MachineBlockEntity implements Anim
         int bars = bars(stored);
         if (bars != this.syncedBars) {
             this.syncedBars = bars;
-            level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-            level.updateNeighbourForOutputSignal(this.worldPosition, getBlockState().getBlock());
+            syncToClients();
+            if (!carried()) {
+                level.updateNeighbourForOutputSignal(this.worldPosition, getBlockState().getBlock());
+            }
         }
         return this.net != 0;
     }

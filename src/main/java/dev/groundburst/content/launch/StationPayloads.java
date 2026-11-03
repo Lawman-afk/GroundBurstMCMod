@@ -29,8 +29,8 @@ public final class StationPayloads {
     private StationPayloads() {}
 
     private static @Nullable LaunchStationBlockEntity station(IPayloadContext context, BlockPos pos) {
-        if (context.player() instanceof ServerPlayer player && player.position().distanceTo(dev.groundburst.content.machine.Frames.toWorld(player.level(), Vec3.atCenterOf(pos))) <= REACH
-                && player.level().getBlockEntity(pos) instanceof LaunchStationBlockEntity s) {
+        if (context.player() instanceof ServerPlayer player && dev.groundburst.content.machine.Carried.near(player, pos, REACH)
+                && dev.groundburst.content.machine.Carried.blockEntity(player.level(), pos, LaunchStationBlockEntity.class) instanceof LaunchStationBlockEntity s) {
             return s;
         }
         return null;

@@ -77,8 +77,8 @@ public class CleanRoomBlockEntity extends ProcessingBlockEntity implements Anima
 
     @Override
     public void revalidate() {
-        if (this.level == null || this.level.isClientSide() || isRemoved()) {
-            return;
+        if (this.level == null || this.level.isClientSide() || isRemoved() || carried()) {
+            return;                                          // carried: no world round it to check (DESIGN.md §17.16)
         }
         boolean complete = definition().check(this.level, this.worldPosition, controllerFacing()).isEmpty();
         if (complete != isFormed()) {

@@ -570,15 +570,18 @@ def block_codecs(text: str) -> str:
 
 
 def pre_remove(text: str) -> str:
-    """26.x tells a block entity just before its block is removed (preRemoveSideEffects); 1.21.1 only removes it. The
-    topmost of the mod's classes to have it calls it from setRemoved, unless the chunk is being unloaded."""
+    """26.x tells a block entity just before its block is replaced while the block entity is still there
+    (preRemoveSideEffects); 1.21.1 only removes it. The topmost of the mod's classes to have it calls it from setRemoved,
+    unless the chunk is being unloaded or its block is still there: something took the block entity away first (Create
+    does, after saving it, as it carries the block off), and 26.x would not call it then either (no drops twice)."""
     if "preRemoveSideEffects" not in text or not re.search(r"\bextends BlockEntity\b", text):
         return text
     text = re.sub(r"@Override\s*\n(\s*public void preRemoveSideEffects\()", r"\1", text)
     text = re.sub(r"\n\s*super\.preRemoveSideEffects\([^;]*\);", "", text)
     hook = ("\n    private boolean unloading_;\n\n    @Override\n    public void onChunkUnloaded() {\n        super.onChunkUnloaded();\n"
             "        this.unloading_ = true;\n    }\n\n    @Override\n    public void setRemoved() {\n"
-            "        if (!this.unloading_ && this.level != null && !this.level.isClientSide()) {\n"
+            "        if (!this.unloading_ && this.level != null && !this.level.isClientSide()\n"
+            "                && !this.level.getBlockState(this.worldPosition).is(this.getBlockState().getBlock())) {\n"
             "            preRemoveSideEffects(this.worldPosition, this.getBlockState());\n        }\n        super.setRemoved();\n    }\n")
     end = text.rstrip().rfind("}")
     return text[:end] + hook + text[end:]

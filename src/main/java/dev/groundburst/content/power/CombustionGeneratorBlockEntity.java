@@ -75,7 +75,9 @@ public class CombustionGeneratorBlockEntity extends MachineBlockEntity implement
                 this.status = MachineStatus.NO_FUEL;
             }
         }
-        PowerUtil.pushToNeighbours(level, this.worldPosition, this.energy, OUTPUT, side -> this.sides.energy(face(side)));
+        if (!carried()) {                                    // carried: its contraption shares power (DESIGN.md §17.16)
+            PowerUtil.pushToNeighbours(level, this.worldPosition, this.energy, OUTPUT, side -> this.sides.energy(face(side)));
+        }
         return running;
     }
 

@@ -904,7 +904,7 @@ public final class LaunchNetwork extends SavedData {
 
     /** Whether a member's launcher is there and ticking (its chunk loaded and running). */
     private static @Nullable BlockEntity present(ServerLevel level, Member m) {
-        if (m.role == Role.LAUNCHER && Launches.carried(level, m.pos) instanceof BlockEntity carried) {
+        if (dev.groundburst.content.machine.Carried.at(level, m.pos) instanceof BlockEntity carried) {
             return carried;                                // carried by a contraption (DESIGN.md §17.16)
         }
         if (!level.isLoaded(m.pos) || !level.shouldTickBlocksAt(ChunkPos.asLong(m.pos.getX() >> 4, m.pos.getZ() >> 4))) {
@@ -1017,7 +1017,7 @@ public final class LaunchNetwork extends SavedData {
                     }
                 }
                 // Contact lost: its chunk is loaded and it is not there.
-                if (check && level.isLoaded(m.pos) && !m.lost && !(m.role == Role.LAUNCHER && Launches.carried(level, m.pos) != null)) {
+                if (check && level.isLoaded(m.pos) && !m.lost && dev.groundburst.content.machine.Carried.at(level, m.pos) == null) {
                     BlockEntity here = level.getBlockEntity(m.pos);
                     boolean there = m.role == Role.LAUNCHER ? here instanceof LaunchSite : here instanceof RadarArrayBlockEntity;
                     if (!there) {
