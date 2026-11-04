@@ -50,6 +50,7 @@ public class GroundBurstClient {
         dev.groundburst.client.fx.BlastBenchClient.register();
         dev.groundburst.client.fx.WorldSurveyClient.register();
         dev.groundburst.client.fx.SitePhotographer.register();
+        dev.groundburst.client.fx.HealPhotographer.register();
         dev.groundburst.client.screen.ChargeScreens.register();
         dev.groundburst.client.screen.LaunchComputerScreen.register();
         dev.groundburst.client.screen.LaunchStationScreen.register();

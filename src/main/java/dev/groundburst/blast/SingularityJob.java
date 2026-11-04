@@ -65,6 +65,8 @@ final class SingularityJob {
 
     final int netId;
     final ServerLevel level;
+    /** What it changes, remembered to heal if the server heals this weapon's damage (DESIGN.md §21.9). */
+    private final dev.groundburst.heal.Scars.Recorder scars;
     final BlockPos origin;
     final Vec3 center;
     /** Its opening's reach by the end of its life, what feeding adds (see {@link Singularities#reach}), its most. */
@@ -96,6 +98,7 @@ final class SingularityJob {
     SingularityJob(int netId, ServerLevel level, BlockPos origin, float seed, float feed, float max, int life, @Nullable Entity by) {
         this.netId = netId;
         this.level = level;
+        this.scars = dev.groundburst.heal.Scars.recorder(level, Vec3.atCenterOf(origin), dev.groundburst.heal.Scars.SINGULARITY, dev.groundburst.heal.HealSettings.Kind.SPECIAL);
         this.origin = origin.immutable();
         this.center = Vec3.atCenterOf(origin);
         this.seed = seed;
@@ -321,7 +324,7 @@ final class SingularityJob {
         FluidState fluid = state.getFluidState();
         double worth = state.getBlock() instanceof LiquidBlock ? fluid.getAmount() / 8.0
                 : state.isCollisionShapeFullBlock(this.level, this.pos) ? 1 : 0.25;
-        if (!this.level.setBlock(this.pos, AIR, TEAR_FLAGS)) {
+        if (!this.scars.set(this.pos, AIR, TEAR_FLAGS)) {
             return 0;
         }
         this.mass += worth;

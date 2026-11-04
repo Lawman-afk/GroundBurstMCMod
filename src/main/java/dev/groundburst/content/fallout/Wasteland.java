@@ -106,17 +106,19 @@ public final class Wasteland {
      * its crater if the land would fill it. {@code existing}: the chunks the blast saw (the only ones loaded for the
      * work), or null to work in the chunks loaded now.
      */
-    public static void afterBlast(ServerLevel level, Vec3 centre, BlastProfile profile, boolean crater, @Nullable LongSet existing) {
+    public static void afterBlast(ServerLevel level, Vec3 centre, BlastProfile profile, boolean crater, @Nullable LongSet existing,
+            dev.groundburst.heal.Scars.Recorder scars) {
         if (level.getServer() instanceof net.minecraft.gametest.framework.GameTestServer) {
             return;                                        // the GameTests paint and flood what they test themselves
         }
         float radius = Math.max(profile.scorch(), profile.crater() * 1.5f);
         if (GBServerConfig.CONVERT_BIOMES.get() && radius >= 4) {
-            queue(level, new Painting(centre, radius, existing));
+            queue(level, new Painting(centre, radius, existing, scars));
         }
         if (crater && profile.crater() >= LAKE_MIN_CRATER) {
             Lake lake = Lake.start(level, centre, profile.crater(), existing);
             if (lake != null) {
+                lake.scars = scars;                        // its water goes again when the crater heals (DESIGN.md §21.9)
                 queue(level, lake);
             }
         }
@@ -124,7 +126,12 @@ public final class Wasteland {
 
     /** Paints the wasteland over a disc now, in the chunks loaded (GameTests). */
     public static void paintNow(ServerLevel level, Vec3 centre, float radius) {
-        Painting p = new Painting(centre, radius, null);
+        paintNow(level, centre, radius, dev.groundburst.heal.Scars.Recorder.none(level));
+    }
+
+    /** As {@link #paintNow(ServerLevel, Vec3, float)}, what it paints over remembered by {@code scars} (to heal). */
+    public static void paintNow(ServerLevel level, Vec3 centre, float radius, dev.groundburst.heal.Scars.Recorder scars) {
+        Painting p = new Painting(centre, radius, null, scars);
         while (!p.step(level)) {
             // all of it
         }
@@ -260,12 +267,15 @@ public final class Wasteland {
         final double cx, cz;
         final float radius;
         final Batches chunks;
+        /** Remembers the biome each cell had, to turn back when the ground heals (DESIGN.md §21.9). */
+        final dev.groundburst.heal.Scars.Recorder scars;
 
-        Painting(Vec3 centre, float radius, @Nullable LongSet existing) {
+        Painting(Vec3 centre, float radius, @Nullable LongSet existing, dev.groundburst.heal.Scars.Recorder scars) {
             this.cx = centre.x;
             this.cz = centre.z;
             this.radius = radius;
             this.chunks = new Batches(disc(this.cx, this.cz, radius), existing);
+            this.scars = scars;
         }
 
         @Override
@@ -312,6 +322,7 @@ public final class Wasteland {
                 double bx = QuartPos.toBlock(qx) + 2, bz = QuartPos.toBlock(qz) + 2;
                 if (QuartPos.toBlock(qy) + 3 >= floor && inside(bx, bz) && !now.is(BIOME)) {
                     any[0] = true;
+                    this.scars.biome(chunk, qx, qy, qz, now);
                     return wasteland;
                 }
                 return now;
@@ -371,6 +382,8 @@ public final class Wasteland {
         final Batches chunks;
         BitSet lake = new BitSet();
         int water = Integer.MIN_VALUE;
+        /** Remembers what the water fills, to heal (none for the GameTests' own floods). */
+        dev.groundburst.heal.Scars.@Nullable Recorder scars;
         Pass pass = Pass.READ;
         /** In the fill: the chunk of the current batch reached, and the column in it. */
         int chunkCursor, columnCursor;
@@ -607,7 +620,11 @@ public final class Wasteland {
                         at.set(x, y, z);
                         BlockState s = chunk.getBlockState(at);
                         if (s.isAir() || s.canBeReplaced() && s.getFluidState().isEmpty() || s.is(BlockTags.FIRE)) {
-                            level.setBlock(at, still, Block.UPDATE_CLIENTS);
+                            if (this.scars != null) {
+                                this.scars.set(at, still, Block.UPDATE_CLIENTS);
+                            } else {
+                                level.setBlock(at, still, Block.UPDATE_CLIENTS);
+                            }
                             placed++;
                         }
                     }

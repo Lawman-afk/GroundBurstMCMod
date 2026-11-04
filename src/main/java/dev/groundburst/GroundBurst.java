@@ -88,6 +88,7 @@ public class GroundBurst {
 
         GBNetwork.register(modBus);
         dev.groundburst.blast.GBBlast.register(modBus);
+        dev.groundburst.heal.GBHeal.register(modBus);
         GBDataGen.register(modBus);
         GBGameTests.register(modBus);
 

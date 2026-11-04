@@ -104,7 +104,7 @@ public final class Meltdown {
                 || !below.isFaceSturdy(level, at.below(), Direction.UP)) {
             return false;
         }
-        level.setBlockAndUpdate(at, corium);
+        dev.groundburst.heal.Scars.set(level, at, corium, net.minecraft.world.level.block.Block.UPDATE_ALL, dev.groundburst.heal.Scars.MELTDOWN, dev.groundburst.heal.HealSettings.Kind.NUCLEAR);
         return true;
     }
 }

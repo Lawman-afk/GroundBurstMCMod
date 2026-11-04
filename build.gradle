@@ -122,6 +122,16 @@ neoForge {
             systemProperty 'groundburst.siteShots.variant', (project.findProperty('siteVariant') ?: '0').toString()
         }
 
+        // Makes a flat world, turns healing on with short waits, builds a farmstead and a little town, blows them up (a
+        // thermobaric warhead, a tactical nuke), photographs them before, after, healing and healed into
+        // run/screenshots/heal_<scene>_<stage>.png, compares every block with what it was (run/heal/heal_check.txt), then
+        // quits (see HealPhotographer).
+        healShots {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.healShots', 'true'
+        }
+
         server {
             server()
             programArgument '--nogui'

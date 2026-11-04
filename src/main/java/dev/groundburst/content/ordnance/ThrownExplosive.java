@@ -383,7 +383,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
                 }
                 floor(level, at, dx, dz, pos);
                 if (level.getBlockState(pos).isAir() && BaseFireBlock.canBePlacedAt(level, pos, Direction.UP)) {
-                    level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
+                    dev.groundburst.heal.Scars.set(level, pos, BaseFireBlock.getState(level, pos), net.minecraft.world.level.block.Block.UPDATE_ALL, dev.groundburst.heal.Scars.INCENDIARY, dev.groundburst.heal.HealSettings.Kind.CONVENTIONAL);
                 }
             }
         }
@@ -435,7 +435,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
                 BlockState here = level.getBlockState(pos);
                 if ((here.isAir() || here.canBeReplaced() && here.getFluidState().isEmpty() && !here.is(GBOrdnance.TOXIC_SLUDGE.get()))
                         && sludge.canSurvive(level, pos)) {
-                    level.setBlockAndUpdate(pos, sludge);
+                    dev.groundburst.heal.Scars.set(level, pos, sludge, net.minecraft.world.level.block.Block.UPDATE_ALL, dev.groundburst.heal.Scars.TOXIN, dev.groundburst.heal.HealSettings.Kind.CHEMICAL);
                 }
             }
         }

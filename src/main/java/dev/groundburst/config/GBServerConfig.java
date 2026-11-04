@@ -182,7 +182,181 @@ public final class GBServerConfig {
 
     static {
         B.pop();
+        B.translation(GBLang.config("healing", "Healing"))
+                .comment("Healing: the damage weapons do grows back over time, block for block as it was (DESIGN.md §21.9).",
+                        "Off by default. Only damage done while it is on is remembered, so turn it on before the war starts.")
+                .push("healing");
     }
+
+    public static final ModConfigSpec.BooleanValue HEAL_ENABLED = B
+            .comment("Master switch. When on, every block a weapon changes is remembered as it was (with a chest's contents,",
+                    "a sign's words, a door's facing) and put back later. Drops are held back so nothing is duplicated.")
+            .translation(GBLang.config("healing.enabled", "Heal damage over time"))
+            .define("enabled", false);
+
+    public static final ModConfigSpec.EnumValue<HealSchedule> HEAL_SCHEDULE = B
+            .comment("When damaged ground heals:",
+                    "  AFTER_WAIT   - once it has been left alone for the wait below (the usual).",
+                    "  MORNING      - at the first sunrise after the wait (set the wait to 0 to heal every morning).",
+                    "                 Dimensions without day and night use AFTER_WAIT.",
+                    "  COMMAND_ONLY - never by itself; an operator runs /groundburst heal now.")
+            .translation(GBLang.config("healing.schedule", "When healing happens"))
+            .defineEnum("schedule", HealSchedule.AFTER_WAIT);
+
+    public static final ModConfigSpec.IntValue HEAL_WAIT_SECONDS = B
+            .comment("Seconds an area waits after the last damage before it starts to heal. Fresh damage nearby starts the wait again,",
+                    "so a battle is not undone while it is being fought. 300 is five minutes; 3600 an hour.")
+            .translation(GBLang.config("healing.waitSeconds", "Wait before healing (seconds)"))
+            .defineInRange("waitSeconds", 300, 0, 604_800);
+
+    public static final ModConfigSpec.IntValue HEAL_RANDOM_SECONDS = B
+            .comment("Up to this many seconds more, chosen at random for each chunk, so a crater heals in patches, not all at once.")
+            .translation(GBLang.config("healing.randomExtraSeconds", "Random extra wait (seconds)"))
+            .defineInRange("randomExtraSeconds", 60, 0, 86_400);
+
+    public static final ModConfigSpec.IntValue HEAL_BLOCKS_PER_SECOND = B
+            .comment("Blocks each damaged chunk puts back a second, at the least.")
+            .translation(GBLang.config("healing.blocksPerSecond", "Blocks healed a second (each chunk)"))
+            .defineInRange("blocksPerSecond", 20, 1, 100_000);
+
+    public static final ModConfigSpec.IntValue HEAL_LONGEST_SECONDS = B
+            .comment("The longest a chunk may take to heal, in seconds: a chunk with much to put back heals faster to keep to it,",
+                    "so a nuclear crater heals in about the same time as a grenade's hole. 0 lets big damage take as long as",
+                    "the speed above makes it.")
+            .translation(GBLang.config("healing.longestSeconds", "Longest heal (seconds)"))
+            .defineInRange("longestSeconds", 300, 0, 86_400);
+
+    public static final ModConfigSpec.EnumValue<HealOrder> HEAL_ORDER = B
+            .comment("The order blocks come back in:",
+                    "  BOTTOM_UP   - the lowest first, so the ground rises back and nothing hangs in the air while it heals.",
+                    "  RANDOM      - here and there all through the damage.",
+                    "  ALL_AT_ONCE - each chunk's damage comes back as soon as it is due, as fast as the server allows.")
+            .translation(GBLang.config("healing.order", "Order"))
+            .defineEnum("order", HealOrder.BOTTOM_UP);
+
+    public static final ModConfigSpec.BooleanValue HEAL_EFFECTS = B
+            .comment("Sounds and a few green sparkles as blocks come back.")
+            .translation(GBLang.config("healing.effects", "Sounds and sparkles"))
+            .define("effects", true);
+
+    static {
+        B.translation(GBLang.config("healing.what", "What heals")).comment("What heals, and what never does.").push("what");
+    }
+
+    public static final ModConfigSpec.BooleanValue HEAL_CONVENTIONAL = B
+            .comment("Grenades, charges, mines, bombs, shells and every warhead that is not nuclear.")
+            .translation(GBLang.config("healing.what.conventional", "Conventional weapons"))
+            .define("conventional", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_NUCLEAR = B
+            .comment("Nuclear blasts and what follows them: the crater, its lake, the wasteland's scorched ground, fallout ash,",
+                    "plants killed by radiation, a meltdown's corium.")
+            .translation(GBLang.config("healing.what.nuclear", "Nuclear weapons"))
+            .define("nuclear", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_SPECIAL = B
+            .comment("Antimatter, singularities, the cryo freeze and frost, storm strikes and the Particle Uplink Cannon's beam.")
+            .translation(GBLang.config("healing.what.special", "Special weapons and superweapons"))
+            .define("special", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_CHEMICAL = B
+            .comment("Toxin residue, sludge and poisoned soil.")
+            .translation(GBLang.config("healing.what.chemical", "Chemical weapons"))
+            .define("chemical", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_AFTERMATH = B
+            .comment("What the damage sets going next to it: blocks burnt by spreading fire, sand and gravel that fall, leaves that",
+                    "decay once their tree is gone. Off: only what the weapons themselves change heals.")
+            .translation(GBLang.config("healing.what.aftermath", "Fire spread, falling sand, decaying leaves"))
+            .define("aftermath", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_DECORATIONS = B
+            .comment("Paintings, item frames (with what is in them) and armour stands (with what they wear) a blast knocks down",
+                    "are put back where they hung once the blocks round them have healed. They drop nothing meanwhile.")
+            .translation(GBLang.config("healing.what.decorations", "Paintings, item frames, armour stands"))
+            .define("decorations", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_BIOMES = B
+            .comment("The nuclear wasteland's biome (grey grass, brown fog, falling ash) turns back to the biome it was.")
+            .translation(GBLang.config("healing.what.biomes", "Biomes"))
+            .define("biomes", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_CLEAR_RADIATION = B
+            .comment("Radiation centred in a chunk goes when that chunk starts to heal, so healed plants are not killed again.")
+            .translation(GBLang.config("healing.what.clearRadiation", "Clear radiation"))
+            .define("clearRadiation", true);
+
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> HEAL_EXCLUDED_WEAPONS = B
+            .comment("Weapons whose damage never heals: blast profile ids as /groundburst blast lists them (a * matches anything, so",
+                    "\"groundburst:tsar*\" is the Tsar), or groundburst:particle_beam, groundburst:cryo_freeze, groundburst:frost,",
+                    "groundburst:singularity, groundburst:antimatter, groundburst:storm, groundburst:fallout, groundburst:radiation,",
+                    "groundburst:meltdown, groundburst:toxin, groundburst:breach, groundburst:incendiary.")
+            .translation(GBLang.config("healing.what.excludedWeapons", "Weapons that never heal"))
+            .defineListAllowEmpty("excludedWeapons", List.of(), () -> "groundburst:", GBServerConfig::isPattern);
+
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> HEAL_EXCLUDED_BLOCKS = B
+            .comment("Blocks never put back (ids, or #tags such as \"#minecraft:logs\"). Explosives never are: they went off.")
+            .translation(GBLang.config("healing.what.excludedBlocks", "Blocks that never heal"))
+            .defineListAllowEmpty("excludedBlocks", List.of(), () -> "minecraft:", GBServerConfig::isBlockOrTag);
+
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> HEAL_EXCLUDED_DIMENSIONS = B
+            .comment("Dimensions (e.g. \"minecraft:the_nether\") where damage never heals.")
+            .translation(GBLang.config("healing.what.excludedDimensions", "Dimensions that never heal"))
+            .defineListAllowEmpty("excludedDimensions", List.of(), () -> "minecraft:overworld", GBServerConfig::isIdentifier);
+
+    static {
+        B.pop();
+        B.translation(GBLang.config("healing.players", "Players")).comment("Players and the healing ground.").push("players");
+    }
+
+    public static final ModConfigSpec.EnumValue<HealPlayerBlocks> HEAL_PLAYER_BLOCKS = B
+            .comment("What healing does where a player has put a block in the damage since:",
+                    "  KEEP    - the player's block stays, and the ground within the keep radius of it, and the air over it,",
+                    "            are left as they are, so a base built in a crater is not filled in.",
+                    "  DROP    - the player's block pops off as an item and the ground heals.",
+                    "  REPLACE - the ground heals over it (the block is lost).")
+            .translation(GBLang.config("healing.players.playerBlocks", "Blocks players placed"))
+            .defineEnum("playerBlocks", HealPlayerBlocks.KEEP);
+
+    public static final ModConfigSpec.IntValue HEAL_KEEP_RADIUS = B
+            .comment("With KEEP: how far round a player's block the ground is left unhealed, in blocks (0: just the block).")
+            .translation(GBLang.config("healing.players.keepRadius", "Keep radius"))
+            .defineInRange("keepRadius", 3, 0, 16);
+
+    public static final ModConfigSpec.BooleanValue HEAL_DROPS = B
+            .comment("Whether blocks that will heal still drop items and spill their contents when destroyed. Off (the default)",
+                    "nothing is duplicated: they come back with what they held. On, they drop and come back empty-handed.")
+            .translation(GBLang.config("healing.players.dropItems", "Healing blocks drop items too"))
+            .define("dropItems", false);
+
+    static {
+        B.pop();
+        B.translation(GBLang.config("healing.performance", "Performance")).comment("How hard healing may work the server.").push("performance");
+    }
+
+    public static final ModConfigSpec.IntValue HEAL_MAX_BLOCKS_PER_TICK = B
+            .comment("Most blocks healed in a tick across the whole world; a big crater shares them out round its chunks.")
+            .translation(GBLang.config("healing.performance.maxBlocksPerTick", "Blocks healed per tick (whole server)"))
+            .defineInRange("maxBlocksPerTick", 2_000, 50, 100_000);
+
+    public static final ModConfigSpec.IntValue HEAL_MS_PER_TICK = B
+            .comment("Milliseconds of each tick healing may take.")
+            .translation(GBLang.config("healing.performance.msPerTick", "Time budget per tick (ms)"))
+            .defineInRange("msPerTick", 5, 1, 40);
+
+    static {
+        B.pop();
+        B.pop();
+    }
+
+    /** {@code healing.schedule}: when damaged ground heals. */
+    public enum HealSchedule { AFTER_WAIT, MORNING, COMMAND_ONLY }
+
+    /** {@code healing.order}: the order blocks come back in. */
+    public enum HealOrder { BOTTOM_UP, RANDOM, ALL_AT_ONCE }
+
+    /** {@code healing.players.playerBlocks}: what healing does where a player has put a block. */
+    public enum HealPlayerBlocks { KEEP, DROP, REPLACE }
 
     public static final ModConfigSpec SPEC = B.build();
 
@@ -190,5 +364,15 @@ public final class GBServerConfig {
 
     private static boolean isIdentifier(Object value) {
         return value instanceof String s && Identifier.tryParse(s) != null;
+    }
+
+    /** An id in which a {@code *} stands for anything. */
+    private static boolean isPattern(Object value) {
+        return value instanceof String s && !s.isBlank() && Identifier.tryParse(s.replace("*", "x")) != null;
+    }
+
+    /** A block id, or a block tag as {@code #namespace:path}. */
+    private static boolean isBlockOrTag(Object value) {
+        return value instanceof String s && Identifier.tryParse(s.startsWith("#") ? s.substring(1) : s) != null;
     }
 }

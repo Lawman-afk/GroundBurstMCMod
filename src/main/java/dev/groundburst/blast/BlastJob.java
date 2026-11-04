@@ -155,6 +155,8 @@ final class BlastJob implements Blast {
     /** How many floating blocks the clean-up took away (for GameTests). */
     int floatersRemoved;
     private final IntOpenHashSet hit = new IntOpenHashSet();
+    /** What it changes, remembered to heal if the server heals this weapon's damage (DESIGN.md §21.9). */
+    private final dev.groundburst.heal.Scars.Recorder scars;
     /** Entities the shock found shielded by ground the terrain work had not reached yet: looked at again once it has. */
     private final IntOpenHashSet waiting = new IntOpenHashSet();
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -176,6 +178,8 @@ final class BlastJob implements Blast {
         this.protectedRadius = protectedRadius;
         this.random = RandomSource.create(seed);
         this.ceiling = highestBlock(level, center, profile.terrainRadius());
+        this.scars = terrain ? dev.groundburst.heal.Scars.recorder(level, center, profileId,
+                dev.groundburst.heal.Scars.kindOf(profileId, this.table.nuclear())) : dev.groundburst.heal.Scars.Recorder.none(level);
         this.chunks = profile.isInstant() ? null
                 : new BlastChunks(level, id, center, workRadius(profile), GBServerConfig.GENERATE_CHUNKS.get(), this::raiseCeiling);
         this.streakSeed = StreakNoise.seed(seed);
@@ -648,7 +652,8 @@ final class BlastJob implements Blast {
             // A charge caught in the blast goes off a moment later (sympathetic detonation).
             dev.groundburst.content.ordnance.charge.Charges.caughtInBlast(this.level, this.pos.immutable(), state);
         }
-        if (this.profile.drops() > 0 && this.random.nextFloat() < this.profile.drops()) {
+        boolean heals = this.scars.record(this.pos);       // (a block that will heal drops nothing)
+        if (this.profile.drops() > 0 && this.random.nextFloat() < this.profile.drops() && this.scars.mayDrop(heals)) {
             Block.dropResources(state, this.level, this.pos, this.level.getBlockEntity(this.pos));
         }
         write(this.pos, AIR);
@@ -656,7 +661,7 @@ final class BlastJob implements Blast {
     }
 
     private void write(BlockPos at, BlockState state) {
-        if (this.level.setBlock(at, state, WRITE_FLAGS)) {
+        if (this.scars.set(at, state, WRITE_FLAGS)) {
             this.blocksChanged++;
         }
     }
@@ -913,7 +918,7 @@ final class BlastJob implements Blast {
             // The wasteland over its scorched ground, and a lake in its crater if the land would fill it (in the chunks it
             // saw: it let most of them go as its front passed, and the wasteland's work loads them again).
             dev.groundburst.content.fallout.Wasteland.afterBlast(this.level, this.center, this.profile, this.terrain,
-                    this.chunks == null ? null : this.chunks.seen());
+                    this.chunks == null ? null : this.chunks.seen(), this.scars);
         }
         this.phase = Phase.RELEASE;
     }
@@ -1006,10 +1011,16 @@ final class BlastJob implements Blast {
             } else if (d <= p.damage()) {
                 dmg = p.edgeDamage() * (float) (1 - (d - p.lethal()) / Math.max(1e-3, p.damage() - p.lethal())) * exposure;
             }
+            float falloff = (float) Math.max(0, 1 - d / Math.max(1, Math.max(p.damage(), p.lethal())));
+            // A painting or item frame the shock knocks down, an armour stand it breaks: taken down whole to hang again
+            // when the ground heals, if it heals (DESIGN.md §21.9).
+            if ((e instanceof net.minecraft.world.entity.decoration.HangingEntity && falloff > 0
+                    || e instanceof net.minecraft.world.entity.decoration.ArmorStand && dmg > 0) && this.scars.takeDown(e)) {
+                continue;
+            }
             if (dmg > 0 && e instanceof LivingEntity) {
                 e.hurtServer(this.level, Blasts.damageSource(this.level, this.source, this.center), dmg);
             }
-            float falloff = (float) Math.max(0, 1 - d / Math.max(1, Math.max(p.damage(), p.lethal())));
             if (falloff > 0) {
                 Vec3 push = e.position().subtract(this.center).add(0, 0.5, 0).normalize().scale(p.knockback() * falloff * exposure);
                 e.push(push.x, push.y, push.z);           // marks the entity for a velocity sync

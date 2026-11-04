@@ -1300,6 +1300,7 @@ plus cross-section), tuned there, then ported with the same formulas.
 | `reactor.meltdowns` | true | a critical reactor melts down unless SCRAMmed; false: it SCRAMs at 900 °C (§7.1) |
 | `singularity.maxBlocksRipped` | 20 000 | |
 | `superweapons.announce`, `superweapons.maxRange`, `superweapons.chargeTimeMultiplier` | true, 4 096, 1.0 | |
+| `healing.*` | off | the damage weapons do grows back over time, as it was: §21.9 |
 
 Client config (`groundburst-client.toml`): `fx.quality` (low/medium/high/ultra, default high), `fx.flashStrength`
 (1.0), `fx.cameraShake` (1.0), `fx.farClouds` (true), `hud.geigerCorner` (bottom right).
@@ -4099,6 +4100,108 @@ then world structures and loot (Phase 15). Built in slices:
   vanilla's short grass through one (#A8CFE2); the Cryo Crystal ours, ice needles.
 - GameTests `WastelandTests` (6): the biome painted and not past its edge, a crater flooded to the pool beside it and
   not above, a dry one, frost on stone, grass and plants with crystals, anthrax souring grass, a crop withering.
+
+### 21.9 Healing (2026-11-04; a player's suggestion, off by default)
+A commenter on the mod's page, passed on by the user: "Allow damage to heal over time, similar to the Explosion't mod,
+which sadly only heals vanilla explosions due to many explosive mods using custom crater calculations ... If you could
+make destroyed areas return to the EXACT same state that they were before the explosion, with a wide config like the
+Explosion't mod." The user: highly adjustable and intuitive settings, off by default, on both versions. Explosion't
+(Forge, to 1.20.1) heals blocks broken by explosions and fire after a delay at a set speed, faster for big
+explosions (its speed rises every 1,000 blocks past the first 1,000), or every morning instead; destroyed blocks drop
+nothing, containers come back with their contents; `/forceAllHeal` heals the loaded damage at once; fire needs a mixin.
+Forge Creeper Heal's settings were looked at too (override fluids and placed blocks, drop on a conflict, a random
+extra delay).
+
+**Remembering.** Every block a weapon of the mod changes goes through a recorder (`heal.Scars.Recorder`), taken when
+the weapon goes off: the blast engine's one `write`, the beam's, the freeze's, the singularity's, antimatter's and the
+storm's, the cryo grenade's frost, breaching charges, bunker busters' bores, thermite, napalm and incendiary fire,
+toxin residue and poisoned soil, fallout ash, plants killed by radiation, a meltdown's corium, the crater lake's water
+and the wasteland's biome. With healing on for its kind, the recorder remembers the block as it was before (its state,
+and its block entity saved whole: a chest's contents, a sign's words, a machine's settings), unless it is remembered
+already: a block hit twice comes back as it was before the first hit. A block that will heal drops nothing, and its
+block entity is taken out quietly before the write, so a chest's contents do not spill (they come back with it); the
+server's `dropItems` lets them drop and spill (and come back empty). A weapon set with shape updates may change the
+blocks round its own (grass under new snow, a fence's arms, a torch or a door that loses its wall): the recorder notes
+its six neighbours first (with the other half of a door or tall plant), remembers those that changed, and holds back
+what they drop as they come off. The mod's explosives (`ChargeBlock`: charges, mines, bombs) never heal, since one caught
+in a blast goes off; vanilla TNT, which a blast here deletes without lighting, does. Ships and contraptions (§17.16)
+are not remembered: they move.
+
+What the damage sets going next to it is remembered too, where damage already is in the chunk or one beside it, so it
+spreads with the fire (`Scars.aftermath`; mixins, as Explosion't needs one for fire): a block a fire burns away or
+turns to fire (`FireBlock`), leaves that decay once their trunk is gone (`LeavesBlock`; they drop nothing meanwhile),
+grass that dies under the rubble or creeps onto earth the crater bared (`SpreadingSnowyBlock`), farmland that dries
+when its water is gone (`FarmlandBlock`), water and lava running out of the damage (a crater lake over its rim) and
+what they wash away (`FlowingFluid`, dropping nothing), sand and gravel that fall (where they fell from, and where they
+landed: entity events), a painting or item frame that loses its wall (its drop held back). And while any remembered
+change runs its vanilla course, what its shape updates change or break round it is remembered too, without drops
+(`Block.updateOrDestroy`): a crop whose farmland the crater lake's water fills, a torch whose wall a fire burns, a
+fence's arm. A player's own building never runs inside such a course, so it is never caught. Only a fire still burning
+holds a chunk's healing off; the rest goes on for minutes and does not. A painting, item frame or armour stand a blast knocks down is taken down whole
+(saved as an entity, dropping nothing) and hung again when its chunk has healed.
+
+**Kept with the chunk.** What a chunk remembers is a data attachment on it (`ChunkScars`), saved and loaded with it:
+per section, a bit for each remembered cell and its old state as the game keeps sections (a palette and an index a
+cell: a byte, two once there are more than 256 states), the block entities' saves, the decorations, the biome cells the
+wasteland painted, the last damage's time, and how far its healing has got. A chunk not loaded waits and carries on
+when it is; nothing is held in memory for chunks that are not loaded (a Tsar's crater is twenty million blocks).
+
+**Healing** (`Healer`, a level's damaged chunks that are loaded, every tick). A chunk is due once its wait is over:
+`waitSeconds` after its last damage (fresh damage starts the wait again: a battle is not undone while it is fought; a
+fire still burning holds it off, slow things such as decaying leaves and radiation do not), plus its share of
+`randomExtraSeconds`, so a crater heals in patches. `MORNING` heals at the first sunrise after the wait (where there is
+no day and night, after the wait alone); `COMMAND_ONLY` never by itself. A chunk heals at `blocksPerSecond` or, if it has
+more to put back than that would do in `longestSeconds`, as fast as it must to finish in that time (Explosion't's
+speed-up), in the order the server says: from the bottom up (the ground rises back, nothing hangs in the air while it
+heals), at random, or all at once. All the chunks share `maxBlocksPerTick` and `msPerTick`, a rotating start giving each
+its turn. When a chunk begins, its biome turns back and the radiation centred in it goes (`clearRadiation`: otherwise
+healed plants would die again); when its last block is back, its decorations hang again and its record goes. A block
+comes back exactly as it was, with its block entity's data, set as blasts set blocks (nothing round it told, nothing
+dropped, nothing placed off it), so a chest, a door, stairs and redstone come back as they were; a trunk tells its leaves,
+which had begun to count themselves cut off. Whatever stands in the way gives way (the blast's leftovers, water or sand
+that came in, a fire), and a creature a block comes back round is lifted out on top. A few green sparkles and the
+block's own sound now and then (`effects`).
+
+**Players.** Where a player puts a block over remembered damage, `playerBlocks` says what healing does: `KEEP` (the
+default) leaves it, and leaves the ground within `keepRadius` of it, and the air over that up to the sky, as they are,
+so a base built in a crater is not filled in round it or buried; `DROP` pops it off as an item and heals the ground;
+`REPLACE` heals over it. `/groundburst heal now [radius]` heals the damage in the loaded chunks (round you) at once,
+`forget [radius]` drops it (it stays as it is), `status` says how much waits and when the nearest begins (operators).
+
+**Settings** (`groundburst-synced.toml`, `[healing]`; also in the mod's config screen, each with a tooltip):
+| Key | Default | Meaning |
+|---|---|---|
+| `enabled` | false | master switch: only damage done while it is on is remembered |
+| `schedule` | AFTER_WAIT | AFTER_WAIT, MORNING or COMMAND_ONLY |
+| `waitSeconds`, `randomExtraSeconds` | 300, 60 | the wait after the last damage, and up to this much more a chunk |
+| `blocksPerSecond`, `longestSeconds` | 20, 300 | a chunk's least speed, and the longest it may take (0: no limit) |
+| `order` | BOTTOM_UP | BOTTOM_UP, RANDOM or ALL_AT_ONCE |
+| `effects` | true | sparkles and sounds |
+| `what.conventional`, `what.nuclear`, `what.special`, `what.chemical` | true | which kinds of weapon heal |
+| `what.aftermath`, `what.decorations`, `what.biomes`, `what.clearRadiation` | true | the fire and what falls and decays; paintings, frames, stands; the wasteland; radiation |
+| `what.excludedWeapons`, `what.excludedBlocks`, `what.excludedDimensions` | [] | blast profiles and the other weapons' ids (a * matches anything); blocks and #tags; dimensions |
+| `players.playerBlocks`, `players.keepRadius`, `players.dropItems` | KEEP, 3, false | see Players |
+| `performance.maxBlocksPerTick`, `performance.msPerTick` | 2 000, 5 | the server's budget for it |
+
+The weapons that are not blast profiles, by id: `particle_beam`, `cryo_freeze`, `frost`, `singularity`, `antimatter`,
+`storm`, `fallout`, `radiation`, `meltdown`, `toxin`, `breach`, `incendiary`. A profile's kind is nuclear by its terrain
+table (and the meltdown, the fizzle, the dirty bomb), special and chemical by name, conventional otherwise.
+
+**Not healed:** damage done while healing was off; vanilla's own explosions (creepers, TNT: Explosion't and its kind do
+those); ships and contraptions; creatures, and items blown away; a fire that has spread more than a chunk past any
+damage; what falls over ticks later (a column of sugar cane or cactus, scaffolding). A leaf counts its distance to its
+trunk afresh once the trunk is back (a number nobody sees; a tree grown by world generation counts it one higher here
+and there).
+
+**Checked.** GameTests `HealTests` (11): a blast over ground, grass, a chest of diamonds, stairs, glass and a fence put
+back block for block, the chest with its diamonds, nothing dropped; KEEP keeping a player's block and the hole round it
+and over it; DROP dropping it; the record reading back from its saved form; the schedule (the wait, its random share,
+the morning, command only, off); explosives, excluded blocks and tags, excluded weapons; a freeze over a pond thawed
+back; the wasteland's biome turned back; an item frame taken down and hung again with its diamond; sand that fell
+remembered; with healing off nothing remembered. `runHealShots` (`HealPhotographer`): a farmstead under a thermobaric
+warhead and a little town under a tactical nuke, with healing on and short waits, photographed before, after, healing
+and healed (run/screenshots/heal_*.png), then every block compared with what it was (run/heal/heal_check.txt):
+the farmstead came back 122 719 of its 122 793 blocks exactly and the town 1 660 194 of its 1 660 437; every block that differs is a leaf's count of its distance to its trunk; the five chests had their goods, every item frame and armour stand hung or stood again, and no item lay about. Getting there found the grass dying under rubble, farmland drying and turning to earth, and the crater lake's water taking crops (each now remembered), and a test scene's own mistakes (sand laid on grass, farmland five blocks from its water).
 ---
 
 ## 22. World structures and loot
@@ -4891,6 +4994,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-04 | **Healing, off by default** (a commenter's suggestion, passed on by the user: damage that heals over time, "the EXACT same state", "with a wide config like the Explosion't mod"; the user: highly adjustable and intuitive, off by default, both versions): §21.9. Every weapon's block changes go through one recorder that remembers each block as it was before the first damage (state and block entity), kept with its chunk (an attachment saved with it: nothing in memory for chunks not loaded, and a Tsar's crater is twenty million blocks); what the damage sets going is remembered where damage already is (fire by a mixin, as Explosion't needs, decaying leaves and dying grass by mixins, falling sand and decorations by entity events); a chunk heals when its wait is over, at a speed with a longest time (Explosion't's speed-up for big damage), bottom up by default; nothing that will heal drops or spills (no duplication); players' blocks kept with the ground round them and the air over them, so a base in a crater is not buried. Not by snapshots of the land before a blast (a nuke's reach is millions of blocks, most of them never touched) nor by recording every block change near damage (a player's own building would be undone). |
 | 2026-11-04 | **Ships under every weapon; the stall after a nuke; the designator and mortars on ships** (the user, after playing the test world: aiming a Laser Designator at ships lagged the game, mortars said BLOCKED at ships, quitting after a nuke hung on "saving world", and fix what the docs listed as not yet: the beam, the freeze and a singularity's pull on ships and contraptions, a blast's fires and scorch on ships): §17.16. The slower weapons keep their ground's rules on a hull (the beam eats down from a hull's top as it eats the ground, the freeze ices it as the land, a blast scorches and kindles what it sees in the open), so a ship fares as a house would; a singularity pulls a free ship as it pulls a creature, the whole of it alike, and erases it as it comes into the horizon; a contraption only takes a plain block changed for another (nothing new is laid or lit on it). The lag: the designator's hit on a ship, in the ship's plot far off, sent its creature search out there; every hit on a ship is taken where the ship is seen. The stall, two of them: an emptied ship's box was the whole int range, so later blasts walked its plot's air (emptied ships are passed over now, and a ship's blocks are read from its own chunks); and, in main for every world, a crater lake's level was halved as `(lo + hi) >>> 1`, which ran off for good on levels below 0 (the test world's ground is at 0; §21.8). The test world's builder is left out of the 1.21.1 jar (the user: "If you put the world in the actual mod please remove it"). |
 | 2026-11-04 | **Blasts reach ships and contraptions** (asked whether blasts should damage Create contraptions and Create Aeronautics ships next, the user: "Yes please. damaging contraptions and ships would be sick."): §17.16, hulls. A blast breaks a hull's blocks by the world's own rules (core, a ray's energy through the hull's blocks, light blocks blown out), not vanilla's, so a ship fares as a house would; it shoves a ship as it shoves entities, each block it reaches in the open pushed away from the burst (20 × knockback × falloff a block, at the centre of pressure: one block alone flies as an entity would, a big hull far less, and a ship turns by the face toward the burst); antimatter and singularities erase what they reach. Create's contraptions are driven, so they are broken but not shoved; a chest or a machine blown off one goes with what it held, as in the world, and a train keeps its wheels. Missiles and shells strike ships and contraptions in their way. Main has the hulls and the pass (`Hulls`, `HullBlast`); the 1.21.1 build finds Sable's ships and Create's contraptions for them, and compiles against Sable itself for its physics. |
 | 2026-11-04 | **Every machine works on Create's contraptions, with its menu** (the user, after their first play with it: "assemblers, launch computers, everything to work on create contraptions if possible, as well as allowing access to their menus"): §17.16. One movement behaviour for every machine, run from the contraption's tick; right-clicking any block of a carried machine or structure opens its menu (or the computers' and radar's screens); a carried machine is known by the place it was taken from, so its menu, screen and packets find it wherever it is. A contraption shares its generators' and capacitor banks' power among its machines with no cables (each giver at most its output, each taker at most its intake; an even share first, then the rest round from a different machine each tick: without it a launcher's 8,000 FE intake starved the Launch Computer), and its pipe runs move items and fluids between what it carries, Create's chests, vaults and tanks among them. Reactors are held while carried (their cores are the world's blocks round them); nothing passes between a contraption and the world's blocks round it yet. The 1.21.1 build's Create check: 29 checks, among them a factory (pipes, power, menus) and a Medium Missile Assembler mid-build with a loaded Launch Silo. |

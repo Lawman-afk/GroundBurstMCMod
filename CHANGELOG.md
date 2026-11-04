@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+### Healing (both versions; off by default)
+A player's suggestion: damage that heals over time, back to exactly what was there.
+- **Turn it on** in the server config (Mods, Ground Burst, Config: Healing, "Heal damage over time"; or `healing.enabled`
+  in `groundburst-synced.toml`). Only damage done while it is on heals, so turn it on before the war starts.
+- **Exactly as it was**: every block a weapon changes is remembered and put back: a crater fills in from the bottom up,
+  scorched grass greens, the wasteland turns back into the biome it was, a crater lake drains, and a chest comes back
+  with its contents, a sign with its words, a door the way it faced. Paintings, item frames and armour stands a blast
+  knocks down are hung again. What the damage sets going heals too: blocks burnt by the fires a blast started, sand that
+  fell into the crater, leaves that decayed when their tree went, grass that died under the rubble, fields that dried
+  when their water went, and water that ran out of a crater and what it washed away.
+- **Every weapon**: blasts of every size, the Particle Uplink Cannon's beam, the cryo freeze and frost, singularities,
+  antimatter, storms, breaching charges, thermite, napalm and incendiaries, chemical weapons, fallout ash, plants killed
+  by radiation, a meltdown's corium. Choose which kinds heal (conventional, nuclear, special, chemical), and leave out
+  single weapons, blocks or dimensions.
+- **Nothing duplicated**: a block that will heal drops nothing and spills nothing while it is gone.
+- **When and how fast**: after a wait once the fighting has stopped there (fresh damage starts the wait again), with a
+  random extra so a crater heals in patches; or every morning; or only when an operator says. A speed, and a longest
+  time, so a nuclear crater heals about as soon as a grenade's hole. From the bottom up, at random, or all at once.
+- **Players' blocks**: something a player built in the damage is kept, with a clear space round it and nothing healed
+  over it, so a base in a crater is not filled in (or, if you choose, dropped as an item, or replaced).
+- **Commands** for operators: `/groundburst heal now [radius]`, `/groundburst heal forget [radius]` and
+  `/groundburst heal status`.
+- Not healed: ships and contraptions, vanilla's own explosions (creepers and TNT), creatures, and damage done while
+  healing was off.
+
 ### Minecraft 1.21.1: Create and Create Aeronautics
 Both are optional; with either installed, Ground Burst's machines work on the structures they move.
 - **Create**: every machine rides Create's moving contraptions (trains, mechanical bearings, pistons, gantries, pulleys

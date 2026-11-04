@@ -10,6 +10,10 @@ description='''
 ${mod_description}
 '''
 
+# Healing (DESIGN.md §21.9): blocks burnt by fire and leaves decaying next to remembered damage.
+[[mixins]]
+config="${mod_id}.mixins.json"
+
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"

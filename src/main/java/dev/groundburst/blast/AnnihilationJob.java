@@ -45,6 +45,8 @@ final class AnnihilationJob {
 
     final int netId;
     final ServerLevel level;
+    /** What it changes, remembered to heal if the server heals this weapon's damage (DESIGN.md §21.9). */
+    private final dev.groundburst.heal.Scars.Recorder scars;
     final BlockPos origin;
     final Vec3 center;
     final float radius;
@@ -74,6 +76,7 @@ final class AnnihilationJob {
     AnnihilationJob(int netId, ServerLevel level, BlockPos origin, float radius, @Nullable Entity by) {
         this.netId = netId;
         this.level = level;
+        this.scars = dev.groundburst.heal.Scars.recorder(level, Vec3.atCenterOf(origin), dev.groundburst.heal.Scars.ANTIMATTER, dev.groundburst.heal.HealSettings.Kind.SPECIAL);
         this.origin = origin.immutable();
         this.center = Vec3.atCenterOf(origin);
         this.radius = radius;
@@ -211,7 +214,7 @@ final class AnnihilationJob {
         if (state.isAir() || state.getDestroySpeed(this.level, this.pos) < 0) {
             return 0;                                      // nothing there, or bedrock and the like
         }
-        if (!this.level.setBlock(this.pos, AIR, BlastJob.WRITE_FLAGS)) {
+        if (!this.scars.set(this.pos, AIR, BlastJob.WRITE_FLAGS)) {
             return 0;
         }
         this.erased++;
