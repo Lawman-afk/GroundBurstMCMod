@@ -3034,8 +3034,10 @@ the centre of pressure, so a ship is driven off and turned by the face toward th
 singularity's horizon erase whatever a hull shows inside them as they grow, and shove nothing. A missile's or a shell's
 flight strikes a hull's block where it is seen (`Hulls.clip`); a hit in a ship's plot (where the world's clip sees
 ships) and a blast set off there (a charge aboard) are moved to where the ship is (`Frames.toWorld`). A hull may hold a
-block no blast breaks (a train's wheels), as bedrock is not broken. What a blast sees of a hull in the open and leaves
-standing is scorched in its scorch band as the world's open ground is (a nuclear fireball chars wood and burns earth
+block no blast breaks (a train's wheels), as bedrock is not broken. What a blast sees of a hull and leaves standing (a
+block whose middle, or the middle of a face it turns toward the burst, nothing of the hull hides: a deck seen at a slant
+is seen along its top, as the ground pass sees a column's top over the columns before it) is scorched in its scorch
+band as the world's open ground is (a nuclear fireball chars wood and burns earth
 and stone), and in its fire band may catch fire on top (ash after a nuclear blast), where its blocks stand in the level
 (a ship's; a contraption's are held off it, so nothing burns there). The slower weapons keep their ground's rules on
 hulls too (`HullEffects`): a particle beam meets a hull's topmost block in each column of the world under it, from the
@@ -3066,7 +3068,8 @@ connected sides, and mirrored they swap; a machine emptied before a move, as Sab
 (`HullTests`) a stand-in hull keeping its blocks ten blocks over the place it shows them: a blast breaks the open block
 it shows and spares the one behind an obsidian wall it shows, shoves it straight away from the burst at the block it
 reaches, and leaves a block out of its reach alone; an antimatter sphere erases what it shows inside; a line through it
-strikes its block's near face where it is seen; a scorching blast scorches grass it shows in the open; a blast with a
+strikes its block's near face where it is seen; a scorching blast scorches grass it shows in the open, and a row of it
+shown two under the burst along its length (each block's middle hidden by the one before it, its top in sight); a blast with a
 fire band sets some of the bedrock it shows alight on top, breaking none; a particle beam eats down through two stone
 blocks it shows stacked in its core, the top first, and scorches grass it shows round it; a deep freeze shatters glass it
 shows in its heart and rimes or snows on stone it shows round it; a singularity pulls it toward itself, a little round;

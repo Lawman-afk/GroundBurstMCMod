@@ -143,7 +143,7 @@ final class HullBlast {
                         destroy(hull, t.pos(), state);
                     }
                 }
-                if (!broke && !path.standing && d <= HullBlast.this.burns && !sheltered(hull, t.pos())) {
+                if (!broke && d <= HullBlast.this.burns && !sheltered(hull, t.pos()) && seen(hull, local, t.pos(), path, scale)) {
                     burn(hull, t.pos(), state, d);                  // seen from the fireball, and left standing
                 }
                 if (!broke && !path.standing && d <= HullBlast.this.shoves) {
@@ -218,6 +218,31 @@ final class HullBlast {
                 return false;
             }
             return !sheltered(hull, pos);
+        }
+
+        /**
+         * Whether the fireball sees any of a block: nothing of the hull stands on the way to its middle, or to the middle
+         * of a face it turns toward the burst (a deck seen from above at a slant: the way to each block's middle crosses
+         * the top of the one before, but its top is in sight, as the world's ground pass sees a column's top over the
+         * columns before it).
+         */
+        private boolean seen(Hulls.Hull hull, Vec3 from, BlockPos pos, Path toMiddle, double scale) {
+            if (!toMiddle.standing) {
+                return true;
+            }
+            Vec3 mid = Vec3.atCenterOf(pos);
+            for (Direction face : Direction.values()) {
+                double toward = (from.x - mid.x) * face.getStepX() + (from.y - mid.y) * face.getStepY() + (from.z - mid.z) * face.getStepZ();
+                if (toward <= 0.5) {
+                    continue;                                   // the burst is not beyond this face
+                }
+                double k = 0.5 - 1e-3;
+                Vec3 at = mid.add(face.getStepX() * k, face.getStepY() * k, face.getStepZ() * k);
+                if (!path(hull, from, at, pos, scale).standing) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /** Whether it is over the protected spawn, where a blast changes nothing. */

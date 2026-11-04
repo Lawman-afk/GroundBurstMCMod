@@ -35,6 +35,7 @@ final class HullTests {
         GBGameTests.testOpenSky("flight_strikes_a_hull_where_it_is_seen", GBGameTests.FLOOR_16, 20, HullTests::clips);
         GBGameTests.testOpenSky("annihilation_erases_a_hull_inside_it", GBGameTests.FLOOR_16, 80, HullTests::annihilated);
         GBGameTests.testOpenSky("blast_scorches_a_hull_in_the_open", GBGameTests.FLOOR_16, 20, HullTests::scorches);
+        GBGameTests.testOpenSky("blast_scorches_a_hull_deck_seen_at_a_slant", GBGameTests.FLOOR_16, 20, HullTests::deck);
         GBGameTests.testOpenSky("blast_sets_a_hull_alight", GBGameTests.FLOOR_16, 60, HullTests::alight);
         GBGameTests.testOpenSky("beam_eats_down_through_a_hull", GBGameTests.FLOOR_16, 100, HullTests::beamed);
         GBGameTests.testOpenSky("freeze_ices_a_hull_over", GBGameTests.FLOOR_16, 200, HullTests::frozen);
@@ -292,6 +293,30 @@ final class HullTests {
             scorched += kept(helper, p).is(Blocks.DIRT) ? 1 : 0;
         }
         helper.assertTrue(scorched >= 8, "most of the grass it shows round the burst is scorched where it is kept: " + scorched + " of 12");
+        helper.succeed();
+    }
+
+    /**
+     * A row of grass the hull shows two blocks under a scorching blast, from two to six blocks either side: a deck seen at
+     * a slant, the way to each block's middle crossing the top of the one before it. The fireball sees the top of each,
+     * as the world's ground pass sees a column's top over those before it, and scorches nearly all of them.
+     */
+    private static void deck(GameTestHelper helper) {
+        Stored hull = new Stored(helper);
+        java.util.List<BlockPos> row = new java.util.ArrayList<>();
+        for (int dx = 2; dx <= 6; dx++) {
+            row.add(C.offset(dx, -2, 0));
+            row.add(C.offset(-dx, -2, 0));
+        }
+        for (BlockPos p : row) {
+            put(helper, p, Blocks.GRASS_BLOCK);
+        }
+        blast(helper, hull, "test/scorch");
+        int scorched = 0;
+        for (BlockPos p : row) {
+            scorched += kept(helper, p).is(Blocks.DIRT) ? 1 : 0;
+        }
+        helper.assertTrue(scorched >= 7, "the deck it shows under the burst is scorched along its length: " + scorched + " of 10");
         helper.succeed();
     }
 
