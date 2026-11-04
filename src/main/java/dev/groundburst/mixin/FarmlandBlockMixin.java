@@ -34,7 +34,8 @@ abstract class FarmlandBlockMixin {
 
     @Inject(method = "randomTick", at = @At("HEAD"))
     private void groundburst$drying(BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfo ci) {
-        if (!isNearWater(level, pos) && !level.isRainingAt(pos.above())) {
+        // (Whether damage is near first: looking for water is what costs, and vanilla looks again itself.)
+        if (dev.groundburst.heal.Scars.watching(level, pos) && !isNearWater(level, pos) && !level.isRainingAt(pos.above())) {
             dev.groundburst.heal.Scars.aftermath(level, pos, false);
         }
     }
@@ -42,7 +43,7 @@ abstract class FarmlandBlockMixin {
     /** However it comes to it (dried out, rubble landed on it, trodden), farmland turning back to earth is remembered first. */
     @WrapMethod(method = "turnToDirt")
     private static void groundburst$toEarth(@Nullable Entity by, BlockState state, Level level, BlockPos pos, Operation<Void> original) {
-        if (level instanceof ServerLevel server) {
+        if (level instanceof ServerLevel server && dev.groundburst.heal.Scars.watching(server, pos)) {
             dev.groundburst.heal.Scars.aftermathCourse(server, pos, false, () -> original.call(by, state, level, pos));
         } else {
             original.call(by, state, level, pos);

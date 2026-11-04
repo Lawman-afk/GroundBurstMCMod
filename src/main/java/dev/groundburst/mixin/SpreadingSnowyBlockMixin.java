@@ -21,6 +21,9 @@ abstract class SpreadingSnowyBlockMixin {
     @WrapOperation(method = "randomTick", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerLevel;setBlockAndUpdate(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z"))
     private boolean groundburst$spreading(ServerLevel level, BlockPos pos, BlockState state, Operation<Boolean> original) {
+        if (!dev.groundburst.heal.Scars.watching(level, pos)) {
+            return original.call(level, pos, state);       // (nothing remembered near: as vanilla, at once)
+        }
         boolean[] done = {false};
         dev.groundburst.heal.Scars.aftermathCourse(level, pos, false, () -> done[0] = original.call(level, pos, state));
         return done[0];

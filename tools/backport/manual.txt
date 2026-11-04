@@ -20,3 +20,4 @@ src/main/java/dev/groundburst/heal/Snapshots.java
 src/main/java/dev/groundburst/mixin/FireBlockMixin.java
 src/main/java/dev/groundburst/mixin/SpreadingSnowyBlockMixin.java
 src/main/java/dev/groundburst/mixin/FarmlandBlockMixin.java
+src/main/java/dev/groundburst/client/fx/PlayBenchClient.java

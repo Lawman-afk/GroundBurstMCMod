@@ -4,8 +4,11 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `0585da40` (2026-11-04: healing, off by default, main's DESIGN.md §21.9: the damage
-  every weapon does grows back over time, block for block as it was; before it every weapon on ships and contraptions,
+- **Last brought up to:** `main` at `07db772c` (2026-11-04: fire never healed back, and damage waiting while a fire burns
+  by it; main's performance check, its DESIGN.md §11.8, with the play bench, which runs here too: `gradlew runPlayBench`
+  `[-Pjfr=<name>]`, its client half this branch's own (`client/fx/PlayBenchClient`, the world made as the port check
+  makes its); before them healing, off by default, main's DESIGN.md §21.9: the damage every weapon does grows back over
+  time, block for block as it was; before it every weapon on ships and contraptions,
   the designator and mortars aimed at ships, a crater lake's hang below y 0 fixed; before them blasts reaching ships and contraptions and
   every machine on moving structures, main's DESIGN.md §17.16; before them 0.7.0, released for both versions:
   `groundburst-mc1.21.1-0.7.0.jar` is this branch's).

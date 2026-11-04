@@ -931,6 +931,11 @@ FILE_FIXES: dict[str, list] = {
              "            thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0f, this.type.speed, 1.0f);\n"
              "            server.addFreshEntity(thrown);"),
     ],
+    # The play bench (its client half is this branch's own): 1.21.1's game rule for the time of day, and its teleport.
+    "src/main/java/dev/groundburst/blast/PlayBench.java": [
+        swap('"gamerule advance_time false"', '"gamerule doDaylightCycle false"'),
+        swap("java.util.Set.of(), 135, 20, true)", "135, 20)"),
+    ],
     "src/main/java/dev/groundburst/GroundBurst.java": [
         after("modBus.addListener(GBBlockEntities::registerCapabilities);",
               "\n        dev.groundburst.port.transfer.Capabilities.register(modBus);   // the bridge to 1.21.1's handlers"),

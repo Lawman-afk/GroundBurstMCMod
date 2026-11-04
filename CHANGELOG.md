@@ -24,6 +24,10 @@ A player's suggestion: damage that heals over time, back to exactly what was the
   over it, so a base in a crater is not filled in (or, if you choose, dropped as an item, or replaced).
 - **Commands** for operators: `/groundburst heal now [radius]`, `/groundburst heal forget [radius]` and
   `/groundburst heal status`.
+- **Fire is never brought back** (found in testing: trees set alight with molotovs healed with their fire and burnt
+  again). A place that was burning heals as the air it burnt in, and damage waits to heal until the fires near it have
+  gone out (a fire on netherrack, which burns for good, does not hold it up). `/groundburst heal now` puts those fires
+  out first.
 - Not healed: ships and contraptions, vanilla's own explosions (creepers and TNT), creatures, and damage done while
   healing was off.
 

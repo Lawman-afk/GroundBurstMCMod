@@ -48,6 +48,7 @@ public class GroundBurstClient {
         dev.groundburst.client.fx.LaserFx.register();
         dev.groundburst.client.fx.DesignatorScope.register(modBus);
         dev.groundburst.client.fx.ArtilleryClient.register(modBus);
+        dev.groundburst.client.fx.PlayBenchClient.register();
         dev.groundburst.client.screen.ChargeScreens.register();
         dev.groundburst.client.screen.LaunchComputerScreen.register();
         dev.groundburst.client.screen.LaunchStationScreen.register();

@@ -129,6 +129,19 @@ neoForge {
             systemProperty 'groundburst.testRange.blast', (project.findProperty('rangeBlast') ?: '').toString()
         }
 
+        // Main's play bench (dev.groundburst.blast.PlayBench, this branch's own client half): a normal world seen far
+        // (-PplayView=32, -PplaySim=12), a forest, molotovs and a thermobaric warhead among the trees, the fires, the
+        // healing (-PplayHeal=false: none); every server tick and frame timed by phase into run/bench/play_*.txt, then it
+        // quits. With -Pjfr=<name> (any run) the JVM records a flight recording into run/jfr/<name>.jfr.
+        playBench {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.playBench', 'true'
+            systemProperty 'groundburst.playBench.heal', (project.findProperty('playHeal') ?: 'true').toString()
+            systemProperty 'groundburst.playBench.view', (project.findProperty('playView') ?: '32').toString()
+            systemProperty 'groundburst.playBench.sim', (project.findProperty('playSim') ?: '12').toString()
+        }
+
         server {
             server()
             programArgument '--nogui'
@@ -150,6 +163,11 @@ neoForge {
 
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
+            if (project.findProperty('jfr') != null) {
+                def jfrDir = file('run/jfr')
+                jfrDir.mkdirs()
+                jvmArguments.add("-XX:StartFlightRecording=filename=${new File(jfrDir, project.findProperty('jfr').toString() + '.jfr').absolutePath},settings=profile,dumponexit=true".toString())
+            }
             logLevel = org.slf4j.event.Level.DEBUG
         }
     }
