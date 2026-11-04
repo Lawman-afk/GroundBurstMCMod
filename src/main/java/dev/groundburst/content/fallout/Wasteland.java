@@ -317,7 +317,7 @@ public final class Wasteland {
             }
             int floor = low - DEPTH;
             boolean[] any = {false};
-            chunk.fillBiomesFromNoise((qx, qy, qz) -> {
+            chunk.fillBiomesFromNoise((qx, qy, qz, sampler_) -> {
                 Holder<Biome> now = chunk.getNoiseBiome(qx, qy, qz);
                 double bx = QuartPos.toBlock(qx) + 2, bz = QuartPos.toBlock(qz) + 2;
                 if (QuartPos.toBlock(qy) + 3 >= floor && inside(bx, bz) && !now.is(BIOME)) {
@@ -326,7 +326,7 @@ public final class Wasteland {
                     return wasteland;
                 }
                 return now;
-            });
+            }, null);
             if (any[0]) {
                 chunk.markUnsaved();
             }

@@ -119,7 +119,7 @@ public class AlertDisplayRenderer implements BlockEntityRenderer<AlarmBlockEntit
         poseStack.pushPose();
         poseStack.translate(0.5, MIDDLE_Y, 0.5);
         // Text faces +z (south, yaw 0); turn it to face the way the display does (Minecraft's yaw runs clockwise).
-        poseStack.rotate(Axis.YP.rotationDegrees(-state.yaw));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-state.yaw));
         poseStack.translate(0, 0, FACE);                            // back to the screen, a hair in front of it
         int lines = 1 + (state.line1 != null ? 1 : 0) + (state.line2 != null ? 1 : 0);
         float height = 9 * TITLE + (lines - 1) * 10;                  // text pixels, top to bottom

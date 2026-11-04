@@ -1,0 +1,55 @@
+# Ground Burst for Minecraft 26.1.2 (branch `26.1.2`)
+
+Main is written for Minecraft 26.3 (NeoForge 26.3). This branch is the same mod for Minecraft 26.1.2 (NeoForge
+26.1.2.126, GeckoLib 5.5.2, JEI 29.53, Java 25), made from main's sources by a tool, not kept by hand.
+
+- **Why a backport from main** (main's DESIGN.md §30): 26.1.2 is two minor versions before 26.3 and shares most of its
+  code (the same rendering by render states and submitted geometry, item model definitions, data components, the same
+  GameTest framework); a forward port from the 1.21.1 branch would cross every change from 1.21.2 to 26.1.
+- **Last brought up to:** `main` at `07db772c` (2026-11-04: fire never healed back; main's performance check, its
+  DESIGN.md §11.8).
+
+## How it is made
+
+`tools\backport\port.py` (run with main's Python: `..\Explosive Mod\tools\.venv\Scripts\python.exe`) reads every file of
+main at the commit in `tools\backport\base.txt` straight from git and writes its port here:
+
+- **Java** through `RULES` (names and calls 26.3 changed: `EntityTypes` to `EntityType`, `PushReaction.IMMOVEABLE` and
+  `POPPED`, `Tags.BlockItems`, the screen and camera accessors, the pose stack's `rotate`, light coordinates, configured
+  features' registry, `ModConfig.Type.SYNCED` and `LOCAL` to `SERVER` and `COMMON`, the GameTests' mock player and test
+  data), a few functions (blocks' codecs, the picture-in-picture renderers, calls whose arguments changed, a block's
+  outline drawn as lines) and per-file fixes (`FILE_FIXES`: fuel values, the sky's packed colours, healing's fire and
+  farmland mixins, an entity's load).
+- **Resources:** configured features to `worldgen/configured_feature` with their settings under `config` and full block
+  states; loot tables' single conditions and modifiers to 26.1.2's lists; recipe unlocks name one recipe; a biome's mob
+  spawns from 26.3's environment attribute to its spawners; tags' entries from outside the mod made optional; recipes
+  that need 26.2's or 26.3's items left out; structure templates' palettes named as 26.1.2 reads them (`Name`,
+  `Properties`; 26.3's lowercase names read as air) and saved at 26.1.2's data version; a model's upward shading
+  override as no shading.
+- **Left out** (`DROP`): the data generators (their output is ported instead) and the world survey.
+- **Kept by hand** (`tools\backport\manual.txt`): `client/fx/FxRenderTypes` (26.1.2 has no order-independent
+  transparency: the effects are drawn after the translucent terrain, as main's are), its cloud shader
+  (`shaders/core/fx_cloud.fsh`), and the worldgen toggle (`world/ConfigToggleFilter`, `GBWorldgen`: 26.1.2's placement
+  filters are classes with types). A sync merges main's changes into them (a three-way merge), conflicts marked.
+- **This branch's own** (never main's): `dev.groundburst.port` (`BlockItemTagId`, `Mock`, `SkyColors`), this file, the
+  tool, and the build files (`build.gradle`, `gradle.properties`).
+
+Bring the branch up to a newer main with `port.py --sync <commit>`; compile and sort the errors with
+`pwsh -File tools\backport\compile.ps1` (into `build\port-errors.txt`; `errs.py <words>` prints a file's errors with
+their lines).
+
+## What differs from main for players
+
+- **Settings:** 26.1.2 has no synced or local configs: the world settings are `groundburst-server.toml` (Server
+  Settings in the Mods screen, open from inside a single-player world) and the shared ones `groundburst-common.toml`.
+- **Effects:** drawn after the water without order-independent transparency; with Fabulous graphics, smoke in front of
+  water may show the water over it where the smoke does not write depth.
+- **Recipes** that use 26.2's or 26.3's items (sulfur, cinnabar) are not in this version.
+
+## Checks
+
+- `gradlew runGameTestServer`: main's GameTests.
+- `gradlew runPlayBench [-Pjfr=<name>]`, `runBlastBench`, `runFxShots`, `runManualShots`, `runSiteShots`,
+  `runHealShots`: main's benches and photographers.
+- The build deploys to the folder in `deploy_instance_dir_26_1_2` (in `%USERPROFILE%\.gradle\gradle.properties`), if set.
+- Releases: `groundburst-mc26.1.2-<version>.jar` (its own `mod_version`), kept with main's in main's `build/release`.

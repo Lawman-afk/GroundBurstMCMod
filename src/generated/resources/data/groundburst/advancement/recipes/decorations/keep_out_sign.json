@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:keep_out_sign"
+        "recipe": "groundburst:keep_out_sign"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

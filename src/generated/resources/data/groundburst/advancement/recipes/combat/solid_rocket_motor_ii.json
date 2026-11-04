@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:solid_rocket_motor_ii"
+        "recipe": "groundburst:solid_rocket_motor_ii"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

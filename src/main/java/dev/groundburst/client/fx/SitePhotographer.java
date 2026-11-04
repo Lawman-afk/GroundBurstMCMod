@@ -75,13 +75,13 @@ public final class SitePhotographer {
     private static void tick() {
         Minecraft mc = Minecraft.getInstance();
         mc.options.pauseOnLostFocus = false;              // another window taking the focus must not pause the shots
-        if (mc.gui.screen() instanceof net.minecraft.client.gui.screens.PauseScreen) {
-            mc.gui.setScreen(null);
+        if (mc.screen instanceof net.minecraft.client.gui.screens.PauseScreen) {
+            mc.setScreen(null);
         }
         if (mc.options.tutorialStep != net.minecraft.client.tutorial.TutorialSteps.NONE) {
             mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
         }
-        if (mc.level == null && !worldMade && mc.gui.screen() instanceof net.minecraft.client.gui.screens.TitleScreen) {
+        if (mc.level == null && !worldMade && mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen) {
             worldMade = true;
             try {
                 var settings = new net.minecraft.world.level.LevelSettings("Site shots", GameType.CREATIVE,
@@ -90,7 +90,7 @@ public final class SitePhotographer {
                 String folder = DevWorlds.fresh(mc, "site_shots");
                 // Flat, and no structures: no village beside a site in its pictures.
                 mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(0L, false, false),
-                        SitePhotographer::deepFlat, mc.gui.screen());
+                        SitePhotographer::deepFlat, mc.screen);
             } catch (java.io.IOException e) {
                 GroundBurst.LOGGER.error("Site shots: could not make a world", e);
             }
@@ -102,8 +102,8 @@ public final class SitePhotographer {
         }
         mc.options.renderDistance().set(16);
         mc.options.cloudStatus().set(net.minecraft.client.CloudStatus.OFF);
-        if (!mc.gui.hud.isHidden()) {
-            mc.gui.hud.toggle();                           // no hand or hotbar in the pictures
+        if (!mc.options.hideGui) {
+            mc.options.hideGui = !mc.options.hideGui;                           // no hand or hotbar in the pictures
         }
         if (current == null) {
             current = SHOTS.poll();
@@ -150,7 +150,7 @@ public final class SitePhotographer {
             if (there >= MOST) {
                 GroundBurst.LOGGER.warn("Site shots: {} taken before the ground had all come in", s.file());
             }
-            Screenshot.grab(mc.gameDirectory, s.file(), mc.gameRenderer.mainRenderTarget(), 1,
+            Screenshot.grab(mc.gameDirectory, s.file(), mc.getMainRenderTarget(), 1,
                     msg -> GroundBurst.LOGGER.info("Site shot: {}", msg.getString()));
             current = null;
         }
@@ -171,7 +171,7 @@ public final class SitePhotographer {
                         new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(3, net.minecraft.world.level.block.Blocks.DIRT),
                         new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(1, net.minecraft.world.level.block.Blocks.GRASS_BLOCK)),
                         java.util.Optional.empty(), biomes.getOrThrow(net.minecraft.world.level.biome.Biomes.PLAINS));
-        return net.minecraft.world.level.levelgen.presets.WorldPresets.createTestWorldDimensions(registries)
+        return net.minecraft.world.level.levelgen.presets.WorldPresets.createFlatWorldDimensions(registries)
                 .replaceOverworldGenerator(registries, new net.minecraft.world.level.levelgen.FlatLevelSource(flat));
     }
 

@@ -25,7 +25,7 @@ abstract class FlowingFluidMixin {
     @WrapMethod(method = "spreadTo")
     private void groundburst$spreading(LevelAccessor level, BlockPos pos, BlockState state, Direction direction, FluidState target,
             Operation<Void> original) {
-        if (level instanceof ServerLevel server) {
+        if (level instanceof ServerLevel server && dev.groundburst.heal.Scars.watching(server, pos)) {
             dev.groundburst.heal.Scars.aftermathCourse(server, pos, false, () -> original.call(level, pos, state, direction, target));
         } else {
             original.call(level, pos, state, direction, target);

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:decontamination_shower"
+        "recipe": "groundburst:decontamination_shower"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

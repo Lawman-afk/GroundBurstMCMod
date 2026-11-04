@@ -1,0 +1,5 @@
+# Files edited by hand on this branch (paths here): port.py keeps them; a sync merges main's changes into them.
+src/main/java/dev/groundburst/client/fx/FxRenderTypes.java
+src/main/java/dev/groundburst/world/ConfigToggleFilter.java
+src/main/java/dev/groundburst/world/GBWorldgen.java
+src/main/resources/assets/groundburst/shaders/core/fx_cloud.fsh

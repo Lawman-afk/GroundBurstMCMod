@@ -28,7 +28,7 @@ import net.neoforged.neoforge.common.NeoForge;
  */
 public final class ManualHotkey {
     public static final KeyMapping.Category CATEGORY = new KeyMapping.Category(GroundBurst.id("groundburst"));
-    public static final KeyMapping KEY = new KeyMapping(ManualStrings.KEY, KeyConflictContext.GUI, InputConstants.Type.KEYBOARD, InputConstants.KEY_H, CATEGORY);
+    public static final KeyMapping KEY = new KeyMapping(ManualStrings.KEY, KeyConflictContext.GUI, InputConstants.Type.KEYSYM, InputConstants.KEY_H, CATEGORY);
 
     private ManualHotkey() {}
 
@@ -51,8 +51,8 @@ public final class ManualHotkey {
     /** Opens the book (at an entry, or where it was left), returning to the current screen when it closes. */
     public static void open(@Nullable String entry) {
         Minecraft mc = Minecraft.getInstance();
-        Screen current = mc.gui.screen() instanceof FieldManualScreen ? null : mc.gui.screen();
-        mc.gui.setScreen(new FieldManualScreen(current, entry));
+        Screen current = mc.screen instanceof FieldManualScreen ? null : mc.screen;
+        mc.setScreen(new FieldManualScreen(current, entry));
     }
 
     private static void keyInScreen(ScreenEvent.KeyPressed.Pre event) {

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:fluid_port"
+        "recipe": "groundburst:fluid_port"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

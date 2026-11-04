@@ -45,7 +45,8 @@ repositories {
 }
 
 base {
-    archivesName = mod_id
+    // The Minecraft version in the name, so this branch's jar is never taken for main's.
+    archivesName = "${mod_id}-mc${minecraft_version}"
 }
 
 // The licence travels in the jar (MIT asks for its notice in every copy; it also points to the sound credits).
@@ -94,6 +95,8 @@ neoForge {
             client()
             programArguments.addAll '--width', '1280', '--height', '720'
             systemProperty 'groundburst.blastBench', (project.findProperty('bench') ?: 'tsar_warhead').toString()
+            // -PbenchHeal=true: healing on, and the record runs on through the crater's healing.
+            systemProperty 'groundburst.blastBench.heal', (project.findProperty('benchHeal') ?: 'false').toString()
             if (project.findProperty('benchSeed') != null) {
                 systemProperty 'groundburst.blastBench.seed', project.findProperty('benchSeed').toString()
             }
@@ -132,6 +135,19 @@ neoForge {
             systemProperty 'groundburst.healShots', 'true'
         }
 
+        // Makes a normal world seen far (-PplayView=32, -PplaySim=12), finds a forest and plays a script there: a quiet
+        // spell, molotovs and a thermobaric warhead among the trees, the fires, the healing (-PplayHeal=false: none), a
+        // quiet spell after; times every server tick and frame by phase into run/bench/play_*.txt, then quits (see
+        // PlayBench). With -Pjfr=<name> (any run) the JVM records a flight recording into run/jfr/<name>.jfr.
+        playBench {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.playBench', 'true'
+            systemProperty 'groundburst.playBench.heal', (project.findProperty('playHeal') ?: 'true').toString()
+            systemProperty 'groundburst.playBench.view', (project.findProperty('playView') ?: '32').toString()
+            systemProperty 'groundburst.playBench.sim', (project.findProperty('playSim') ?: '12').toString()
+        }
+
         server {
             server()
             programArgument '--nogui'
@@ -153,6 +169,11 @@ neoForge {
 
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
+            if (project.findProperty('jfr') != null) {
+                def jfrDir = file('run/jfr')
+                jfrDir.mkdirs()
+                jvmArguments.add("-XX:StartFlightRecording=filename=${new File(jfrDir, project.findProperty('jfr').toString() + '.jfr').absolutePath},settings=profile,dumponexit=true".toString())
+            }
             logLevel = org.slf4j.event.Level.DEBUG
         }
     }
@@ -202,6 +223,8 @@ neoForge.ideSyncTask generateModMetadata
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    // Every error at once while porting (javac stops at 100).
+    options.compilerArgs += ['-Xmaxerrs', '5000']
 }
 
 idea {
@@ -212,8 +235,9 @@ idea {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Deployment: every `build` ends with the fresh jar in a CurseForge test instance, the folder `deploy_instance_dir`
-// names (set in your own ~/.gradle/gradle.properties); without one the jar just stays in build/libs.
+// Deployment: every `build` ends with the fresh jar in a CurseForge test instance, the folder
+// `deploy_instance_dir_26_1_2` names (set in your own ~/.gradle/gradle.properties; a 26.1.2 instance, not main's
+// `deploy_instance_dir`); without one the jar just stays in build/libs.
 // ---------------------------------------------------------------------------------------------
 
 abstract class DeployToInstance extends DefaultTask {
@@ -226,7 +250,7 @@ abstract class DeployToInstance extends DefaultTask {
     @Input
     abstract Property<String> getModId()
 
-    /** Whether an instance folder was named outright (deploy_instance_dir): then a missing one is an error. */
+    /** Whether an instance folder was named outright (deploy_instance_dir_26_1_2): then a missing one is an error. */
     @Input
     abstract Property<Boolean> getRequired()
 
@@ -244,10 +268,10 @@ abstract class DeployToInstance extends DefaultTask {
             String where = dir == null ? "(no default folder on this system)" : "${dir.parentFile}"
             if (required.get()) {
                 throw new GradleException("CurseForge instance not found at ${where}. " +
-                        "Set deploy_instance_dir in gradle.properties or pass -Pdeploy_instance_dir=<path>.")
+                        "Set deploy_instance_dir_26_1_2 in gradle.properties or pass -Pdeploy_instance_dir_26_1_2=<path>.")
             }
             // Anyone else building the mod has no test instance: the jar stays in build/libs.
-            logger.lifecycle("No CurseForge instance at ${where}: the jar was not deployed (set deploy_instance_dir to deploy it).")
+            logger.lifecycle("No CurseForge instance at ${where}: the jar was not deployed (set deploy_instance_dir_26_1_2 to deploy it).")
             return
         }
         dir.mkdirs()
@@ -299,16 +323,16 @@ dependencies {
     deployDependencies "com.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
 }
 
-var instanceDir = providers.gradleProperty('deploy_instance_dir')
+var instanceDir = providers.gradleProperty('deploy_instance_dir_26_1_2')
         .filter { !it.isBlank() }
 
 var deployToInstance = tasks.register('deployToInstance', DeployToInstance) {
     group = 'deployment'
-    description = 'Copies the built mod jar into the CurseForge test instance (deploy_instance_dir), replacing older builds.'
+    description = 'Copies the built mod jar into the 26.1.2 CurseForge test instance (deploy_instance_dir_26_1_2), replacing older builds.'
     jarFile = tasks.named('jar', Jar).flatMap { it.archiveFile }
     modsDir = layout.dir(instanceDir.map { new File(it, 'mods') })
     modId = project.mod_id
-    required = providers.gradleProperty('deploy_instance_dir').map { !it.isBlank() }.orElse(false)
+    required = providers.gradleProperty('deploy_instance_dir_26_1_2').map { !it.isBlank() }.orElse(false)
     dependencyJars.from(configurations.deployDependencies)
     outputs.upToDateWhen { false }
 }

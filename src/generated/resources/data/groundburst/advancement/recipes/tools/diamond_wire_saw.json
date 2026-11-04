@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:diamond_wire_saw"
+        "recipe": "groundburst:diamond_wire_saw"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

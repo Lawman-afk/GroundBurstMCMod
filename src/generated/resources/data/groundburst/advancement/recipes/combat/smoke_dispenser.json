@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:smoke_dispenser"
+        "recipe": "groundburst:smoke_dispenser"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

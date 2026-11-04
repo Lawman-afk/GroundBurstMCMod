@@ -19,7 +19,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 /** Phase 3 checks: ore drops, tool tiers, exotic crystal growth, ore features and biome modifiers. */
@@ -89,7 +89,7 @@ final class ResourceTests {
 
     private static void oreFeatures(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        var features = level.registryAccess().lookupOrThrow(Registries.FEATURE);
+        var features = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE);
         String[][] cases = {
                 {"ore_uranium", "uranium_ore"}, {"ore_lithium", "lithium_ore"}, {"ore_sulfur", "sulfur_ore"},
                 {"ore_saltpeter", "saltpeter_ore"}, {"ore_tungsten", "tungsten_ore"}, {"ore_lead", "lead_ore"},
@@ -98,7 +98,7 @@ final class ResourceTests {
         RandomSource random = RandomSource.create(7);
         BlockPos centre = helper.absolutePos(new BlockPos(6, 6, 6));
         for (String[] c : cases) {
-            Feature feature = features.getOrThrow(ResourceKey.create(Registries.FEATURE, GroundBurst.id(c[0]))).value();
+            ConfiguredFeature<?, ?> feature = features.getOrThrow(ResourceKey.create(Registries.CONFIGURED_FEATURE, GroundBurst.id(c[0]))).value();
             Block ore = level.registryAccess().lookupOrThrow(Registries.BLOCK).getOrThrow(ResourceKey.create(Registries.BLOCK, GroundBurst.id(c[1]))).value();
             int placed = 0;
             for (int attempt = 0; attempt < 8 && placed == 0; attempt++) {

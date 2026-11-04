@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:fusion_secondary"
+        "recipe": "groundburst:fusion_secondary"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

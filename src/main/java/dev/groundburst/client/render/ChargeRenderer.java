@@ -86,7 +86,7 @@ public class ChargeRenderer implements BlockEntityRenderer<ChargeBlockEntity, Ch
         poseStack.pushPose();
         poseStack.translate(0.5, MIDDLE_Y, 0.5);
         // Text faces +z (south, yaw 0); turn it to face the way the bomb does (Minecraft's yaw runs clockwise).
-        poseStack.rotate(Axis.YP.rotationDegrees(-state.yaw));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-state.yaw));
         poseStack.translate(0, 0, FACE);
         poseStack.scale(SCALE, -SCALE, SCALE);
         var line = Component.literal(state.text).getVisualOrderText();

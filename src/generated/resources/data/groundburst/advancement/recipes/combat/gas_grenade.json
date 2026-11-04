@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:gas_grenade"
+        "recipe": "groundburst:gas_grenade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

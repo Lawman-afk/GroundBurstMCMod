@@ -395,8 +395,8 @@ final class ReactorTests {
         var level = helper.getLevel();
         net.minecraft.world.phys.Vec3 centre = helper.absoluteVec(new net.minecraft.world.phys.Vec3(8, 2, 8));
         RadiationSources.of(level).add(new RadiationSource(centre, 10, 2_000_000, 200, level.getGameTime()));
-        var pig = helper.spawn(net.minecraft.world.entity.EntityTypes.PIG, new BlockPos(8, 2, 9));
-        var zombie = helper.spawn(net.minecraft.world.entity.EntityTypes.ZOMBIE, new BlockPos(9, 2, 8));
+        var pig = helper.spawn(net.minecraft.world.entity.EntityType.PIG, new BlockPos(8, 2, 9));
+        var zombie = helper.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new BlockPos(9, 2, 8));
         helper.succeedWhen(() -> {
             var sick = pig.getEffect(GBEffects.RADIATION_SICKNESS);
             helper.assertTrue(sick != null && sick.getAmplifier() >= 2, "the pig is badly sick near the centre");
@@ -580,7 +580,7 @@ final class ReactorTests {
      */
     private static void guiSlots(GameTestHelper helper) {
         FissionReactorBlockEntity r = reactor(helper, new BlockPos(5, 1, 3));
-        var player = helper.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var player = dev.groundburst.port.Mock.serverPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         var menu = (dev.groundburst.content.machine.MachineMenu) r.createMenu(1, player.getInventory(), player);
         var channels = r.channelSlots();
         helper.assertTrue(channels.size() == 8, "eight channels, two layers of four, " + channels);
@@ -628,7 +628,7 @@ final class ReactorTests {
 
     /** Suit protection: none, one piece, a full Hazmat Suit, a full lead-lined one. */
     private static void hazmat(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var player = dev.groundburst.port.Mock.serverPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         helper.assertTrue(GBArmor.radiationProtection(player) == 0, "no suit, no protection");
         player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(GBArmor.HAZMAT_HOOD.get()));
         helper.assertTrue(Math.abs(GBArmor.radiationProtection(player) - 0.15f) < 1e-4f, "a hood alone: a fifth of 75%");

@@ -2,19 +2,23 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "condition": {
-        "type": "minecraft:survives_explosion"
-      },
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
       "entries": [
         {
           "type": "minecraft:item",
-          "condition": {
-            "type": "minecraft:match_block",
-            "blocks": "groundburst:large_silo_door",
-            "state": {
-              "center": "true"
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "groundburst:large_silo_door",
+              "properties": {
+                "center": "true"
+              }
             }
-          },
+          ],
           "name": "groundburst:large_silo_door"
         }
       ],

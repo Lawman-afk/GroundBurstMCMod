@@ -9,7 +9,7 @@ import dev.groundburst.content.ordnance.charge.Charges;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -237,7 +237,7 @@ final class BombTests {
         floor(helper);
         BlockPos at = new BlockPos(8, 2, 8);
         helper.setBlock(at, GBOrdnance.NAPALM_FIRE.get());
-        var pig = helper.spawn(EntityTypes.PIG, at);
+        var pig = helper.spawn(EntityType.PIG, at);
         pig.setNoAi(true);
         helper.runAfterDelay(5, () -> {
             helper.assertTrue(pig.getRemainingFireTicks() > 0, "the pig is alight");

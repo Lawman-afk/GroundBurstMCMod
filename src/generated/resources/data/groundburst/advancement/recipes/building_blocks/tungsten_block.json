@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:tungsten_block"
+        "recipe": "groundburst:tungsten_block"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

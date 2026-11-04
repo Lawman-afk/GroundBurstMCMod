@@ -75,7 +75,7 @@ public final class AlarmScreen extends Screen {
     private static void open(BlockPos pos) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level != null && mc.level.getBlockEntity(pos) instanceof AlarmBlockEntity be) {
-            mc.gui.setScreen(new AlarmScreen(pos, be));
+            mc.setScreen(new AlarmScreen(pos, be));
         }
     }
 

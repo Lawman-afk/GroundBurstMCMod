@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:basic_efficiency_chip"
+        "recipe": "groundburst:basic_efficiency_chip"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

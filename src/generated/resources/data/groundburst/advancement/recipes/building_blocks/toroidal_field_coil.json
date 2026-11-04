@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:toroidal_field_coil"
+        "recipe": "groundburst:toroidal_field_coil"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

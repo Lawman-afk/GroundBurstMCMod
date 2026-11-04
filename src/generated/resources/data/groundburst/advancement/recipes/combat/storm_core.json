@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:storm_core"
+        "recipe": "groundburst:storm_core"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

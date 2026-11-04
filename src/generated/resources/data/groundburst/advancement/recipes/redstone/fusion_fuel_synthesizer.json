@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:fusion_fuel_synthesizer"
+        "recipe": "groundburst:fusion_fuel_synthesizer"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -9,7 +9,7 @@ import dev.groundburst.content.ordnance.charge.Charges;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.item.ItemStack;
@@ -80,8 +80,8 @@ final class CryoTests {
         helper.setBlock(new BlockPos(2, 9, 2), Blocks.GRASS_BLOCK);
         helper.setBlock(new BlockPos(7, 2, 7), Blocks.GLASS);
         helper.setBlock(new BlockPos(7, 1, 7), Blocks.STONE);
-        Pig heart = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(9, 1, 9));
-        Pig out = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(15, 1, 8));
+        Pig heart = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(9, 1, 9));
+        Pig out = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(15, 1, 8));
         Vec3 at = freeze(helper, 400);
         helper.succeedWhen(() -> {
             helper.assertTrue(Freezes.settledAt(helper.getLevel(), at), "its front has run out and its spires grown");
@@ -122,8 +122,8 @@ final class CryoTests {
         int[] coldest = {0};
         helper.onEachTick(() -> {
             if (pigs[0] == null && Freezes.settledAt(helper.getLevel(), at)) {
-                pigs[0] = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(12, 1, 12));
-                pigs[1] = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(4, 1, 12));
+                pigs[0] = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(12, 1, 12));
+                pigs[1] = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(4, 1, 12));
                 pigs[1].setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.LEATHER_BOOTS));
             }
             if (pigs[0] != null) {

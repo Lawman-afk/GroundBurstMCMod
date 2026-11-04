@@ -84,11 +84,11 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         net.minecraft.core.Direction d = (net.minecraft.core.Direction) pass.getOrDefaultGeckolibData(DIRECTION_FACING, net.minecraft.core.Direction.UP);
         pose.translate(0, 0.5, 0);
         switch (d) {
-            case DOWN -> pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(180));
-            case NORTH -> pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90));
-            case SOUTH -> pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(90));
-            case EAST -> pose.rotate(com.mojang.math.Axis.ZP.rotationDegrees(-90));
-            case WEST -> pose.rotate(com.mojang.math.Axis.ZP.rotationDegrees(90));
+            case DOWN -> pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(180));
+            case NORTH -> pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-90));
+            case SOUTH -> pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(90));
+            case EAST -> pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-90));
+            case WEST -> pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(90));
             default -> { }
         }
         pose.translate(0, -0.5, 0);
@@ -138,9 +138,9 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
                     pose.pushPose();
                     pose.scale(4, 4, 4);                               // the item model is a quarter of the world's size
                     if (shown.lying()) {
-                        pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90));      // its nose toward the model's front
+                        pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-90));      // its nose toward the model's front
                     }
-                    pose.rotate(com.mojang.math.Axis.YP.rotationDegrees(shown.turn()));
+                    pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(shown.turn()));
                     pose.translate(0, shown.lift(), 0);                // drawn about its middle: its tail at the bone
                     for (net.minecraft.client.renderer.item.ItemStackRenderState item : shown.items()) {
                         item.submit(pose, collector, info.packedLight(), OverlayTexture.NO_OVERLAY, 0);

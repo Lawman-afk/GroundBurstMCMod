@@ -164,7 +164,7 @@ public final class MultiblockPreview {
         Minecraft mc = Minecraft.getInstance();
         PoseStack poseStack = event.getPoseStack();
         Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
-        float lineWidth = mc.gameRenderer.gameRenderState().windowRenderState.appropriateLineWidth;
+        float lineWidth = mc.gameRenderer.getGameRenderState().windowRenderState.appropriateLineWidth;
         // Pulse between faint and half-visible over two seconds, tinted a cool hologram blue.
         double t = (System.currentTimeMillis() % 2000L) / 2000.0;
         int alpha = (int) (90 + 70 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2)));
@@ -174,7 +174,7 @@ public final class MultiblockPreview {
             poseStack.pushPose();
             poseStack.translate(offset.x, offset.y, offset.z);
             if (ghost.wrong()) {
-                event.getSubmitNodeCollector().submitShapeOutline(poseStack, Shapes.block(), RenderTypes.lines(), WRONG_COLOR, lineWidth * 2, false);
+                event.getSubmitNodeCollector().submitCustomGeometry(poseStack, RenderTypes.lines(), (pose_, buffer_) -> { com.mojang.blaze3d.vertex.PoseStack stack_ = new com.mojang.blaze3d.vertex.PoseStack(); stack_.last().set(pose_); net.minecraft.client.renderer.ShapeRenderer.renderShape(stack_, buffer_, Shapes.block(), 0, 0, 0, WRONG_COLOR, lineWidth * 2); });
             } else {
                 BlockStateModel model = mc.getModelManager().getBlockStateModelSet().get(ghost.state());
                 List<BlockStateModelPart> parts = new ArrayList<>();

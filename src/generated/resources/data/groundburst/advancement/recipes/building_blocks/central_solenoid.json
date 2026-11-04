@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:central_solenoid"
+        "recipe": "groundburst:central_solenoid"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

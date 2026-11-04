@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:arms_dealer"
+        "recipe": "groundburst:arms_dealer"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

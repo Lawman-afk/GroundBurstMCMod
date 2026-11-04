@@ -76,12 +76,12 @@ public final class FissionSections {
             pose.translate(this.x, this.y - (this.section == Section.DRIVE_ROD ? rodDrop : 0), this.z);
             if (this.flip) {
                 pose.translate(0.5f, 0.5f, 0.5f);
-                pose.rotateDegrees(Axis.XP, 180);
+                pose.rotate(Axis.XP.rotationDegrees(180));
                 pose.translate(-0.5f, -0.5f, -0.5f);
             }
             if (this.turns != 0) {
                 pose.translate(0.5f, 0, 0.5f);
-                pose.rotateDegrees(Axis.YP, -90f * this.turns);
+                pose.rotate(Axis.YP.rotationDegrees(-90f * this.turns));
                 pose.translate(-0.5f, 0, -0.5f);
             }
         }
@@ -114,9 +114,9 @@ public final class FissionSections {
         BlockState state = level.getBlockState(pos);
         boolean glass = FissionCore.glass(state);
         int port = FissionCore.port(state);
-        int light = LightCoordsUtil.getLightCoords(level, pos);
+        int light = net.minecraft.client.renderer.LevelRenderer.getLightCoords(level, pos);
         for (Direction d : outward) {
-            light = LightCoordsUtil.max(light, LightCoordsUtil.getLightCoords(level, pos.relative(d)));
+            light = LightCoordsUtil.max(light, net.minecraft.client.renderer.LevelRenderer.getLightCoords(level, pos.relative(d)));
         }
         int x = pos.getX() - origin.getX(), y = pos.getY() - origin.getY(), z = pos.getZ() - origin.getZ();
         if (sides.size() == 2) {

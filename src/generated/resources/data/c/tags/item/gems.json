@@ -1,6 +1,12 @@
 {
   "values": [
-    "#c:gems/fluorite",
-    "#c:gems/exotic_matter"
+    {
+      "id": "#c:gems/fluorite",
+      "required": false
+    },
+    {
+      "id": "#c:gems/exotic_matter",
+      "required": false
+    }
   ]
 }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:proton_exchange_membrane"
+        "recipe": "groundburst:proton_exchange_membrane"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

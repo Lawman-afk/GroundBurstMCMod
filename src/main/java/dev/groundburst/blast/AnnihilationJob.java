@@ -239,7 +239,7 @@ final class AnnihilationJob {
                 continue;
             }
             if (e instanceof LivingEntity living) {
-                living.damageCooldownTime = 0;
+                living.invulnerableTime = 0;
                 living.hurtServer(this.level, damage, 1.0E6f);
                 this.lastKill = this.level.getGameTime();
             } else {

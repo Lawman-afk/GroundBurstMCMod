@@ -60,7 +60,7 @@ public final class GBNuclear {
     public static final GBBlocks.WithItem<CoriumBlock> CORIUM = GBBlocks.register("corium", "Corium", GBTab.NUCLEAR,
             p -> new CoriumBlock(p, COOLED_CORIUM.block()),
             p -> p.mapColor(MapColor.COLOR_ORANGE).strength(5f, 30f).requiresCorrectToolForDrops().sound(SoundType.BASALT)
-                    .lightLevel(s -> 12).randomTicks().isValidSpawn((s, l, pos, type) -> false).emissiveRendering(s -> true));
+                    .lightLevel(s -> 12).randomTicks().isValidSpawn((s, l, pos, type) -> false).emissiveRendering((s, level_, pos_) -> true));
 
     private GBNuclear() {}
 

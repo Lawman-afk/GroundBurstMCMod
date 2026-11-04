@@ -160,7 +160,7 @@ public final class DesignatorScope {
      * sent to the server, which arms, launches or (sneaking) disarms the designator's launcher.
      */
     private static void clicks(Minecraft mc) {
-        if (mc.player == null || mc.level == null || mc.gui.screen() != null || !LaserFx.lasing(mc.player)) {
+        if (mc.player == null || mc.level == null || mc.screen != null || !LaserFx.lasing(mc.player)) {
             return;
         }
         boolean clicked = false;

@@ -163,12 +163,12 @@ public final class GBConstruction {
     }
 
     private static Properties door(Properties p) {
-        return metal(p, MapColor.METAL).strength(6f, 24f).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.IMMOVEABLE);
+        return metal(p, MapColor.METAL).strength(6f, 24f).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK);
     }
 
     private static Properties seeThrough(Properties p) {
         return p.noOcclusion().isValidSpawn(Blocks::never).isRedstoneConductor((s, l, at) -> false).isSuffocating((s, l, at) -> false)
-                .isViewBlocking((s, l, at, box) -> false);
+                .isViewBlocking((s, l, at) -> false);
     }
 
     private static Properties radome(Properties p) {

@@ -5,7 +5,7 @@ import dev.groundburst.blast.Blasts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.Container;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -100,8 +100,8 @@ final class BlastTests {
     private static void exposure(GameTestHelper helper) {
         fill(helper, 1, 1, 1, 15, 1, 15, Blocks.STONE);                    // floor
         fill(helper, 11, 2, 6, 11, 5, 10, Blocks.OBSIDIAN);                // wall between the burst and the far pig
-        Pig open = helper.spawn(EntityTypes.PIG, C.offset(-2, -2, 0));
-        Pig hidden = helper.spawn(EntityTypes.PIG, C.offset(5, -2, 0));
+        Pig open = helper.spawn(EntityType.PIG, C.offset(-2, -2, 0));
+        Pig hidden = helper.spawn(EntityType.PIG, C.offset(5, -2, 0));
         float before = hidden.getHealth();
         Blasts.detonate(helper.getLevel(), helper.absoluteVec(Vec3.atCenterOf(C.offset(0, -2, 0))), Blasts.profile("test/small"), null);
         helper.assertTrue(!open.isAlive(), "the exposed pig is killed");

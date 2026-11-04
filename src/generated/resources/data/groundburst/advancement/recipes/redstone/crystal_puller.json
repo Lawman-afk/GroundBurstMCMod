@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:crystal_puller"
+        "recipe": "groundburst:crystal_puller"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

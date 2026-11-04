@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:heating_element"
+        "recipe": "groundburst:heating_element"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

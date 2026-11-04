@@ -8,7 +8,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntitySpawnRequest;
+
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.TagValueInput;
@@ -45,7 +45,7 @@ final class Snapshots {
 
     /** A saved entity made again (not yet added to the level), or null if it cannot be. */
     static @Nullable Entity load(CompoundTag tag, ServerLevel level) {
-        return EntityType.loadEntityRecursive(tag, level, new EntitySpawnRequest(EntitySpawnReason.LOAD, false), EntityProcessor.NOP);
+        return EntityType.loadEntityRecursive(tag, level, EntitySpawnReason.LOAD, EntityProcessor.NOP);
     }
 
     /** The level's time of day in ticks (0 at sunrise, 24 000 a day), or -1 where there is no day and night. */

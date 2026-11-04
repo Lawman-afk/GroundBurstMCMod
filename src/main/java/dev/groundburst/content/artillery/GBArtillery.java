@@ -127,7 +127,7 @@ public final class GBArtillery {
             Map<String, float[]> pose, float hardness) {
         return GBBlocks.registerWithItem(id, english, GBTab.ORDNANCE, p -> new GunBlock(p, shape, type, factory),
                 p -> p.mapColor(MapColor.COLOR_GREEN).strength(hardness, hardness * 2).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
-                        .pushReaction(PushReaction.IMMOVEABLE),
+                        .pushReaction(PushReaction.BLOCK),
                 (block, props) -> new GeoBlockItem(block, props, GroundBurst.id(id)).posed(pose));
     }
 

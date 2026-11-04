@@ -9,7 +9,7 @@ import dev.groundburst.content.ordnance.charge.Charges;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -51,7 +51,7 @@ final class MineTests {
         floor(helper);
         BlockPos at = new BlockPos(8, 2, 8);
         ChargeBlockEntity mine = place(helper, GBOrdnance.LANDMINE.block().get(), at, Direction.NORTH);
-        var pig = helper.spawn(EntityTypes.PIG, at);
+        var pig = helper.spawn(EntityType.PIG, at);
         pig.setNoAi(true);
         helper.runAfterDelay(10, () -> {
             helper.assertTrue(is(helper, at, GBOrdnance.LANDMINE.block().get()), "safe: stepped on, nothing");
@@ -68,7 +68,7 @@ final class MineTests {
         mine.arm(helper.getLevel(), null);
         helper.runAfterDelay(2, () -> {
             helper.assertTrue(mine.live(), "live");
-            var pig = helper.spawn(EntityTypes.PIG, at);
+            var pig = helper.spawn(EntityType.PIG, at);
             pig.setNoAi(true);
             helper.succeedWhen(() -> {
                 helper.assertTrue(!is(helper, at, GBOrdnance.LANDMINE.block().get()), "gone off");
@@ -86,7 +86,7 @@ final class MineTests {
         AABB area = new AABB(helper.absolutePos(new BlockPos(0, 0, 0))).expandTowards(16, 12, 16);
         double ground = helper.absolutePos(at).getY();
         helper.runAfterDelay(2, () -> {
-            var pig = helper.spawn(EntityTypes.PIG, at);
+            var pig = helper.spawn(EntityType.PIG, at);
             pig.setNoAi(true);
             helper.runAfterDelay(4, () -> {
                 var cans = helper.getLevel().getEntitiesOfClass(ThrownExplosive.class, area);
@@ -108,7 +108,7 @@ final class MineTests {
         helper.runAfterDelay(2, () -> {
             double reach = Charges.laserLength(helper.getLevel(), helper.absolutePos(at), helper.getLevel().getBlockState(helper.absolutePos(at)));
             helper.assertTrue(reach >= Charges.LASER_RANGE - 0.01, "the laser reaches its full range (" + reach + ")");
-            var pig = helper.spawn(EntityTypes.PIG, new BlockPos(7, 2, 8));
+            var pig = helper.spawn(EntityType.PIG, new BlockPos(7, 2, 8));
             pig.setNoAi(true);
             double x = helper.absoluteVec(new Vec3(3.5, 2, 8.5)).x;
             helper.succeedWhen(() -> {
@@ -136,7 +136,7 @@ final class MineTests {
         floor(helper);
         BlockPos at = new BlockPos(6, 2, 8);
         ChargeBlockEntity mine = place(helper, GBOrdnance.CLAYMORE.block().get(), at, Direction.EAST);
-        var back = helper.spawn(EntityTypes.PIG, new BlockPos(5, 2, 8));
+        var back = helper.spawn(EntityType.PIG, new BlockPos(5, 2, 8));
         back.setNoAi(true);
         mine.arm(helper.getLevel(), null);
         mine.trigger(helper.getLevel(), null);
@@ -152,7 +152,7 @@ final class MineTests {
         floor(helper);
         BlockPos at = new BlockPos(3, 2, 8);
         ChargeBlockEntity mine = place(helper, GBOrdnance.CLAYMORE.block().get(), at, Direction.EAST);
-        var target = helper.spawn(EntityTypes.VILLAGER, new BlockPos(8, 2, 8));
+        var target = helper.spawn(EntityType.VILLAGER, new BlockPos(8, 2, 8));
         target.setNoAi(true);
         mine.arm(helper.getLevel(), null);
         mine.trigger(helper.getLevel(), null);

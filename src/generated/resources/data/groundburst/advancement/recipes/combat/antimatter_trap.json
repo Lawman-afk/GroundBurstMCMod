@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:antimatter_trap"
+        "recipe": "groundburst:antimatter_trap"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

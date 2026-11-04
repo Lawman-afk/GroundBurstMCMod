@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:radar_dish"
+        "recipe": "groundburst:radar_dish"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

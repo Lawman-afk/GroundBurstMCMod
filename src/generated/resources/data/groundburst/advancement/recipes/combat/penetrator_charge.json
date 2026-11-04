@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:penetrator_charge"
+        "recipe": "groundburst:penetrator_charge"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

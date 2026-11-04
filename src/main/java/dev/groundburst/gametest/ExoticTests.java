@@ -10,7 +10,7 @@ import dev.groundburst.content.ordnance.charge.ChargeKind;
 import dev.groundburst.content.ordnance.charge.Charges;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -69,9 +69,9 @@ final class ExoticTests {
             helper.setBlock(new BlockPos(8, y, 10), Blocks.OBSIDIAN);
             helper.setBlock(new BlockPos(8, y, 11), Blocks.OBSIDIAN);
         }
-        Pig inside = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(9, 1, 8));       // 4.2 from the middle
-        Pig open = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(12, 1, 8));        // 5.7, nothing between
-        Pig sheltered = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(8, 1, 12));   // 5.7, behind the obsidian
+        Pig inside = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(9, 1, 8));       // 4.2 from the middle
+        Pig open = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(12, 1, 8));        // 5.7, nothing between
+        Pig sheltered = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(8, 1, 12));   // 5.7, behind the obsidian
         Charges.impact(helper.getLevel(), ChargeKind.ANTIMATTER_WARHEAD, helper.absolutePos(centre), null);
         helper.succeedWhen(() -> {
             helper.assertTrue(!dev.groundburst.blast.Annihilations.runningIn(helper.getLevel()) || isAirRel(helper, 8, 5, 11),
@@ -180,8 +180,8 @@ final class ExoticTests {
         helper.setBlock(new BlockPos(8, 3, 6), Blocks.OBSIDIAN);              // 2 off: holds
         helper.setBlock(new BlockPos(8, 4, 8), Blocks.BEDROCK);               // 1 off: never torn
         helper.setBlock(new BlockPos(12, 3, 8), Blocks.STONE);                // 4 off: past its reach
-        Pig near = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(9, 3, 8));         // 1 from the middle
-        Pig far = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(8, 1, 13));         // 5.4 off, in its pull
+        Pig near = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(9, 3, 8));         // 1 from the middle
+        Pig far = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(8, 1, 13));         // 5.4 off, in its pull
         Charges.impact(helper.getLevel(), ChargeKind.SINGULARITY_WARHEAD, helper.absolutePos(centre), null);
         helper.runAfterDelay(20, () -> helper.assertTrue(dev.groundburst.blast.Singularities.runningIn(helper.getLevel()), "it is open"));
         // Just before it collapses (its blast's core breaks anything, obsidian too): what its pull tore and what held.

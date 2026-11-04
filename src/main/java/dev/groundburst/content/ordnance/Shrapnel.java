@@ -69,7 +69,7 @@ public class Shrapnel extends Projectile {
         if (level() instanceof ServerLevel server) {
             if (hit instanceof EntityHitResult e) {
                 if (this.everyHitCounts && e.getEntity() instanceof net.minecraft.world.entity.LivingEntity living) {
-                    living.damageCooldownTime = 0;
+                    living.invulnerableTime = 0;
                 }
                 e.getEntity().hurtServer(server, damageSources().source(GBOrdnance.SHRAPNEL_DAMAGE, this, getOwner()), this.damage);
             } else {

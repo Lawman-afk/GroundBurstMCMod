@@ -1,6 +1,12 @@
 {
   "values": [
-    "#c:circuits/basic",
-    "#c:circuits/advanced"
+    {
+      "id": "#c:circuits/basic",
+      "required": false
+    },
+    {
+      "id": "#c:circuits/advanced",
+      "required": false
+    }
   ]
 }

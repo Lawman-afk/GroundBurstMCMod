@@ -54,6 +54,13 @@ public final class Healer {
             | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS | Block.UPDATE_SKIP_ON_PLACE;
     /** Sparkles a chunk shows a tick at most; ticks between its sounds. */
     private static final int SPARKLES = 3, SOUND_EVERY = 5;
+    /**
+     * Sparkles and sounds a level shows a tick at most, all its healing chunks together: a nuclear crater heals hundreds
+     * of chunks at once, and each of them its own sparkles and sound filled the clients' particles and sound channels.
+     */
+    private static final int SPARKLES_A_TICK = 24, SOUNDS_A_TICK = 3;
+    /** Ticks between looks for a fire by a chunk that waits for one to go out. */
+    private static final int FIRE_CHECK = 100;
 
     private static final Map<ServerLevel, Healer> BY_LEVEL = new WeakHashMap<>();
 
@@ -65,17 +72,41 @@ public final class Healer {
     private final it.unimi.dsi.fastutil.ints.IntOpenHashSet taken = new it.unimi.dsi.fastutil.ints.IntOpenHashSet();
     private long hushedAt = Long.MIN_VALUE;
     private @Nullable List<Vec3> hushing;
+    /** This tick's sparkles and sounds so far (SPARKLES_A_TICK, SOUNDS_A_TICK). */
+    private int sparkled, sounded;
 
     private Healer(ServerLevel level) {
         this.level = level;
     }
 
+    /** The last level asked for and its healer (asked for many times a tick, nearly always for the same level). */
+    private static @Nullable Healer last;
+
     public static Healer of(ServerLevel level) {
-        return BY_LEVEL.computeIfAbsent(level, Healer::new);
+        Healer h = last;
+        if (h != null && h.level == level) {
+            return h;
+        }
+        h = BY_LEVEL.computeIfAbsent(level, Healer::new);
+        last = h;
+        return h;
     }
 
     static void forget(ServerLevel level) {
         BY_LEVEL.remove(level);
+        if (last != null && last.level == level) {
+            last = null;
+        }
+    }
+
+    /** Whether any damaged chunk is loaded in this level. */
+    boolean tracksAny() {
+        return !this.tracked.isEmpty();
+    }
+
+    /** Whether the chunk at {@code (cx, cz)} is loaded and damaged. */
+    boolean tracks(int cx, int cz) {
+        return this.tracked.containsKey(ChunkPos.pack(cx, cz));
     }
 
     void track(LevelChunk chunk) {
@@ -144,6 +175,8 @@ public final class Healer {
     // --- the healing as time goes by ----------------------------------------------------------------------------------------------
     void tick() {
         Scars.resetCascade();
+        this.sparkled = 0;
+        this.sounded = 0;
         if (this.tracked.isEmpty()) {
             return;
         }
@@ -168,13 +201,24 @@ public final class Healer {
                 drop(chunk);                               // all of it forgotten (players built over it)
                 continue;
             }
-            if (!due(scars, s, now, today, chunk) || HealSettings.inTestArea(this.level, new Vec3(cx, chunk.getMinY(), cz))
+            if (!due(scars, s, now, today, chunk) || HealSettings.testing() && HealSettings.inTestArea(this.level, new Vec3(cx, chunk.getMinY(), cz))
                     || blasts.forming(cx, cz)) {
                 continue;                                  // (a blast still digging there: wait for it)
             }
             if (budget <= 0 || System.nanoTime() > deadline) {
                 this.rotation = start + k;                 // the next tick begins where this one ran out
                 return;
+            }
+            if (scars.started < 0 && !scars.rushed) {
+                if (now < scars.fireCheck) {
+                    continue;                              // a fire burnt by it a moment ago: it looks again in a while
+                }
+                if (fireNear(chunk, false)) {
+                    scars.heldOff(now, today);             // a fire burns by it still: it waits again (what heals would burn)
+                    scars.fireCheck = now + FIRE_CHECK;
+                    chunk.markUnsaved();
+                    continue;
+                }
             }
             budget -= step(chunk, scars, s, now, budget, deadline);
         }
@@ -247,6 +291,9 @@ public final class Healer {
 
     /** A chunk begins to heal: its speed is set from what it has to put back, its biome turns back, its radiation goes. */
     private void begin(LevelChunk chunk, ChunkScars scars, HealSettings s, long now) {
+        if (scars.rushed) {
+            fireNear(chunk, true);                         // told to heal now: the fires by it go out first
+        }
         scars.started = now;
         scars.total = scars.count;
         scars.credit = 0;
@@ -261,6 +308,62 @@ public final class Healer {
             dev.groundburst.content.radiation.RadiationSources.of(this.level).clearCentredIn(at.x(), at.z());
         }
         chunk.markUnsaved();
+    }
+
+    /**
+     * Whether a fire burns in the chunk or one beside it, near the chunk's damage (in a section with damage, or the one
+     * above or below), that will go out by itself (not one on netherrack or the like, which burns for good, nor a soul
+     * fire, which never spreads): what heals there now could burn again. With {@code putOut}, each such fire goes out.
+     */
+    public boolean fireNear(LevelChunk chunk, boolean putOut) {
+        ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+        if (scars == null || scars.sections.isEmpty()) {
+            return false;
+        }
+        int lo = Integer.MAX_VALUE, hi = Integer.MIN_VALUE;
+        for (int sy : scars.sections.keySet().toIntArray()) {
+            lo = Math.min(lo, sy);
+            hi = Math.max(hi, sy);
+        }
+        boolean found = false;
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        ChunkPos at = chunk.getPos();
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                LevelChunk c = this.level.getChunkSource().getChunkNow(at.x() + dx, at.z() + dz);
+                if (c == null) {
+                    continue;
+                }
+                int x0 = c.getPos().getMinBlockX(), z0 = c.getPos().getMinBlockZ();
+                for (int sy = lo - 1; sy <= hi + 1; sy++) {
+                    int index = c.getSectionIndexFromSectionY(sy);
+                    if (index < 0 || index >= c.getSectionsCount()) {
+                        continue;
+                    }
+                    var section = c.getSection(index);
+                    // The palette first (a section that never held fire is passed over at once), then block by block.
+                    if (section.hasOnlyAir() || !section.getStates().maybeHas(st -> st.is(net.minecraft.world.level.block.Blocks.FIRE))) {
+                        continue;
+                    }
+                    for (int i = 0; i < 4096; i++) {
+                        if (!section.getBlockState(i & 15, i >> 8, (i >> 4) & 15).is(net.minecraft.world.level.block.Blocks.FIRE)) {
+                            continue;
+                        }
+                        p.set(x0 + (i & 15), (sy << 4) + (i >> 8), z0 + ((i >> 4) & 15));
+                        BlockPos below = p.below();
+                        if (this.level.getBlockState(below).isFireSource(this.level, below, net.minecraft.core.Direction.UP)) {
+                            continue;                      // it burns for good there: a hearth, the Nether's netherrack
+                        }
+                        if (!putOut) {
+                            return true;
+                        }
+                        found = true;
+                        this.level.removeBlock(p, false);
+                    }
+                }
+            }
+        }
+        return found;
     }
 
     /** A chunk's last block is back: its decorations hang again and its record goes. */
@@ -299,7 +402,7 @@ public final class Healer {
 
     private void restoreBiomes(LevelChunk chunk, ChunkScars scars) {
         var biomes = this.level.registryAccess().lookupOrThrow(Registries.BIOME);
-        chunk.fillBiomesFromNoise((qx, qy, qz) -> {
+        chunk.fillBiomesFromNoise((qx, qy, qz, sampler_) -> {
             Holder<Biome> now = chunk.getNoiseBiome(qx, qy, qz);
             String before = scars.biomeBefore(qx, qy, qz);
             Identifier id = before == null ? null : Identifier.tryParse(before);
@@ -307,7 +410,7 @@ public final class Healer {
                 return now;
             }
             return biomes.get(ResourceKey.create(Registries.BIOME, id)).<Holder<Biome>>map(h -> h).orElse(now);
-        });
+        }, null);
         scars.biomes.clear();
         chunk.markUnsaved();
         this.level.getChunkSource().chunkMap.resendBiomesForChunks(List.of(chunk));
@@ -411,7 +514,7 @@ public final class Healer {
                 return;
             }
             this.done++;
-            BlockState original = section.original(i);
+            BlockState original = Scars.unburnt(section.original(i));   // (a fire remembered before fires were not)
             CompoundTag be = section.blockEntity(i);
             boolean claimed = section.claimed(i);
             this.scars.clear(x, y, z);                     // forgotten whatever happens next: it is dealt with
@@ -460,8 +563,9 @@ public final class Healer {
                 lift(p.immutable(), shape);
             }
             if (this.s.effects()) {
-                if (this.shown < SPARKLES && level.getRandom().nextInt(4) == 0) {
+                if (this.shown < SPARKLES && Healer.this.sparkled < SPARKLES_A_TICK && level.getRandom().nextInt(4) == 0) {
                     this.shown++;
+                    Healer.this.sparkled++;
                     level.sendParticles(ParticleTypes.HAPPY_VILLAGER, x + 0.5, y + 0.8, z + 0.5, 2, 0.35, 0.25, 0.35, 0);
                 }
                 if (!original.isAir()) {
@@ -501,10 +605,11 @@ public final class Healer {
             if (this.heard == null) {
                 return;
             }
-            if (--this.scars.quiet > 0) {
+            if (--this.scars.quiet > 0 || Healer.this.sounded >= SOUNDS_A_TICK) {
                 return;
             }
             this.scars.quiet = SOUND_EVERY;
+            Healer.this.sounded++;
             var sound = this.heardState.getSoundType().getPlaceSound();
             Healer.this.level.playSound(null, this.heard, sound, SoundSource.BLOCKS, 0.45f, 0.75f + Healer.this.level.getRandom().nextFloat() * 0.25f);
         }

@@ -45,7 +45,7 @@ final class FluidMachineTests {
         ElectrolyticSeparatorBlockEntity sep = separator(helper, rel);
         BlockPos pos = helper.absolutePos(rel);
         var level = helper.getLevel();
-        Player player = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        Player player = dev.groundburst.port.Mock.serverPlayer(helper, GameType.SURVIVAL);
         BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
         for (int i = 0; i < 8; i++) {
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));

@@ -42,39 +42,39 @@ public final class GBOrdnance {
     public static final net.neoforged.neoforge.registries.DeferredBlock<ToxicSludgeBlock> TOXIC_SLUDGE = dev.groundburst.registry.GBBlocks.blockOnly(
             "toxic_sludge", "Toxic Sludge", ToxicSludgeBlock::new,
             p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GREEN).replaceable().noCollision().noOcclusion()
-                    .instabreak().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.POPPED)
-                    .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering(s -> true)
+                    .instabreak().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
+                    .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering((s, level_, pos_) -> true)
                     .lightLevel(s -> 7 - s.getValue(ToxicSludgeBlock.AGE)));
 
     /** The glowing residue a toxin SCUD spreads over the ground (DESIGN.md §19.5). */
     public static final net.neoforged.neoforge.registries.DeferredBlock<AnthraxResidueBlock> ANTHRAX_RESIDUE = dev.groundburst.registry.GBBlocks.blockOnly(
             "anthrax_residue", "Anthrax Residue", AnthraxResidueBlock::new,
             p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GREEN).replaceable().noCollision().noOcclusion()
-                    .instabreak().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.POPPED)
-                    .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering(s -> true)
+                    .instabreak().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
+                    .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering((s, level_, pos_) -> true)
                     .lightLevel(s -> 10 - 2 * s.getValue(ToxicSludgeBlock.AGE)));
 
     // --- placed charges (slice 6b) ---
     public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> C4 =
             dev.groundburst.registry.GBBlocks.register("c4", "C4 Charge", GBTab.ORDNANCE, dev.groundburst.content.ordnance.charge.ChargeBlock.C4::new,
                     p -> p.mapColor(net.minecraft.world.level.material.MapColor.SAND).strength(0.5f).noOcclusion()
-                            .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+                            .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY));
     public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> BREACHING_CHARGE =
             dev.groundburst.registry.GBBlocks.register("breaching_charge", "Breaching Charge", GBTab.ORDNANCE,
                     p -> new dev.groundburst.content.ordnance.charge.ChargeBlock(dev.groundburst.content.ordnance.charge.ChargeKind.BREACHING, p),
                     p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_GRAY).strength(1f).noOcclusion()
-                            .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+                            .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY));
     public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> THERMITE_CHARGE =
             dev.groundburst.registry.GBBlocks.register("thermite_charge", "Thermite Charge", GBTab.ORDNANCE,
                     dev.groundburst.content.ordnance.charge.ChargeBlock.Thermite::new,
                     p -> p.mapColor(net.minecraft.world.level.material.MapColor.TERRACOTTA_ORANGE).strength(1f).noOcclusion()
-                            .sound(net.minecraft.world.level.block.SoundType.DECORATED_POT).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED)
+                            .sound(net.minecraft.world.level.block.SoundType.DECORATED_POT).pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
                             .lightLevel(s -> s.getValue(dev.groundburst.content.ordnance.charge.ChargeBlock.LIT) ? 15 : 0));
     public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> TIMED_BOMB =
             dev.groundburst.registry.GBBlocks.register("timed_bomb", "Timed Bomb", GBTab.ORDNANCE,
                     p -> new dev.groundburst.content.ordnance.charge.ChargeBlock(dev.groundburst.content.ordnance.charge.ChargeKind.TIMED_BOMB, p),
                     p -> p.mapColor(net.minecraft.world.level.material.MapColor.METAL).strength(2f).noOcclusion()
-                            .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.IMMOVEABLE));
+                            .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK));
     // --- mines (slice 6c) ---
     public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> LANDMINE = mine("landmine",
             "Landmine", dev.groundburst.content.ordnance.charge.ChargeKind.LANDMINE);
@@ -162,8 +162,8 @@ public final class GBOrdnance {
     public static final net.neoforged.neoforge.registries.DeferredBlock<NapalmFireBlock> NAPALM_FIRE = dev.groundburst.registry.GBBlocks.blockOnly(
             "napalm_fire", "Napalm Fire", NapalmFireBlock::new,
             p -> p.mapColor(net.minecraft.world.level.material.MapColor.FIRE).replaceable().noCollision().instabreak().noLootTable()
-                    .pushReaction(net.minecraft.world.level.material.PushReaction.POPPED).sound(net.minecraft.world.level.block.SoundType.WOOL)
-                    .lightLevel(s -> 15).emissiveRendering(s -> true));
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY).sound(net.minecraft.world.level.block.SoundType.WOOL)
+                    .lightLevel(s -> 15).emissiveRendering((s, level_, pos_) -> true));
 
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<dev.groundburst.content.ordnance.charge.ChargeBlockEntity>> CHARGE =
@@ -219,7 +219,7 @@ public final class GBOrdnance {
         return dev.groundburst.registry.GBBlocks.registerWithItem(id, english, GBTab.ORDNANCE,
                 p -> (dev.groundburst.content.ordnance.charge.ChargeBlock) new dev.groundburst.content.ordnance.charge.BombBlock(kind, p),
                 p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_GREEN).strength(2f).noOcclusion()
-                        .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED),
+                        .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY),
                 dev.groundburst.content.assembly.WarheadItem::new);
     }
 
@@ -227,7 +227,7 @@ public final class GBOrdnance {
             dev.groundburst.content.ordnance.charge.ChargeKind kind) {
         return dev.groundburst.registry.GBBlocks.register(id, english, GBTab.ORDNANCE, p -> new dev.groundburst.content.ordnance.charge.ChargeBlock(kind, p),
                 p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_GREEN).strength(1f).noOcclusion()
-                        .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+                        .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY));
     }
 
     public static void init() {}

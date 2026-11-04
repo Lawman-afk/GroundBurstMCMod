@@ -39,6 +39,11 @@ import net.neoforged.neoforge.transfer.access.ItemAccess;
  * use an invisible block model; the block entity renderer draws them.
  */
 public class MachineBlock extends BaseEntityBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends MachineBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
 

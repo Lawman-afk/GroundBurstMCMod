@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.FireBlock;
 @Mixin(FireBlock.class)
 abstract class FireBlockMixin {
     @Inject(method = "checkBurnOut", at = {
-            @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;setBlockAndUpdate(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z"),
+            @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"),
             @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z")})
     private void groundburst$burning(Level level, BlockPos pos, int chance, RandomSource random, int age, Direction face, CallbackInfo ci) {
         if (level instanceof ServerLevel server) {

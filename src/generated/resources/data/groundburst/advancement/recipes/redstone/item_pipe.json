@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:item_pipe"
+        "recipe": "groundburst:item_pipe"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

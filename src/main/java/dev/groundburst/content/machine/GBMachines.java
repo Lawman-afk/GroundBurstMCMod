@@ -88,28 +88,28 @@ public final class GBMachines {
 
     public static final WithItem<MultiblockControllerBlock> CHEMICAL_PLANT = GBBlocks.register("chemical_plant", "Chemical Plant Controller",
             GBTab.MACHINES, p -> new MultiblockControllerBlock(p, GBBlockEntities.CHEMICAL_PLANT),
-            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
 
     /** Prints chips on silicon wafers (DESIGN.md §8.1). */
     public static final WithItem<MultiblockControllerBlock> CLEAN_ROOM = GBBlocks.register("clean_room", "Clean Room Controller",
             GBTab.MACHINES, p -> new MultiblockControllerBlock(p, GBBlockEntities.CLEAN_ROOM),
-            p -> p.mapColor(MapColor.SNOW).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.SNOW).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
 
     // Slice 7 multiblock controllers (DESIGN.md §7, §23.3).
     public static final WithItem<MultiblockControllerBlock> FISSION_REACTOR = GBBlocks.register("fission_reactor", "Fission Reactor Controller",
             GBTab.MACHINES, p -> new MultiblockControllerBlock(p, GBBlockEntities.FISSION_REACTOR),
-            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final WithItem<MultiblockControllerBlock> PARTICLE_ACCELERATOR = GBBlocks.register("particle_accelerator",
             "Particle Accelerator Controller", GBTab.MACHINES, p -> new MultiblockControllerBlock(p, GBBlockEntities.PARTICLE_ACCELERATOR),
-            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
 
     // Slice 8 multiblock controllers (DESIGN.md §7, §23.3).
     public static final WithItem<MultiblockControllerBlock> FUSION_REACTOR = GBBlocks.register("fusion_reactor", "Fusion Reactor Controller",
             GBTab.MACHINES, p -> new MultiblockControllerBlock(p, GBBlockEntities.FUSION_REACTOR),
-            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final WithItem<MultiblockControllerBlock> SINGULARITY_REACTOR = GBBlocks.register("singularity_reactor",
             "Singularity Reactor Controller", GBTab.MACHINES, p -> new MultiblockControllerBlock(p, GBBlockEntities.SINGULARITY_REACTOR),
-            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
 
     public static final List<WithItem<CableBlock>> CABLES = new ArrayList<>();
 
@@ -141,7 +141,7 @@ public final class GBMachines {
     private static WithItem<TallMachineBlock> tallMachine(String name, String english, java.util.function.Function<BlockBehaviour.Properties, TallMachineBlock> factory) {
         return GBBlocks.registerWithItem(name, english, GBTab.MACHINES, factory,
                 p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
-                        .pushReaction(PushReaction.IMMOVEABLE),
+                        .pushReaction(PushReaction.BLOCK),
                 (block, props) -> new GeoBlockItem(block, props, GroundBurst.id(name)));
     }
 

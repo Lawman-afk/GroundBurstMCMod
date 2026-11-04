@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:electrolytic_separator"
+        "recipe": "groundburst:electrolytic_separator"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

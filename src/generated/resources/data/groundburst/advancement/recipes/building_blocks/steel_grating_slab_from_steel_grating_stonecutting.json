@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:steel_grating_slab_from_steel_grating_stonecutting"
+        "recipe": "groundburst:steel_grating_slab_from_steel_grating_stonecutting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

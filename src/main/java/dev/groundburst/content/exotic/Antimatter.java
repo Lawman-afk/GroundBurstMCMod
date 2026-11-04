@@ -88,10 +88,10 @@ public final class Antimatter {
             double share = d <= lethal ? 1 : 1 - (d - lethal) / (reach - lethal);
             double dose = share * shielding(level, at, body) * (1 - SUIT_SHARE * GBArmor.radiationProtection(e));
             if (dose >= LETHAL_DOSE) {
-                e.damageCooldownTime = 0;
+                e.invulnerableTime = 0;
                 e.hurtServer(level, source, 1000);
             } else if (dose > 0.03) {
-                e.damageCooldownTime = 0;
+                e.invulnerableTime = 0;
                 e.hurtServer(level, source, (float) dose * HURT_PER_DOSE);
                 dev.groundburst.content.radiation.Radiation.addDose(e, (float) dose * RAD_PER_DOSE);
             }
@@ -125,7 +125,7 @@ public final class Antimatter {
         if (s.getBlock() instanceof LiquidBlock) {
             return LIQUID;
         }
-        if (s.is(Blocks.OBSIDIAN) || s.is(Blocks.CRYING_OBSIDIAN) || s.is(Blocks.REINFORCED_DEEPSLATE) || s.is(Tags.BlockItems.CONCRETES.block())
+        if (s.is(Blocks.OBSIDIAN) || s.is(Blocks.CRYING_OBSIDIAN) || s.is(Blocks.REINFORCED_DEEPSLATE) || s.is(Tags.Blocks.CONCRETES)
                 || s.is(dev.groundburst.content.resource.GBResources.LEAD_BLOCK.block().get())) {
             return DENSE;
         }

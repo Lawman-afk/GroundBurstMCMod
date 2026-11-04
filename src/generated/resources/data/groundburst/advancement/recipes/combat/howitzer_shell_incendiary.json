@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:howitzer_shell_incendiary"
+        "recipe": "groundburst:howitzer_shell_incendiary"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

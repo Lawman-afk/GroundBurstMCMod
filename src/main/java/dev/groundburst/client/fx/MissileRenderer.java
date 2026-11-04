@@ -72,8 +72,8 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         poseStack.pushPose();
-        poseStack.rotate(Axis.YP.rotationDegrees(state.yaw));
-        poseStack.rotate(Axis.XP.rotationDegrees(state.tilt));
+        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(state.tilt));
         poseStack.scale(SCALE, SCALE, SCALE);
         poseStack.translate(0, state.lift, 0);          // the item model is drawn about its middle; stand it on its tail
         state.item.submit(poseStack, collector, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, state.outlineColor);

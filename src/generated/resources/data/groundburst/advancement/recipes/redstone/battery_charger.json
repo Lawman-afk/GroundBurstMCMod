@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:battery_charger"
+        "recipe": "groundburst:battery_charger"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

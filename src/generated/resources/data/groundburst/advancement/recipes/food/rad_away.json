@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:rad_away"
+        "recipe": "groundburst:rad_away"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

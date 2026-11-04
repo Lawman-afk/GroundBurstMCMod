@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:missile_silo"
+        "recipe": "groundburst:missile_silo"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

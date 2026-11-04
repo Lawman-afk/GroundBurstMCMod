@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:intercontinental_booster"
+        "recipe": "groundburst:intercontinental_booster"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

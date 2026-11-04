@@ -29,8 +29,8 @@ final class FxLight {
         l.sun.set(-(float) Math.sin(a), (float) Math.cos(a), 0).normalize();
         float up = l.sun.y;
         float day = smoothstep(-0.12f, 0.3f, up);
-        Vector3fc skyColor = sky.skyColor != null ? sky.skyColor : new Vector3f(0.47f, 0.65f, 1f);
-        Vector4fc glow = sky.sunriseAndSunsetColor;
+        Vector3fc skyColor = dev.groundburst.port.SkyColors.vector(sky.skyColor);
+        Vector4fc glow = dev.groundburst.port.SkyColors.vector4(sky.sunriseAndSunsetColor);
         float dusk = glow != null ? Math.max(0, Math.min(1, glow.w())) : 0;
         l.sunColor.set(1, 0.96f, 0.88f);
         if (glow != null) {

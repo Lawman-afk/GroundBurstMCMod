@@ -604,7 +604,7 @@ final class BlastJob implements Blast {
         if (state.is(Blocks.DEEPSLATE) || state.is(BlockTags.DEEPSLATE_ORE_REPLACEABLES)) {
             return 1;
         }
-        if (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.BlockItems.GRAVELS.block()) || state.is(Tags.BlockItems.COBBLESTONES.block())) {
+        if (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.Blocks.GRAVELS) || state.is(Tags.Blocks.COBBLESTONES)) {
             return 0;
         }
         if (state.is(BlockTags.DIRT) || state.is(BlockTags.GRASS_BLOCKS)) {          // (26.3 took grass blocks out of the dirt tag)

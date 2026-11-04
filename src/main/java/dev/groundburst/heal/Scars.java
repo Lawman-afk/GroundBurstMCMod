@@ -87,8 +87,11 @@ public final class Scars {
 
     /** As {@link #aftermath(ServerLevel, BlockPos, boolean)}, with what the block was, if it is already gone (sand that has fallen). */
     public static boolean aftermath(ServerLevel level, BlockPos pos, @Nullable BlockState original, @Nullable CompoundTag be, boolean holdOff) {
+        if (!nearDamage(level, pos)) {
+            return false;                                  // (the usual answer, and the quickest found: most ticks there is none)
+        }
         HealSettings s = HealSettings.at(level, Vec3.atCenterOf(pos));
-        return s.enabled() && s.aftermath() && nearDamage(level, pos) && record(level, s, pos, original, be, holdOff);
+        return s.enabled() && s.aftermath() && record(level, s, pos, original, be, holdOff);
     }
 
     /**
@@ -131,7 +134,7 @@ public final class Scars {
      * course (what its shape updates change is remembered too).
      */
     public static void aftermathCourse(ServerLevel level, BlockPos pos, boolean holdOff, Runnable change) {
-        boolean remembered = aftermath(level, pos, holdOff);
+        boolean remembered = nearDamage(level, pos) && aftermath(level, pos, holdOff);
         if (remembered) {
             beginCascade();
         }
@@ -146,17 +149,27 @@ public final class Scars {
 
     /** Whether healing is on and there is remembered damage near {@code pos} (a fire there may burn what heals). */
     public static boolean watching(ServerLevel level, BlockPos pos) {
+        if (!nearDamage(level, pos)) {
+            return false;
+        }
         HealSettings s = HealSettings.at(level, Vec3.atCenterOf(pos));
-        return s.enabled() && s.aftermath() && nearDamage(level, pos);
+        return s.enabled() && s.aftermath();
     }
 
-    /** Whether there is remembered damage in the chunk at {@code pos} or one beside it. */
+    /**
+     * Whether there is remembered damage in the chunk at {@code pos} or one beside it (a damaged chunk that is loaded
+     * is one the healer keeps track of: nine lookups in its map, none at all where nothing is damaged). It runs for
+     * every fire's tick, fluid's spread, grass's spread and farmland's tick in the world, so it must be quick.
+     */
     static boolean nearDamage(ServerLevel level, BlockPos pos) {
+        Healer healer = Healer.of(level);
+        if (!healer.tracksAny()) {
+            return false;
+        }
         int cx = pos.getX() >> 4, cz = pos.getZ() >> 4;
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
-                LevelChunk c = level.getChunkSource().getChunkNow(cx + dx, cz + dz);
-                if (c != null && c.getExistingDataOrNull(GBHeal.SCARS.get()) != null) {
+                if (healer.tracks(cx + dx, cz + dz)) {
                     return true;
                 }
             }
@@ -171,6 +184,9 @@ public final class Scars {
 
     /** Whether the block at {@code pos} is remembered (it will heal). */
     public static boolean remembered(ServerLevel level, BlockPos pos) {
+        if (!Healer.of(level).tracks(pos.getX() >> 4, pos.getZ() >> 4)) {
+            return false;                                  // (its chunk is not one with damage: at once)
+        }
         LevelChunk c = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
         ChunkScars scars = c == null ? null : c.getExistingDataOrNull(GBHeal.SCARS.get());
         return scars != null && scars.has(pos);
@@ -241,7 +257,7 @@ public final class Scars {
         ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
         boolean known_ = scars != null && scars.has(pos) && !scars.claimed(pos);
         if (!known_) {
-            BlockState original = known != null ? known : chunk.getBlockState(pos);
+            BlockState original = unburnt(known != null ? known : chunk.getBlockState(pos));
             if (!s.keeps(original)) {
                 return false;
             }
@@ -270,6 +286,16 @@ public final class Scars {
     }
 
     /**
+     * What a block is remembered as: a fire is the air it burns in (a fire next to a burning tree changes shape as the
+     * tree burns, and would be remembered so; put back, it burnt the healed tree again, and that healed with its fire
+     * again, over and over). A fire is never put back.
+     */
+    static BlockState unburnt(BlockState state) {
+        return state.getBlock() instanceof net.minecraft.world.level.block.BaseFireBlock
+                ? net.minecraft.world.level.block.Blocks.AIR.defaultBlockState() : state;
+    }
+
+    /**
      * A weapon's way of setting blocks (see the class comment). One with healing off for it (or none, {@link #NONE}'s
      * level aside) sets blocks as they are set anyway.
      */
@@ -294,9 +320,18 @@ public final class Scars {
             return this.settings != null;
         }
 
+        /** The block last remembered, and whether it will heal: a weapon asks, then sets it (once, not twice). */
+        private long lastPos = Long.MIN_VALUE;
+        private boolean lastHeals;
+
         /** Remembers the block at {@code pos} before the weapon changes it; true if it will heal (so it drops nothing). */
         public boolean record(BlockPos pos) {
-            return this.settings != null && Scars.record(this.level, this.settings, pos, null, null, this.holdOff);
+            if (this.settings == null) {
+                return false;
+            }
+            this.lastHeals = Scars.record(this.level, this.settings, pos, null, null, this.holdOff);
+            this.lastPos = pos.asLong();
+            return this.lastHeals;
         }
 
         /**
@@ -308,7 +343,8 @@ public final class Scars {
             if (this.settings == null) {
                 return this.level.setBlock(pos, state, flags);
             }
-            boolean heals = record(pos);
+            boolean heals = pos.asLong() == this.lastPos ? this.lastHeals : record(pos);   // (just asked: a blast's destroy)
+            this.lastPos = Long.MIN_VALUE;
             boolean hush = !this.settings.drops();
             if (heals && hush) {
                 quiet(pos);

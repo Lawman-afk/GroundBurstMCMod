@@ -21,6 +21,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * a painting.
  */
 public class WarningSignBlock extends HorizontalDirectionalBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends WarningSignBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     private static final Map<Direction, VoxelShape> SHAPES = new EnumMap<>(Direction.class);
 
     static {

@@ -48,7 +48,7 @@ final class StructureTests {
     }
 
     private static void templates(GameTestHelper helper) {
-        var manager = helper.getLevel().getStructureTemplateManager();
+        var manager = helper.getLevel().getStructureManager();
         for (String name : TEMPLATES) {
             var t = manager.get(GroundBurst.id("site/" + name));
             helper.assertTrue(t.isPresent(), "template " + name + " loads");
@@ -92,7 +92,7 @@ final class StructureTests {
      * stops 13 blocks under the ground, so it is never heaped over the site; a part deep down keeps all of its own.
      */
     private static void ground(GameTestHelper helper) {
-        var templates = helper.getLevel().getStructureTemplateManager();
+        var templates = helper.getLevel().getStructureManager();
         BlockPos origin = new BlockPos(0, 70, 0);
         var sunk = new SiteStructure.Part(GroundBurst.id("site/test_room"), new BlockPos(0, -3, 0), TerrainAdjustment.BEARD_THIN, 1f, Weathering.NONE);
         SitePiece crater = new SitePiece(templates, sunk, origin.offset(sunk.offset()), Rotation.NONE, origin.getY());
@@ -112,7 +112,7 @@ final class StructureTests {
         var level = helper.getLevel();
         BlockPos corner = helper.absolutePos(new BlockPos(5, 1, 5));
         var part = new SiteStructure.Part(GroundBurst.id("site/test_room"), BlockPos.ZERO, TerrainAdjustment.NONE, 1f, Weathering.NONE);
-        SitePiece p = new SitePiece(level.getStructureTemplateManager(), part, corner, Rotation.NONE, corner.getY());
+        SitePiece p = new SitePiece(level.getStructureManager(), part, corner, Rotation.NONE, corner.getY());
         BoundingBox box = p.getBoundingBox();
         p.postProcess(level, level.structureManager(), level.getChunkSource().getGenerator(), level.getRandom(), box,
                 ChunkPos.containing(corner), corner);

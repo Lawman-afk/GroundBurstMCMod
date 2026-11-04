@@ -2,19 +2,23 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "condition": {
-        "type": "minecraft:survives_explosion"
-      },
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
       "entries": [
         {
           "type": "minecraft:item",
-          "condition": {
-            "type": "minecraft:match_block",
-            "blocks": "groundburst:exotic_matter_fabricator",
-            "state": {
-              "half": "lower"
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "groundburst:exotic_matter_fabricator",
+              "properties": {
+                "half": "lower"
+              }
             }
-          },
+          ],
           "name": "groundburst:exotic_matter_fabricator"
         }
       ],

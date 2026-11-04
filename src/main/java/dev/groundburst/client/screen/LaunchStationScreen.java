@@ -154,7 +154,7 @@ public class LaunchStationScreen extends Screen {
     private static StationPayloads.@Nullable Scope latest;
 
     public static void register() {
-        LaunchStationBlock.screenHook = pos -> Minecraft.getInstance().gui.setScreen(new LaunchStationScreen(pos));
+        LaunchStationBlock.screenHook = pos -> Minecraft.getInstance().setScreen(new LaunchStationScreen(pos));
         StationPayloads.scopeHook = scope -> latest = scope;
     }
 

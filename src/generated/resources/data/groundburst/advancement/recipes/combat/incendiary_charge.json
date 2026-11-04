@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:incendiary_charge"
+        "recipe": "groundburst:incendiary_charge"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

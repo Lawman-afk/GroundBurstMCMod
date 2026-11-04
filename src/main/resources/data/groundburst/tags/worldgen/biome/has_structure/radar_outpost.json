@@ -1,11 +1,32 @@
 {
   "values": [
-    "#minecraft:is_hill",
-    "minecraft:meadow",
-    "minecraft:savanna_plateau",
-    "minecraft:wooded_badlands",
-    "minecraft:snowy_plains",
-    "minecraft:plains",
-    "minecraft:windswept_savanna"
+    {
+      "id": "#minecraft:is_hill",
+      "required": false
+    },
+    {
+      "id": "minecraft:meadow",
+      "required": false
+    },
+    {
+      "id": "minecraft:savanna_plateau",
+      "required": false
+    },
+    {
+      "id": "minecraft:wooded_badlands",
+      "required": false
+    },
+    {
+      "id": "minecraft:snowy_plains",
+      "required": false
+    },
+    {
+      "id": "minecraft:plains",
+      "required": false
+    },
+    {
+      "id": "minecraft:windswept_savanna",
+      "required": false
+    }
   ]
 }

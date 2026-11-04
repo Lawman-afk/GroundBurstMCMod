@@ -858,8 +858,8 @@ public final class FxPhotographer {
         for (int i = 0; i < 46; i++) {
             double a = random.nextDouble() * 2 * Math.PI, r = 8 + random.nextDouble() * 125;
             var p = top.apply((int) (x + r * Math.cos(a)), (int) (r * Math.sin(a)));
-            var animal = (i % 3 == 0 ? net.minecraft.world.entity.EntityTypes.COW : i % 3 == 1 ? net.minecraft.world.entity.EntityTypes.SHEEP
-                    : net.minecraft.world.entity.EntityTypes.PIG).create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            var animal = (i % 3 == 0 ? net.minecraft.world.entity.EntityType.COW : i % 3 == 1 ? net.minecraft.world.entity.EntityType.SHEEP
+                    : net.minecraft.world.entity.EntityType.PIG).create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             if (animal != null) {
                 animal.snapTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, random.nextFloat() * 360, 0);
                 level.addFreshEntity(animal);
@@ -1143,7 +1143,7 @@ public final class FxPhotographer {
             }
         }
         for (int i = 0; i < 2; i++) {
-            var cow = net.minecraft.world.entity.EntityTypes.COW.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            var cow = net.minecraft.world.entity.EntityType.COW.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             if (cow != null) {
                 cow.setPos(x - 5.5, ground, -2.5 + 5 * i);
                 cow.setNoAi(true);
@@ -1244,7 +1244,7 @@ public final class FxPhotographer {
             }
         }
         for (int[] c : new int[][] {{BEAM_X - 1, -6}, {BEAM_X + 2, -1}, {BEAM_X - 2, 3}, {BEAM_X + 5, -12}}) {
-            var cow = net.minecraft.world.entity.EntityTypes.COW.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            var cow = net.minecraft.world.entity.EntityType.COW.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             if (cow != null) {
                 var p = top.apply(x + c[0], c[1]);
                 cow.snapTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 90, 0);
@@ -1456,7 +1456,7 @@ public final class FxPhotographer {
         if (s.name().equals("designator_side")) {
             // An invisible armour stand off to one side and behind, the camera: the holder on the left of the view, its
             // beam running away across it to the pillbox.
-            var stand = new net.minecraft.world.entity.decoration.ArmorStand(net.minecraft.world.entity.EntityTypes.ARMOR_STAND, level);
+            var stand = new net.minecraft.world.entity.decoration.ArmorStand(net.minecraft.world.entity.EntityType.ARMOR_STAND, level);
             stand.setInvisible(true);
             stand.setNoGravity(true);
             double cx = x - s.distance() - 9.5, cy = ground + 2.5, cz = 13.5;
@@ -1835,7 +1835,7 @@ public final class FxPhotographer {
                 level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + dx, ground - 1, dz), net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());
             }
         }
-        var pig = net.minecraft.world.entity.EntityTypes.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        var pig = net.minecraft.world.entity.EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         if (pig != null) {
             pig.setPos(x + 2.5, ground, -2.5);
             pig.setNoAi(true);
@@ -1874,7 +1874,7 @@ public final class FxPhotographer {
         if (mc.options.tutorialStep != net.minecraft.client.tutorial.TutorialSteps.NONE) {
             mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);    // no "Move with W, A, S and D" toast
         }
-        if (mc.level == null && !worldMade && mc.gui.screen() instanceof net.minecraft.client.gui.screens.TitleScreen) {
+        if (mc.level == null && !worldMade && mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen) {
             worldMade = true;
             try {
                 var settings = new net.minecraft.world.level.LevelSettings("Fx shots", GameType.CREATIVE,
@@ -1883,7 +1883,7 @@ public final class FxPhotographer {
                 String folder = dev.groundburst.client.fx.DevWorlds.fresh(mc, "fx_shots");
                 mc.createWorldOpenFlows().createFreshLevel(folder, settings,
                         net.minecraft.client.gui.screens.worldselection.SelectWorldScreen.TEST_OPTIONS,
-                        net.minecraft.world.level.levelgen.presets.WorldPresets::createTestWorldDimensions, mc.gui.screen());
+                        net.minecraft.world.level.levelgen.presets.WorldPresets::createFlatWorldDimensions, mc.screen);
             } catch (java.io.IOException e) {
                 GroundBurst.LOGGER.error("Fx shots: could not make a world", e);
             }
@@ -1904,7 +1904,7 @@ public final class FxPhotographer {
             step = -1;
             clock = 0;
             site++;
-            mc.gui.setScreen(null);                        // a screen a scene opened stays shut for the next
+            mc.setScreen(null);                        // a screen a scene opened stays shut for the next
             mc.options.renderDistance().set(scene.name().equals("howitzer_edge") ? 12 : 24);
             if (scene.name().equals("designator_far") || scene.name().equals("howitzer_edge")) {
                 mc.options.broadcastOptions();             // the server sends a player only as far as it said it sees when it joined
@@ -2087,13 +2087,13 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("frozen")) {
                     // Animals by the camera, frozen solid in a burst of cold.
-                    for (var type : List.of(net.minecraft.world.entity.EntityTypes.PIG, net.minecraft.world.entity.EntityTypes.COW,
-                            net.minecraft.world.entity.EntityTypes.SHEEP)) {
+                    for (var type : List.of(net.minecraft.world.entity.EntityType.PIG, net.minecraft.world.entity.EntityType.COW,
+                            net.minecraft.world.entity.EntityType.SHEEP)) {
                         var mob = type.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
                         if (mob != null) {
                             int i = level.getRandom().nextInt(3);
-                            mob.setPos(x + 0.5 + (type == net.minecraft.world.entity.EntityTypes.COW ? 0 : 1.5), ground,
-                                    type == net.minecraft.world.entity.EntityTypes.PIG ? -2 : type == net.minecraft.world.entity.EntityTypes.SHEEP ? 2 : 0.5 + i * 0);
+                            mob.setPos(x + 0.5 + (type == net.minecraft.world.entity.EntityType.COW ? 0 : 1.5), ground,
+                                    type == net.minecraft.world.entity.EntityType.PIG ? -2 : type == net.minecraft.world.entity.EntityType.SHEEP ? 2 : 0.5 + i * 0);
                             mob.setYRot(90);
                             level.addFreshEntity(mob);
                         }
@@ -2325,7 +2325,7 @@ public final class FxPhotographer {
                         double a = random.nextDouble() * 2 * Math.PI, r = 15 + random.nextDouble() * 120;
                         var pos = new net.minecraft.core.BlockPos((int) (x + r * Math.cos(a)), ground, (int) (r * Math.sin(a)));
                         level.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
-                        var animal = (i % 3 == 0 ? net.minecraft.world.entity.EntityTypes.COW : net.minecraft.world.entity.EntityTypes.PIG)
+                        var animal = (i % 3 == 0 ? net.minecraft.world.entity.EntityType.COW : net.minecraft.world.entity.EntityType.PIG)
                                 .create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
                         if (animal != null) {
                             animal.snapTo(pos.getX() + 0.5, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
@@ -2410,7 +2410,7 @@ public final class FxPhotographer {
             });
         }
         if (scene.name().equals("gear_icons") && step >= 0 && clock == 14) {
-            mc.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
+            mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
             jeiFilter.accept("hazmat");
         }
         if (scene.name().equals("geiger") && step >= 0 && clock == 50) {
@@ -2573,8 +2573,8 @@ public final class FxPhotographer {
             dev.groundburst.content.launch.LaunchComputerBlock.screenHook.accept(launchComputer);
         }
         // The map's mouse, as the game sends it: a right-button drag 40 px left and up, then a left click right of centre.
-        if (scene.name().equals("launch_ui") && step >= 0 && (clock == 14 || clock == 18) && mc.gui.screen() != null) {
-            var screen = mc.gui.screen();
+        if (scene.name().equals("launch_ui") && step >= 0 && (clock == 14 || clock == 18) && mc.screen != null) {
+            var screen = mc.screen;
             double cx = screen.width / 2.0 - 168 + 8 + 92, cy = screen.height / 2.0 - 107 + 14 + 92;
             var right = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT, 0);
             var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
@@ -2588,8 +2588,8 @@ public final class FxPhotographer {
             }
         }
         // The computer's map zoomed all the way out (32 blocks a pixel: the whole 3000-block survey).
-        if (scene.name().equals("launch_map_ui") && step >= 0 && clock == 14 && mc.gui.screen() != null) {
-            var screen = mc.gui.screen();
+        if (scene.name().equals("launch_map_ui") && step >= 0 && clock == 14 && mc.screen != null) {
+            var screen = mc.screen;
             double cx = screen.width / 2.0 - 168 + 8 + 92, cy = screen.height / 2.0 - 107 + 14 + 92;
             for (int i = 0; i < 6; i++) {
                 screen.mouseScrolled(cx, cy, 0, -1);
@@ -2645,7 +2645,7 @@ public final class FxPhotographer {
             server.execute(() -> server.getPlayerList().getPlayers().getFirst().setGameMode(GameType.CREATIVE));
         }
         if (scene.name().equals("asm_jei") && step >= 0 && clock == 14) {
-            mc.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
+            mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
             jeiFilter.accept("Missile");
         }
         if (scene.name().equals("asm_jei") && step >= 0 && clock == 35) {
@@ -2746,8 +2746,8 @@ public final class FxPhotographer {
                 }
             });
         }
-        if (scene.name().equals("tall_ui") && step >= 0 && clock == 20 && mc.gui.screen() != null) {
-            var screen = mc.gui.screen();
+        if (scene.name().equals("tall_ui") && step >= 0 && clock == 20 && mc.screen != null) {
+            var screen = mc.screen;
             double tx = screen.width / 2.0 + 88 + 8, ty = screen.height / 2.0 - 83 + 14;
             var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
             screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
@@ -2766,7 +2766,7 @@ public final class FxPhotographer {
             server.execute(() -> server.getPlayerList().getPlayers().getFirst().setGameMode(GameType.CREATIVE));
         }
         if (scene.name().equals("icbm_jei") && step >= 0 && clock == 14) {
-            mc.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
+            mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
             jeiFilter.accept("Intercontinental");
         }
         if (scene.name().equals("icbm_jei") && step >= 0 && clock == 35) {
@@ -2786,8 +2786,8 @@ public final class FxPhotographer {
             }
         }
         // Then its side-configuration tab opened (the two-block layout), for the second shot.
-        if (scene.name().equals("assembly_ui") && step == 1 && clock == 36 && mc.gui.screen() != null) {
-            var screen = mc.gui.screen();
+        if (scene.name().equals("assembly_ui") && step == 1 && clock == 36 && mc.screen != null) {
+            var screen = mc.screen;
             double tx = screen.width / 2.0 + 144 + 8, ty = screen.height / 2.0 - 105 + 14;
             var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
             screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
@@ -2858,7 +2858,7 @@ public final class FxPhotographer {
         }
         if (step < scene.moments().size() && clock == scene.moments().get(step)) {
             String name = "fx_" + scene.name() + "_" + clock + ".png";
-            Screenshot.grab(mc.gameDirectory, name, mc.gameRenderer.mainRenderTarget(), 1,
+            Screenshot.grab(mc.gameDirectory, name, mc.getMainRenderTarget(), 1,
                     msg -> GroundBurst.LOGGER.info("Fx shot: {}", msg.getString()));
             step++;
         }

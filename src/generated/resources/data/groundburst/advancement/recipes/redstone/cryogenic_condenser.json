@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:cryogenic_condenser"
+        "recipe": "groundburst:cryogenic_condenser"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

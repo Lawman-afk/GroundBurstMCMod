@@ -41,7 +41,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Marker;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
@@ -75,7 +75,7 @@ import net.neoforged.neoforge.common.NeoForge;
  */
 public final class ArtilleryClient {
     public static final KeyMapping VIEW = new KeyMapping(GBLang.add("key." + GroundBurst.MODID + ".artillery_view", "Artillery: strategic view"),
-            KeyConflictContext.IN_GAME, InputConstants.Type.KEYBOARD, InputConstants.KEY_V, ManualHotkey.CATEGORY);
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_V, ManualHotkey.CATEGORY);
 
     private static final String T_HINT_GUN = GBLang.add(GroundBurst.MODID + ".artillery.hint_gun",
             "[%s] or scroll out: strategic view   [Shift] leave");
@@ -140,7 +140,7 @@ public final class ArtilleryClient {
         NeoForge.EVENT_BUS.addListener(ArtilleryClient::angles);
         NeoForge.EVENT_BUS.addListener(ArtilleryClient::submit);
         NeoForge.EVENT_BUS.addListener((InputEvent.MouseScrollingEvent e) -> {
-            if (gun != null && Minecraft.getInstance().gui.screen() == null) {
+            if (gun != null && Minecraft.getInstance().screen == null) {
                 e.setCanceled(true);
                 scroll(Minecraft.getInstance(), e.getScrollDeltaY());
             }
@@ -258,7 +258,7 @@ public final class ArtilleryClient {
         if (m == null || p == null) {
             return;
         }
-        boolean free = mc.gui.screen() == null;
+        boolean free = mc.screen == null;
         for (int i = 0; i < m.spec.shells().size() && i < mc.options.keyHotbarSlots.length; i++) {
             while (mc.options.keyHotbarSlots[i].consumeClick()) {
                 ClientPacketDistributor.sendToServer(new ArtilleryPayloads.Select(gun, i));
@@ -366,7 +366,7 @@ public final class ArtilleryClient {
         GunBlockEntity m = gunEntity(mc);
         height = m == null ? 48 : (float) Mth.clamp(Math.hypot(dx, dz) / 5, 48, high(m));
         held = true;
-        eye = new Marker(EntityTypes.MARKER, mc.level);
+        eye = new Marker(EntityType.MARKER, mc.level);
         place(eye);
         neutralYaw = p.getYRot();
         neutralPitch = Mth.clamp(p.getXRot(), -60, 60);
@@ -437,7 +437,7 @@ public final class ArtilleryClient {
         p.yRotO = neutralYaw;
         p.xRotO = neutralPitch;
         GunBlockEntity m = gunEntity(mc);
-        if (m != null && mc.gui.screen() == null && (dYaw != 0 || dPitch != 0)) {
+        if (m != null && mc.screen == null && (dYaw != 0 || dPitch != 0)) {
             double k = height / 72.0;
             double yr = Math.toRadians(bearing);
             double fx = -Math.sin(yr), fz = Math.cos(yr);                // forward (as the camera looks), and its right

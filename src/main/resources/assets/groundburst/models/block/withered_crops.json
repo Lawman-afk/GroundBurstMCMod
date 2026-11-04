@@ -17,7 +17,6 @@
         15,
         16
       ],
-      "shade_direction_override": "up",
       "faces": {
         "west": {
           "uv": [
@@ -37,7 +36,8 @@
           ],
           "texture": "#crop"
         }
-      }
+      },
+      "shade": false
     },
     {
       "from": [
@@ -50,7 +50,6 @@
         15,
         16
       ],
-      "shade_direction_override": "up",
       "faces": {
         "west": {
           "uv": [
@@ -70,7 +69,8 @@
           ],
           "texture": "#crop"
         }
-      }
+      },
+      "shade": false
     },
     {
       "from": [
@@ -83,7 +83,6 @@
         15,
         4
       ],
-      "shade_direction_override": "up",
       "faces": {
         "north": {
           "uv": [
@@ -103,7 +102,8 @@
           ],
           "texture": "#crop"
         }
-      }
+      },
+      "shade": false
     },
     {
       "from": [
@@ -116,7 +116,6 @@
         15,
         12
       ],
-      "shade_direction_override": "up",
       "faces": {
         "north": {
           "uv": [
@@ -136,7 +135,8 @@
           ],
           "texture": "#crop"
         }
-      }
+      },
+      "shade": false
     }
   ]
 }

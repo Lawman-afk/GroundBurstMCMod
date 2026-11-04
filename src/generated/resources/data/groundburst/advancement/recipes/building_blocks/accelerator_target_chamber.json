@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:accelerator_target_chamber"
+        "recipe": "groundburst:accelerator_target_chamber"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

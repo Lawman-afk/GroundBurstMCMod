@@ -15,7 +15,7 @@ import dev.groundburst.content.superweapon.SuperweaponBlockEntity.Phase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
@@ -99,8 +99,8 @@ final class ParticleCannonTests {
             helper.setBlock(p, p.getY() == 6 ? Blocks.GRASS_BLOCK : p.getY() == 5 ? Blocks.DIRT : Blocks.STONE);
         }
         helper.setBlock(new BlockPos(10, 6, 8), Blocks.WATER);
-        Pig heart = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(8, 7, 8));
-        Pig near = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(14, 7, 8));
+        Pig heart = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(8, 7, 8));
+        Pig near = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(14, 7, 8));
         boolean[] lit = {false};
         helper.onEachTick(() -> lit[0] |= near.isAlive() && near.getRemainingFireTicks() > 0);
         ParticleBeams.burnOverride = 80;

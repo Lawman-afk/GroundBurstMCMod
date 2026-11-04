@@ -108,13 +108,13 @@ public final class HealPhotographer {
     private static void tick() {
         Minecraft mc = Minecraft.getInstance();
         mc.options.pauseOnLostFocus = false;
-        if (mc.gui.screen() instanceof net.minecraft.client.gui.screens.PauseScreen) {
-            mc.gui.setScreen(null);
+        if (mc.screen instanceof net.minecraft.client.gui.screens.PauseScreen) {
+            mc.setScreen(null);
         }
         if (mc.options.tutorialStep != net.minecraft.client.tutorial.TutorialSteps.NONE) {
             mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
         }
-        if (mc.level == null && !worldMade && mc.gui.screen() instanceof net.minecraft.client.gui.screens.TitleScreen) {
+        if (mc.level == null && !worldMade && mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen) {
             worldMade = true;
             try {
                 var settings = new net.minecraft.world.level.LevelSettings("Heal shots", GameType.CREATIVE,
@@ -122,7 +122,7 @@ public final class HealPhotographer {
                         net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
                 String folder = DevWorlds.fresh(mc, "heal_shots");
                 mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(0L, false, false),
-                        HealPhotographer::flat, mc.gui.screen());
+                        HealPhotographer::flat, mc.screen);
             } catch (IOException e) {
                 GroundBurst.LOGGER.error("Heal shots: could not make a world", e);
             }
@@ -134,8 +134,8 @@ public final class HealPhotographer {
         }
         mc.options.renderDistance().set(16);
         mc.options.cloudStatus().set(net.minecraft.client.CloudStatus.OFF);
-        if (!mc.gui.hud.isHidden()) {
-            mc.gui.hud.toggle();
+        if (!mc.options.hideGui) {
+            mc.options.hideGui = !mc.options.hideGui;
         }
         if (busy) {
             return;                                        // the server is working on the last step
@@ -269,7 +269,7 @@ public final class HealPhotographer {
         }
         stable = arrived && mc.levelRenderer.hasRenderedAllSections() ? stable + 1 : 0;
         if (there >= MOST || there >= SETTLE && stable >= STABLE) {
-            Screenshot.grab(mc.gameDirectory, s.file(), mc.gameRenderer.mainRenderTarget(), 1,
+            Screenshot.grab(mc.gameDirectory, s.file(), mc.getMainRenderTarget(), 1,
                     msg -> GroundBurst.LOGGER.info("Heal shot: {}", msg.getString()));
             return true;
         }
@@ -424,7 +424,7 @@ public final class HealPhotographer {
 
     /** An oak tree grown as a sapling grows one (its leaves count their way to the trunk). */
     private static void tree(ServerLevel level, BlockPos at) {
-        var feature = level.registryAccess().lookupOrThrow(Registries.FEATURE).getOrThrow(net.minecraft.data.worldgen.features.TreeFeatures.OAK);
+        var feature = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).getOrThrow(net.minecraft.data.worldgen.features.TreeFeatures.OAK);
         feature.value().place(level, level.getChunkSource().getGenerator(), net.minecraft.util.RandomSource.create(at.asLong()), at);
     }
 
@@ -578,7 +578,7 @@ public final class HealPhotographer {
                         new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(3, Blocks.DIRT),
                         new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(1, Blocks.GRASS_BLOCK)),
                         java.util.Optional.empty(), biomes.getOrThrow(net.minecraft.world.level.biome.Biomes.PLAINS));
-        return net.minecraft.world.level.levelgen.presets.WorldPresets.createTestWorldDimensions(registries)
+        return net.minecraft.world.level.levelgen.presets.WorldPresets.createFlatWorldDimensions(registries)
                 .replaceOverworldGenerator(registries, new net.minecraft.world.level.levelgen.FlatLevelSource(flat));
     }
 }

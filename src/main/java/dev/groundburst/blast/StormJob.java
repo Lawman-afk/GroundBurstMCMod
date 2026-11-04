@@ -15,7 +15,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -236,7 +236,7 @@ final class StormJob {
     private void hit(BlockPos at, @Nullable LivingEntity target) {
         Vec3 foot = target != null ? target.position() : Vec3.atBottomCenterOf(at);
         Entity source = this.by == null ? null : this.level.getEntity(this.by);
-        LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(this.level, EntitySpawnReason.TRIGGERED);
+        LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(this.level, EntitySpawnReason.TRIGGERED);
         if (bolt != null) {
             bolt.setPos(foot);
             bolt.setVisualOnly(true);                              // never added: only what it does to those it hits
@@ -292,7 +292,7 @@ final class StormJob {
             e.igniteForSeconds(2);
         }
         if (damage > 0 && e.isAlive()) {
-            e.damageCooldownTime = 0;
+            e.invulnerableTime = 0;
             e.hurtServer(this.level, this.level.damageSources().lightningBolt(), damage);
         }
     }

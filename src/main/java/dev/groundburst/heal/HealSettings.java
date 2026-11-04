@@ -65,6 +65,9 @@ public record HealSettings(boolean enabled, HealSchedule schedule, int waitTicks
 
     /** The settings for damage at {@code at}: a GameTest's own where it has marked an area out, else the config's. */
     public static HealSettings at(ServerLevel level, Vec3 at) {
+        if (TEST_AREAS.isEmpty()) {
+            return current();                              // (outside the GameTests there are none)
+        }
         for (TestArea a : TEST_AREAS) {
             if (a.level == level && a.box.contains(at)) {
                 return a.settings;
@@ -73,8 +76,16 @@ public record HealSettings(boolean enabled, HealSchedule schedule, int waitTicks
         return current();
     }
 
+    /** Whether any GameTest has marked an area out (never outside the GameTests). */
+    static boolean testing() {
+        return !TEST_AREAS.isEmpty();
+    }
+
     /** Whether any GameTest area covers {@code at} (the automatic healing leaves those to their tests). */
     static boolean inTestArea(ServerLevel level, Vec3 at) {
+        if (TEST_AREAS.isEmpty()) {
+            return false;
+        }
         for (TestArea a : TEST_AREAS) {
             if (a.level == level && a.box.contains(at)) {
                 return true;

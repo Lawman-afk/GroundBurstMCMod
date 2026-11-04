@@ -80,7 +80,7 @@ public final class ManualPhotographer {
 
     private static void tick() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null && !worldMade && mc.gui.screen() instanceof net.minecraft.client.gui.screens.TitleScreen) {
+        if (mc.level == null && !worldMade && mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen) {
             worldMade = true;
             try {
                 var settings = new net.minecraft.world.level.LevelSettings("Manual shots", net.minecraft.world.level.GameType.CREATIVE,
@@ -89,7 +89,7 @@ public final class ManualPhotographer {
                 String folder = dev.groundburst.client.fx.DevWorlds.fresh(mc, "manual_shots");
                 mc.createWorldOpenFlows().createFreshLevel(folder, settings,
                         net.minecraft.client.gui.screens.worldselection.SelectWorldScreen.TEST_OPTIONS,
-                        net.minecraft.world.level.levelgen.presets.WorldPresets::createTestWorldDimensions, mc.gui.screen());
+                        net.minecraft.world.level.levelgen.presets.WorldPresets::createFlatWorldDimensions, mc.screen);
             } catch (java.io.IOException e) {
                 GroundBurst.LOGGER.error("Field Manual shots: could not make a world", e);
             }
@@ -111,23 +111,23 @@ public final class ManualPhotographer {
         if (--wait > 0) {
             return;
         }
-        if (mc.gui.screen() instanceof FieldManualScreen && number > 0) {
-            Screenshot.grab(mc.gameDirectory, "manual_" + number + ".png", mc.gameRenderer.mainRenderTarget(), 1,
+        if (mc.screen instanceof FieldManualScreen && number > 0) {
+            Screenshot.grab(mc.gameDirectory, "manual_" + number + ".png", mc.getMainRenderTarget(), 1,
                     msg -> GroundBurst.LOGGER.info("Field Manual shot: {}", msg.getString()));
         }
         Shot next = SHOTS.poll();
         if (next == null) {
-            if (number > 0 && !(mc.gui.screen() instanceof FieldManualScreen)) {
+            if (number > 0 && !(mc.screen instanceof FieldManualScreen)) {
                 GroundBurst.LOGGER.info("Field Manual shots done");
                 mc.stop();
             } else if (number > 0) {
-                mc.gui.setScreen(null);                         // the last shot is saving; quit on the next round
+                mc.setScreen(null);                         // the last shot is saving; quit on the next round
                 wait = 20;
             }
             return;
         }
         number++;
-        mc.gui.setScreen(FieldManualScreen.at(next.target(), next.spread(), next.query()));
+        mc.setScreen(FieldManualScreen.at(next.target(), next.spread(), next.query()));
         wait = 20;
     }
 }

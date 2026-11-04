@@ -1,11 +1,15 @@
 # Changelog
 
-## Unreleased
+## 0.8.0 — 2026-11-04
 
-### Healing (both versions; off by default)
+Damage that heals over time (off until you turn it on), a build for Minecraft 26.1.2, Create and Create Aeronautics on
+1.21.1, and the 1.21.1 build's world sites fixed.
+
+### Healing (every version; off by default)
 A player's suggestion: damage that heals over time, back to exactly what was there.
 - **Turn it on** in the server config (Mods, Ground Burst, Config: Healing, "Heal damage over time"; or `healing.enabled`
-  in `groundburst-synced.toml`). Only damage done while it is on heals, so turn it on before the war starts.
+  in `groundburst-synced.toml` on 26.3, `groundburst-server.toml` on 26.1.2 and 1.21.1). Only damage done while it is
+  on heals, so turn it on before the war starts. The README and the CurseForge page say how to change any setting.
 - **Exactly as it was**: every block a weapon changes is remembered and put back: a crater fills in from the bottom up,
   scorched grass greens, the wasteland turns back into the biome it was, a crater lake drains, and a chest comes back
   with its contents, a sign with its words, a door the way it faced. Paintings, item frames and armour stands a blast
@@ -24,8 +28,27 @@ A player's suggestion: damage that heals over time, back to exactly what was the
   over it, so a base in a crater is not filled in (or, if you choose, dropped as an item, or replaced).
 - **Commands** for operators: `/groundburst heal now [radius]`, `/groundburst heal forget [radius]` and
   `/groundburst heal status`.
+- **Fire is never brought back** (found in testing: trees set alight with molotovs healed with their fire and burnt
+  again). A place that was burning heals as the air it burnt in, and damage waits to heal until the fires near it have
+  gone out (a fire on netherrack, which burns for good, does not hold it up). `/groundburst heal now` puts those fires
+  out first.
 - Not healed: ships and contraptions, vanilla's own explosions (creepers and TNT), creatures, and damage done while
   healing was off.
+
+### Minecraft 26.1.2
+Ground Burst now comes for Minecraft 26.1.2 too (NeoForge 26.1.2.126 or newer, GeckoLib 5.5.2 or newer, JEI optional):
+everything 26.3's has, but for the recipes that use 26.2's sulfur and cinnabar. Its world settings are the Server
+Settings (`groundburst-server.toml`), changed from inside a single-player world.
+
+### Performance
+Checked over the whole mod before this release, on every version, with a scripted game at 32 chunks (molotovs and a
+thermobaric warhead in a forest, the fires, the healing) and the heaviest case, a Tsar Bomba's crater healing: the mod
+takes about 1% of the game's time in play, healing included, and a nuclear crater heals within the server's budget.
+- Healing's checks, which run for every fire, flowing water, spreading grass and farmland in the world, now take no
+  time at all where nothing is damaged.
+- The sparkles and sounds of healing are capped, so a nuclear crater healing hundreds of chunks at once does not flood
+  the game with them.
+- Machines set to ignore redstone (the default) no longer check for a signal every tick.
 
 ### Minecraft 1.21.1: Create and Create Aeronautics
 Both are optional; with either installed, Ground Burst's machines work on the structures they move.
@@ -66,6 +89,10 @@ Both are optional; with either installed, Ground Burst's machines work on the st
   game, and quitting then hung on "Saving world"; it no longer does.
 - Not yet: reactors pause while carried; pipes and cables on a contraption reach only what is on it, not the blocks round
   it.
+
+### Fixed
+- Minecraft 1.21.1: the world's sites (the abandoned silos, command bunkers, radar outposts, crashed missiles, the test
+  site, the waste storage and the research station) generated empty in 0.7.0; they are built again.
 
 ## 0.7.0 — 2026-11-03
 

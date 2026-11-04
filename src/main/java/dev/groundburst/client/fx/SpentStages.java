@@ -171,11 +171,11 @@ final class SpentStages {
     static void submit(SubmitNodeCollector collector, PoseStack poseStack, ClientLevel level, Vec3 camera, float partial) {
         for (Stage s : STAGES) {
             double x = s.xo + (s.x - s.xo) * partial, y = s.yo + (s.y - s.yo) * partial, z = s.zo + (s.z - s.zo) * partial;
-            int light = LightCoordsUtil.getLightCoords(level, BlockPos.containing(x, y, z));
+            int light = net.minecraft.client.renderer.LevelRenderer.getLightCoords(level, BlockPos.containing(x, y, z));
             poseStack.pushPose();
             poseStack.translate(x - camera.x, y - camera.y, z - camera.z);
-            poseStack.rotate(Axis.YP.rotationDegrees(s.yawO + (s.yaw - s.yawO) * partial));
-            poseStack.rotate(Axis.XP.rotationDegrees(s.tiltO + (s.tilt - s.tiltO) * partial));
+            poseStack.mulPose(Axis.YP.rotationDegrees(s.yawO + (s.yaw - s.yawO) * partial));
+            poseStack.mulPose(Axis.XP.rotationDegrees(s.tiltO + (s.tilt - s.tiltO) * partial));
             poseStack.scale(SCALE * s.size[0], SCALE * s.size[1], SCALE * s.size[0]);
             poseStack.translate(0, s.lift, 0);
             s.item.submit(poseStack, collector, light, OverlayTexture.NO_OVERLAY, 0);

@@ -1333,6 +1333,36 @@ Client config (`groundburst-client.toml`): `fx.quality` (low/medium/high/ultra, 
   over 50 ms (the §28 target met); heap peak 4.4 GB; the save 30 s in 115 ms (an autosave during a Tsar's front costs
   about that, once); client 32 fps.
 
+### 11.8 The play bench, and a performance check over the mod (2026-11-04)
+- **Why:** the user, testing healing in the 26.3 build at 32 chunks, found the game "strangely laggy" and asked for an
+  optimisation check over everything, on every version, before the next release.
+- **Play bench** (`PlayBench` on the server thread, `PlayBenchClient`; `gradlew runPlayBench` `[-PplayHeal=false]`
+  `[-PplayView=32] [-PplaySim=12]`): a normal world (fixed seed) seen at 32 chunks (8,281 chunks loaded), a forest; a
+  quiet spell, ten molotovs on the trees and a thermobaric warhead among them, a minute of fires, the fires put out
+  (healing waits for them, §21.9) and the healing at the server's pace (on and fast: a 20 s wait), a quiet spell after;
+  every server tick and frame timed by phase into `run/bench/play_*.txt`. Frames uncapped: no vsync, no limit, and not
+  the 30 a second the game drops to after a minute without input (the "32 fps" of the benches above was that; the
+  blast bench is uncapped now too).
+- **Flight recordings:** `-Pjfr=<name>` on any run records `run/jfr/<name>.jfr`; its CPU samples (`jfr print --events
+  jdk.ExecutionSample`) summed by thread and by the mod's outermost frames show what the mod's own work costs.
+- **At 32 chunks:** server ticks 5-6 ms (p95 7) and frames about 1.2 ms (some 800 a second on the user's PC) in every
+  phase, the attack and the healing included; the mod's code on the server thread's stack in 0.6-0.9% of the samples
+  and on the render thread's in 0.4-1.3% (the blast's smoke puffs, while they lasted); the rest is the game's own
+  (scheduled ticks over 8,281 chunks, drawing the sections). Healing the forest's 6,462 blocks moved neither figure. The
+  lag at 32 chunks is the game's; what the mod added was the burning forest that healed with its fires and burnt again.
+- **The Tsar with healing on** (`runBlastBench -PbenchHeal=true`: healing on, a 20 s wait, the firestorm put out once
+  the blast has finished, the record running on through the healing): the blast 143 s, ticks mean 19.9 ms (18.5
+  without), p99 31.0, max 58.9, one over 50 ms (remembering 21.4 million blocks costs about 7%); the crater healed in
+  367 s (58,000 blocks a second), ticks mean 8.9 ms, the healer within its 5 ms a tick; the slow ticks fell in the 12 s
+  after the blast (its 700 chunks let go and saved with their records, the wasteland and its lake, healing begun at once
+  under the bench's short wait) and one autosave (82 ms).
+- **Changes:** healing's checks, which run for every fire's tick, fluid's spread, grass's spread and farmland's tick in
+  the world, answer from the healer's map of damaged chunks (at once where none is) instead of nine chunk lookups each,
+  and farmland looks for water only near damage; a blast's destroyed block is remembered once, not twice; the healing
+  chunks' sparkles and sounds are capped per level and tick (24, 3: a nuclear crater heals hundreds of chunks at once);
+  the healer's tick allocates nothing per chunk outside the GameTests; a machine ignoring redstone (the default) no
+  longer reads its neighbours' signals every tick.
+
 ---
 
 ## 12. Visual effects system (`client.fx`, "Spectacle")
@@ -4140,6 +4170,16 @@ fence's arm. A player's own building never runs inside such a course, so it is n
 holds a chunk's healing off; the rest goes on for minutes and does not. A painting, item frame or armour stand a blast knocks down is taken down whole
 (saved as an entity, dropping nothing) and hung again when its chunk has healed.
 
+**Fire is never put back** (`Scars.unburnt`; the user's test, 2026-11-04: molotovs on trees healed with their fire, which
+burnt the healed trees again, over and over). A fire next to a burning tree changes shape as the tree burns, so the
+cascade above remembered fires as they were; a fire is remembered as the air it burns in, and one remembered before
+this heals as air. And a chunk does not begin to heal while a fire that will go out by itself burns in it or beside
+it, near its damage (in its damaged sections or the ones above and below: the palette tells at once a section that
+never held fire; `Healer.fireNear`): it waits again, looking every 5 s, so the trees come back once the forest is out
+and nothing is left to set them alight. A fire on netherrack or another block that keeps a fire burning (a hearth, the
+Nether) burns for good and is no reason to wait. Told to heal now (the heal command), a chunk puts the fires by it out
+first.
+
 **Kept with the chunk.** What a chunk remembers is a data attachment on it (`ChunkScars`), saved and loaded with it:
 per section, a bit for each remembered cell and its old state as the game keeps sections (a palette and an index a
 cell: a byte, two once there are more than 256 states), the block entities' saves, the decorations, the biome cells the
@@ -4994,6 +5034,8 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-04 | **Minecraft 26.1.2, backported from main; 0.8.0 for all three** (the user: a version for 26.1.2, "not sure if it's better to backport, or forward port this"; 0.8.0 on every version): a backport from main (26.3) by a port tool like the 1.21.1 branch's, on its own branch `26.1.2` (its `docs/BACKPORT.md`): 26.1.2 is two minor versions before 26.3 and shares its rendering by render states and submitted geometry, item model definitions, data components and GameTest framework, so most of main comes over by renaming and main's own GameTests run there (392/392); a forward port from 1.21.1 would cross every change from 1.21.2 to 26.1. Its data is main's generated output converted (configured features, loot tables' lists, recipe unlocks, biomes' spawners), not the data generators run on 26.1.2 (they are much of the API that differs). Found on the way: main saves structure templates with 26.x's lowercase palette names, which 1.21.1 and 26.1.2 read as air, so the 1.21.1 0.7.0 build's world sites were empty; both ports rename them. |
+| 2026-11-04 | **Fire is never healed back; a performance check** (the user, testing healing: molotovs on trees healed with their fire and burnt again; "strangely laggy" at 32 chunks; an optimisation check over everything before the next release): a fire is remembered as the air it burns in, and a chunk waits while a fire that will go out burns by its damage (§21.9), rather than putting fires out when it heals (the forest round it would still be burning) or keeping fires out of the record only (one remembered before would still come back). Measured, not guessed: a play bench and flight recordings (§11.8) put the mod at about 1% of the server's and the client's time at 32 chunks, healing included, and a Tsar's crater healing within its budget; the checks that run everywhere were made quick where nothing is damaged, healing's effects capped. |
 | 2026-11-04 | **Healing, off by default** (a commenter's suggestion, passed on by the user: damage that heals over time, "the EXACT same state", "with a wide config like the Explosion't mod"; the user: highly adjustable and intuitive, off by default, both versions): §21.9. Every weapon's block changes go through one recorder that remembers each block as it was before the first damage (state and block entity), kept with its chunk (an attachment saved with it: nothing in memory for chunks not loaded, and a Tsar's crater is twenty million blocks); what the damage sets going is remembered where damage already is (fire by a mixin, as Explosion't needs, decaying leaves and dying grass by mixins, falling sand and decorations by entity events); a chunk heals when its wait is over, at a speed with a longest time (Explosion't's speed-up for big damage), bottom up by default; nothing that will heal drops or spills (no duplication); players' blocks kept with the ground round them and the air over them, so a base in a crater is not buried. Not by snapshots of the land before a blast (a nuke's reach is millions of blocks, most of them never touched) nor by recording every block change near damage (a player's own building would be undone). |
 | 2026-11-04 | **Ships under every weapon; the stall after a nuke; the designator and mortars on ships** (the user, after playing the test world: aiming a Laser Designator at ships lagged the game, mortars said BLOCKED at ships, quitting after a nuke hung on "saving world", and fix what the docs listed as not yet: the beam, the freeze and a singularity's pull on ships and contraptions, a blast's fires and scorch on ships): §17.16. The slower weapons keep their ground's rules on a hull (the beam eats down from a hull's top as it eats the ground, the freeze ices it as the land, a blast scorches and kindles what it sees in the open), so a ship fares as a house would; a singularity pulls a free ship as it pulls a creature, the whole of it alike, and erases it as it comes into the horizon; a contraption only takes a plain block changed for another (nothing new is laid or lit on it). The lag: the designator's hit on a ship, in the ship's plot far off, sent its creature search out there; every hit on a ship is taken where the ship is seen. The stall, two of them: an emptied ship's box was the whole int range, so later blasts walked its plot's air (emptied ships are passed over now, and a ship's blocks are read from its own chunks); and, in main for every world, a crater lake's level was halved as `(lo + hi) >>> 1`, which ran off for good on levels below 0 (the test world's ground is at 0; §21.8). The test world's builder is left out of the 1.21.1 jar (the user: "If you put the world in the actual mod please remove it"). |
 | 2026-11-04 | **Blasts reach ships and contraptions** (asked whether blasts should damage Create contraptions and Create Aeronautics ships next, the user: "Yes please. damaging contraptions and ships would be sick."): §17.16, hulls. A blast breaks a hull's blocks by the world's own rules (core, a ray's energy through the hull's blocks, light blocks blown out), not vanilla's, so a ship fares as a house would; it shoves a ship as it shoves entities, each block it reaches in the open pushed away from the burst (20 × knockback × falloff a block, at the centre of pressure: one block alone flies as an entity would, a big hull far less, and a ship turns by the face toward the burst); antimatter and singularities erase what they reach. Create's contraptions are driven, so they are broken but not shoved; a chest or a machine blown off one goes with what it held, as in the world, and a train keeps its wheels. Missiles and shells strike ships and contraptions in their way. Main has the hulls and the pass (`Hulls`, `HullBlast`); the 1.21.1 build finds Sable's ships and Create's contraptions for them, and compiles against Sable itself for its physics. |

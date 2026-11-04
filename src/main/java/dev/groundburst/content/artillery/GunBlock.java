@@ -41,6 +41,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * model (GeckoLib) is drawn by its block entity; it faces where its barrel rests (away from whoever places it).
  */
 public class GunBlock extends BaseEntityBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends GunBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     private final Map<Direction, VoxelShape> shapes;

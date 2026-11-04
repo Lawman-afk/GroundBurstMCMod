@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:high_voltage_sign"
+        "recipe": "groundburst:high_voltage_sign"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

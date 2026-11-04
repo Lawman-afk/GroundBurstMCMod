@@ -22,7 +22,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -169,7 +169,7 @@ final class PowerStorageTests {
         DecontaminationShowerBlockEntity shower = helper.getBlockEntity(pos, DecontaminationShowerBlockEntity.class);
         shower.energy().generate(10_000);
         shower.tank(0).fillInternal(new FluidStack(Fluids.WATER, 1_000));
-        Pig pig = helper.spawnWithNoFreeWill(EntityTypes.PIG, pos);
+        Pig pig = helper.spawnWithNoFreeWill(EntityType.PIG, pos);
         pig.addEffect(new MobEffectInstance(MobEffects.POISON, 400));
         pig.igniteForSeconds(10);
         helper.succeedWhen(() -> {

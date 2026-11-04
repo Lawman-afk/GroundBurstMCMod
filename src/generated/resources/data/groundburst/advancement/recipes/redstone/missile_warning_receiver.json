@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:missile_warning_receiver"
+        "recipe": "groundburst:missile_warning_receiver"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

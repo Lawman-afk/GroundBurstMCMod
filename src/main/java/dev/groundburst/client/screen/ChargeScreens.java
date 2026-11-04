@@ -54,7 +54,7 @@ public final class ChargeScreens {
 
     public static void register() {
         ChargeBlock.screenHook = ChargeScreens::open;
-        RemoteDetonatorItem.frequencyHook = hand -> Minecraft.getInstance().gui.setScreen(new Frequency(hand));
+        RemoteDetonatorItem.frequencyHook = hand -> Minecraft.getInstance().setScreen(new Frequency(hand));
     }
 
     private static void open(BlockPos pos) {
@@ -63,7 +63,7 @@ public final class ChargeScreens {
         if (be == null) {
             return;
         }
-        mc.gui.setScreen(be.kind() == ChargeKind.TIMED_BOMB && be.counting() ? new Defuse(pos) : new Settings(pos, be));
+        mc.setScreen(be.kind() == ChargeKind.TIMED_BOMB && be.counting() ? new Defuse(pos) : new Settings(pos, be));
     }
 
     private static Component chosen(String key, boolean chosen) {

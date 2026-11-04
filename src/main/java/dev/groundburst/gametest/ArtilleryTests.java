@@ -21,7 +21,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
@@ -340,7 +340,7 @@ final class ArtilleryTests {
         floor(helper);
         var level = helper.getLevel();
         Vec3 at = helper.absoluteVec(new Vec3(8.5, 2.0, 8.5));
-        Pig pig = type == ShellType.CRYO ? helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(10, 2, 8)) : null;
+        Pig pig = type == ShellType.CRYO ? helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(10, 2, 8)) : null;
         ArtilleryShell.launch(level, at.add(0, 3, 0), new Vec3(0, -0.6, 0), calibre, type, null);
         helper.succeedWhen(() -> {
             AABB around = new AABB(at, at).inflate(9);

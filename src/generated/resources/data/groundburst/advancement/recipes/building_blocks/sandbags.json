@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:sandbags"
+        "recipe": "groundburst:sandbags"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

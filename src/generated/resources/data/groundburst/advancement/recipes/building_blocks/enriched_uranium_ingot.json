@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:enriched_uranium_ingot"
+        "recipe": "groundburst:enriched_uranium_ingot"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

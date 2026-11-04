@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:lead_block"
+        "recipe": "groundburst:lead_block"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

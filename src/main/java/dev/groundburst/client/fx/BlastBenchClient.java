@@ -34,10 +34,10 @@ public final class BlastBenchClient {
         Minecraft mc = Minecraft.getInstance();
         // Another window taking the focus must not pause the game (the integrated server would stop with it).
         mc.options.pauseOnLostFocus = false;
-        if (mc.gui.screen() instanceof net.minecraft.client.gui.screens.PauseScreen) {
-            mc.gui.setScreen(null);
+        if (mc.screen instanceof net.minecraft.client.gui.screens.PauseScreen) {
+            mc.setScreen(null);
         }
-        if (mc.level == null && !worldMade && mc.gui.screen() instanceof net.minecraft.client.gui.screens.TitleScreen) {
+        if (mc.level == null && !worldMade && mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen) {
             worldMade = true;
             try {
                 long seed = Long.getLong("groundburst.blastBench.seed", 1_230_027_951L);    // the seed every recorded bench ran on
@@ -46,7 +46,7 @@ public final class BlastBenchClient {
                         net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
                 String folder = dev.groundburst.client.fx.DevWorlds.fresh(mc, "blast_bench");
                 mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(seed, true, false),
-                        net.minecraft.world.level.levelgen.presets.WorldPresets::createNormalWorldDimensions, mc.gui.screen());
+                        net.minecraft.world.level.levelgen.presets.WorldPresets::createNormalWorldDimensions, mc.screen);
             } catch (java.io.IOException e) {
                 GroundBurst.LOGGER.error("Blast bench: could not make a world", e);
             }
@@ -56,6 +56,11 @@ public final class BlastBenchClient {
             return;
         }
         mc.options.renderDistance().set(12);
+        // Frames as fast as they come (the frame rates benches recorded before were the 30 a second the game slows to
+        // when nobody has touched the keys for a minute).
+        mc.options.enableVsync().set(false);
+        mc.options.framerateLimit().set(260);
+        mc.options.inactivityFpsLimit().set(net.minecraft.client.InactivityFpsLimit.MINIMIZED);
         BlastBench.fps = mc.getFps();
         long fired = BlastBench.fired;
         if (fired >= 0 && shot < MOMENTS.size() && mc.level.getGameTime() - fired >= MOMENTS.get(shot)) {
@@ -72,6 +77,6 @@ public final class BlastBenchClient {
     }
 
     private static void grab(Minecraft mc, String name) {
-        Screenshot.grab(mc.gameDirectory, name, mc.gameRenderer.mainRenderTarget(), 1, msg -> GroundBurst.LOGGER.info("Bench shot: {}", msg.getString()));
+        Screenshot.grab(mc.gameDirectory, name, mc.getMainRenderTarget(), 1, msg -> GroundBurst.LOGGER.info("Bench shot: {}", msg.getString()));
     }
 }

@@ -12,7 +12,6 @@ import dev.groundburst.content.multiblock.GBMultiblocks;
 import dev.groundburst.content.part.GBParts;
 import dev.groundburst.content.recipe.GBRecipes;
 import dev.groundburst.content.resource.GBResources;
-import dev.groundburst.datagen.GBDataGen;
 import dev.groundburst.gametest.GBGameTests;
 import dev.groundburst.network.GBNetwork;
 import dev.groundburst.registry.GBBlockEntities;
@@ -89,14 +88,13 @@ public class GroundBurst {
         GBNetwork.register(modBus);
         dev.groundburst.blast.GBBlast.register(modBus);
         dev.groundburst.heal.GBHeal.register(modBus);
-        GBDataGen.register(modBus);
         GBGameTests.register(modBus);
 
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(dev.groundburst.content.machine.MachineFluidInteraction::onRightClickBlock);
 
         GBLang.add(MODID + ".configuration.title", "Ground Burst Settings");
-        modContainer.registerConfig(ModConfig.Type.SYNCED, GBServerConfig.SPEC);
-        modContainer.registerConfig(ModConfig.Type.LOCAL, GBCommonConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SERVER, GBServerConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.COMMON, GBCommonConfig.SPEC);
     }
 
     public static Identifier id(String path) {

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:gas_centrifuge"
+        "recipe": "groundburst:gas_centrifuge"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -234,7 +234,7 @@ final class Debris {
                 continue;
             }
             this.pos.set(Math.floor(x), Math.floor(y), Math.floor(z));
-            int light = LightCoordsUtil.getLightCoords(level, this.pos);
+            int light = net.minecraft.client.renderer.LevelRenderer.getLightCoords(level, this.pos);
             float angle = c.prevAngle + (c.angle - c.prevAngle) * partial;
             drawn.add(new float[] {(float) (x - camera.x), (float) (y - camera.y), (float) (z - camera.z), c.size * shrink, c.ax, c.ay, c.az,
                     angle, c.u0, c.v0, c.u1, c.v1, Float.intBitsToFloat(light), Float.intBitsToFloat(0xFF000000 | c.tint)});

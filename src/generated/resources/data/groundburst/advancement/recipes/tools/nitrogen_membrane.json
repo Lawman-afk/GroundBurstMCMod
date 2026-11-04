@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:nitrogen_membrane"
+        "recipe": "groundburst:nitrogen_membrane"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -89,7 +89,7 @@ public class LaunchComputerScreen extends Screen {
     private static LaunchPayloads.@Nullable Scope latest;
 
     public static void register() {
-        LaunchComputerBlock.screenHook = pos -> Minecraft.getInstance().gui.setScreen(new LaunchComputerScreen(pos));
+        LaunchComputerBlock.screenHook = pos -> Minecraft.getInstance().setScreen(new LaunchComputerScreen(pos));
         LaunchPayloads.scopeHook = scope -> latest = scope;
         TerrainMap.register();
     }

@@ -510,7 +510,7 @@ public final class Charges {
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(reach))) {
             double d = e.position().distanceTo(c);
             if (d <= reach && !level.canSeeSky(BlockPos.containing(e.getEyePosition()))) {
-                e.damageCooldownTime = 0;
+                e.invulnerableTime = 0;
                 e.hurtServer(level, Blasts.damageSource(level, by, c), THERMOBARIC_INDOOR_DAMAGE * (float) (1 - d / reach));
             }
         }

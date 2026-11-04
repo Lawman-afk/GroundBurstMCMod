@@ -275,7 +275,7 @@ final class LaunchTests {
     private static void lockedMissile(GameTestHelper helper) {
         LaunchSiloBlockEntity s = formedSilo(helper);
         load(s);
-        var player = helper.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var player = dev.groundburst.port.Mock.serverPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         var slot = s.createMenu(0, player.getInventory(), player).getSlot(LaunchSiloBlockEntity.SLOT_MISSILE);
         helper.assertTrue(slot.mayPickup(player), "a waiting missile can be taken out");
         helper.assertTrue(s.launch(helper.getLevel(), helper.absolutePos(new BlockPos(14, 1, 14)), null), "it counts down");

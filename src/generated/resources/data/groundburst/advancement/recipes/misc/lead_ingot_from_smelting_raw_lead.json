@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:lead_ingot_from_smelting_raw_lead"
+        "recipe": "groundburst:lead_ingot_from_smelting_raw_lead"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

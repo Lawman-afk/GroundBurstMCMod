@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:radome_panel_stairs"
+        "recipe": "groundburst:radome_panel_stairs"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -68,8 +68,8 @@ public class ShellRenderer extends EntityRenderer<ArtilleryShell, ShellRenderer.
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         poseStack.pushPose();
-        poseStack.rotate(Axis.YP.rotationDegrees(state.yaw));
-        poseStack.rotate(Axis.XP.rotationDegrees(90 - state.pitch));   // its nose (+y) laid along +z, raised by its pitch
+        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(90 - state.pitch));   // its nose (+y) laid along +z, raised by its pitch
         poseStack.scale(state.scale, state.scale, state.scale);
         state.item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
         poseStack.popPose();

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:reinforced_concrete"
+        "recipe": "groundburst:reinforced_concrete"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

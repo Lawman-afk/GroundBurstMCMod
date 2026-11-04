@@ -34,7 +34,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -78,7 +78,7 @@ final class DesignatorTests {
      * player list (joining, it would be sent what the mod sends every player, which a test's connection cannot take).
      */
     private static ServerPlayer holder(GameTestHelper helper) {
-        ServerPlayer p = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        ServerPlayer p = (ServerPlayer) dev.groundburst.port.Mock.serverPlayer(helper, GameType.SURVIVAL);
         Connection connection = new Connection(PacketFlow.SERVERBOUND);
         new EmbeddedChannel(connection);
         new ServerGamePacketListenerImpl(helper.getLevel().getServer(), connection, p, CommonListenerCookie.createInitial(p.getGameProfile(), false));
@@ -108,7 +108,7 @@ final class DesignatorTests {
         helper.assertTrue(Math.abs(rel.z - WALL_Z) < 0.01 && Math.abs(rel.x - STAND.x) < 0.01 && !s.onEntity(), "on the wall's face ahead: " + rel);
         helper.assertTrue(LaserDesignatorItem.stored(d) == LaserDesignatorItem.CAPACITY - LaserDesignatorItem.USE,
                 "it drew its charge: " + LaserDesignatorItem.stored(d));
-        var villager = helper.spawn(EntityTypes.VILLAGER, new Vec3(STAND.x, 1, 8.5));    // as tall as the beam is high
+        var villager = helper.spawn(EntityType.VILLAGER, new Vec3(STAND.x, 1, 8.5));    // as tall as the beam is high
         villager.setNoAi(true);
         item.onUseTick(level, p, d, 1000);
         s = Designators.spotOf(level, p.getUUID());
@@ -125,7 +125,7 @@ final class DesignatorTests {
         LaunchTests.floor(helper);
         wall(helper);
         ServerLevel level = helper.getLevel();
-        Player p = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        Player p = dev.groundburst.port.Mock.serverPlayer(helper, GameType.SURVIVAL);
         stand(helper, p);
         helper.assertTrue(Designators.trace(level, p) != null, "a clear beam reaches the wall");
         ThrownExplosive g = new ThrownExplosive(level, p, new ItemStack(GBOrdnance.SMOKE_GRENADE.get()));
@@ -148,7 +148,7 @@ final class DesignatorTests {
      */
     private static void homes(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        Player leader = helper.makeMockServerPlayer(GameType.SURVIVAL), other = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        Player leader = dev.groundburst.port.Mock.serverPlayer(helper, GameType.SURVIVAL), other = dev.groundburst.port.Mock.serverPlayer(helper, GameType.SURVIVAL);
         Vec3 pad = helper.absoluteVec(new Vec3(8.5, 2, 8.5));
         Vec3 aim = pad.add(300, 0, 0);
         Vec3 spot = aim.add(0, 0, 120);
@@ -277,7 +277,7 @@ final class DesignatorTests {
                 new ItemStack(GBAssembly.MOTORS.get(MissileAssembly.rocketsFor(size).getLast().ordinal()).get()));
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_GUIDANCE, new ItemStack(GBAssembly.LASER_GUIDANCE.get()));
         helper.runAfterDelay(3, () -> {
-            Player p = helper.makeMockServerPlayer(GameType.SURVIVAL);
+            Player p = dev.groundburst.port.Mock.serverPlayer(helper, GameType.SURVIVAL);
             MachineMenu menu = (MachineMenu) a.createMenu(0, p.getInventory(), p);
             List<Component> lines = a.readout(menu);
             helper.assertTrue(lines.stream().anyMatch(c -> c.getString().toLowerCase(java.util.Locale.ROOT).contains("laser")),

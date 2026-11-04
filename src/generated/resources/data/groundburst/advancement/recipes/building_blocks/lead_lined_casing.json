@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:lead_lined_casing"
+        "recipe": "groundburst:lead_lined_casing"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

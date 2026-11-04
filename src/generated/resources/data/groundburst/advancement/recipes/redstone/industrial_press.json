@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:industrial_press"
+        "recipe": "groundburst:industrial_press"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

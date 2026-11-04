@@ -441,7 +441,7 @@ final class FreezeJob {
                 continue;
             }
             boolean boss = e.typeHolder().is(Tags.EntityTypes.BOSSES);
-            e.damageCooldownTime = 0;
+            e.invulnerableTime = 0;
             if (e.position().distanceTo(this.center) <= this.core) {
                 DamageSource frozen = this.level.damageSources().source(Freezes.FLASH_FROZEN, null, source);
                 if (boss) {

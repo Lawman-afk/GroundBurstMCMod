@@ -57,6 +57,10 @@ public final class ItemPreview {
     }
 
     public static final class Renderer extends PictureInPictureRenderer<State> {
+        public Renderer(net.minecraft.client.renderer.MultiBufferSource.BufferSource bufferSource_) {
+            super(bufferSource_);
+        }
+
         private final ItemStackRenderState item = new ItemStackRenderState();
 
         @Override
@@ -70,17 +74,20 @@ public final class ItemPreview {
         }
 
         @Override
-        protected void renderToTexture(State state, PoseStack pose, SubmitNodeCollector collector) {
+        protected void renderToTexture(State state, PoseStack pose) {
+            var features_ = net.minecraft.client.Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
+            SubmitNodeCollector collector = features_.getSubmitNodeStorage();
             Minecraft mc = Minecraft.getInstance();
-            mc.gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
+            mc.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
             // Screen y runs down; turn it the right way up, then tip it toward the viewer and spin it.
-            pose.rotateDegrees(Axis.ZP, 180);
-            pose.rotateDegrees(Axis.XP, -state.pitch());
-            pose.rotateDegrees(Axis.YP, state.yaw());
+            pose.mulPose(Axis.ZP.rotationDegrees(180));
+            pose.mulPose(Axis.XP.rotationDegrees(-state.pitch()));
+            pose.mulPose(Axis.YP.rotationDegrees(state.yaw()));
             pose.scale(state.size()[0], state.size()[1], state.size()[0]);
             pose.translate(-state.centre()[0], -state.centre()[1], -state.centre()[2]);
             mc.getItemModelResolver().updateForTopItem(this.item, state.stack(), ItemDisplayContext.NONE, mc.level, null, 0);
             this.item.submit(pose, collector, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
+            features_.renderAllFeatures();
         }
 
         @Override

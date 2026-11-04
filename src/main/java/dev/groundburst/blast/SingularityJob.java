@@ -188,7 +188,7 @@ final class SingularityJob {
             if (d <= h + 0.5 * e.getBbWidth()) {
                 this.mass += worth(e);
                 if (e instanceof LivingEntity living) {
-                    living.damageCooldownTime = 0;
+                    living.invulnerableTime = 0;
                     living.hurtServer(this.level, damage, 1.0E6f);
                 } else {
                     e.discard();

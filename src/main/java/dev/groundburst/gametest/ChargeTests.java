@@ -117,7 +117,7 @@ final class ChargeTests {
         fill(helper, 1, 1, 1, 15, 1, 15, Blocks.STONE);
         BlockPos at = new BlockPos(8, 2, 8);
         place(helper, GBOrdnance.C4.block().get(), at, Direction.UP);
-        var player = helper.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var player = dev.groundburst.port.Mock.serverPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(GBOrdnance.C4.item().get(), 8));
         for (int i = 0; i < 5; i++) {
             helper.useBlock(at, player);

@@ -131,9 +131,8 @@ public final class GBGameTests {
     private static void registerTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(GroundBurst.id("default"));
         for (TestSpec spec : SPECS) {
-            TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD,
-                    spec.structure(), spec.maxTicks(), 0, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, spec.sky(), 0);
-            event.registerTest(spec.function().getId(), new FunctionGameTestInstance(spec.function().key(), data));
+            TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(environment, spec.structure(), spec.maxTicks(), 0, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, spec.sky(), 0);
+            event.registerTest(spec.function().getId(), new FunctionGameTestInstance(spec.function().getKey(), data));
         }
     }
 }

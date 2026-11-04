@@ -73,6 +73,10 @@ public final class StructureView {
     }
 
     public static final class Renderer extends PictureInPictureRenderer<State> {
+        public Renderer(net.minecraft.client.renderer.MultiBufferSource.BufferSource bufferSource_) {
+            super(bufferSource_);
+        }
+
         private static final BlockDisplayContext CONTEXT = BlockDisplayContext.create();
         private final BlockModelRenderState block = new BlockModelRenderState();
 
@@ -87,14 +91,16 @@ public final class StructureView {
         }
 
         @Override
-        protected void renderToTexture(State state, PoseStack pose, SubmitNodeCollector collector) {
+        protected void renderToTexture(State state, PoseStack pose) {
+            var features_ = net.minecraft.client.Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
+            SubmitNodeCollector collector = features_.getSubmitNodeStorage();
             Minecraft mc = Minecraft.getInstance();
-            mc.gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
+            mc.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
             int[] size = state.size();
             // Screen y runs down; turn the world the right way up, then tip it toward the viewer and spin it.
-            pose.rotateDegrees(Axis.ZP, 180);
-            pose.rotateDegrees(Axis.XP, -state.pitch());
-            pose.rotateDegrees(Axis.YP, state.yaw());
+            pose.mulPose(Axis.ZP.rotationDegrees(180));
+            pose.mulPose(Axis.XP.rotationDegrees(-state.pitch()));
+            pose.mulPose(Axis.YP.rotationDegrees(state.yaw()));
             pose.translate(-size[0] / 2.0F, -size[1] / 2.0F, -size[2] / 2.0F);
             for (Block b : state.blocks()) {
                 if (state.layer() >= 0 && b.y() != state.layer()) {
@@ -106,6 +112,7 @@ public final class StructureView {
                 this.block.submit(pose, collector, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
                 pose.popPose();
             }
+            features_.renderAllFeatures();
         }
 
         @Override

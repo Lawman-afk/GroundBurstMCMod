@@ -17,6 +17,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * ({@link #MELT_CHANCE} a random tick): the cold killed it.
  */
 public class FrozenPlantBlock extends VegetationBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends FrozenPlantBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     public static final float MELT_CHANCE = 1f / 8;
     private static final VoxelShape SHAPE = Block.column(12, 0, 13);
 

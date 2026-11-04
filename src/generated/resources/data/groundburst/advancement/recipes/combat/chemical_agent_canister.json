@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:chemical_agent_canister"
+        "recipe": "groundburst:chemical_agent_canister"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

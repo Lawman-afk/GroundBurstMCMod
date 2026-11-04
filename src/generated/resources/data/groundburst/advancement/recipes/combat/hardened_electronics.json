@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:hardened_electronics"
+        "recipe": "groundburst:hardened_electronics"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

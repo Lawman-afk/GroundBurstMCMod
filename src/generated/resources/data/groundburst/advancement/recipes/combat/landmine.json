@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:landmine"
+        "recipe": "groundburst:landmine"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

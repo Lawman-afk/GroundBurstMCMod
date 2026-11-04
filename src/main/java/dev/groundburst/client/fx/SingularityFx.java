@@ -193,7 +193,7 @@ public final class SingularityFx {
             return;
         }
         Vec3 c = hole.center();
-        Vec3 ear = mc.gameRenderer.mainCamera().position();
+        Vec3 ear = mc.gameRenderer.getMainCamera().position();
         float q = Spectacle.quality();
         double k = hole.pullK(Spectacle.now());
         java.util.function.DoubleSupplier pull = () -> k * hole.boost(Spectacle.now());
@@ -237,7 +237,7 @@ public final class SingularityFx {
         double now = Spectacle.now();
         hole.grew(collapse.reach(), now - EASE);           // its last reach, at once
         hole.collapsed = now;
-        Vec3 eye = mc.gameRenderer.mainCamera().position();
+        Vec3 eye = mc.gameRenderer.getMainCamera().position();
         Vec3 c = hole.center();
         double d = eye.distanceTo(c);
         boolean seen = mc.level.clip(new ClipContext(eye, c, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, mc.player)).getType() == HitResult.Type.MISS;

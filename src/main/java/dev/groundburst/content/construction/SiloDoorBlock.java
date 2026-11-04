@@ -43,6 +43,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * the door and moves it.
  */
 public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends SiloDoorBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     public static final IntegerProperty U = IntegerProperty.create("u", 0, 14);
     public static final IntegerProperty GAP = IntegerProperty.create("gap", 0, 4);
     public static final BooleanProperty CENTER = BooleanProperty.create("center");

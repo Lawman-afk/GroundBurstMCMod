@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:sandbag_slab_from_sandbags_stonecutting"
+        "recipe": "groundburst:sandbag_slab_from_sandbags_stonecutting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:toxic_waste_tank"
+        "recipe": "groundburst:toxic_waste_tank"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

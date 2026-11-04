@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:energy_port"
+        "recipe": "groundburst:energy_port"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

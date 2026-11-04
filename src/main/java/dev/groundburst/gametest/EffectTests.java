@@ -17,7 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -88,7 +88,7 @@ final class EffectTests {
     /** A pig standing in thick gas is poisoned and hurt. */
     private static void poisons(GameTestHelper helper) {
         floor(helper);
-        var pig = helper.spawn(EntityTypes.PIG, new BlockPos(8, 2, 8));
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(8, 2, 8));
         pig.setNoAi(true);
         gas(helper).fill(helper.getLevel(), helper.absoluteVec(new Vec3(8, 2, 8)), 3, GasAgent.CHLORINE, 1.5f);
         float before = pig.getHealth();
@@ -158,7 +158,7 @@ final class EffectTests {
         floor(helper);
         helper.setBlock(new BlockPos(6, 1, 8), Blocks.WATER);
         helper.setBlock(new BlockPos(10, 1, 8), Blocks.LAVA);
-        var pig = helper.spawn(EntityTypes.PIG, new BlockPos(8, 2, 10));
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(8, 2, 10));
         Frost.freeze(helper.getLevel(), helper.absoluteVec(new Vec3(8.5, 2, 8.5)), 5, 100, null);
         helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(6, 1, 8))).is(Blocks.PACKED_ICE)
                 || helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(6, 1, 8))).is(Blocks.ICE), "water frozen");
@@ -171,7 +171,7 @@ final class EffectTests {
     /** A frozen pig hit hard breaks apart. */
     private static void shatter(GameTestHelper helper) {
         floor(helper);
-        var pig = helper.spawn(EntityTypes.PIG, new BlockPos(8, 2, 8));
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(8, 2, 8));
         Frost.freeze(helper.getLevel(), helper.absoluteVec(new Vec3(8.5, 2, 8.5)), 3, 100, null);
         pig.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), Frost.SHATTER_DAMAGE);
         helper.succeedWhen(() -> helper.assertTrue(!pig.isAlive(), "shattered"));

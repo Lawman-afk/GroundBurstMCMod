@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:timed_bomb"
+        "recipe": "groundburst:timed_bomb"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

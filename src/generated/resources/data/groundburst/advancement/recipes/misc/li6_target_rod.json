@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:li6_target_rod"
+        "recipe": "groundburst:li6_target_rod"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

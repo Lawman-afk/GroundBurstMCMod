@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:massive_ordnance_charge"
+        "recipe": "groundburst:massive_ordnance_charge"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

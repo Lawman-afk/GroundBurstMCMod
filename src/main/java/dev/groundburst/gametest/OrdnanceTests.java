@@ -6,7 +6,7 @@ import dev.groundburst.content.ordnance.ThrownExplosive;
 import dev.groundburst.content.ordnance.ToxicSludgeBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
@@ -50,7 +50,7 @@ final class OrdnanceTests {
 
     /** A grenade of this kind thrown by a mock player, placed at {@code at} (relative) and moving at {@code velocity}. */
     private static ThrownExplosive grenade(GameTestHelper helper, Item item, Vec3 at, Vec3 velocity) {
-        var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        var player = dev.groundburst.port.Mock.serverPlayer(helper, GameType.SURVIVAL);
         ThrownExplosive g = new ThrownExplosive(helper.getLevel(), player, new ItemStack(item));
         g.setPos(helper.absoluteVec(at));
         g.setDeltaMovement(velocity);
@@ -130,8 +130,8 @@ final class OrdnanceTests {
     /** A spider hunting a pig inside the smoke loses its target. */
     private static void smoke(GameTestHelper helper) {
         fill(helper, 1, 1, 1, 15, 1, 15, Blocks.STONE);
-        var pig = helper.spawn(EntityTypes.PIG, new BlockPos(8, 2, 9));
-        var spider = helper.spawn(EntityTypes.SPIDER, new BlockPos(3, 2, 3));
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(8, 2, 9));
+        var spider = helper.spawn(EntityType.SPIDER, new BlockPos(3, 2, 3));
         ThrownExplosive g = grenade(helper, GBOrdnance.SMOKE_GRENADE.get(), new Vec3(8.5, 2.05, 8.5), Vec3.ZERO);
         g.setFuseForTest(2);
         spider.setTarget(pig);
@@ -146,14 +146,14 @@ final class OrdnanceTests {
     /** A player standing in the smoke can only be noticed from a tenth of the usual range. */
     private static void hidden(GameTestHelper helper) {
         fill(helper, 1, 1, 1, 15, 1, 15, Blocks.STONE);
-        var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        var player = dev.groundburst.port.Mock.serverPlayer(helper, GameType.SURVIVAL);
         player.setPos(helper.absoluteVec(new Vec3(8.5, 2, 9.5)));
-        var zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(2, 2, 2));
-        helper.assertTrue(player.getVisibilityPercent(helper.getLevel(), zombie) > 0.5, "seen plainly before the smoke");
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 2, 2));
+        helper.assertTrue(player.getVisibilityPercent(zombie) > 0.5, "seen plainly before the smoke");
         ThrownExplosive g = grenade(helper, GBOrdnance.SMOKE_GRENADE.get(), new Vec3(8.5, 2.05, 8.5), Vec3.ZERO);
         g.setFuseForTest(2);
         helper.runAfterDelay(30, () -> {
-            double seen = player.getVisibilityPercent(helper.getLevel(), zombie);
+            double seen = player.getVisibilityPercent(zombie);
             helper.assertTrue(seen <= 0.11, "hidden in the smoke (visibility " + seen + ")");
             g.discard();
             helper.succeed();
@@ -163,8 +163,8 @@ final class OrdnanceTests {
     /** Two pigs in the poison gas: the bare one is poisoned and hurt, the one in a full hazmat suit is untouched. */
     private static void gas(GameTestHelper helper) {
         fill(helper, 1, 1, 1, 15, 1, 15, Blocks.STONE);
-        var bare = helper.spawn(EntityTypes.PIG, new BlockPos(7, 2, 8));
-        var suited = helper.spawn(EntityTypes.PIG, new BlockPos(9, 2, 8));
+        var bare = helper.spawn(EntityType.PIG, new BlockPos(7, 2, 8));
+        var suited = helper.spawn(EntityType.PIG, new BlockPos(9, 2, 8));
         bare.setNoAi(true);
         suited.setNoAi(true);
         wear(suited, dev.groundburst.content.gear.GBArmor.HAZMAT_SET);
@@ -184,7 +184,7 @@ final class OrdnanceTests {
     /** A toxin grenade bursting on stone splashes sludge round it and poisons a pig standing there. */
     private static void toxin(GameTestHelper helper) {
         fill(helper, 1, 1, 1, 15, 1, 15, Blocks.STONE);
-        var pig = helper.spawn(EntityTypes.PIG, new BlockPos(9, 2, 8));
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(9, 2, 8));
         pig.setNoAi(true);
         grenade(helper, GBOrdnance.TOXIN_GRENADE.get(), new Vec3(8.5, 4, 8.5), new Vec3(0, -0.3, 0));
         helper.succeedWhen(() -> {
@@ -241,7 +241,7 @@ final class OrdnanceTests {
 
     /** Each suit piece keeps out its share of a dose (hood 20%), a full suit all of it. */
     private static void shares(GameTestHelper helper) {
-        var pig = helper.spawn(EntityTypes.PIG, new BlockPos(8, 2, 8));
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(8, 2, 8));
         pig.setNoAi(true);
         helper.assertTrue(dev.groundburst.content.gear.GBArmor.chemicalProtection(pig) == 0, "nothing without a suit");
         pig.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(dev.groundburst.content.gear.GBArmor.HAZMAT_HOOD.get()));

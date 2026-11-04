@@ -42,7 +42,7 @@ public final class GBSuperweapons {
 
     public static final WithItem<MultiblockControllerBlock> SCUD_STORM_CONTROLLER = GBBlocks.register("scud_storm", "SCUD Storm Controller",
             GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBSuperweapons.SCUD_STORM_ENTITY),
-            p -> p.mapColor(MapColor.SAND).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.SAND).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ScudStormBlockEntity>> SCUD_STORM_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("scud_storm", () -> new BlockEntityType<>(ScudStormBlockEntity::new,
                     SCUD_STORM_CONTROLLER.block().get()));
@@ -57,7 +57,7 @@ public final class GBSuperweapons {
 
     public static final WithItem<MultiblockControllerBlock> NUCLEAR_MISSILE_CONTROLLER = GBBlocks.register("nuclear_missile_silo",
             "Nuclear Missile Silo Controller", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBSuperweapons.NUCLEAR_MISSILE_ENTITY),
-            p -> p.mapColor(MapColor.COLOR_RED).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.COLOR_RED).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NuclearMissileBlockEntity>> NUCLEAR_MISSILE_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("nuclear_missile_silo", () -> new BlockEntityType<>(NuclearMissileBlockEntity::new,
                     NUCLEAR_MISSILE_CONTROLLER.block().get()));
@@ -74,7 +74,7 @@ public final class GBSuperweapons {
 
     public static final WithItem<MultiblockControllerBlock> PARTICLE_CANNON_CONTROLLER = GBBlocks.register("particle_uplink_cannon",
             "Particle Uplink Cannon Controller", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBSuperweapons.PARTICLE_CANNON_ENTITY),
-            p -> p.mapColor(MapColor.COLOR_BLUE).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.COLOR_BLUE).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ParticleCannonBlockEntity>> PARTICLE_CANNON_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("particle_uplink_cannon", () -> new BlockEntityType<>(ParticleCannonBlockEntity::new,
                     PARTICLE_CANNON_CONTROLLER.block().get()));
@@ -82,14 +82,14 @@ public final class GBSuperweapons {
     // --- the ammunition's factories ---
     public static final WithItem<MultiblockControllerBlock> ARMS_DEALER_CONTROLLER = GBBlocks.register("arms_dealer", "Arms Dealer Controller",
             GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBSuperweapons.ARMS_DEALER_ENTITY),
-            p -> p.mapColor(MapColor.SAND).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.SAND).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AmmoFactoryBlockEntity>> ARMS_DEALER_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("arms_dealer", () -> new BlockEntityType<>(
                     (pos, state) -> new AmmoFactoryBlockEntity(GBSuperweapons.ARMS_DEALER_ENTITY.get(), pos, state, AmmoFactoryBlockEntity.Kind.ARMS_DEALER),
                     ARMS_DEALER_CONTROLLER.block().get()));
     public static final WithItem<MultiblockControllerBlock> WAR_FACTORY_CONTROLLER = GBBlocks.register("war_factory", "War Factory Controller",
             GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBSuperweapons.WAR_FACTORY_ENTITY),
-            p -> p.mapColor(MapColor.COLOR_RED).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.COLOR_RED).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AmmoFactoryBlockEntity>> WAR_FACTORY_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("war_factory", () -> new BlockEntityType<>(
                     (pos, state) -> new AmmoFactoryBlockEntity(GBSuperweapons.WAR_FACTORY_ENTITY.get(), pos, state, AmmoFactoryBlockEntity.Kind.WAR_FACTORY),
@@ -531,6 +531,6 @@ public final class GBSuperweapons {
 
     private static WithItem<MultiblockPartBlock> part(String id, String english, MapColor color, SoundType sound) {
         return GBBlocks.register(id, english, GBTab.MISSILES, MultiblockPartBlock::new,
-                p -> p.mapColor(color).strength(4f, 10f).requiresCorrectToolForDrops().sound(sound).pushReaction(PushReaction.IMMOVEABLE));
+                p -> p.mapColor(color).strength(4f, 10f).requiresCorrectToolForDrops().sound(sound).pushReaction(PushReaction.BLOCK));
     }
 }

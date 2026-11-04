@@ -6,7 +6,7 @@ import dev.groundburst.content.ordnance.charge.ChargeKind;
 import dev.groundburst.content.ordnance.charge.Charges;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.block.Blocks;
@@ -58,10 +58,10 @@ final class StormTests {
      */
     private static void chain(GameTestHelper helper) {
         Vec3 eye = storm(helper, 100, 0.001);
-        Creeper creeper = helper.spawnWithNoFreeWill(EntityTypes.CREEPER, new BlockPos(4, 1, 4));
-        Pig near = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(6, 1, 4));
-        Pig next = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(7, 1, 7));
-        Pig far = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(13, 1, 13));
+        Creeper creeper = helper.spawnWithNoFreeWill(EntityType.CREEPER, new BlockPos(4, 1, 4));
+        Pig near = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(6, 1, 4));
+        Pig next = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(7, 1, 7));
+        Pig far = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(13, 1, 13));
         Storms.strikeForTest(helper.getLevel(), eye, creeper);
         helper.assertTrue(creeper.isPowered(), "the creeper is charged");
         helper.assertTrue(near.getHealth() < near.getMaxHealth(), "the chain hurts the pig beside it: " + near.getHealth());
@@ -125,7 +125,7 @@ final class StormTests {
      */
     private static void rod(GameTestHelper helper) {
         Vec3 eye = storm(helper, 200, 5);
-        helper.setBlock(new BlockPos(8, 1, 10), Blocks.LIGHTNING_ROD.asList().getFirst());
+        helper.setBlock(new BlockPos(8, 1, 10), Blocks.LIGHTNING_ROD);
         int[] most = {0};
         helper.onEachTick(() -> most[0] = Math.max(most[0], Storms.strikesAt(helper.getLevel(), eye)));
         helper.runAfterDelay(190, () -> {

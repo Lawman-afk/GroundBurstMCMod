@@ -191,7 +191,7 @@ public final class GBAssemblers {
             java.util.function.Supplier<DeferredHolder<BlockEntityType<?>, BlockEntityType<MissileAssemblerBlockEntity>>> type) {
         return GBBlocks.register(c.id, c.english, GBTab.MISSILES, p -> new MultiblockControllerBlock(p, () -> type.get().get()),
                 p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                        .pushReaction(PushReaction.IMMOVEABLE));
+                        .pushReaction(PushReaction.BLOCK));
     }
 
     private static DeferredHolder<BlockEntityType<?>, BlockEntityType<MissileAssemblerBlockEntity>> entity(AssemblerClass c,

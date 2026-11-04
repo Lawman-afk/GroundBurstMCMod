@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:hv_cable"
+        "recipe": "groundburst:hv_cable"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

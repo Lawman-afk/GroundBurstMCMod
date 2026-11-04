@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:assembly_bench"
+        "recipe": "groundburst:assembly_bench"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

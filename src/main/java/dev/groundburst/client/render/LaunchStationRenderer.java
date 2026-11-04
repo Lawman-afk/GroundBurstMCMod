@@ -85,7 +85,7 @@ public class LaunchStationRenderer extends MachineGeoRenderer<LaunchStationBlock
         pose.translate(0.5, 0, 0.5);
         tryRotateByBlockstate(renderPassInfo, pose);
         // Text faces +z; the screen faces the model's front (-z): turned round, then back to the screen's face.
-        pose.rotate(Axis.YP.rotationDegrees(180));
+        pose.mulPose(Axis.YP.rotationDegrees(180));
         pose.translate(0, MIDDLE_Y, -FACE);
         pose.scale(SCALE, -SCALE, SCALE);
         float height = 9 * TITLE + 3 * 10 + 2;

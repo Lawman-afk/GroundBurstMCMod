@@ -55,8 +55,8 @@ public class GrenadeRenderer extends EntityRenderer<ThrownExplosive, GrenadeRend
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         poseStack.pushPose();
         poseStack.translate(0, 0.15, 0);
-        poseStack.rotate(Axis.YP.rotationDegrees(state.yaw));
-        poseStack.rotate(Axis.XP.rotationDegrees(state.spin));
+        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(state.spin));
         state.item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
         poseStack.popPose();
         super.submit(state, poseStack, collector, camera);

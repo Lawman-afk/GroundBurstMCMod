@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:mortar_shell_incendiary"
+        "recipe": "groundburst:mortar_shell_incendiary"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

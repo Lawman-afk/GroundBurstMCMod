@@ -59,7 +59,7 @@ public class RadarArrayScreen extends Screen {
     private static LaunchPayloads.@Nullable Radar latest;
 
     public static void register() {
-        RadarArrayBlock.screenHook = pos -> Minecraft.getInstance().gui.setScreen(new RadarArrayScreen(pos));
+        RadarArrayBlock.screenHook = pos -> Minecraft.getInstance().setScreen(new RadarArrayScreen(pos));
         LaunchPayloads.radarHook = radar -> latest = radar;
     }
 

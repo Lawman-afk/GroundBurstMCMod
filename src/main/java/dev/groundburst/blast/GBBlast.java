@@ -21,7 +21,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 
 /** Wiring for the explosion engine: the blast profile registry, the tick hooks and the {@code /groundburst blast} command. */
 public final class GBBlast {
@@ -32,7 +32,7 @@ public final class GBBlast {
     private GBBlast() {}
 
     public static void register(IEventBus modBus) {
-        modBus.addListener((NewDatapackRegistryEvent event) -> event.worldRegistry(BlastProfile.REGISTRY, BlastProfile.CODEC, BlastProfile.CODEC));
+        modBus.addListener((DataPackRegistryEvent.NewRegistry event) -> event.dataPackRegistry(BlastProfile.REGISTRY, BlastProfile.CODEC, BlastProfile.CODEC));
         GBLang.add("death.attack." + GroundBurst.MODID + ".blast", "%1$s was blown to pieces");
         GBLang.add("death.attack." + GroundBurst.MODID + ".blast.player", "%1$s was blown to pieces by %2$s");
         GBLang.add("death.attack." + GroundBurst.MODID + ".annihilated", "%1$s was annihilated");
@@ -67,6 +67,7 @@ public final class GBBlast {
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> commands(event.getDispatcher()));
         modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent event) -> event.register(BlastChunks.TICKETS));
         BlastBench.register();
+        PlayBench.register();
         // Players arriving while blasts run are told about them (sound timing, the shockwave in slice 5c).
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) -> {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {

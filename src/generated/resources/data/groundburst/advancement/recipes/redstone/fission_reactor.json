@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:fission_reactor"
+        "recipe": "groundburst:fission_reactor"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

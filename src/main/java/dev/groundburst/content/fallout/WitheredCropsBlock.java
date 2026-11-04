@@ -18,6 +18,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * ({@link #CRUMBLE_CHANCE} a random tick).
  */
 public class WitheredCropsBlock extends VegetationBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends WitheredCropsBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     public static final float CRUMBLE_CHANCE = 1f / 30;
     private static final VoxelShape SHAPE = Block.column(16, 0, 10);
 

@@ -75,7 +75,7 @@ public class CryoIceBlock extends HalfTransparentBlock {
 
     /** Broken over water (or over what vanilla's ice melts on), still water's ice leaves its water, as vanilla's does. */
     @Override
-    public void playerDestroy(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity,
+    public void playerDestroy(net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity,
             ItemStack destroyedWith) {
         super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
         if (!state.getValue(SOURCE) || EnchantmentHelper.hasTag(destroyedWith, EnchantmentTags.PREVENTS_ICE_MELTING)
@@ -83,7 +83,7 @@ public class CryoIceBlock extends HalfTransparentBlock {
             return;
         }
         BlockState below = level.getBlockState(pos.below());
-        if (below.is(BlockTags.ICE_MELTS_WHEN_DESTROYED_ABOVE) || below.liquid()) {
+        if (below.blocksMotion() || below.liquid()) {
             level.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
         }
     }

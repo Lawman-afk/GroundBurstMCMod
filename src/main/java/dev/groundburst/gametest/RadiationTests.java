@@ -20,7 +20,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -115,7 +115,7 @@ final class RadiationTests {
 
     /** Plutonium in the pocket doses; inside a Lead Container it does not; the container takes only radioactive items. */
     private static void carried(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        var player = dev.groundburst.port.Mock.serverPlayer(helper, GameType.SURVIVAL);
         player.getInventory().setItem(0, new ItemStack(GBNuclear.PLUTONIUM_INGOT.get(), 10));
         float loose = Emitters.carried(player);
         float each = Emitters.radioactivity(GBNuclear.PLUTONIUM_INGOT.get());
@@ -135,8 +135,8 @@ final class RadiationTests {
         var level = helper.getLevel();
         Vec3 centre = helper.absoluteVec(new Vec3(8, 2, 8));
         RadiationSources.of(level).add(new RadiationSource(centre, 12, 360_000, 100_000, level.getGameTime()));
-        var pig = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(8, 1, 8));
-        var zombie = helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, new BlockPos(9, 1, 8));
+        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(8, 1, 8));
+        var zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(9, 1, 8));
         helper.succeedWhen(() -> {
             helper.assertTrue(Radiation.dose(pig) > 50, "the pig's dose: " + Radiation.dose(pig));
             helper.assertTrue(Radiation.dose(zombie) == 0, "the undead take none");
@@ -148,7 +148,7 @@ final class RadiationTests {
     private static void stages(GameTestHelper helper) {
         helper.assertTrue(RadiationState.stage(99) == 0 && RadiationState.stage(100) == 1 && RadiationState.stage(450) == 3
                 && RadiationState.stage(1_000) == 5, "stages at 100, 200, 400, 600, 1 000 rad");
-        var pig = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(8, 1, 8));
+        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(8, 1, 8));
         Radiation.addDose(pig, 450);
         MobEffectInstance sick = pig.getEffect(GBEffects.RADIATION_SICKNESS);
         helper.assertTrue(sick != null && sick.getAmplifier() == 2, "Radiation Sickness III: " + sick);
@@ -163,7 +163,7 @@ final class RadiationTests {
     private static void medicine(GameTestHelper helper) {
         floor(helper);
         var level = helper.getLevel();
-        var pig = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(4, 1, 4));
+        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(4, 1, 4));
         Radiation.setDose(pig, 300);
         pig.addEffect(new MobEffectInstance(GBEffects.RAD_AWAY, 600));
         Radiation.step(pig, Radiation.state(pig), 0);
@@ -171,13 +171,13 @@ final class RadiationTests {
         helper.assertTrue(Math.abs(after - (300 - Radiation.RAD_AWAY_PER_SECOND - Radiation.RECOVERY)) < 0.01, "a second of Rad-Away: " + after);
         Vec3 centre = helper.absoluteVec(new Vec3(12, 2, 12));
         RadiationSources.of(level).add(new RadiationSource(centre, 6, 10_000, 100_000, level.getGameTime()));
-        var sheep = helper.spawnWithNoFreeWill(EntityTypes.SHEEP, new BlockPos(12, 1, 12));
+        var sheep = helper.spawnWithNoFreeWill(EntityType.SHEEP, new BlockPos(12, 1, 12));
         float bare = Radiation.rateAt(level, sheep, false);
         sheep.addEffect(new MobEffectInstance(GBEffects.POTASSIUM_IODIDE, 600));
         float iodide = Radiation.rateAt(level, sheep, false);
         RadiationSources.of(level).removeNear(centre, 1);
         helper.assertTrue(bare > 0 && Math.abs(iodide - bare * Radiation.IODINE_UPTAKE) < 0.01, "iodide halves it: " + bare + " -> " + iodide);
-        var patient = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(2, 1, 12));
+        var patient = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(2, 1, 12));
         Radiation.setDose(patient, 450);
         ItemStack injector = new ItemStack(RadiationItems.ANTI_RAD_INJECTOR.get());
         injector.getItem().finishUsingItem(injector, level, patient);
@@ -189,7 +189,7 @@ final class RadiationTests {
     /** A new counter is charged with its alarm at 100 RAD/h; held, it counts; flat or knocked out by an EMP, it does not. */
     private static void geiger(GameTestHelper helper) {
         var level = helper.getLevel();
-        var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        var player = dev.groundburst.port.Mock.serverPlayer(helper, GameType.SURVIVAL);
         ItemStack counter = new ItemStack(RadiationItems.GEIGER_COUNTER.get());
         helper.assertTrue(GeigerCounterItem.stored(counter) == GeigerCounterItem.CAPACITY, "new counters come charged");
         helper.assertTrue(GeigerCounterItem.alarm(counter) == 100, "their alarm at 100 RAD/h");

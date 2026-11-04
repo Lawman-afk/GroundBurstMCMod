@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:tungsten_crucible"
+        "recipe": "groundburst:tungsten_crucible"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

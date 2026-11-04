@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:uranium_ingot_from_uranium_block"
+        "recipe": "groundburst:uranium_ingot_from_uranium_block"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

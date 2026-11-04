@@ -101,7 +101,7 @@ public final class ClientBlasts {
         if (mc.level == null) {
             return;
         }
-        Vec3 ear = mc.gameRenderer.mainCamera().position();
+        Vec3 ear = mc.gameRenderer.getMainCamera().position();
         double distance = ear.distanceTo(start.center());
         double reach = Math.max(8, start.reach());
         double k = distance / reach;
@@ -130,7 +130,7 @@ public final class ClientBlasts {
             return;
         }
         long now = mc.level.getGameTime();
-        Vec3 ear = mc.gameRenderer.mainCamera().position();
+        Vec3 ear = mc.gameRenderer.getMainCamera().position();
         for (Iterator<Pending> it = PENDING.iterator(); it.hasNext(); ) {
             Pending p = it.next();
             if (p.at() > now) {
