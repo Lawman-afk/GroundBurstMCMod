@@ -65,6 +65,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * <li>Its <b>cold snap</b> then holds the region for {@link #life} ticks ({@link Freezes#cold}): whatever stands in it
  * and can freeze (vanilla's rule: leather keeps the cold out) freezes as in powder snow, faster near the middle and in
  * the open, and once frozen through takes more cold damage than powder snow gives.</li>
+ * <li>A ship's or a contraption's blocks freeze by the same rules as its front passes them ({@link HullEffects.Freeze}).</li>
  * </ul>
  * Chunks are kept loaded until the front has run out and the spires have grown. Not saved.
  */
@@ -98,6 +99,8 @@ final class FreezeJob {
     private boolean released;
     private int shattered;
     private final BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
+    /** Its work on ships' and contraptions' blocks as its front passes them ({@link Hulls}). */
+    private final HullEffects.Freeze hulls = new HullEffects.Freeze(this);
     /**
      * Six waves of differing length and heading over the land (x and z steps, phase each): the snow's drifts, so it lies
      * in swells (after the first look from the air: three regular waves drew petals round the middle).
@@ -142,6 +145,10 @@ final class FreezeJob {
 
     int age() {
         return (int) (this.level.getGameTime() - this.startTick);
+    }
+
+    RandomSource random() {
+        return this.random;
     }
 
     FreezePayloads.Start startPayload() {
@@ -208,6 +215,7 @@ final class FreezeJob {
             this.cursor++;
         }
         this.front = this.cursor >= this.columns.length ? this.radius : (float) Math.min(next, Math.sqrt(this.columns[this.cursor] >>> 32));
+        this.hulls.advance(this.front);                      // ships and contraptions it has reached, by the land's rules
         catchUp();
     }
 
@@ -231,7 +239,7 @@ final class FreezeJob {
      * The snow's drift at a column: about -1 to 1, swelling and falling over ten to thirty blocks, a little rough block
      * to block (so a drift's edge is not drawn with a compass).
      */
-    private double drift(int x, int z) {
+    double drift(int x, int z) {
         double s = 0;
         for (int i = 0; i < 6; i++) {
             s += Math.sin(x * this.waves[3 * i] + z * this.waves[3 * i + 1] + this.waves[3 * i + 2]);
@@ -332,7 +340,7 @@ final class FreezeJob {
     }
 
     /** Water (and the plants that grow in it) frozen to cryo ice; null for anything else (a waterlogged block keeps its water). */
-    private static @Nullable BlockState frozenWater(BlockState s) {
+    static @Nullable BlockState frozenWater(BlockState s) {
         FluidState f = s.getFluidState();
         if (!f.is(FluidTags.WATER)) {
             return null;

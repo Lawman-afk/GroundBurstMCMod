@@ -48,6 +48,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * catch.</li>
  * <li>Whatever is in its core, under it anywhere from the sky down, is vaporised (its damage goes through armour and
  * every grace period); round it, things catch fire and are scalded.</li>
+ * <li>A ship or a contraption over the ground under it is eaten down through from its top, and scorched and kindled
+ * round it, as the ground is ({@link HullEffects.Beam}).</li>
  * </ul>
  * It burns while its cannon keeps firing it (power cut, knocked out, broken: the beam is gone). Terrain is left alone
  * when the server says so (as for blasts: the master switch, protected dimensions, the spawn area). The chunks round it
@@ -65,7 +67,7 @@ final class ParticleBeamJob {
      * reach): a column the beam passes at full speed is round it about a second or three, so a third or so of them burn;
      * round a beam parked its whole time, most.
      */
-    private static final float FIRE_CHANCE = 0.012f;
+    static final float FIRE_CHANCE = 0.012f;
 
     final int netId;
     final ServerLevel level;
@@ -94,6 +96,8 @@ final class ParticleBeamJob {
     private final LongOpenHashSet scorched = new LongOpenHashSet();
     private final BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
     private boolean ended;
+    /** Its work on ships' and contraptions' blocks under it ({@link Hulls}). */
+    private final HullEffects.Beam hulls;
 
     ParticleBeamJob(int netId, ServerLevel level, @Nullable BlockPos cannon, @Nullable Vec3 from, BlockPos aim, @Nullable UUID by, boolean dry) {
         this.netId = netId;
@@ -121,6 +125,7 @@ final class ParticleBeamJob {
         this.spawnRadius = spawnR;
         this.chunks = keep();
         this.heat.defaultReturnValue(0);
+        this.hulls = new HullEffects.Beam(level, this.random, this::spared);
     }
 
     int age() {
@@ -161,6 +166,7 @@ final class ParticleBeamJob {
         if (age >= this.uplink) {
             if (this.terrain) {
                 burn();
+                this.hulls.burn(this.x, this.y, this.z);       // and through any ship over it, from the top
             }
             if (this.hurts) {
                 hurt(age);

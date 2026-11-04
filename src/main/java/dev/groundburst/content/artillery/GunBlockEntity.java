@@ -416,7 +416,8 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
             double range = Math.hypot(laidOn.x - muzzle.x, laidOn.z - muzzle.z);
             Vec3 off = Ballistics.scatter(level.getRandom(), radius(range), fall.stretch(), this.yaw);
             double x = laidOn.x + off.x, z = laidOn.z + off.z;
-            Vec3 target = new Vec3(x, Ballistics.ground(level, x, z, laidOn.y), z);
+            // On a ship (above the world's own ground, which its heightmap knows), at the height it was laid on.
+            Vec3 target = new Vec3(x, fall.aboard() ? laidOn.y : Ballistics.ground(level, x, z, laidOn.y), z);
             this.lastSpread = target;
             float yaw2 = Ballistics.yaw(muzzle, target);
             double hx = Math.hypot(target.x - muzzle.x, target.z - muzzle.z), dy = target.y - muzzle.y;

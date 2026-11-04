@@ -20,9 +20,11 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Blocks other mods keep apart from where they are seen (DESIGN.md §17.16): a ship's, in a plot of its own far off
- * (Create Aeronautics, on Sable), or a moving contraption's, held by its entity (Create). A blast breaks and shoves them
- * where they are seen ({@link HullBlast}) and a missile or a shell strikes them there ({@link #clip}). Ground Burst knows
- * none: another mod's support (the 1.21.1 build's) adds a {@link Finder} for the ones it moves.
+ * (Create Aeronautics, on Sable), or a moving contraption's, held by its entity (Create). A blast breaks, scorches, sets
+ * alight and shoves them where they are seen ({@link HullBlast}), a particle beam eats down through them and a deep
+ * freeze ices them over ({@link HullEffects}), a singularity draws them in, and a missile or a shell strikes them there
+ * ({@link #clip}). Ground Burst knows none: another mod's support (the 1.21.1 build's) adds a {@link Finder} for the ones
+ * it moves.
  */
 public final class Hulls {
     /** One structure's blocks, in its own block coordinates, as a blast or a missile meets them. */
@@ -61,8 +63,24 @@ public final class Hulls {
         /** Breaks its block at a place of its own, as a blast breaks the world's: nothing dropped, nothing it held let out. */
         void destroy(BlockPos local);
 
+        /**
+         * Puts {@code state} at a place of its own, as a blast or a freeze changes the world's blocks (scorched, frozen,
+         * set alight, snowed on); false if it cannot (a contraption takes no new blocks, nor changes one that holds
+         * anything).
+         */
+        default boolean set(BlockPos local, BlockState state) {
+            return false;
+        }
+
         /** A shove: an impulse (a direction of its own, a block's mass times blocks a second) at a point of its own. Only a hull that moves freely takes it. */
         default void push(Vec3 localPoint, Vec3 localImpulse) {}
+
+        /**
+         * A pull on the whole of it at once, as gravity pulls every part alike: {@code pull} is the change in velocity
+         * (blocks a tick, in the world) it makes this tick at a point in the world, taken at the hull's middle. Only a
+         * hull that moves freely takes it.
+         */
+        default void pull(java.util.function.Function<Vec3, Vec3> pull) {}
 
         /** The blast is done with it for this tick: what changed goes to the players who see it. */
         default void flush() {}
@@ -141,6 +159,23 @@ public final class Hulls {
             return r == null ? null : r.getLocation();
         }, h -> null);
         return hit == null ? null : hull.toWorld(hit);
+    }
+
+    /** The box, in a hull's own coordinates, that holds a box of the world (its corners taken over, as it may be turned). */
+    public static AABB toLocal(Hull hull, AABB world) {
+        double x0 = Double.MAX_VALUE, y0 = Double.MAX_VALUE, z0 = Double.MAX_VALUE, x1 = -Double.MAX_VALUE, y1 = -Double.MAX_VALUE,
+                z1 = -Double.MAX_VALUE;
+        for (int i = 0; i < 8; i++) {
+            Vec3 c = hull.toLocal(new Vec3((i & 1) == 0 ? world.minX : world.maxX, (i & 2) == 0 ? world.minY : world.maxY,
+                    (i & 4) == 0 ? world.minZ : world.maxZ));
+            x0 = Math.min(x0, c.x);
+            y0 = Math.min(y0, c.y);
+            z0 = Math.min(z0, c.z);
+            x1 = Math.max(x1, c.x);
+            y1 = Math.max(y1, c.y);
+            z1 = Math.max(z1, c.z);
+        }
+        return new AABB(x0, y0, z0, x1, y1, z1);
     }
 
     /** Air, for a hull with nothing at a place. */

@@ -8,6 +8,8 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import dev.groundburst.content.machine.Frame;
+import dev.groundburst.content.machine.Frames;
 import dev.groundburst.content.ordnance.ThrownExplosive;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -186,14 +188,22 @@ public final class Designators {
         double length = loaded(level, eye, look, Math.min(range, MAX_RANGE));
         Vec3 end = eye.add(look.scale(length));
         BlockHitResult block = level.clip(new ClipContext(eye, end, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, holder));
-        double blockAt = block.getType() == HitResult.Type.MISS ? length : eye.distanceTo(block.getLocation());
+        boolean struck = block.getType() != HitResult.Type.MISS;
+        // A ship's block is struck where it is seen (another mod's clip reports it in the ship's plot, far off).
+        Frame frame = struck ? Frames.at(level, block.getBlockPos()) : Frame.WORLD;
+        Vec3 blockHit = frame.toWorld(block.getLocation());
+        Direction face = block.getDirection();
+        if (!frame.isWorld()) {
+            face = Direction.getApproximateNearest(frame.directionToWorld(new Vec3(face.getStepX(), face.getStepY(), face.getStepZ())));
+        }
+        double blockAt = struck ? Math.min(length, eye.distanceTo(blockHit)) : length;
         EntityHitResult creature = firstCreature(holder, eye, look, blockAt);
         Hit hit;
         if (creature != null) {
             Entity e = creature.getEntity();
             hit = new Hit(e.getBoundingBox().getCenter(), creature.getLocation(), Direction.getApproximateNearest(eye.subtract(creature.getLocation())), e);
-        } else if (block.getType() != HitResult.Type.MISS) {
-            hit = new Hit(block.getLocation(), block.getLocation(), block.getDirection(), null);
+        } else if (struck) {
+            hit = new Hit(blockHit, blockHit, face, null);
         } else {
             return null;
         }
