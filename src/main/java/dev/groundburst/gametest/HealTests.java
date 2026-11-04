@@ -54,6 +54,7 @@ final class HealTests {
         GBGameTests.test("heal_hangs_an_item_frame_again", GBGameTests.FLOOR_16, 20, HealTests::decorations);
         GBGameTests.test("heal_remembers_falling_sand", GBGameTests.FLOOR_16, 20, HealTests::fallingSand);
         GBGameTests.test("heal_off_remembers_nothing", GBGameTests.FLOOR_16, 20, HealTests::off);
+        GBGameTests.test("heal_never_brings_fire_back", GBGameTests.FLOOR_16, 20, HealTests::fire);
     }
 
     private static final BlockPos C = new BlockPos(8, 4, 8);
@@ -295,6 +296,36 @@ final class HealTests {
         Healer.of(level).healNow(box(helper), s);
         HealSettings.endTestArea(level, area(helper));
         helper.assertTrue(level.getBlockState(helper.absolutePos(sand)).is(Blocks.SAND), "the sand is back where it was");
+        helper.succeed();
+    }
+
+    /**
+     * A fire is never put back: a cell remembered while it burns comes back as the air it burnt in. A chunk waits while a
+     * fire that will go out burns by its damage (what heals would burn again), but not for one on netherrack, which burns
+     * for good.
+     */
+    private static void fire(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        HealSettings s = HealSettings.forTests(HealPlayerBlocks.KEEP, 0);
+        HealSettings.testArea(level, area(helper), s);
+        BlockPos burning = new BlockPos(8, 1, 8);
+        helper.setBlock(burning, Blocks.FIRE);
+        helper.assertTrue(level.getBlockState(helper.absolutePos(burning)).is(Blocks.FIRE), "a fire burns on the floor");
+        Scars.Recorder recorder = Scars.recorder(level, helper.absoluteVec(Vec3.atCenterOf(burning)), Scars.INCENDIARY, HealSettings.Kind.CONVENTIONAL);
+        helper.assertTrue(recorder.record(helper.absolutePos(burning)), "the burning cell is remembered");
+        var chunk = level.getChunkAt(helper.absolutePos(burning));
+        helper.assertTrue(Healer.of(level).fireNear(chunk, false), "a fire burns by the damage: the chunk waits");
+        BlockPos hearth = new BlockPos(11, 1, 8);
+        helper.setBlock(hearth, Blocks.NETHERRACK);
+        helper.setBlock(hearth.above(), Blocks.FIRE);
+        Healer.of(level).healNow(box(helper), s);
+        helper.assertTrue(level.getBlockState(helper.absolutePos(burning)).isAir(), "the fire is not put back: the air it burnt in is");
+        helper.assertTrue(!Healer.of(level).fireNear(chunk, false) || !remembered(helper, burning), "and nothing waits for it");
+        recorder.record(helper.absolutePos(new BlockPos(5, 1, 5)));
+        helper.assertTrue(level.getBlockState(helper.absolutePos(hearth.above())).is(Blocks.FIRE), "the hearth burns on");
+        helper.assertTrue(!Healer.of(level).fireNear(chunk, false), "a fire on netherrack is no reason to wait");
+        Healer.of(level).healNow(box(helper), s);
+        HealSettings.endTestArea(level, area(helper));
         helper.succeed();
     }
 

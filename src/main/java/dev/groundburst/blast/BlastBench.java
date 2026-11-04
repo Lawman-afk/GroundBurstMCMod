@@ -58,6 +58,11 @@ public final class BlastBench {
     public static volatile String report = "";
 
     private static final String profile = System.getProperty("groundburst.blastBench", "");
+    /** With healing on ({@code -Dgroundburst.blastBench.heal=true}): the record runs on through the crater's healing. */
+    private static final boolean HEAL = Boolean.getBoolean("groundburst.blastBench.heal");
+    /** Gives up on the healing this many ticks after the blast has finished (20 minutes). */
+    private static final int HEAL_TIMEOUT = 24_000;
+    private static int healStart = -1, healEnd = -1, healBlocks;
     private static int radius;
     private static long tickStart;
     private static List<ChunkPos> todo = List.of();
@@ -72,6 +77,7 @@ public final class BlastBench {
     private static boolean timedOut;
     private static final StringBuilder csv = new StringBuilder();
     private static final LongArrayList tickNanos = new LongArrayList(), blastNanos = new LongArrayList();
+    private static final it.unimi.dsi.fastutil.ints.IntArrayList fpsTicks = new it.unimi.dsi.fastutil.ints.IntArrayList();
     private static int peakRays, peakRoom, peakChunks, peakSections, peakRim, peakDeferred, peakLoaded, minFps = Integer.MAX_VALUE;
     private static long peakHeap, fpsSum;
     private static int fpsCount, terrainAt = -1, frontAt = -1;
@@ -116,6 +122,12 @@ public final class BlastBench {
         var source = server.createCommandSourceStack().withSuppressedOutput();
         server.getCommands().performPrefixedCommand(source, "time set noon");
         server.getCommands().performPrefixedCommand(source, "gamerule advance_time false");
+        GBServerConfig.HEAL_ENABLED.set(HEAL);
+        if (HEAL) {
+            GBServerConfig.HEAL_SCHEDULE.set(GBServerConfig.HealSchedule.AFTER_WAIT);
+            GBServerConfig.HEAL_WAIT_SECONDS.set(20);
+            GBServerConfig.HEAL_RANDOM_SECONDS.set(0);
+        }
         player.setGameMode(GameType.SPECTATOR);
         BlockPos spawn = level.getRespawnData().pos();
         burst = new Vec3(spawn.getX() + 0.5, 0, spawn.getZ() + 0.5);
@@ -210,6 +222,7 @@ public final class BlastBench {
         int loaded = level.getChunkSource().getLoadedChunksCount();
         int f = fps;
         tickNanos.add(nanos);
+        fpsTicks.add(fps);
         blastNanos.add(BlastManager.nanosUsed);
         peakRays = Math.max(peakRays, s.rays());
         peakRoom = Math.max(peakRoom, s.rayRoom());
@@ -245,11 +258,60 @@ public final class BlastBench {
                 .append(s.deferred()).append(',').append(heap >> 20).append(',').append(f).append(',').append(note).append('\n');
         if (job.isDone() && doneAt < 0) {
             doneAt = t;
+            if (HEAL) {
+                // The firestorm put out (healing waits for fires near the damage, and forests burn for many minutes),
+                // so what follows is the healing itself.
+                GroundBurst.LOGGER.info("Blast bench: blast finished; {} fires put out", putOutFires(level, BlockPos.containing(burst), (radius >> 4) + 2));
+            }
+        }
+        if (HEAL && doneAt >= 0) {
+            // On through the healing: from the first block back to the last.
+            var status = dev.groundburst.heal.Healer.of(level).status(burst);
+            if (healStart < 0 && status.healing() > 0) {
+                healStart = t;
+                healBlocks = status.blocks();
+            }
+            if (healStart >= 0 && healEnd < 0 && status.blocks() == 0 && status.chunks() == 0) {
+                healEnd = t;
+            }
+            if (healEnd >= 0 && t >= healEnd + TAIL || t >= doneAt + HEAL_TIMEOUT) {
+                finish(level, healEnd < 0 ? "the healing timed out" : "");
+            }
+            return;
         }
         if (doneAt >= 0 && t >= doneAt + TAIL || t >= TIMEOUT) {
             timedOut = doneAt < 0;
             finish(level, timedOut ? "timed out" : "");
         }
+    }
+
+    /** Every fire in the loaded chunks within {@code chunkRadius} chunks of {@code centre} goes out; how many there were. */
+    static int putOutFires(ServerLevel level, BlockPos centre, int chunkRadius) {
+        int n = 0;
+        int cx = centre.getX() >> 4, cz = centre.getZ() >> 4;
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (int x = cx - chunkRadius; x <= cx + chunkRadius; x++) {
+            for (int z = cz - chunkRadius; z <= cz + chunkRadius; z++) {
+                var chunk = level.getChunkSource().getChunkNow(x, z);
+                if (chunk == null) {
+                    continue;
+                }
+                for (int i = 0; i < chunk.getSectionsCount(); i++) {
+                    var section = chunk.getSection(i);
+                    if (section.hasOnlyAir() || !section.getStates().maybeHas(s -> s.getBlock() instanceof net.minecraft.world.level.block.BaseFireBlock)) {
+                        continue;
+                    }
+                    int sy = chunk.getSectionYFromSectionIndex(i);
+                    for (int b = 0; b < 4096; b++) {
+                        if (section.getBlockState(b & 15, b >> 8, (b >> 4) & 15).getBlock() instanceof net.minecraft.world.level.block.BaseFireBlock) {
+                            level.removeBlock(p.set((x << 4) + (b & 15), (sy << 4) + (b >> 8), (z << 4) + ((b >> 4) & 15)), false);
+                            n++;
+                        }
+                    }
+                }
+            }
+        }
+        return n;
     }
 
     private static String ms(long nanos) {
@@ -287,7 +349,39 @@ public final class BlastBench {
         b.append(String.format(Locale.ROOT, "Ticks recorded %d; terrain front past the terrain radius at %d, fronts done at %d, "
                 + "blast finished at %d (%.1f s)%n", n, terrainAt, frontAt, doneAt, doneAt / 20.0));
         b.append(String.format(Locale.ROOT, "Blocks changed %d%n", job.blocksChanged()));
-        long[] ticks = tickNanos.toLongArray();
+        if (HEAL) {
+            b.append("Healing on (wait 20 s after the last damage; the fires put out once the blast had finished)\n");
+            if (healStart >= 0) {
+                int end = healEnd >= 0 ? healEnd : n - 1;
+                long[] heal = java.util.Arrays.copyOfRange(tickNanos.toLongArray(), healStart, Math.min(n, end + 1));
+                long[] hs = heal.clone();
+                java.util.Arrays.sort(hs);
+                long hsum = 0;
+                int h50 = 0;
+                for (long v : heal) {
+                    hsum += v;
+                    h50 += v > 50_000_000L ? 1 : 0;
+                }
+                b.append(String.format(Locale.ROOT, "Healing: %d blocks from tick %d to %d (%.1f s, %.0f blocks a second); server tick ms mean %.1f, "
+                        + "p95 %.1f, p99 %.1f, max %.1f; over 50 ms %d ticks%n", healBlocks, healStart, end, (end - healStart) / 20.0,
+                        healBlocks / Math.max(0.05, (end - healStart) / 20.0), hs.length == 0 ? 0 : hsum / 1e6 / hs.length, pct(hs, 0.95),
+                        pct(hs, 0.99), hs.length == 0 ? 0 : hs[hs.length - 1] / 1e6, h50));
+                int fsum = 0, fn = 0, fmin = Integer.MAX_VALUE;
+                for (int i = healStart; i <= end && i < fpsTicks.size(); i++) {
+                    int f = fpsTicks.getInt(i);
+                    if (f > 0) {
+                        fsum += f;
+                        fn++;
+                        fmin = Math.min(fmin, f);
+                    }
+                }
+                b.append(String.format(Locale.ROOT, "Healing: client fps mean %.0f, min %d%n", fn == 0 ? 0 : (double) fsum / fn, fn == 0 ? 0 : fmin));
+            } else {
+                b.append("Healing: never began\n");
+            }
+            n = Math.min(n, doneAt < 0 ? n : doneAt + TAIL);      // the blast's own figures below: up to its end
+        }
+        long[] ticks = java.util.Arrays.copyOf(tickNanos.toLongArray(), n);
         long[] sorted = ticks.clone();
         java.util.Arrays.sort(sorted);
         long sum = 0;

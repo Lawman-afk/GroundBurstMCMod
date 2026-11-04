@@ -558,7 +558,9 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     /** Whether its redstone setting holds it stopped right now (never while carried: no redstone reaches it). */
     protected boolean redstoneHalted() {
-        return this.level != null && this.carrier == null && !this.redstoneMode.allows(this.level.hasNeighborSignal(this.worldPosition));
+        // (Ignoring redstone, the default, it never asks: six neighbours' signals a tick, for every machine.)
+        return this.level != null && this.carrier == null && this.redstoneMode != RedstoneMode.IGNORE
+                && !this.redstoneMode.allows(this.level.hasNeighborSignal(this.worldPosition));
     }
 
     /** Each tick redstone holds it stopped (instead of working). */

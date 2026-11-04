@@ -48,6 +48,7 @@ public class GroundBurstClient {
         dev.groundburst.client.fx.ArtilleryClient.register(modBus);
         dev.groundburst.client.fx.FxPhotographer.register();
         dev.groundburst.client.fx.BlastBenchClient.register();
+        dev.groundburst.client.fx.PlayBenchClient.register();
         dev.groundburst.client.fx.WorldSurveyClient.register();
         dev.groundburst.client.fx.SitePhotographer.register();
         dev.groundburst.client.fx.HealPhotographer.register();

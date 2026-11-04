@@ -56,6 +56,11 @@ public final class BlastBenchClient {
             return;
         }
         mc.options.renderDistance().set(12);
+        // Frames as fast as they come (the frame rates benches recorded before were the 30 a second the game slows to
+        // when nobody has touched the keys for a minute).
+        mc.options.enableVsync().set(false);
+        mc.options.framerateLimit().set(260);
+        mc.options.inactivityFpsLimit().set(net.minecraft.client.InactivityFpsLimit.MINIMIZED);
         BlastBench.fps = mc.getFps();
         long fired = BlastBench.fired;
         if (fired >= 0 && shot < MOMENTS.size() && mc.level.getGameTime() - fired >= MOMENTS.get(shot)) {

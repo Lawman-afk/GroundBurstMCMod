@@ -94,6 +94,8 @@ neoForge {
             client()
             programArguments.addAll '--width', '1280', '--height', '720'
             systemProperty 'groundburst.blastBench', (project.findProperty('bench') ?: 'tsar_warhead').toString()
+            // -PbenchHeal=true: healing on, and the record runs on through the crater's healing.
+            systemProperty 'groundburst.blastBench.heal', (project.findProperty('benchHeal') ?: 'false').toString()
             if (project.findProperty('benchSeed') != null) {
                 systemProperty 'groundburst.blastBench.seed', project.findProperty('benchSeed').toString()
             }
@@ -132,6 +134,19 @@ neoForge {
             systemProperty 'groundburst.healShots', 'true'
         }
 
+        // Makes a normal world seen far (-PplayView=32, -PplaySim=12), finds a forest and plays a script there: a quiet
+        // spell, molotovs and a thermobaric warhead among the trees, the fires, the healing (-PplayHeal=false: none), a
+        // quiet spell after; times every server tick and frame by phase into run/bench/play_*.txt, then quits (see
+        // PlayBench). With -Pjfr=<name> (any run) the JVM records a flight recording into run/jfr/<name>.jfr.
+        playBench {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.playBench', 'true'
+            systemProperty 'groundburst.playBench.heal', (project.findProperty('playHeal') ?: 'true').toString()
+            systemProperty 'groundburst.playBench.view', (project.findProperty('playView') ?: '32').toString()
+            systemProperty 'groundburst.playBench.sim', (project.findProperty('playSim') ?: '12').toString()
+        }
+
         server {
             server()
             programArgument '--nogui'
@@ -153,6 +168,11 @@ neoForge {
 
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
+            if (project.findProperty('jfr') != null) {
+                def jfrDir = file('run/jfr')
+                jfrDir.mkdirs()
+                jvmArguments.add("-XX:StartFlightRecording=filename=${new File(jfrDir, project.findProperty('jfr').toString() + '.jfr').absolutePath},settings=profile,dumponexit=true".toString())
+            }
             logLevel = org.slf4j.event.Level.DEBUG
         }
     }

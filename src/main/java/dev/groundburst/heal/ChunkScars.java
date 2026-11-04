@@ -57,6 +57,8 @@ public final class ChunkScars {
     float credit;
     /** Ticks until it may make a sound again. */
     int quiet;
+    /** Game time it next looks for fires burning by it, while one does (it waits for them to go out). */
+    long fireCheck;
 
     public ChunkScars() {}
 
