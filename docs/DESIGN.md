@@ -3034,8 +3034,28 @@ the centre of pressure, so a ship is driven off and turned by the face toward th
 singularity's horizon erase whatever a hull shows inside them as they grow, and shove nothing. A missile's or a shell's
 flight strikes a hull's block where it is seen (`Hulls.clip`); a hit in a ship's plot (where the world's clip sees
 ships) and a blast set off there (a charge aboard) are moved to where the ship is (`Frames.toWorld`). A hull may hold a
-block no blast breaks (a train's wheels), as bedrock is not broken. Not yet: the particle beam and the cryo freeze pass
-hulls by, a singularity does not pull them, and a blast's fires, scorch and rubble stay in the world.
+block no blast breaks (a train's wheels), as bedrock is not broken. What a blast sees of a hull in the open and leaves
+standing is scorched in its scorch band as the world's open ground is (a nuclear fireball chars wood and burns earth
+and stone), and in its fire band may catch fire on top (ash after a nuclear blast), where its blocks stand in the level
+(a ship's; a contraption's are held off it, so nothing burns there). The slower weapons keep their ground's rules on
+hulls too (`HullEffects`): a particle beam meets a hull's topmost block in each column of the world under it, from the
+sky down, and within its melt heats it as fast as the ground's top and eats it through once it has taken the ground's
+first block's worth (8), baring the one beneath (obsidian and bedrock stop it); round it, out to its fire, each top
+block is scorched once and may catch napalm fire. A deep freeze's front passes a hull's blocks nearest first: in its
+heart's sphere they freeze as the world's do there (water to ice, lava crusted, fires out, glass shattered, plants
+frozen, open stone and grass rimed, now and then a crystal); beyond it, no higher than its cold climbs, every block open
+to the sky is iced and snowed on as the land is. A singularity draws every free hull in as it draws in creatures, the
+whole of it alike (its pull at the hull's middle, times the hull's mass), and its horizon, like an antimatter sphere,
+takes a hull's blocks where they are each tick, so a ship drawn in is erased as it comes. A hull changes a block by
+`Hull.set` (a contraption takes only a plain block for another: none new, none holding anything) and is pulled by
+`Hull.pull`. Not yet: a blast's rubble stays in the world.
+
+A Laser Designator's beam, a gun's fall and its crewman's look that strike a ship's block are taken where the ship is
+seen (`Frames.at` on the block struck: another mod's clip reports the point in the ship's plot). The designator had
+searched for creatures along its beam out to that point, twenty million blocks off, a stretch at a time, and Sable
+logged each too-large search with its stack (the lag the user saw looking at ships); a mortar laid on a ship read its
+fall there and showed BLOCKED. A shot laid on a ship (`Ballistics.Fall.aboard`) is aimed at the ship's height, not the
+ground under it.
 
 GameTests (`CarryTests`): a Cruise Missile Launcher carried in a frame turned a quarter and moved off fires from its
 box's tail where that is in the world, heading the way its boxes now point, and the computers find it by its key and
@@ -3046,7 +3066,12 @@ connected sides, and mirrored they swap; a machine emptied before a move, as Sab
 (`HullTests`) a stand-in hull keeping its blocks ten blocks over the place it shows them: a blast breaks the open block
 it shows and spares the one behind an obsidian wall it shows, shoves it straight away from the burst at the block it
 reaches, and leaves a block out of its reach alone; an antimatter sphere erases what it shows inside; a line through it
-strikes its block's near face where it is seen.
+strikes its block's near face where it is seen; a scorching blast scorches grass it shows in the open; a blast with a
+fire band sets some of the bedrock it shows alight on top, breaking none; a particle beam eats down through two stone
+blocks it shows stacked in its core, the top first, and scorches grass it shows round it; a deep freeze shatters glass it
+shows in its heart and rimes or snows on stone it shows round it; a singularity pulls it toward itself, a little round;
+and a block it shows drawn into a singularity's horizon is erased (each test's hull kept where the world's own blast,
+beam or freeze cannot reach it).
 
 **In the 1.21.1 build** (`dev.groundburst.compat`, its own files; both mods optional, declared so in its mods.toml):
 - *Sable* (`SableFrames`): a block in a sub-level's plot stands in its ship's frame, the ship's pose read afresh each
@@ -3086,13 +3111,20 @@ strikes its block's near face where it is seen.
   shape again, and splits it if it is cut in two) and the ship is shoved through Sable's physics (its `RigidBodyHandle`,
   as Sable shoves ships for vanilla's explosions: Sable itself, not only its companion, is compiled against for this).
   A contraption's blocks are broken out of its entity: a machine with all it held (its carried copy let go), a chest's
-  or a tank's contents with it, whoever sat on a seat set down; players are told (`BlocksGone`) and Create draws it and
-  remakes its collisions without them. Contraptions are driven (a bearing, a piston, a train), so they are not shoved; a
-  carriage keeps its bogeys. Vanilla's own explosions already break and shove ships (Sable's doing), and Sable lets the
-  world's clip see ships, so missiles and shells hit them either way.
+  or a tank's contents with it, whoever sat on a seat set down; players are told (`BlocksChanged`, with any block
+  scorched or frosted) and Create draws it and remakes its collisions as it is now. Contraptions are driven (a bearing,
+  a piston, a train), so they are not shoved, nor pulled; a carriage keeps its bogeys. A ship's blocks are changed in
+  its plot (scorched, frozen, set alight, snowed on) and a ship is pulled by an impulse at its centre of mass, its mass
+  times the pull. Vanilla's own explosions already break and shove ships (Sable's doing), and Sable lets the world's
+  clip see ships, so missiles and shells hit them either way.
+- *A ship with no blocks*: Sable's box for an empty plot runs from the top of the int range to the bottom, and the hull
+  took it as its box, so a ship a blast had emptied lay within reach of every later blast, which walked its plot's empty
+  air: a nuke's reach is 48 million blocks, and the server sat in that one tick for minutes. Found chasing the user's
+  hang after a nuke in the test world (their quit waited on it at "saving world"), beside main's crater lake that never
+  stopped below y 0 (§21.8); either could have been theirs. An emptied ship is passed over now, and a ship's blocks are
+  read from its plot's own chunks, only those it has, never through the level (which would load one).
 - *Not yet*: a carried machine reaches nothing in the world (no pipe, cable or redstone between a contraption and the
-  blocks round it); reactors are held while carried; the particle beam, the cryo freeze and a singularity's pull do not
-  reach ships or contraptions.
+  blocks round it); reactors are held while carried.
 - *Checked* by `gradlew runCreateCheck -PwithCreate` (`CreateCheck`: Create 6.0.10, Sable 2.0.6, Create Aeronautics
   1.3.2 in a dev client): a Cruise Missile Launcher on a mechanical bearing turned by a creative motor is carried, fires
   from its box's tail where the bearing has it and heads the way its boxes point (-36 degrees, built facing 180); one
@@ -3112,8 +3144,13 @@ strikes its block's near face where it is seen.
   of it, its rim kept (51 to 48 blocks), players' copies agree, nothing is spilled and the generator is no longer
   carried; a mortar shell fired at its rim bursts on it (48 to 36); stopped, it is set down with just what it had left.
   A second ship (a 5x2x5 block of planks): a mortar shell's blast a block and a half off its side breaks its near side
-  (50 to 30 blocks) and shoves it 5.5 blocks away; a mortar shell fired at it bursts on it (30 to 0). 39 of 39,
-  pictures in run/screenshots/create_*.png.
+  (50 to 30 blocks) and shoves it 5.5 blocks away; a mortar shell fired at it bursts on it (30 to 0). Then (`ShipCheck`)
+  ships under the slower weapons and aimed at, after that emptied ship: a Laser Designator's beam lands on a ship's
+  near face where it is seen, in a millisecond; a mortar laid on a ship's deck falls on it, aboard, not blocked; a
+  particle beam eats through a 9x9 wooden platform's middle (81 to 37 blocks) and chars its edge; a deep freeze rimes
+  and snows on a 7x7 stone ship (29 blocks); a small singularity draws a floating ship toward itself; a nuclear blast 80
+  blocks off chars a wooden ship, sets it alight on top and throws it, and no server tick takes over a second (the
+  slowest 50 ms). 49 of 49, pictures in run/screenshots/create_*.png.
 
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
@@ -4035,7 +4072,10 @@ then world structures and loot (Phase 15). Built in slices:
   one's bottom). Planned from grids of every column's top, ground and water read first: the lake is the basin joined
   to the crater's middle under the level (so it fills each dip to its shore and stops at the rim), and the level is the
   highest whose basin stays inside 1.8 craters (a gap in the rim the rays missed lowers it) and holds no more than the
-  pond (found by halving). Still water placed without block updates, 6,000 blocks a tick. Not where water boils (the
+  pond (found by halving, `Wasteland.highestLevel`: its middle taken without overflow, since the levels are often below
+  0; an unsigned halving of a negative sum ran off to two billion and held the server in its tick for good, found
+  2026-11-04 after a nuke in the 1.21.1 test world, whose ground is at 0). Still water placed without block updates,
+  6,000 blocks a tick. Not where water boils (the
   Nether). Checked on a generated world (the world survey, §22.1): a tactical warhead with nobody near and one close by
   both painted all of their scorch and nothing past it; the inland crater filled to y 55 (93,000 blocks, a river past
   its rim lower than the rays thought), the coastal one to the sea's level (203,000), both still after their edges were
@@ -4848,6 +4888,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-04 | **Ships under every weapon; the stall after a nuke; the designator and mortars on ships** (the user, after playing the test world: aiming a Laser Designator at ships lagged the game, mortars said BLOCKED at ships, quitting after a nuke hung on "saving world", and fix what the docs listed as not yet: the beam, the freeze and a singularity's pull on ships and contraptions, a blast's fires and scorch on ships): §17.16. The slower weapons keep their ground's rules on a hull (the beam eats down from a hull's top as it eats the ground, the freeze ices it as the land, a blast scorches and kindles what it sees in the open), so a ship fares as a house would; a singularity pulls a free ship as it pulls a creature, the whole of it alike, and erases it as it comes into the horizon; a contraption only takes a plain block changed for another (nothing new is laid or lit on it). The lag: the designator's hit on a ship, in the ship's plot far off, sent its creature search out there; every hit on a ship is taken where the ship is seen. The stall, two of them: an emptied ship's box was the whole int range, so later blasts walked its plot's air (emptied ships are passed over now, and a ship's blocks are read from its own chunks); and, in main for every world, a crater lake's level was halved as `(lo + hi) >>> 1`, which ran off for good on levels below 0 (the test world's ground is at 0; §21.8). The test world's builder is left out of the 1.21.1 jar (the user: "If you put the world in the actual mod please remove it"). |
 | 2026-11-04 | **Blasts reach ships and contraptions** (asked whether blasts should damage Create contraptions and Create Aeronautics ships next, the user: "Yes please. damaging contraptions and ships would be sick."): §17.16, hulls. A blast breaks a hull's blocks by the world's own rules (core, a ray's energy through the hull's blocks, light blocks blown out), not vanilla's, so a ship fares as a house would; it shoves a ship as it shoves entities, each block it reaches in the open pushed away from the burst (20 × knockback × falloff a block, at the centre of pressure: one block alone flies as an entity would, a big hull far less, and a ship turns by the face toward the burst); antimatter and singularities erase what they reach. Create's contraptions are driven, so they are broken but not shoved; a chest or a machine blown off one goes with what it held, as in the world, and a train keeps its wheels. Missiles and shells strike ships and contraptions in their way. Main has the hulls and the pass (`Hulls`, `HullBlast`); the 1.21.1 build finds Sable's ships and Create's contraptions for them, and compiles against Sable itself for its physics. |
 | 2026-11-04 | **Every machine works on Create's contraptions, with its menu** (the user, after their first play with it: "assemblers, launch computers, everything to work on create contraptions if possible, as well as allowing access to their menus"): §17.16. One movement behaviour for every machine, run from the contraption's tick; right-clicking any block of a carried machine or structure opens its menu (or the computers' and radar's screens); a carried machine is known by the place it was taken from, so its menu, screen and packets find it wherever it is. A contraption shares its generators' and capacitor banks' power among its machines with no cables (each giver at most its output, each taker at most its intake; an even share first, then the rest round from a different machine each tick: without it a launcher's 8,000 FE intake starved the Launch Computer), and its pipe runs move items and fluids between what it carries, Create's chests, vaults and tanks among them. Reactors are held while carried (their cores are the world's blocks round them); nothing passes between a contraption and the world's blocks round it yet. The 1.21.1 build's Create check: 29 checks, among them a factory (pipes, power, menus) and a Medium Missile Assembler mid-build with a loaded Launch Silo. |
 | 2026-11-04 | **Nothing had twice when another mod moves a machine** (the user: the Medium Missile Assembler, taken by a contraption while it worked, "spewed out the items in it, then when uncontraptioned, it still had items in it, duplicating them, same for the vertical launchers"): on 1.21.1 the port's stand-in for 26.x's drop hook drops only when the block itself has gone from its place, not when a contraption takes the block entity alone; machines and guns are `Clearable`, so Sable empties them after saving them, as `/setblock` does; a structure's parts moved with it tell its controller nothing (they un-formed it). **Pipes and cables keep their Wrench settings** through a move (a pipe set down before the chest it pulled from lost its pull side, "the wrenched setting for extracting") and turn and mirror them with their block. |
