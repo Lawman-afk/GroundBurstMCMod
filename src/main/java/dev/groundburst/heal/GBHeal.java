@@ -19,6 +19,7 @@ import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
@@ -70,13 +71,14 @@ public final class GBHeal {
     public static void register(IEventBus modBus) {
         ATTACHMENTS.register(modBus);
         NeoForge.EVENT_BUS.addListener((ChunkEvent.Load e) -> {
-            if (e.getLevel() instanceof ServerLevel level && e.getChunk().getExistingDataOrNull(SCARS.get()) != null) {
-                Healer.of(level).track(e.getChunk());
+            if (e.getLevel() instanceof ServerLevel level && e.getChunk() instanceof LevelChunk chunk
+                    && chunk.getExistingDataOrNull(SCARS.get()) != null) {
+                Healer.of(level).track(chunk);
             }
         });
         NeoForge.EVENT_BUS.addListener((ChunkEvent.Unload e) -> {
-            if (e.getLevel() instanceof ServerLevel level) {
-                Healer.of(level).untrack(e.getChunk());
+            if (e.getLevel() instanceof ServerLevel level && e.getChunk() instanceof LevelChunk chunk) {
+                Healer.of(level).untrack(chunk);
             }
         });
         NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
