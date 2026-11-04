@@ -329,6 +329,26 @@ public final class Wasteland {
 
     // --- the crater lake -------------------------------------------------------------------------------------------------------
     /**
+     * The highest level from {@code lo} to {@code hi} that {@code holds} (true up to some level, false above it), or
+     * {@code lo - 1} if none does, found by halving the range. Its middle is taken so it cannot overflow: levels below
+     * the world's zero are common (a crater in deep ground), and an unsigned halving of a negative sum ran off to two
+     * billion and never came back, holding the server in its tick.
+     */
+    public static int highestLevel(int lo, int hi, java.util.function.IntPredicate holds) {
+        int best = lo - 1;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (holds.test(mid)) {
+                best = mid;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        return best;
+    }
+
+    /**
      * A crater lake, in passes over the chunks round the crater: <b>read</b> (each column's top block, whether it is water,
      * and its solid ground, into grids), <b>plan</b> (from the grids: the floor, the rim on each ray out from the middle,
      * the water level, and the lake: every column whose ground lies under the water and is joined to the crater's middle,
@@ -494,20 +514,18 @@ public final class Wasteland {
             }
             // The highest level whose lake stays inside the rim and holds no more than a pond's worth (both only grow
             // with the level, so halving the range finds it).
-            int lo = floor + MIN_DEPTH, hi = most;
             int[] queue = new int[this.side * this.side];
-            while (lo <= hi) {
-                int mid = (lo + hi) >>> 1;
-                BitSet basin = basin(mid, queue);
-                if (basin != null && volume(basin, mid) <= MAX_LAKE) {
-                    this.lake = basin;
-                    this.water = mid;
-                    lo = mid + 1;
-                } else {
-                    hi = mid - 1;
-                }
+            int lowest = floor + MIN_DEPTH;
+            int water = highestLevel(lowest, most, level0 -> {
+                BitSet basin = basin(level0, queue);
+                return basin != null && volume(basin, level0) <= MAX_LAKE;
+            });
+            if (water < lowest) {
+                return false;
             }
-            return this.water != Integer.MIN_VALUE;
+            this.lake = basin(water, queue);
+            this.water = water;
+            return this.lake != null;
         }
 
         /**

@@ -24,9 +24,22 @@ final class WastelandTests {
         GBGameTests.testOpenSky("wasteland_painted_over_the_scorched_ground", GBGameTests.FLOOR_16, 20, WastelandTests::paints);
         GBGameTests.testOpenSky("crater_floods_to_the_water_beside_it", GBGameTests.FLOOR_16, 20, WastelandTests::floods);
         GBGameTests.testOpenSky("crater_far_from_water_stays_dry", GBGameTests.FLOOR_16, 20, WastelandTests::dry);
+        GBGameTests.test("crater_lake_level_found_below_zero", GBGameTests.FLOOR_16, 20, WastelandTests::belowZero);
         GBGameTests.testOpenSky("frost_rimes_the_ground_and_grows_crystals", GBGameTests.FLOOR_16, 20, WastelandTests::frost);
         GBGameTests.testOpenSky("anthrax_sours_the_soil_under_it", GBGameTests.FLOOR_16, 400, WastelandTests::sours);
         GBGameTests.test("toxic_soil_kills_what_grows_on_it", GBGameTests.FLOOR_16, 20, WastelandTests::kills);
+    }
+
+    /**
+     * A crater lake's level is found in ground below the world's zero as it is above it: the halving that finds it had
+     * run off to two billion on a negative range and held the server in its tick (a nuke in the 1.21.1 test world).
+     */
+    private static void belowZero(GameTestHelper helper) {
+        helper.assertTrue(Wasteland.highestLevel(-61, -50, l -> l <= -55) == -55, "the highest level that holds, all below zero");
+        helper.assertTrue(Wasteland.highestLevel(-63, -61, l -> false) == -64, "none holds: one under the lowest");
+        helper.assertTrue(Wasteland.highestLevel(-10, 20, l -> l <= 3) == 3, "a range across zero");
+        helper.assertTrue(Wasteland.highestLevel(40, 62, l -> true) == 62, "every level holds: the highest");
+        helper.succeed();
     }
 
     private static void floor(GameTestHelper helper, Block block, int top) {
