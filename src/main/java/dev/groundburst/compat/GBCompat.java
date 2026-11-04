@@ -42,15 +42,15 @@ public final class GBCompat {
     }
 
     /**
-     * The carried machines' looks for clients, and the blocks a blast broke out of a contraption (sent only where Create
-     * carries something; optional for clients without it).
+     * The carried machines' looks for clients, and the blocks a blast or a freeze changed in a contraption (sent only where
+     * Create carries something; optional for clients without it).
      */
     @SubscribeEvent
     static void payloads(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1").optional();
         registrar.playToClient(CarriedSync.TYPE, CarriedSync.CODEC,
                 (payload, context) -> context.enqueueWork(() -> dev.groundburst.compat.create.CarriedSyncClient.apply(payload)));
-        registrar.playToClient(dev.groundburst.compat.create.BlocksGone.TYPE, dev.groundburst.compat.create.BlocksGone.CODEC,
-                (payload, context) -> context.enqueueWork(() -> dev.groundburst.compat.create.BlocksGoneClient.apply(payload)));
+        registrar.playToClient(dev.groundburst.compat.create.BlocksChanged.TYPE, dev.groundburst.compat.create.BlocksChanged.CODEC,
+                (payload, context) -> context.enqueueWork(() -> dev.groundburst.compat.create.BlocksChangedClient.apply(payload)));
     }
 }

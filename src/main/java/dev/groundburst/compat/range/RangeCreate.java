@@ -1,11 +1,11 @@
-package dev.groundburst.compat.create;
+package dev.groundburst.compat.range;
 
 import java.util.List;
 
 import com.simibubi.create.content.kinetics.motor.CreativeMotorBlockEntity;
 
 import dev.groundburst.GroundBurst;
-import dev.groundburst.compat.TestRange;
+import dev.groundburst.compat.create.CheckScenes;
 import dev.groundburst.content.assembly.MissileParts;
 import dev.groundburst.content.assembly.SizeClass;
 import dev.groundburst.content.launch.CruiseLauncherBlockEntity;
@@ -20,10 +20,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 /**
- * The test range's Create contraptions (dev.groundburst.compat.TestRange): a Cruise Missile Launcher turning on a
- * mechanical bearing (a turret), a Launch Silo a mechanical piston raises out of a pit and lowers again (a lever by the
- * pit reverses it, through a redstone link to a gearshift), and a windmill at the target range to blow up. Kept apart so
- * nothing loads Create's classes unless the range is built with Create.
+ * The test range's Create contraptions ({@link TestRange}): a Cruise Missile Launcher turning on a
+ * mechanical bearing (a turret), a Launch Silo a mechanical piston raises out of a pit and lowers again (the lever on a
+ * gearshift at the pit's south side reverses the drive, which runs down shafts and a gearbox to the piston), and a
+ * windmill at the target range to blow up. Kept apart so nothing loads Create's classes unless the range is built with
+ * Create.
  */
 public final class RangeCreate {
     private RangeCreate() {}

@@ -4,8 +4,9 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `c22e82a4` (2026-11-04: blasts reach ships and contraptions, after every machine on
-  moving structures, main's DESIGN.md §17.16; before them 0.7.0, released for both versions:
+- **Last brought up to:** `main` at `4ba06a26` (2026-11-04: every weapon on ships and contraptions, the designator and
+  mortars aimed at ships, a crater lake's hang below y 0 fixed; before them blasts reaching ships and contraptions and
+  every machine on moving structures, main's DESIGN.md §17.16; before them 0.7.0, released for both versions:
   `groundburst-mc1.21.1-0.7.0.jar` is this branch's).
 - **Toolchain:** Minecraft 1.21.1, NeoForge 21.1.265, Java 21, GeckoLib 4.9.3, JEI 19.70 (optional), Create 6.0.10 and
   Sable 2.0.6 / Create Aeronautics 1.3.2 (optional; see below).
@@ -88,10 +89,13 @@ nothing touches either mod's classes unless it is installed.
   `create/CarriedClient` (finds a carried machine's client copy by its key, for menus and screens),
   `create/ContraptionFrame`, `create/CarriedSync` and `CarriedSyncClient`, `create/CheckScenes` (the Create calls the
   check makes), and `CreateCheck` (the in-game check). `port/transfer/Adapters` sees Create's item and fluid handlers as
-  ours. Blasts (main's `Hulls`): `sable/SableHulls` (a ship's plot blocks broken, the ship shoved through Sable's
-  `RigidBodyHandle`), `create/ContraptionHulls` (a contraption's blocks broken out of its entity, a machine, a chest's
-  contents and a seat with them; never a carriage's bogeys) and `create/BlocksGone` with `BlocksGoneClient` (players'
-  copies forget them, redrawn and re-collided), `sable/SableScenes` (the Sable calls the check makes).
+  ours. Blasts and the slower weapons (main's `Hulls`, `HullBlast`, `HullEffects`): `sable/SableHulls` (a ship's plot
+  blocks broken, scorched, frozen, snowed on or set alight, the ship shoved and pulled through Sable's `RigidBodyHandle`;
+  a ship with no blocks passed over, since Sable's box for an empty plot runs over the whole int range; its blocks read
+  from the plot's own chunks, never through the level), `create/ContraptionHulls` (a contraption's blocks broken out of
+  its entity, a machine, a chest's contents and a seat with them, never a carriage's bogeys; a plain block scorched or
+  frosted, none added) and `create/BlocksChanged` with `BlocksChangedClient` (players' copies change them too, redrawn
+  and re-collided), `sable/SableScenes` (the Sable calls the check makes).
 - **Drops**: the port's stand-in for 26.x's `preRemoveSideEffects` (made by `port.py` in every block entity that drops
   its contents there) drops only when the block itself has left its place; a Create contraption takes the block entity
   while its block is still there, so nothing is dropped and nothing had twice. Sable empties `Clearable` block entities
@@ -112,7 +116,11 @@ nothing touches either mod's classes unless it is installed.
   A wreck on a fourth bearing: a small blast over a turning platform's hub breaks the chest, the generator and the hub
   out of it (players' copies agree, nothing spilled), a mortar shell bursts on its rim, and it is set down with only
   what was left. A second ship: a shell's blast beside it breaks its near side and shoves it off, and a shell fired at
-  it bursts on it. Pictures: run/screenshots/create_*.png. 39 of 39.
+  it bursts on it. Then `ShipCheck`: a Laser Designator's beam lands on a ship where it is seen; a mortar laid on a
+  ship's deck falls on it, not blocked; a particle beam eats through a wooden platform's middle and chars its edge; a
+  deep freeze rimes and snows on a stone ship; a small singularity draws a floating ship in; a nuclear blast eighty
+  blocks off chars a wooden ship, sets it alight and throws it, no server tick stalling (the emptied ship before it,
+  the crater's lake). Pictures: run/screenshots/create_*.png. 49 of 49.
 - **Test world**: `gradlew runTestRange -PwithCreate` builds "Ground Burst Test Range" in the dev client and saves it to
   run/saves (copy that folder into the 1.21.1 instance's saves; it plays there as is): a flat world 64 layers deep (the
   ground at y 0) with a command post at the spawn (Launch Control Station, Launch Computer, Radar Array, an armory of
@@ -124,12 +132,15 @@ nothing touches either mod's classes unless it is installed.
   blocks north with a windmill on a bearing. Every launcher and the radar are on the station's network; the player
   starts with a Laser Designator and Launch Codes for it. It checks as it builds (the ships float or hover where they
   were made, the pit silo goes down and up again and forms each time) and photographs itself
-  (run/screenshots/range_*.png). Code: `TestRange`, `RangeGround`, `RangeShips`, `create/RangeCreate`. Create gotchas:
-  a plain mechanical piston pushes but does not pull (a sticky one does); redstone links left with empty frequencies did
-  not reach each other here, so the lever drives the piston through shafts and a gearbox instead.
+  (run/screenshots/range_*.png). Code: `compat/range` (`TestRange`, `RangeGround`, `RangeShips`, `RangeCreate`,
+  `RangeBlast`), left out of the released jar (build.gradle's jar task): only the dev runs have it. `-PrangeBlast=
+  <profile>@<place>` (airship, target_airship, boat, town, or x,y,z) instead sets that blast off once the ships are made,
+  logs every slow server tick and, from a watchdog, the server thread's stack whenever one tick runs past five seconds,
+  then quits as a player does. Create gotchas: a plain mechanical piston pushes but does not pull (a sticky one does);
+  redstone links left with empty frequencies did not reach each other here, so the lever drives the piston through
+  shafts and a gearbox instead.
 - **Not yet**: reactors are held while carried; nothing passes between a contraption and the world's blocks round it
-  (pipes, cables, redstone); the particle beam, the cryo freeze and a singularity's pull do not reach ships or
-  contraptions.
+  (pipes, cables, redstone).
 
 ## Bringing it up to main
 

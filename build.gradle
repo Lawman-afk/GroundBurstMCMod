@@ -82,6 +82,8 @@ tasks.named('jar', Jar) {
     from('LICENSE') {
         rename { licenceName }
     }
+    // The test world's builder (gradlew runTestRange) is for the dev runs only: players never get it.
+    exclude 'dev/groundburst/compat/range/**'
 }
 
 // Minecraft 1.21.1 runs on Java 21, so the backport targets Java 21.
@@ -118,11 +120,13 @@ neoForge {
         // A test world for 1.21.1 with Create and Create Aeronautics (with -PwithCreate): a command post, a row of loaded
         // launchers on its network, artillery, launchers on Create contraptions and Create Aeronautics ships, targets;
         // built, photographed (run/screenshots/range_*.png) and saved as run/saves/"Ground Burst Test Range"
-        // (dev.groundburst.compat.TestRange).
+        // (dev.groundburst.compat.range.TestRange, left out of the jar). -PrangeBlast=<profile>@<place> instead sets a
+        // blast off there once the ships are made (airship, target_airship, boat, town) and logs the server's slow ticks.
         testRange {
             client()
             programArguments.addAll '--width', '1280', '--height', '720'
             systemProperty 'groundburst.testRange', 'true'
+            systemProperty 'groundburst.testRange.blast', (project.findProperty('rangeBlast') ?: '').toString()
         }
 
         server {

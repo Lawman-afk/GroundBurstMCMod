@@ -37,8 +37,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * entity, away from the world's, so a blast breaks them out of it there: each goes as a block of the world would (nothing
  * dropped; a machine with all it held, a chest or a tank aboard emptied, whoever sat on a seat set down), the contraption
  * forgets it (its collision shape remade, its pipes and machines aboard looked at afresh) and every player who sees it
- * is told which went ({@link BlocksGone}). A train's wheels hold. Contraptions are driven (by a bearing, a piston, a
- * train, a cart), so a blast does not shove them.
+ * is told ({@link BlocksChanged}). A blast's scorch or a freeze's frost changes a plain block it holds (one with nothing
+ * in it, not a machine); it takes no new blocks, so nothing is laid on it and nothing burns on it (its blocks are not in
+ * the level, where a fire would burn). A train's wheels hold. Contraptions are driven (by a bearing, a piston, a train, a
+ * cart), so a blast does not shove them, nor a singularity pull them.
  */
 public final class ContraptionHulls {
     /** How far a contraption's blocks may lie from its entity and still be found. */
@@ -63,7 +65,8 @@ public final class ContraptionHulls {
         private final AbstractContraptionEntity entity;
         private final Contraption contraption;
         private final AABB bounds;
-        private final List<BlockPos> gone = new ArrayList<>();
+        /** The blocks changed since the last flush, and what each is now (air: broken out). */
+        private final Map<BlockPos, BlockState> changed = new java.util.LinkedHashMap<>();
 
         Hull(ServerLevel level, AbstractContraptionEntity entity, Contraption contraption) {
             this.level = level;
@@ -167,18 +170,43 @@ public final class ContraptionHulls {
                     }
                 }
             }
-            this.gone.add(pos);
+            this.changed.put(pos, Blocks.AIR.defaultBlockState());
+        }
+
+        @Override
+        public boolean set(BlockPos local, BlockState state) {
+            BlockPos pos = local.immutable();
+            StructureBlockInfo info = this.contraption.getBlocks().get(pos);
+            if (state.isAir() || state.hasBlockEntity() || info == null || info.nbt() != null || info.state().hasBlockEntity()
+                    || this.contraption.getActorAt(pos) != null || this.contraption.getInteractors().containsKey(pos)
+                    || this.contraption.getSeats().contains(pos)) {
+                return false;                                   // only a plain block it holds, changed for another
+            }
+            this.contraption.getBlocks().put(pos, new StructureBlockInfo(pos, state, null));
+            this.changed.put(pos, state);
+            return true;
         }
 
         @Override
         public void flush() {
-            if (this.gone.isEmpty()) {
+            if (this.changed.isEmpty()) {
                 return;
             }
             this.contraption.invalidateColliders();
-            Aboard.of(this.contraption).blocksGone(this.gone);
-            PacketDistributor.sendToPlayersTrackingEntity(this.entity, new BlocksGone(this.entity.getId(), List.copyOf(this.gone)));
-            this.gone.clear();
+            List<BlockPos> gone = new ArrayList<>(), at = new ArrayList<>();
+            List<BlockState> states = new ArrayList<>();
+            for (Map.Entry<BlockPos, BlockState> e : this.changed.entrySet()) {
+                at.add(e.getKey());
+                states.add(e.getValue());
+                if (e.getValue().isAir()) {
+                    gone.add(e.getKey());
+                }
+            }
+            if (!gone.isEmpty()) {
+                Aboard.of(this.contraption).blocksGone(gone);
+            }
+            PacketDistributor.sendToPlayersTrackingEntity(this.entity, new BlocksChanged(this.entity.getId(), at, states));
+            this.changed.clear();
         }
     }
 }

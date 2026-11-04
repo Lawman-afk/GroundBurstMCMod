@@ -20,9 +20,13 @@ Both are optional; with either installed, Ground Burst's machines work on the st
   interceptor launchers all work this way.
 - **Blasts hit ships and contraptions**: a warhead's, a shell's, a bomb's or a charge's blast breaks the blocks of
   Create Aeronautics ships and of Create's moving contraptions in its reach, just as it breaks the world's (dense blocks
-  still shield what is behind them), and shoves ships away, turning them by the side that faced it. Antimatter and
-  singularities erase whatever of them they reach. Missiles and shells hit ships and contraptions in their way instead
-  of passing through. A chest or a machine blown off a contraption goes with what it held; a train keeps its wheels.
+  still shield what is behind them), and shoves ships away, turning them by the side that faced it. What a blast sees of
+  a ship is scorched (a nuclear fireball chars its wood) and may catch fire. Antimatter and singularities erase whatever
+  of them they reach. Missiles and shells hit ships and contraptions in their way instead of passing through. A chest or
+  a machine blown off a contraption goes with what it held; a train keeps its wheels.
+- **Beams, freezes and singularities**: the Particle Uplink Cannon's beam burns down through ships and contraptions
+  under it, from the top, and scorches and sets fire round it; the Cryo ICBM's freeze ices them over and snows on them;
+  a singularity pulls ships in and swallows them as they reach it.
 - **Create Aeronautics** (Sable ships, planes, cars and boats): a launcher aboard works as it does on the ground. Its
   missiles leave from where the ship is, the way the ship points them, and computers, stations, designators and radars
   see it where the ship has taken it. A Launch Computer, Control Station or Radar Array aboard a ship works there too.
@@ -30,8 +34,13 @@ Both are optional; with either installed, Ground Burst's machines work on the st
   and still held them when set down, doubling them; now nothing drops and nothing is doubled. A pipe set to pull with
   the Wrench lost that setting when a contraption set it down; it keeps it now, turned with the contraption (cables keep
   theirs too).
+- **Fixed**: aiming a Laser Designator at a ship lagged the game badly and gave launchers a target far from the ship;
+  the beam now lands on the ship where you see it, and missiles home on it there. A mortar or howitzer aimed at a ship
+  said BLOCKED; it now aims
+  at the ship, at its height. After a blast had broken a ship down to nothing, the next big blast (a nuke) froze the
+  game, and quitting then hung on "Saving world"; it no longer does.
 - Not yet: reactors pause while carried; pipes and cables on a contraption reach only what is on it, not the blocks round
-  it; the Particle Uplink Cannon's beam, the cryo freeze and a singularity's pull pass ships and contraptions by.
+  it.
 
 ## 0.7.0 — 2026-11-03
 

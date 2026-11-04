@@ -1,14 +1,14 @@
-package dev.groundburst.compat;
+package dev.groundburst.compat.range;
 
-import static dev.groundburst.compat.TestRange.cruise;
-import static dev.groundburst.compat.TestRange.fill;
-import static dev.groundburst.compat.TestRange.item;
-import static dev.groundburst.compat.TestRange.load;
-import static dev.groundburst.compat.TestRange.missile;
-import static dev.groundburst.compat.TestRange.set;
-import static dev.groundburst.compat.TestRange.sign;
-import static dev.groundburst.compat.TestRange.state;
-import static dev.groundburst.compat.TestRange.structure;
+import static dev.groundburst.compat.range.TestRange.cruise;
+import static dev.groundburst.compat.range.TestRange.fill;
+import static dev.groundburst.compat.range.TestRange.item;
+import static dev.groundburst.compat.range.TestRange.load;
+import static dev.groundburst.compat.range.TestRange.missile;
+import static dev.groundburst.compat.range.TestRange.set;
+import static dev.groundburst.compat.range.TestRange.sign;
+import static dev.groundburst.compat.range.TestRange.state;
+import static dev.groundburst.compat.range.TestRange.structure;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.assembly.MissileParts;

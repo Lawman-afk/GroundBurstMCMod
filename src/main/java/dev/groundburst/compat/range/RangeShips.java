@@ -1,8 +1,8 @@
-package dev.groundburst.compat;
+package dev.groundburst.compat.range;
 
-import static dev.groundburst.compat.TestRange.fill;
-import static dev.groundburst.compat.TestRange.set;
-import static dev.groundburst.compat.TestRange.state;
+import static dev.groundburst.compat.range.TestRange.fill;
+import static dev.groundburst.compat.range.TestRange.set;
+import static dev.groundburst.compat.range.TestRange.state;
 
 import java.util.ArrayList;
 import java.util.List;

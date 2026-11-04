@@ -9,10 +9,12 @@ import org.jspecify.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,9 +25,11 @@ import net.minecraft.world.phys.Vec3;
  * A blast's reach into the hulls round it ({@link Hulls}: ships' and contraptions' blocks, which the world's rays never
  * meet). As its front passes a hull's blocks it breaks them by the world's rules (DESIGN.md §17.16): everything in its
  * core; in its crater, each as far as a ray's energy carries through the hull's blocks between it and the burst; light
- * blocks (glass, leaves, doors) blown out to its structural radius where nothing solid stands in front of them. And it
- * shoves a hull that moves freely as it shoves entities: every block it reaches in the open is given a push away from
- * the burst, so a ship is driven off and turned by the side that faces it.
+ * blocks (glass, leaves, doors) blown out to its structural radius where nothing solid stands in front of them. What it
+ * sees in the open and leaves standing is scorched in its scorch band as the world's ground is (a nuclear fireball chars
+ * wood) and may catch fire on top in its fire band (ash, after a nuclear one), where the blocks stand in the level (a
+ * ship's). And it shoves a hull that moves freely as it shoves entities: every block it reaches in the open is given a
+ * push away from the burst, so a ship is driven off and turned by the side that faces it.
  */
 final class HullBlast {
     /** A block's shove, in its mass times blocks a second, for each unit of the profile's knockback (an entity's is a block a tick). */
@@ -39,8 +43,10 @@ final class HullBlast {
     private final @Nullable BlockPos protectedCenter;
     private final int protectedRadius;
     private final RandomSource random;
-    /** How far it breaks a hull's blocks, and how far it shoves; the further of the two. */
-    private final float breaks, shoves, reach;
+    /** How far it breaks a hull's blocks, how far it shoves, how far it scorches or sets alight; the furthest of them. */
+    private final float breaks, shoves, burns, reach;
+    /** An erasing sphere's (antimatter's, a singularity's): it takes a hull's blocks where they are each tick, as the hull moves. */
+    private final boolean erasing;
     /** A ray's energy, as the world's level rays start with it ({@link BlastJob}). */
     private final float energy;
     private final Map<Object, Pass> passes = new HashMap<>();
@@ -49,6 +55,11 @@ final class HullBlast {
 
     HullBlast(ServerLevel level, Vec3 center, BlastProfile profile, boolean terrain, @Nullable BlockPos protectedCenter, int protectedRadius,
             RandomSource random) {
+        this(level, center, profile, terrain, protectedCenter, protectedRadius, random, false);
+    }
+
+    private HullBlast(ServerLevel level, Vec3 center, BlastProfile profile, boolean terrain, @Nullable BlockPos protectedCenter,
+            int protectedRadius, RandomSource random, boolean erasing) {
         this.level = level;
         this.center = center;
         this.profile = profile;
@@ -59,7 +70,9 @@ final class HullBlast {
         this.random = random;
         this.breaks = terrain ? Math.max(Math.max(profile.crater(), profile.core()), profile.structural()) : 0;
         this.shoves = Math.max(profile.damage(), profile.lethal());
-        this.reach = Math.max(this.breaks, this.shoves);
+        this.burns = terrain ? Math.max(profile.scorch(), profile.fire()) : 0;
+        this.reach = Math.max(Math.max(this.breaks, this.shoves), this.burns);
+        this.erasing = erasing;
         this.energy = profile.crater() * BlastJob.cost(6f);
     }
 
@@ -70,7 +83,7 @@ final class HullBlast {
     static HullBlast erasing(ServerLevel level, Vec3 center, float radius) {
         BlastProfile all = new BlastProfile(radius, radius, 0, 0, 0, BlastProfile.EntityZones.NONE, 1, 1, 0, 0, 0, 0, TerrainTable.CONVENTIONAL,
                 java.util.Optional.of(false), java.util.Optional.empty(), java.util.Optional.empty());
-        return new HullBlast(level, center, all, true, null, 0, level.getRandom());
+        return new HullBlast(level, center, all, true, null, 0, level.getRandom(), true);
     }
 
     /** The front has reached {@code r} blocks: the hulls' blocks within it are dealt with. */
@@ -99,8 +112,9 @@ final class HullBlast {
         void run(Hulls.Hull hull, float to) {
             Vec3 local = hull.toLocal(HullBlast.this.center);
             double scale = hull.scale();
-            if (this.targets == null) {
-                this.targets = gather(hull, local, scale);
+            if (this.targets == null || HullBlast.this.erasing) {
+                this.targets = gather(hull, local, scale);       // (an erasing sphere's: where they are now)
+                this.next = 0;
             }
             Vec3 impulse = Vec3.ZERO, moment = Vec3.ZERO;
             double weight = 0;
@@ -128,6 +142,9 @@ final class HullBlast {
                         this.broken.put(t.pos(), cost);
                         destroy(hull, t.pos(), state);
                     }
+                }
+                if (!broke && d <= HullBlast.this.burns && !sheltered(hull, t.pos()) && seen(hull, local, t.pos(), path, scale)) {
+                    burn(hull, t.pos(), state, d);                  // seen from the fireball, and left standing
                 }
                 if (!broke && !path.standing && d <= HullBlast.this.shoves) {
                     // In the open: the shock shoves the block, and the hull with it, straight away from the burst.
@@ -200,12 +217,72 @@ final class HullBlast {
             if (state.getDestroySpeed(HullBlast.this.level, inLevel != null ? inLevel : pos) < 0 || hull.holds(pos, state)) {
                 return false;
             }
-            if (HullBlast.this.protectedCenter == null) {
+            return !sheltered(hull, pos);
+        }
+
+        /**
+         * Whether the fireball sees any of a block: nothing of the hull stands on the way to its middle, or to the middle
+         * of a face it turns toward the burst (a deck seen from above at a slant: the way to each block's middle crosses
+         * the top of the one before, but its top is in sight, as the world's ground pass sees a column's top over the
+         * columns before it).
+         */
+        private boolean seen(Hulls.Hull hull, Vec3 from, BlockPos pos, Path toMiddle, double scale) {
+            if (!toMiddle.standing) {
                 return true;
             }
+            Vec3 mid = Vec3.atCenterOf(pos);
+            for (Direction face : Direction.values()) {
+                double toward = (from.x - mid.x) * face.getStepX() + (from.y - mid.y) * face.getStepY() + (from.z - mid.z) * face.getStepZ();
+                if (toward <= 0.5) {
+                    continue;                                   // the burst is not beyond this face
+                }
+                double k = 0.5 - 1e-3;
+                Vec3 at = mid.add(face.getStepX() * k, face.getStepY() * k, face.getStepZ() * k);
+                if (!path(hull, from, at, pos, scale).standing) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /** Whether it is over the protected spawn, where a blast changes nothing. */
+        private boolean sheltered(Hulls.Hull hull, BlockPos pos) {
+            if (HullBlast.this.protectedCenter == null) {
+                return false;
+            }
             BlockPos w = BlockPos.containing(hull.toWorld(Vec3.atCenterOf(pos)));
-            return Math.abs(w.getX() - HullBlast.this.protectedCenter.getX()) > HullBlast.this.protectedRadius
-                    || Math.abs(w.getZ() - HullBlast.this.protectedCenter.getZ()) > HullBlast.this.protectedRadius;
+            return Math.abs(w.getX() - HullBlast.this.protectedCenter.getX()) <= HullBlast.this.protectedRadius
+                    && Math.abs(w.getZ() - HullBlast.this.protectedCenter.getZ()) <= HullBlast.this.protectedRadius;
+        }
+
+        /**
+         * A block the fireball sees and leaves standing, {@code d} from it: scorched in its scorch band, as the world's open
+         * ground is; in its fire band it may catch fire on top (ash, after a nuclear blast), more likely nearer, where the
+         * hull's blocks stand in the level (a contraption's do not burn).
+         */
+        private void burn(Hulls.Hull hull, BlockPos pos, BlockState state, float d) {
+            BlastProfile p = HullBlast.this.profile;
+            RandomSource random = HullBlast.this.random;
+            if (d <= p.scorch() && random.nextFloat() > 0.08f) {
+                BlockState scorched = HullBlast.this.table.scorched(state);
+                if (scorched != null && hull.set(pos, scorched)) {
+                    state = scorched;
+                }
+            }
+            if (d > p.fire() || state.isAir() || !state.getFluidState().isEmpty()
+                    || random.nextFloat() >= 0.6f * (1 - d / Math.max(1, p.fire()))) {
+                return;
+            }
+            BlockPos above = pos.above();
+            BlockPos at = hull.inLevel(above);
+            if (at == null || !hull.state(above).isAir()) {
+                return;
+            }
+            if (HullBlast.this.table.nuclear() && random.nextFloat() < BlastJob.ASH_SHARE) {
+                hull.set(above, dev.groundburst.content.fallout.GBFallout.ASH.block().get().layers(1 + random.nextInt(2)));
+            } else if (BaseFireBlock.canBePlacedAt(HullBlast.this.level, at, Direction.UP)) {
+                hull.set(above, BaseFireBlock.getState(HullBlast.this.level, at));
+            }
         }
 
         /** Breaks it: a charge caught in it goes off a moment later; it may drop itself where it was (small blasts). */

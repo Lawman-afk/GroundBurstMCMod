@@ -36,6 +36,14 @@ public final class SableScenes {
         return n[0];
     }
 
+    /** How many of a ship's blocks are as {@code which} says. */
+    public static int count(ServerLevel level, Object ship, java.util.function.Predicate<net.minecraft.world.level.block.state.BlockState> which) {
+        SableHulls.Ship hull = new SableHulls.Ship(level, (SubLevel) ship);
+        int[] n = {0};
+        hull.blocks(hull.bounds(), (pos, state) -> n[0] += which.test(state) ? 1 : 0);
+        return n[0];
+    }
+
     /** Where a ship is (its pose's position). */
     public static Vec3 position(Object ship) {
         var p = ((SubLevel) ship).logicalPose().position();

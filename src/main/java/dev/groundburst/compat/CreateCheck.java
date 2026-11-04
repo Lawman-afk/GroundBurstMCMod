@@ -57,7 +57,8 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
  * Create mechanical bearing turned by a creative motor (its deck held together and carried), and another made into a
  * Sable ship and turned 30 degrees; each fires, and the log says where its missile lit and which way it headed against
  * where its box's tail and its boxes' heading are in the world at that moment ("Create check: ... OK" or "... WRONG").
- * Pictures in run/screenshots/create_*.png.
+ * Then a factory, an assembler yard, a blasted platform and a blasted ship, and last the ships under the slower weapons
+ * and aimed at ({@link ShipCheck}). Pictures in run/screenshots/create_*.png.
  */
 @EventBusSubscriber(modid = GroundBurst.MODID, value = Dist.CLIENT)
 public final class CreateCheck {
@@ -147,7 +148,7 @@ public final class CreateCheck {
     }
 
     /** The player put at {@code from}, looking at {@code at}. */
-    private static void look(Minecraft mc, Vec3 from, Vec3 at) {
+    static void look(Minecraft mc, Vec3 from, Vec3 at) {
         Vec3 d = at.subtract(from);
         float yaw = (float) -Math.toDegrees(Math.atan2(d.x, d.z));
         float pitch = (float) -Math.toDegrees(Math.atan2(d.y, Math.hypot(d.x, d.z)));
@@ -155,17 +156,17 @@ public final class CreateCheck {
     }
 
     /** A command run by the server itself (its answer in the log). */
-    private static void serverCommand(MinecraftServer server, String command) {
+    static void serverCommand(MinecraftServer server, String command) {
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), command);
     }
 
-    private static void shot(Minecraft mc, String name) {
+    static void shot(Minecraft mc, String name) {
         mc.gui.getChat().clearMessages(false);
         Screenshot.grab(mc.gameDirectory, "create_" + name + ".png", mc.getMainRenderTarget(),
                 message -> GroundBurst.LOGGER.info("Create check: {}", message.getString()));
     }
 
-    private static void onServer(Minecraft mc, java.util.function.Consumer<ServerLevel> job) {
+    static void onServer(Minecraft mc, java.util.function.Consumer<ServerLevel> job) {
         MinecraftServer server = mc.getSingleplayerServer();
         if (server != null) {
             server.execute(() -> {
@@ -538,11 +539,14 @@ public final class CreateCheck {
                 check(ship2 != null && now < ship2Blocks, "a mortar shell fired at the ship burst on it (" + ship2Blocks + " -> " + now + " blocks)");
             });
             case 1206 -> shot(mc, "ship_shelled");
-            case 1215 -> {
+            case ShipCheck.END -> {
                 GroundBurst.LOGGER.info("Create check: done, {} of {} checks OK", passed, checks);
                 mc.stop();
             }
             default -> {
+                if (ticks >= ShipCheck.START && ticks < ShipCheck.END) {
+                    ShipCheck.tick(mc, ticks);                   // ships under the slower weapons, and aimed at
+                }
                 // The bearing stops once its launcher has turned a quarter (its boxes pointing east): Create sets its blocks
                 // down turned a quarter, the launcher somewhere new.
                 if (ticks > 415 && ticks < 505 && !stopped) {
@@ -688,7 +692,7 @@ public final class CreateCheck {
         return cells;
     }
 
-    private static void check(boolean ok, String what) {
+    static void check(boolean ok, String what) {
         checks++;
         passed += ok ? 1 : 0;
         GroundBurst.LOGGER.info("Create check: {}: {}", what, ok ? "OK" : "WRONG");

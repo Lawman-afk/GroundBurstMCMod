@@ -39,6 +39,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * the reach, stone to nine tenths of it, obsidian only to half; inside the horizon everything goes, unbreakable blocks
  * never do. Torn blocks drop nothing and feed it; their neighbours are told (sand falls in, water runs in, to be torn
  * in their turn), and clients are told, for the debris that spirals in.</li>
+ * <li>a ship free to move (an airship, a boat: {@link Hulls}) is drawn in as a creature is, the whole of it alike, and
+ * what of it reaches the horizon is erased, where it is as it comes ({@link HullBlast#erasing}).</li>
  * </ul>
  * The tearing sweeps the sphere shell by shell, each pass from just inside the nearest block the last one found (from
  * the middle now and then, for anything that has wandered in), within the blast engine's budget; every chunk within its
@@ -196,6 +198,7 @@ final class SingularityJob {
             e.addDeltaMovement(Singularities.pullOn(to, gm));
             e.hurtMarked = true;
         }
+        HullEffects.drawIn(this.level, this.center, pull, gm);    // and every ship free to move, the whole of it alike
     }
 
     /** What a thing swallowed feeds it, in blocks' worth: a falling block one, a creature its bulk, anything else a little. */

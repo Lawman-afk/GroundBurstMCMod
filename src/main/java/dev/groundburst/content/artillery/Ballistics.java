@@ -2,6 +2,8 @@ package dev.groundburst.content.artillery;
 
 import org.jspecify.annotations.Nullable;
 
+import dev.groundburst.content.machine.Frame;
+import dev.groundburst.content.machine.Frames;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -75,9 +77,14 @@ public final class Ballistics {
 
     /**
      * Where a shell comes down: the first block (or fluid) its curve meets, the tick it gets there and its velocity
-     * then. {@code ticks} is when it got there (a fraction along the last tick's chord).
+     * then. {@code ticks} is when it got there (a fraction along the last tick's chord). {@code aboard}: the block is
+     * one another mod moves (a ship's), met where it is seen, above the world's own ground.
      */
-    public record Fall(Vec3 at, double ticks, Vec3 velocity) {
+    public record Fall(Vec3 at, double ticks, Vec3 velocity, boolean aboard) {
+        public Fall(Vec3 at, double ticks, Vec3 velocity) {
+            this(at, ticks, velocity, false);
+        }
+
         /** How much its spread is stretched along the line of fire on the ground: 1 / sin of its descent (at most 3). */
         public double stretch() {
             double h = Math.hypot(this.velocity.x, this.velocity.z);
@@ -109,9 +116,12 @@ public final class Ballistics {
             }
             BlockHitResult hit = level.clip(new ClipContext(prev, p, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, ctx));
             if (hit.getType() != HitResult.Type.MISS) {
-                double along = prev.distanceTo(hit.getLocation()) / Math.max(1e-6, prev.distanceTo(p));
+                // A ship's block is met where it is seen (another mod's clip reports it in the ship's plot, far off).
+                Frame frame = Frames.at(level, hit.getBlockPos());
+                Vec3 at = frame.toWorld(hit.getLocation());
+                double along = Math.min(1, prev.distanceTo(at) / Math.max(1e-6, prev.distanceTo(p)));
                 double t = n - 1 + along;
-                return new Fall(hit.getLocation(), t, velocityAt(u, t));
+                return new Fall(at, t, velocityAt(u, t), !frame.isWorld());
             }
             prev = p;
         }

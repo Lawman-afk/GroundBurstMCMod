@@ -349,7 +349,9 @@ public final class ArtilleryClient {
         Vec3 from = p.getEyePosition(), look = p.getViewVector(1);
         BlockHitResult hit = mc.level.clip(new ClipContext(from.add(look.scale(1.5)), from.add(look.scale(farthest(m))), ClipContext.Block.COLLIDER,
                 ClipContext.Fluid.ANY, p));
-        return hit.getType() == HitResult.Type.MISS ? null : hit.getLocation();
+        // A ship's block is looked at where it is seen (another mod's clip reports it in the ship's plot, far off).
+        return hit.getType() == HitResult.Type.MISS ? null
+                : dev.groundburst.content.machine.Frames.at(mc.level, hit.getBlockPos()).toWorld(hit.getLocation());
     }
 
     // --- the strategic view ---------------------------------------------------------------------------------------------

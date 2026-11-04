@@ -1,4 +1,4 @@
-package dev.groundburst.compat;
+package dev.groundburst.compat.range;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -75,11 +75,14 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * launchers loaded and on the command post's network, artillery, launchers on Create's contraptions (a bearing turret, a
  * silo a piston raises from a pit), Create Aeronautics ships (a missile boat, an airship with a launcher aboard, target
  * ships) and a target range. It photographs itself (run/screenshots/range_*.png), saves and quits; the save is
- * run/saves/{@value #WORLD}, to be copied into the 1.21.1 instance's saves.
+ * run/saves/{@value #WORLD}, to be copied into the 1.21.1 instance's saves. This package is left out of the released jar
+ * (build.gradle's jar task): only the dev runs have it.
  */
 @EventBusSubscriber(modid = GroundBurst.MODID, value = Dist.CLIENT)
 public final class TestRange {
     private static final boolean ON = Boolean.getBoolean("groundburst.testRange");
+    /** {@code <profile>@<place>}: instead of the pictures, a blast set off there once the ships are made ({@link RangeBlast}). */
+    private static final String BLAST = System.getProperty("groundburst.testRange.blast", "");
     static final String WORLD = "Ground Burst Test Range";
     private static boolean started;
     private static int ticks = -1;
@@ -153,6 +156,10 @@ public final class TestRange {
             mc.setScreen(null);
         }
         ticks++;
+        if (!BLAST.isEmpty() && ticks >= RangeBlast.START) {
+            RangeBlast.tick(mc, ticks, BLAST);
+            return;
+        }
         switch (ticks) {
             case 30 -> {
                 command(mc, "time set 6000");
@@ -165,20 +172,20 @@ public final class TestRange {
             case 80 -> onServer(mc, RangeGround::launchRow);
             case 90 -> onServer(mc, RangeGround::targetRange);
             case 95 -> onServer(mc, RangeGround::scenery);
-            case 100 -> onServer(mc, level -> dev.groundburst.compat.create.RangeCreate.build(level));
+            case 100 -> onServer(mc, level -> RangeCreate.build(level));
             case 130 -> onServer(mc, RangeShips::build);
             case 150 -> onServer(mc, TestRange::linkAll);
-            case 160 -> onServer(mc, level -> dev.groundburst.compat.create.RangeCreate.start(level));
+            case 160 -> onServer(mc, level -> RangeCreate.start(level));
             case 180 -> onServer(mc, RangeShips::assemble);
             case 185 -> onServer(mc, RangeShips::watch);
-            case 260 -> onServer(mc, level -> GroundBurst.LOGGER.info("Test range: pit silo {}", dev.groundburst.compat.create.RangeCreate.pitSiloState(level)));
-            case 262 -> onServer(mc, dev.groundburst.compat.create.RangeCreate::throwLever);           // down
+            case 260 -> onServer(mc, level -> GroundBurst.LOGGER.info("Test range: pit silo {}", RangeCreate.pitSiloState(level)));
+            case 262 -> onServer(mc, RangeCreate::throwLever);           // down
             case 360 -> onServer(mc, level -> {
-                GroundBurst.LOGGER.info("Test range: pit silo, lowered: {}", dev.groundburst.compat.create.RangeCreate.pitSiloState(level));
-                dev.groundburst.compat.create.RangeCreate.throwLever(level);                              // and up again
+                GroundBurst.LOGGER.info("Test range: pit silo, lowered: {}", RangeCreate.pitSiloState(level));
+                RangeCreate.throwLever(level);                              // and up again
             });
             case 460 -> onServer(mc, level -> {
-                GroundBurst.LOGGER.info("Test range: pit silo, raised again: {}", dev.groundburst.compat.create.RangeCreate.pitSiloState(level));
+                GroundBurst.LOGGER.info("Test range: pit silo, raised again: {}", RangeCreate.pitSiloState(level));
                 report(level);
             });
             // --- pictures, from a free camera with no hand or overlays (for review, and the mod's pages) ------------------
