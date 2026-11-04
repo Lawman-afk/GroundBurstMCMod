@@ -105,15 +105,45 @@ Every player gets the **Field Manual** the first time they join (or craft one fr
 find any block, item or machine, how to build it and what it does. With JEI installed, R on any item shows how it is
 made.
 
+## Settings
+
+Ground Burst can be tuned to your world: how big blasts are and how much they may destroy (or that they destroy
+nothing at all), radiation and fallout, missile range, the superweapons, your own effects (flash, camera shake, quality),
+and **healing**, which makes the damage grow back over time. Healing is **off** until you turn it on.
+
+**In game:** open **Mods**, choose **Ground Burst**, then **Config**. Hover over any setting to see what it does.
+- Minecraft 26.3: the world settings are under **Synced Settings**. Change them from the title screen or in a
+  single-player world.
+- Minecraft 26.1.2 and 1.21.1: the world settings are under **Server Settings**. Open a single-player world, press
+  Esc, then **Mods**, **Ground Burst**, **Config**.
+- On a multiplayer server, a player can't change the world settings: the server's owner edits its file (below).
+
+**In the file:** open the `config` folder inside your Minecraft folder (on a server, inside the server's folder) and
+edit one of these in any text editor. Every setting has a note above it saying what it does.
+- `groundburst-synced.toml` (26.3) or `groundburst-server.toml` (26.1.2 and 1.21.1): the world settings, healing among
+  them
+- `groundburst-client.toml`: your own effects and the HUD
+
+Save the file, then start the game (or the server) again.
+
+**Healing in short:** under `[healing]`, set `enabled = true` (in game: **Healing**, then **Heal damage over time**). By
+default an area starts to grow back 5 minutes after the last blast near it and takes at most 5 minutes to heal, with
+everything just as it was, chests and their contents too. You can change when it heals (after a wait, every morning, or
+only when an operator says), how fast and in what order, which weapons, blocks and dimensions heal, and what happens to
+blocks players have built in a crater. Operators also have `/groundburst heal now`, `/groundburst heal forget` and
+`/groundburst heal status`. Only damage done while healing is on comes back, so turn it on before the war starts.
+
 ## Requirements
 
-Ground Burst comes in two files, one for each version of Minecraft; take the one for yours:
+Ground Burst comes in three files, one for each version of Minecraft; take the one for yours:
 
 - **Minecraft 26.3**: NeoForge 26.3.0.92 or newer, and **GeckoLib** 5.5.7 or newer (required)
+- **Minecraft 26.1.2**: NeoForge 26.1.2.126 or newer, and **GeckoLib** 5.5.2 or newer (required). The recipes that
+  use Minecraft 26.2's sulfur and cinnabar are not in it.
 - **Minecraft 1.21.1**: NeoForge 21.1.265 or newer, and **GeckoLib** 4.9.3 or newer (required). A few things are
   simpler on it: Rad-Away, Potassium Iodide Tablets and the Anti-Rad Injector are used as food is (with no
   nourishment), the pointer stays an arrow over the mod's screens, and flash particles are not tinted.
-- **JEI** (optional) on either
+- **JEI** (optional) on any
 
 Install it on the server and on every player's game: it adds blocks and items, so both sides need it.
 
