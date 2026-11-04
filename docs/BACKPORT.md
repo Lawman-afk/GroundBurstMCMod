@@ -35,7 +35,11 @@ code is not ported by hand file by file. `tools/backport/port.py` turns main's s
    NeoForge's separate transforms, the missile's looks as custom model data overrides, the dosimeter's stages as
    overrides on its dose, buckets on NeoForge's fluid container loader), with what they need from code in
    `ItemModelTable`; configured features get back their `config`, the wasteland biome its effects and spawners, the
-   tags' outside entries become optional, the armour textures move to `textures/models/armor/`.
+   tags' outside entries become optional, the armour textures move to `textures/models/armor/`; the structure
+   templates' palettes are named as 1.21.1 reads them (`Name`, `Properties`: 26.x's lowercase `id` and `properties`
+   read as air, so the world's sites came out empty in 0.7.0) and saved at 1.21.1's data version, with the iron chain
+   as 1.21.1's chain and the copper age's weathered lightning rods as plain ones (`port_structure`; the GameTest
+   `sitesHaveTheirBlocks`).
 4. **Hand edits**, where no rule is worth writing (some of the client's rendering, which 26.x rebuilt round render
    states and submit nodes; the recipes; armour materials). The files edited by hand are listed in
    `tools/backport/manual.txt`. Files only this branch has (the `port` package, the clouds' shader

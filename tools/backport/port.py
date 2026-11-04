@@ -978,7 +978,135 @@ def port_resource(path: str, data: bytes) -> tuple[str, bytes] | None:
         data = port_feature(data)
     if re.match(r"^src/(main|generated)/resources/data/\w+/tags/.*\.json$", path):
         data = port_tag(data)
+    if re.match(r"^src/(main|generated)/resources/data/\w+/structure/.*\.nbt$", path):
+        data = port_structure(data)
     return path, data
+
+
+# --- structure templates (NBT) --------------------------------------------------------------------------------------------
+# 1.21.1's data version: what its structure templates are saved at.
+DATA_VERSION = 3955
+# 26.x's blocks the sites use that 1.21.1 has under another name, or only plain (the copper age's weathered rods).
+STRUCTURE_ALIASES = {"minecraft:iron_chain": "minecraft:chain", "minecraft:exposed_lightning_rod": "minecraft:lightning_rod",
+                     "minecraft:weathered_lightning_rod": "minecraft:lightning_rod"}
+
+
+def _nbt_read(buf, tag: int):
+    import struct
+    if tag == 1:
+        return struct.unpack(">b", buf.read(1))[0]
+    if tag == 2:
+        return struct.unpack(">h", buf.read(2))[0]
+    if tag == 3:
+        return struct.unpack(">i", buf.read(4))[0]
+    if tag == 4:
+        return struct.unpack(">q", buf.read(8))[0]
+    if tag == 5:
+        return struct.unpack(">f", buf.read(4))[0]
+    if tag == 6:
+        return struct.unpack(">d", buf.read(8))[0]
+    if tag == 7:
+        n = struct.unpack(">i", buf.read(4))[0]
+        return buf.read(n)
+    if tag == 8:
+        n = struct.unpack(">H", buf.read(2))[0]
+        return buf.read(n).decode("utf-8")
+    if tag == 9:
+        elem, n = struct.unpack(">bi", buf.read(5))
+        return (elem, [_nbt_read(buf, elem) for _ in range(n)])
+    if tag == 10:
+        out = {}
+        while True:
+            t = struct.unpack(">b", buf.read(1))[0]
+            if t == 0:
+                return out
+            n = struct.unpack(">H", buf.read(2))[0]
+            name = buf.read(n).decode("utf-8")
+            out[name] = (t, _nbt_read(buf, t))
+    if tag == 11:
+        n = struct.unpack(">i", buf.read(4))[0]
+        return list(struct.unpack(f">{n}i", buf.read(4 * n)))
+    if tag == 12:
+        n = struct.unpack(">i", buf.read(4))[0]
+        return list(struct.unpack(f">{n}q", buf.read(8 * n)))
+    raise ValueError(f"NBT tag {tag}")
+
+
+def _nbt_write(out, tag: int, v) -> None:
+    import struct
+    if tag == 1:
+        out.write(struct.pack(">b", v))
+    elif tag == 2:
+        out.write(struct.pack(">h", v))
+    elif tag == 3:
+        out.write(struct.pack(">i", v))
+    elif tag == 4:
+        out.write(struct.pack(">q", v))
+    elif tag == 5:
+        out.write(struct.pack(">f", v))
+    elif tag == 6:
+        out.write(struct.pack(">d", v))
+    elif tag == 7:
+        out.write(struct.pack(">i", len(v)))
+        out.write(v)
+    elif tag == 8:
+        b = v.encode("utf-8")
+        out.write(struct.pack(">H", len(b)))
+        out.write(b)
+    elif tag == 9:
+        elem, items = v
+        out.write(struct.pack(">bi", elem, len(items)))
+        for x in items:
+            _nbt_write(out, elem, x)
+    elif tag == 10:
+        for name, (t, x) in v.items():
+            out.write(struct.pack(">b", t))
+            b = name.encode("utf-8")
+            out.write(struct.pack(">H", len(b)))
+            out.write(b)
+            _nbt_write(out, t, x)
+        out.write(b"\0")
+    elif tag == 11:
+        out.write(struct.pack(">i", len(v)))
+        out.write(struct.pack(f">{len(v)}i", *v))
+    elif tag == 12:
+        out.write(struct.pack(">i", len(v)))
+        out.write(struct.pack(f">{len(v)}q", *v))
+    else:
+        raise ValueError(f"NBT tag {tag}")
+
+
+def port_structure(data: bytes) -> bytes:
+    """A structure template: 26.x names a palette's block states "id" and "properties", 1.21.1 "Name" and "Properties"
+    (1.21.1 reads a lowercase entry as air: the world's sites came out empty); saved at 1.21.1's data version, so
+    nothing is updated as it loads."""
+    import gzip
+    import io
+    import struct
+    buf = io.BytesIO(gzip.decompress(data))
+    tag = struct.unpack(">b", buf.read(1))[0]
+    n = struct.unpack(">H", buf.read(2))[0]
+    root_name = buf.read(n).decode("utf-8")
+    root = _nbt_read(buf, tag)
+    palettes = []
+    if "palette" in root:
+        palettes.append(root["palette"][1][1])
+    if "palettes" in root:
+        palettes.extend(p for p in root["palettes"][1][1])
+    for palette in palettes:
+        for i, entry in enumerate(palette):
+            palette[i] = {{"id": "Name", "properties": "Properties"}.get(k, k): v for k, v in entry.items()}
+            name = palette[i].get("Name")
+            if name and name[1] in STRUCTURE_ALIASES:
+                palette[i]["Name"] = (8, STRUCTURE_ALIASES[name[1]])
+    root["DataVersion"] = (3, DATA_VERSION)
+    out = io.BytesIO()
+    out.write(struct.pack(">b", tag))
+    b = root_name.encode("utf-8")
+    out.write(struct.pack(">H", len(b)))
+    out.write(b)
+    _nbt_write(out, tag, root)
+    return gzip.compress(out.getvalue(), mtime=0)
 
 
 VANILLA_ANGLES = {0, 22.5, -22.5, 45, -45}

@@ -120,6 +120,35 @@ public final class SmokeTest {
         helper.succeed();
     }
 
+    /**
+     * Every site's template (and the GameTests' floor) holds its blocks: main saves them with 26.x's palette names, which
+     * 1.21.1 read as air, so the world's sites came out empty until the port renamed them (docs/BACKPORT.md).
+     */
+    @GameTest(template = "gametest/floor_16")
+    public static void sitesHaveTheirBlocks(GameTestHelper helper) throws ReflectiveOperationException {
+        var manager = helper.getLevel().getStructureManager();
+        java.lang.reflect.Field palettes = net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.class.getDeclaredField("palettes");
+        palettes.setAccessible(true);
+        for (String name : java.util.List.of("gametest/floor_16", "gametest/stone_12", "site/bunker_below", "site/bunker_surface",
+                "site/crashed_missile", "site/radar_outpost", "site/research_station", "site/silo_below_collapsed", "site/silo_below_flooded",
+                "site/silo_below_intact", "site/silo_surface_collapsed", "site/silo_surface_flooded", "site/silo_surface_intact",
+                "site/test_room", "site/test_site_tower", "site/test_site_zero", "site/waste_storage")) {
+            var template = manager.get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(GroundBurst.MODID, name));
+            helper.assertTrue(template.isPresent(), "the template " + name + " loads");
+            int solid = 0, total = 0;
+            for (Object palette : (java.util.List<?>) palettes.get(template.get())) {
+                for (var info : ((net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.Palette) palette).blocks()) {
+                    total++;
+                    if (!info.state().isAir()) {
+                        solid++;
+                    }
+                }
+            }
+            helper.assertTrue(solid > 0, name + " has its blocks: " + solid + " of " + total + " not air");
+        }
+        helper.succeed();
+    }
+
     /** The Wrench on a pipe joined to the pipe beside it, then on a cable joined to one: each run split on both, then joined again. */
     @GameTest(template = "gametest/floor_16")
     public static void wrenchSplitsRuns(GameTestHelper helper) {
