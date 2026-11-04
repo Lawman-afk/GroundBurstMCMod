@@ -43,6 +43,8 @@ public final class Frost {
     private Frost() {}
 
     public static void freeze(ServerLevel level, Vec3 centre, float radius, int ticks, @Nullable Entity by) {
+        // What it freezes is remembered, to thaw back as it was if the server heals the damage (DESIGN.md §21.9).
+        dev.groundburst.heal.Scars.Recorder scars = dev.groundburst.heal.Scars.recorder(level, centre, dev.groundburst.heal.Scars.FROST, dev.groundburst.heal.HealSettings.Kind.SPECIAL);
         int r = (int) Math.ceil(radius);
         BlockPos c = BlockPos.containing(centre);
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
@@ -58,33 +60,33 @@ public final class Frost {
                     BlockState s = level.getBlockState(p);
                     var fluid = s.getFluidState();
                     if (fluid.is(FluidTags.WATER) && (s.is(Blocks.WATER) || s.canBeReplaced())) {
-                        level.setBlockAndUpdate(p, (d2 < radius * radius * 0.12 ? Blocks.PACKED_ICE : Blocks.ICE).defaultBlockState());
+                        scars.setAndUpdate(p, (d2 < radius * radius * 0.12 ? Blocks.PACKED_ICE : Blocks.ICE).defaultBlockState());
                     } else if (fluid.is(FluidTags.LAVA) && s.is(Blocks.LAVA)) {
-                        level.setBlockAndUpdate(p, (fluid.isSource() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE).defaultBlockState());
+                        scars.setAndUpdate(p, (fluid.isSource() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE).defaultBlockState());
                     } else if (s.getBlock() instanceof BaseFireBlock || s.is(dev.groundburst.content.ordnance.GBOrdnance.NAPALM_FIRE.get())) {
-                        level.removeBlock(p, false);
+                        scars.remove(p);
                     } else if (frostable(s) && open(level, p) && random.nextFloat() < 1 - 0.4f * d2 / (radius * radius)) {
-                        level.setBlockAndUpdate(p, (s.is(Blocks.STONE) ? GBFallout.FROSTED_STONE : GBFallout.FROSTED_GRASS_BLOCK)
+                        scars.setAndUpdate(p, (s.is(Blocks.STONE) ? GBFallout.FROSTED_STONE : GBFallout.FROSTED_GRASS_BLOCK)
                                 .block().get().defaultBlockState());
                     } else if (plant(s)) {
                         BlockState frozen = GBFallout.FROZEN_PLANT.block().get().defaultBlockState();
                         if (s.hasProperty(DoublePlantBlock.HALF) && s.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER) {
-                            level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                            scars.set(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
                         } else if (frozen.canSurvive(level, p)) {
-                            level.setBlock(p, frozen, Block.UPDATE_ALL);
+                            scars.set(p, frozen, Block.UPDATE_ALL);
                         }
                     } else if (s.isAir() && random.nextFloat() < 0.8f) {
                         BlockPos below = p.below();
                         BlockState under = level.getBlockState(below);
                         BlockState snow = Blocks.SNOW.defaultBlockState();
                         if (!under.isAir() && under.isFaceSturdy(level, below, Direction.UP) && snow.canSurvive(level, p)) {
-                            level.setBlockAndUpdate(p, snow);
+                            scars.setAndUpdate(p, snow);
                         }
                     }
                 }
             }
         }
-        crystals(level, c, radius, random);
+        crystals(level, c, radius, random, scars);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(centre, centre).inflate(radius))) {
             if (e.position().distanceTo(centre) > radius || e.getType().is(Tags.EntityTypes.BOSSES) || e.isSpectator()
                     || e instanceof Player pl && pl.isCreative()) {
@@ -122,6 +124,10 @@ public final class Frost {
      * bigger burst), each on a face that can hold it.
      */
     static void crystals(ServerLevel level, BlockPos c, float radius, net.minecraft.util.RandomSource random) {
+        crystals(level, c, radius, random, dev.groundburst.heal.Scars.Recorder.none(level));
+    }
+
+    static void crystals(ServerLevel level, BlockPos c, float radius, net.minecraft.util.RandomSource random, dev.groundburst.heal.Scars.Recorder scars) {
         int want = Math.max(2, Math.round(radius * 1.2f));
         BlockState crystal = GBFallout.CRYO_CRYSTAL.block().get().defaultBlockState();
         float reach = Math.max(1.5f, radius * 0.5f);
@@ -139,7 +145,7 @@ public final class Frost {
             for (Direction face : new Direction[] {Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST}) {
                 BlockState placed = crystal.setValue(AmethystClusterBlock.FACING, face);
                 if (placed.canSurvive(level, at)) {
-                    level.setBlockAndUpdate(at, placed);
+                    scars.setAndUpdate(at, placed);
                     want--;
                     break;
                 }

@@ -556,7 +556,7 @@ public final class Charges {
                     if (dx == 0 && dz == 0 || (dx + dz + i) % 2 == 0) {
                         level.levelEvent(2001, cell, Block.getId(c));   // not every block's dust: it is a lot of blocks
                     }
-                    level.setBlock(cell, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                    dev.groundburst.heal.Scars.set(level, cell, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL, dev.groundburst.heal.Scars.BREACH, dev.groundburst.heal.HealSettings.Kind.CONVENTIONAL);
                 }
             }
             left -= cost;
@@ -587,7 +587,7 @@ public final class Charges {
                 }
                 BlockState here = level.getBlockState(at);
                 if ((here.isAir() || here.canBeReplaced() && here.getFluidState().isEmpty()) && fire.canSurvive(level, at)) {
-                    level.setBlockAndUpdate(at, fire);
+                    dev.groundburst.heal.Scars.set(level, at, fire, Block.UPDATE_ALL, dev.groundburst.heal.Scars.INCENDIARY, dev.groundburst.heal.HealSettings.Kind.CONVENTIONAL);
                 }
             }
         }
@@ -731,7 +731,7 @@ public final class Charges {
                         caughtInBlast(level, p, s);
                     }
                     level.levelEvent(2001, p, Block.getId(s));          // break particles and sound
-                    level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                    dev.groundburst.heal.Scars.set(level, p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL, dev.groundburst.heal.Scars.BREACH, dev.groundburst.heal.HealSettings.Kind.CONVENTIONAL);
                 }
             }
         }
@@ -776,7 +776,7 @@ public final class Charges {
                 if (s.getBlock() instanceof ChargeBlock) {
                     caughtInBlast(level, p, s);
                 }
-                level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                dev.groundburst.heal.Scars.set(level, p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL, dev.groundburst.heal.Scars.BREACH, dev.groundburst.heal.HealSettings.Kind.CONVENTIONAL);
                 Vec3 m = Vec3.atCenterOf(p);
                 level.sendParticles(ParticleTypes.LAVA, m.x, m.y, m.z, 6, 0.3, 0.3, 0.3, 0);
                 level.playSound(null, p, SoundEvents.LAVA_EXTINGUISH, SoundSource.BLOCKS, 0.6f, 1.4f);
@@ -791,7 +791,7 @@ public final class Charges {
         }
         BlockPos last = pos.relative(into, step - 1);
         if (step > 1 && level.getBlockState(last).isAir()) {
-            level.setBlock(last, Blocks.MAGMA_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            dev.groundburst.heal.Scars.set(level, last, Blocks.MAGMA_BLOCK.defaultBlockState(), Block.UPDATE_ALL, dev.groundburst.heal.Scars.BREACH, dev.groundburst.heal.HealSettings.Kind.CONVENTIONAL);
         }
         level.removeBlock(pos, false);
         return true;

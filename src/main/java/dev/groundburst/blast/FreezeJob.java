@@ -78,6 +78,8 @@ final class FreezeJob {
 
     final int netId;
     final ServerLevel level;
+    /** What it changes, remembered to heal if the server heals this weapon's damage (DESIGN.md §21.9). */
+    private final dev.groundburst.heal.Scars.Recorder scars;
     final Vec3 center;
     final float radius, core, climb;
     final int frontTicks, life;
@@ -110,6 +112,7 @@ final class FreezeJob {
     FreezeJob(int netId, ServerLevel level, Vec3 center, float radius, int life, @Nullable Entity by) {
         this.netId = netId;
         this.level = level;
+        this.scars = dev.groundburst.heal.Scars.recorder(level, center, dev.groundburst.heal.Scars.CRYO_FREEZE, dev.groundburst.heal.HealSettings.Kind.SPECIAL);
         this.center = center;
         this.radius = Math.max(4, radius);
         this.core = Freezes.core(this.radius);
@@ -259,7 +262,7 @@ final class FreezeJob {
         BlockState above = this.level.getBlockState(p);
         boolean snow = above.isAir();
         if (above.getBlock() instanceof BaseFireBlock || above.is(dev.groundburst.content.ordnance.GBOrdnance.NAPALM_FIRE.get())) {
-            this.level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            this.scars.set(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
             snow = true;
         } else if (Frost.plant(above) || above.is(BlockTags.CROPS)) {
             freezePlant(p, above);
@@ -276,7 +279,7 @@ final class FreezeJob {
             crust(x, top - 1, z, 1 + (int) Math.round(2 * k));
             depth = 0;
         } else if (Frost.frostable(ground) && this.random.nextFloat() < 0.55f + 0.45f * k) {
-            this.level.setBlock(p, (ground.is(Blocks.STONE) ? GBFallout.FROSTED_STONE : GBFallout.FROSTED_GRASS_BLOCK).block().get()
+            this.scars.set(p, (ground.is(Blocks.STONE) ? GBFallout.FROSTED_STONE : GBFallout.FROSTED_GRASS_BLOCK).block().get()
                     .defaultBlockState(), Block.UPDATE_CLIENTS);
         }
         if (snow && depth >= 0.75) {
@@ -284,7 +287,7 @@ final class FreezeJob {
             BlockState laid = GBFallout.CRYO_SNOW.block().get().defaultBlockState().setValue(CryoSnowBlock.LAYERS, layers);
             p.setY(top);
             if (laid.canSurvive(this.level, p)) {
-                this.level.setBlock(p, laid, Block.UPDATE_CLIENTS);
+                this.scars.set(p, laid, Block.UPDATE_CLIENTS);
             }
         }
     }
@@ -310,12 +313,12 @@ final class FreezeJob {
             if (!air) {
                 BlockState ice = frozenWater(s);
                 if (ice != null) {
-                    this.level.setBlock(p, ice, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                    this.scars.set(p, ice, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
                 } else if (s.is(Blocks.LAVA)) {
-                    this.level.setBlock(p, (s.getFluidState().isSource() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE).defaultBlockState(),
+                    this.scars.set(p, (s.getFluidState().isSource() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE).defaultBlockState(),
                             Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
                 } else if (s.getBlock() instanceof BaseFireBlock || s.is(dev.groundburst.content.ordnance.GBOrdnance.NAPALM_FIRE.get())) {
-                    this.level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                    this.scars.set(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
                     air = true;
                 } else if (s.is(Tags.Blocks.GLASS_BLOCKS) || s.is(Tags.Blocks.GLASS_PANES)) {
                     shatterGlass(p, s);
@@ -323,13 +326,13 @@ final class FreezeJob {
                 } else if (Frost.plant(s) || s.is(BlockTags.CROPS)) {
                     freezePlant(p, s);
                 } else if (airAbove && Frost.frostable(s) && this.random.nextFloat() < 0.6f) {
-                    this.level.setBlock(p, (s.is(Blocks.STONE) ? GBFallout.FROSTED_STONE : GBFallout.FROSTED_GRASS_BLOCK).block().get()
+                    this.scars.set(p, (s.is(Blocks.STONE) ? GBFallout.FROSTED_STONE : GBFallout.FROSTED_GRASS_BLOCK).block().get()
                             .defaultBlockState(), Block.UPDATE_CLIENTS);
                     if (y < top - 1 && this.random.nextFloat() < 0.035f) {
                         BlockPos up = p.above();
                         BlockState crystal = GBFallout.CRYO_CRYSTAL.block().get().defaultBlockState().setValue(AmethystClusterBlock.FACING, Direction.UP);
                         if (crystal.canSurvive(this.level, up)) {
-                            this.level.setBlock(up, crystal, Block.UPDATE_CLIENTS);
+                            this.scars.set(up, crystal, Block.UPDATE_CLIENTS);
                         }
                     }
                 }
@@ -363,7 +366,7 @@ final class FreezeJob {
             if (ice == null) {
                 return;
             }
-            this.level.setBlock(p, ice, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+            this.scars.set(p, ice, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
         }
     }
 
@@ -375,7 +378,7 @@ final class FreezeJob {
             if (!s.is(Blocks.LAVA)) {
                 return;
             }
-            this.level.setBlock(p, (s.getFluidState().isSource() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE).defaultBlockState(),
+            this.scars.set(p, (s.getFluidState().isSource() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE).defaultBlockState(),
                     Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
         }
     }
@@ -385,21 +388,21 @@ final class FreezeJob {
         boolean upper = s.hasProperty(DoublePlantBlock.HALF) && s.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER;
         BlockState frozen = GBFallout.FROZEN_PLANT.block().get().defaultBlockState();
         if (!upper && frozen.canSurvive(this.level, p)) {
-            this.level.setBlock(p, frozen, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+            this.scars.set(p, frozen, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
         } else {
-            this.level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+            this.scars.set(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
         }
         if (!upper && s.hasProperty(DoublePlantBlock.HALF)) {
             BlockPos up = p.above();
             if (this.level.getBlockState(up).is(s.getBlock())) {
-                this.level.setBlock(up, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                this.scars.set(up, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
             }
         }
     }
 
     /** Glass in the heart cracks with the cold and falls apart (a few of them heard a tick). */
     private void shatterGlass(BlockPos p, BlockState s) {
-        this.level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        this.scars.set(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         if (this.shattered++ < 3) {
             this.level.levelEvent(net.minecraft.world.level.block.LevelEvent.PARTICLES_DESTROY_BLOCK, p, Block.getId(s));
             this.level.playSound(null, p, SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.2f, 0.8f + 0.3f * this.random.nextFloat());
@@ -610,7 +613,7 @@ final class FreezeJob {
                 p.set(bx + dx, y, bz + dz);
                 BlockState s = this.level.getBlockState(p);
                 if (yields(s, p)) {
-                    this.level.setBlock(p, r > 1.6 && Math.sqrt(fx * fx + fz * fz) < r * 0.5 ? blue : packed, Block.UPDATE_CLIENTS);
+                    this.scars.set(p, r > 1.6 && Math.sqrt(fx * fx + fz * fz) < r * 0.5 ? blue : packed, Block.UPDATE_CLIENTS);
                 }
             }
         }
@@ -618,7 +621,7 @@ final class FreezeJob {
             p.set(bx, y + 1, bz);
             BlockState crystal = GBFallout.CRYO_CRYSTAL.block().get().defaultBlockState().setValue(AmethystClusterBlock.FACING, Direction.UP);
             if (this.level.getBlockState(p).isAir() && crystal.canSurvive(this.level, p)) {
-                this.level.setBlock(p, crystal, Block.UPDATE_CLIENTS);
+                this.scars.set(p, crystal, Block.UPDATE_CLIENTS);
             }
         }
     }

@@ -28,7 +28,7 @@ MANUAL = {line.strip() for line in (HERE / "manual.txt").read_text(encoding="utf
 DROP = [re.compile(p) for p in (
     r"src/main/java/dev/groundburst/datagen/.*",
     r"src/main/java/dev/groundburst/gametest/.*",
-    r"src/main/java/dev/groundburst/client/fx/(FxPhotographer|SitePhotographer|BlastBenchClient|WorldSurveyClient|DevWorlds)\.java",
+    r"src/main/java/dev/groundburst/client/fx/(FxPhotographer|SitePhotographer|HealPhotographer|BlastBenchClient|WorldSurveyClient|DevWorlds)\.java",
     r"src/main/java/dev/groundburst/client/manual/ManualPhotographer\.java",
     r"src/main/java/dev/groundburst/blast/BlastBench\.java",
     r"src/main/java/dev/groundburst/world/structure/WorldSurvey\.java",
@@ -72,7 +72,7 @@ def sub(pattern: str, repl, flags: int = 0):
 
 # Whole lines removed: hooks into the dropped tools.
 DROP_LINES = [re.compile(p) for p in (
-    r"^\s*dev\.groundburst\.client\.fx\.(FxPhotographer|BlastBenchClient|WorldSurveyClient|SitePhotographer)\.register\(\);\s*$",
+    r"^\s*dev\.groundburst\.client\.fx\.(FxPhotographer|BlastBenchClient|WorldSurveyClient|SitePhotographer|HealPhotographer)\.register\(\);\s*$",
     r"^\s*ManualPhotographer\.register\(\);\s*$",
     r"^\s*BlastBench\.register\(\);\s*$",
     r"^\s*WorldSurvey\.register\(\);\s*$",

@@ -16,3 +16,7 @@ src/main/java/dev/groundburst/client/fallout/AshFlakeParticle.java
 src/main/java/dev/groundburst/client/render/GBFluidModels.java
 src/main/java/dev/groundburst/client/render/FluidVisuals.java
 src/main/java/dev/groundburst/client/render/IceShellRenderer.java
+src/main/java/dev/groundburst/heal/Snapshots.java
+src/main/java/dev/groundburst/mixin/FireBlockMixin.java
+src/main/java/dev/groundburst/mixin/SpreadingSnowyBlockMixin.java
+src/main/java/dev/groundburst/mixin/FarmlandBlockMixin.java

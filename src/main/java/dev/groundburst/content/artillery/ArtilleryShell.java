@@ -236,7 +236,7 @@ public class ArtilleryShell extends Projectile {
                     pos.move(Direction.DOWN);
                 }
                 if (level.getBlockState(pos).isAir() && fire.canSurvive(level, pos)) {
-                    level.setBlockAndUpdate(pos, fire);
+                    dev.groundburst.heal.Scars.set(level, pos, fire, net.minecraft.world.level.block.Block.UPDATE_ALL, dev.groundburst.heal.Scars.INCENDIARY, dev.groundburst.heal.HealSettings.Kind.CONVENTIONAL);
                 }
             }
         }

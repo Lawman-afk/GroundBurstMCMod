@@ -82,6 +82,9 @@ public final class Withering {
             return;
         }
         int top = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
+        // Remembered to heal (DESIGN.md §21.9), without holding the healing off: radiation kills plants for as long as it lasts.
+        dev.groundburst.heal.Scars.Recorder scars = dev.groundburst.heal.Scars.slowRecorder(level, new net.minecraft.world.phys.Vec3(x + 0.5, top, z + 0.5),
+                dev.groundburst.heal.Scars.RADIATION, dev.groundburst.heal.HealSettings.Kind.NUCLEAR);
         for (int y = top; y > top - DEPTH && y >= level.getMinBuildHeight(); y--) {
             at.setY(y);
             BlockState s = level.getBlockState(at);
@@ -89,24 +92,24 @@ public final class Withering {
                 continue;
             }
             if (s.is(BlockTags.LEAVES)) {
-                level.setBlock(at, GBFallout.DEAD_LEAVES.block().get().defaultBlockState(), flags);
+                scars.set(at, GBFallout.DEAD_LEAVES.block().get().defaultBlockState(), flags);
                 continue;
             }
             if (s.is(BlockTags.CROPS)) {
-                level.setBlock(at, GBFallout.WITHERED_CROPS.block().get().defaultBlockState(), flags);
+                scars.set(at, GBFallout.WITHERED_CROPS.block().get().defaultBlockState(), flags);
                 continue;
             }
             if (s.is(Blocks.VINE) || s.is(Blocks.SHORT_GRASS) || s.is(Blocks.TALL_GRASS) || s.is(Blocks.FERN) || s.is(Blocks.LARGE_FERN)
                     || s.is(Blocks.SWEET_BERRY_BUSH) || s.is(BlockTags.SMALL_FLOWERS) || s.is(BlockTags.FLOWERS) || s.is(Blocks.MOSS_CARPET)) {
-                level.setBlock(at, Blocks.AIR.defaultBlockState(), flags);
+                scars.set(at, Blocks.AIR.defaultBlockState(), flags);
                 continue;
             }
             if (s.is(BlockTags.SAPLINGS)) {
-                level.setBlock(at, Blocks.DEAD_BUSH.defaultBlockState(), flags);
+                scars.set(at, Blocks.DEAD_BUSH.defaultBlockState(), flags);
                 continue;
             }
             if (s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.MYCELIUM) || s.is(Blocks.PODZOL) || s.is(Blocks.MOSS_BLOCK)) {
-                level.setBlock(at, GBFallout.DEAD_GRASS_BLOCK.block().get().defaultBlockState(), flags);
+                scars.set(at, GBFallout.DEAD_GRASS_BLOCK.block().get().defaultBlockState(), flags);
             }
             return;
         }

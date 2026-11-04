@@ -87,6 +87,16 @@ public final class RadiationSources extends SavedData {
         return List.copyOf(this.sources);
     }
 
+    /** Healing (DESIGN.md §21.9): the sources centred in the chunk column at (cx, cz) go; how many did. */
+    public int clearCentredIn(int cx, int cz) {
+        int before = this.sources.size();
+        if (this.sources.removeIf(s -> ((int) Math.floor(s.center().x) >> 4) == cx && ((int) Math.floor(s.center().z) >> 4) == cz)) {
+            this.unsent = true;
+            setDirty();
+        }
+        return before - this.sources.size();
+    }
+
     /** The dose rate at {@code pos} now from every source, before shielding (RAD/h). */
     public float rateAt(ServerLevel level, Vec3 pos) {
         long now = level.getGameTime();

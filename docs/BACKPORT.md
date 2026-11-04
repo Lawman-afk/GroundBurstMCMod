@@ -4,8 +4,9 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `4ba06a26` (2026-11-04: every weapon on ships and contraptions, the designator and
-  mortars aimed at ships, a crater lake's hang below y 0 fixed; before them blasts reaching ships and contraptions and
+- **Last brought up to:** `main` at `0585da40` (2026-11-04: healing, off by default, main's DESIGN.md §21.9: the damage
+  every weapon does grows back over time, block for block as it was; before it every weapon on ships and contraptions,
+  the designator and mortars aimed at ships, a crater lake's hang below y 0 fixed; before them blasts reaching ships and contraptions and
   every machine on moving structures, main's DESIGN.md §17.16; before them 0.7.0, released for both versions:
   `groundburst-mc1.21.1-0.7.0.jar` is this branch's).
 - **Toolchain:** Minecraft 1.21.1, NeoForge 21.1.265, Java 21, GeckoLib 4.9.3, JEI 19.70 (optional), Create 6.0.10 and
@@ -40,7 +41,7 @@ code is not ported by hand file by file. `tools/backport/port.py` turns main's s
 `tools/backport/compile.ps1` (run with PowerShell 7) compiles and sorts the errors; `errs.py <words>` prints a file's
 errors with their lines. `gradlew runGameTestServer` loads everything on a server and runs this branch's own tests
 (`dev.groundburst.port.SmokeTest`: it loads; a particle beam carves its trench; transactions are each thread's own; the
-Wrench splits and joins pipes and cables); `gradlew runPortCheck` opens a world, sets the mod's blocks out (a Warning
+Wrench splits and joins pipes and cables; healing puts a blast's damage back block for block, a chest with its diamonds); `gradlew runPortCheck` opens a world, sets the mod's blocks out (a Warning
 Beacon lit by redstone, buckets in the hotbar), opens the Field Manual, sets a blast off, brings a particle beam down and
 looks into its pit, screenshots each into `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it
 keeps the game from pausing when its window is behind another).
@@ -63,6 +64,16 @@ machines, the Field Manual, a blast and a particle beam drawing as they should. 
 - **Clear rectangles round smoke and clouds**: smoke writes depth, and on vanilla's emissive shader each puff's clear
   corners wrote depth too, hiding what was drawn behind them after it; the clouds' own shader cuts out the faint
   fringe, as main's does.
+
+**Healing** (main's DESIGN.md §21.9) comes over with the rest, but for what differs between the versions, kept by hand
+(`manual.txt`): `heal/Snapshots` (a block entity's and an entity's save and load through tags, the day's time from
+`getDayTime`), and three of its mixins: `FireBlockMixin` (1.21.1's fire sets its block with `setBlock(pos, state, 3)`),
+`SpreadingSnowyBlockMixin` (grass is `SpreadingSnowyDirtBlock`) and `FarmlandBlockMixin` (`FarmBlock` and its static
+`turnToDirt`). The other mixins (`BlockMixin`, `FlowingFluidMixin`, `LeavesBlockMixin`) are the same on both, and the
+mixins are declared in this branch's own `neoforge.mods.toml`. 1.21.1 has no flags to skip a block entity's side effects
+or a block's on-place hook (the port takes them out): a block that will heal has its block entity taken out first, so
+nothing spills, and a healed block runs its on-place hook (a healed water source flows, as it should). The heal check
+(`HealPhotographer`) is main's alone.
 
 Still to do:
 

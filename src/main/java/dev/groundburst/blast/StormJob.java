@@ -51,6 +51,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 final class StormJob {
     final int netId;
     final ServerLevel level;
+    /** What it changes, remembered to heal if the server heals this weapon's damage (DESIGN.md §21.9). */
+    private final dev.groundburst.heal.Scars.Recorder scars;
     final Vec3 center;
     final float radius;
     final int life;
@@ -71,6 +73,7 @@ final class StormJob {
     StormJob(int netId, ServerLevel level, Vec3 center, float radius, int life, @Nullable Entity by, boolean blasts, double rateOverride) {
         this.netId = netId;
         this.level = level;
+        this.scars = dev.groundburst.heal.Scars.recorder(level, center, dev.groundburst.heal.Scars.STORM, dev.groundburst.heal.HealSettings.Kind.SPECIAL);
         this.center = center;
         this.radius = Math.max(4, radius);
         this.life = Math.max(1, life);
@@ -299,16 +302,16 @@ final class StormJob {
         BlockPos top = at.below();
         BlockState s = this.level.getBlockState(top);
         if (s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.PODZOL) || s.is(Blocks.MYCELIUM)) {
-            this.level.setBlockAndUpdate(top, (this.random.nextFloat() < 0.4f ? Blocks.COARSE_DIRT : Blocks.DIRT).defaultBlockState());
+            this.scars.setAndUpdate(top, (this.random.nextFloat() < 0.4f ? Blocks.COARSE_DIRT : Blocks.DIRT).defaultBlockState());
         } else if (s.is(BlockTags.SAND) && this.random.nextFloat() < 0.35f) {
-            this.level.setBlockAndUpdate(top, Blocks.GLASS.defaultBlockState());
+            this.scars.setAndUpdate(top, Blocks.GLASS.defaultBlockState());
         } else if (s.is(BlockTags.LEAVES)) {
-            this.level.setBlockAndUpdate(top, Blocks.AIR.defaultBlockState());
+            this.scars.setAndUpdate(top, Blocks.AIR.defaultBlockState());
         }
         if (this.random.nextFloat() < 0.4f && this.level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOFIRETICK)) {
             BlockState fire = BaseFireBlock.getState(this.level, at);
             if (this.level.getBlockState(at).isAir() && fire.canSurvive(this.level, at)) {
-                this.level.setBlockAndUpdate(at, fire);
+                this.scars.setAndUpdate(at, fire);
             }
         }
     }

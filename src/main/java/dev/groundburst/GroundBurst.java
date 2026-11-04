@@ -88,6 +88,7 @@ public class GroundBurst {
 
         GBNetwork.register(modBus);
         dev.groundburst.blast.GBBlast.register(modBus);
+        dev.groundburst.heal.GBHeal.register(modBus);
 
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(dev.groundburst.content.machine.MachineFluidInteraction::onRightClickBlock);
 

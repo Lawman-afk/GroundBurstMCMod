@@ -111,7 +111,7 @@ public final class ToxinSpreads {
                         if (random.nextFloat() < 0.8f - 0.5f * edge) {
                             dev.groundburst.content.fallout.ToxicSoilBlock.taint(level, pos.below());
                         }
-                        level.setBlockAndUpdate(pos, residue);
+                        dev.groundburst.heal.Scars.set(level, pos, residue, net.minecraft.world.level.block.Block.UPDATE_ALL, dev.groundburst.heal.Scars.TOXIN, dev.groundburst.heal.HealSettings.Kind.CHEMICAL);
                     }
                 }
             }

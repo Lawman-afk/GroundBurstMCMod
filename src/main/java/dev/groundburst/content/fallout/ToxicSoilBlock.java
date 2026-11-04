@@ -36,6 +36,8 @@ public class ToxicSoilBlock extends Block {
     /** Turns the ground at {@code pos} (if it is soil) and kills what grows on it. */
     public static void taint(ServerLevel level, BlockPos pos) {
         if (soil(level.getBlockState(pos))) {
+            // Remembered first, to heal (DESIGN.md §21.9), so that what dies on it is remembered too.
+            dev.groundburst.heal.Scars.recorder(level, net.minecraft.world.phys.Vec3.atCenterOf(pos), dev.groundburst.heal.Scars.TOXIN, dev.groundburst.heal.HealSettings.Kind.CHEMICAL).record(pos);
             kill(level, pos.above());                      // first, or a crop would pop off its farmland before it withers
             level.setBlockAndUpdate(pos, GBFallout.TOXIC_SOIL.block().get().defaultBlockState());
         }
@@ -45,9 +47,11 @@ public class ToxicSoilBlock extends Block {
     static void kill(ServerLevel level, BlockPos pos) {
         BlockState plant = level.getBlockState(pos);
         if (plant.getBlock() instanceof CropBlock) {
+            dev.groundburst.heal.Scars.aftermath(level, pos, false);
             level.setBlockAndUpdate(pos, GBFallout.WITHERED_CROPS.block().get().defaultBlockState());
         } else if (plant.getBlock() instanceof BushBlock && !plant.is(GBFallout.WITHERED_CROPS.block().get())
                 || plant.is(BlockTags.REPLACEABLE_BY_TREES) && !plant.isAir() && plant.getFluidState().isEmpty()) {
+            dev.groundburst.heal.Scars.aftermath(level, pos, false);
             level.removeBlock(pos, false);
         }
     }

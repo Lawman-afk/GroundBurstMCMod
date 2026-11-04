@@ -60,6 +60,49 @@ public final class SmokeTest {
         });
     }
 
+    /**
+     * Main's heal_puts_a_blast_back_exactly, in short (DESIGN.md §21.9): ground, grass, a chest of diamonds and stairs
+     * facing east, blown up and healed back block for block, the chest with its diamonds, nothing dropped meanwhile.
+     */
+    @GameTest(template = "gametest/floor_16")
+    public static void healsABlastBack(GameTestHelper helper) {
+        net.minecraft.server.level.ServerLevel level = helper.getLevel();
+        for (BlockPos p : BlockPos.betweenClosed(1, 1, 1, 15, 3, 15)) {
+            helper.setBlock(p, p.getY() == 3 ? Blocks.GRASS_BLOCK : Blocks.DIRT);
+        }
+        BlockPos middle = new BlockPos(8, 4, 8), chest = middle.east();
+        helper.setBlock(chest, Blocks.CHEST);
+        ((net.minecraft.world.Container) helper.getBlockEntity(chest)).setItem(4, new ItemStack(net.minecraft.world.item.Items.DIAMOND, 37));
+        helper.setBlock(middle.west(), Blocks.OAK_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, Direction.EAST));
+        net.minecraft.world.phys.AABB bounds = helper.getBounds(), area = bounds.inflate(2);
+        java.util.Map<BlockPos, BlockState> before = new java.util.HashMap<>();
+        for (BlockPos p : BlockPos.betweenClosed(BlockPos.containing(bounds.minX, bounds.minY, bounds.minZ),
+                BlockPos.containing(bounds.maxX - 1, bounds.maxY - 1, bounds.maxZ - 1))) {
+            before.put(p.immutable(), level.getBlockState(p));
+        }
+        dev.groundburst.heal.HealSettings s = dev.groundburst.heal.HealSettings.forTests(
+                dev.groundburst.config.GBServerConfig.HealPlayerBlocks.KEEP, 0);
+        dev.groundburst.heal.HealSettings.testArea(level, area, s);
+        try {
+            dev.groundburst.blast.Blasts.detonate(level, helper.absoluteVec(Vec3.atCenterOf(middle)),
+                    dev.groundburst.blast.Blasts.profile("test/small"), null);
+            helper.assertTrue(level.getBlockState(helper.absolutePos(chest)).isAir(), "the blast took the chest");
+            helper.assertTrue(level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, area).isEmpty(),
+                    "nothing dropped: it will all come back");
+            dev.groundburst.heal.Healer.of(level).healNow(net.minecraft.world.level.levelgen.structure.BoundingBox.fromCorners(
+                    BlockPos.containing(area.minX, area.minY, area.minZ), BlockPos.containing(area.maxX - 1e-3, area.maxY - 1e-3, area.maxZ - 1e-3)), s);
+        } finally {
+            dev.groundburst.heal.HealSettings.endTestArea(level, area);
+        }
+        for (java.util.Map.Entry<BlockPos, BlockState> e : before.entrySet()) {
+            BlockState now = level.getBlockState(e.getKey());
+            helper.assertTrue(now == e.getValue(), "back as it was at " + helper.relativePos(e.getKey()) + ": " + now + ", was " + e.getValue());
+        }
+        ItemStack held = ((net.minecraft.world.Container) helper.getBlockEntity(chest)).getItem(4);
+        helper.assertTrue(held.is(net.minecraft.world.item.Items.DIAMOND) && held.getCount() == 37, "the chest has its diamonds again: " + held);
+        helper.succeed();
+    }
+
     /** Transactions are each thread's own (the client's and the server's run side by side in one game). */
     @GameTest(template = "gametest/floor_16")
     public static void transactionsPerThread(GameTestHelper helper) throws InterruptedException {

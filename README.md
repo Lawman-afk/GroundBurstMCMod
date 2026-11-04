@@ -45,6 +45,9 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
   over alarm channels.
 - **Nuclear weapons and their aftermath:** mushroom clouds, craters, fallout drifting with the wind, radiation you can
   measure, hazmat suits, and a wasteland biome over the scorched ground.
+- **Healing, if you want it** (off by default): turn it on in the server config and the damage grows back over time,
+  block for block as it was, chests with their contents and all, at a speed and on a schedule you choose. For forever
+  worlds that still want their wars.
 - **Industry and power:** new ores, processing machines on FE power with upgrade chips for speed and efficiency, and
   multiblock fission, fusion and singularity reactors.
 - **Chips made the hard way:** silicon purified and grown into crystals in a Crystal Puller, sapphire for

@@ -71,6 +71,8 @@ final class ParticleBeamJob {
 
     final int netId;
     final ServerLevel level;
+    /** What it changes, remembered to heal if the server heals this weapon's damage (DESIGN.md §21.9). */
+    private final dev.groundburst.heal.Scars.Recorder scars;
     /** Its cannon (null: a beam with no cannon, for GameTests). */
     final @Nullable BlockPos cannon;
     final Vec3 from;
@@ -115,6 +117,7 @@ final class ParticleBeamJob {
         this.from = from == null ? new Vec3(this.x, this.y, this.z) : from;
         this.terrain = !dry && GBServerConfig.DESTROY_BLOCKS.get()
                 && !GBServerConfig.PROTECTED_DIMENSIONS.get().contains(level.dimension().location().toString());
+        this.scars = this.terrain ? dev.groundburst.heal.Scars.recorder(level, new Vec3(this.x, this.y, this.z), dev.groundburst.heal.Scars.PARTICLE_BEAM, dev.groundburst.heal.HealSettings.Kind.SPECIAL) : dev.groundburst.heal.Scars.Recorder.none(level);
         BlockPos spawnAt = null;
         int spawnR = 0;
         if (GBServerConfig.PROTECT_SPAWN.get() && level.dimension() == Level.OVERWORLD) {
@@ -321,7 +324,7 @@ final class ParticleBeamJob {
                 floor = y + 1;                                    // bedrock, obsidian: the beam stops on it
                 break;
             }
-            this.level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            this.scars.set(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         }
         if (floor < reached) {
             this.floors.put(key, floor);
@@ -347,7 +350,7 @@ final class ParticleBeamJob {
         p.set(cx, floor - 1, cz);
         BlockState melted = molten(this.level.getBlockState(p), core);
         if (melted != null) {
-            this.level.setBlock(p, melted, Block.UPDATE_ALL);
+            this.scars.set(p, melted, Block.UPDATE_ALL);
         }
         for (Direction side : Direction.Plane.HORIZONTAL) {
             for (int y = floor; y < above; y++) {
@@ -355,7 +358,7 @@ final class ParticleBeamJob {
                 BlockState s = this.level.getBlockState(p);
                 BlockState m = molten(s, false);
                 if (m != null) {
-                    this.level.setBlock(p, m, Block.UPDATE_ALL);
+                    this.scars.set(p, m, Block.UPDATE_ALL);
                 }
             }
         }
@@ -401,13 +404,13 @@ final class ParticleBeamJob {
                 continue;
             }
             if (s.is(BlockTags.LEAVES) || s.canBeReplaced() && s.getFluidState().isEmpty() || s.is(GBOrdnance.NAPALM_FIRE.get())) {
-                this.level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                this.scars.set(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                 continue;
             }
             if (s.is(BlockTags.LOGS)) {
                 BlockState charred = TerrainTable.NUCLEAR_TABLE.scorched(s);
                 if (charred != null) {
-                    this.level.setBlock(p, charred, Block.UPDATE_ALL);
+                    this.scars.set(p, charred, Block.UPDATE_ALL);
                 }
                 continue;                                         // a trunk: on down to the ground under it
             }
@@ -419,7 +422,7 @@ final class ParticleBeamJob {
         }
         BlockState burnt = TerrainTable.NUCLEAR_TABLE.scorched(ground);
         if (burnt != null && !burnt.isAir() && burnt.getFluidState().isEmpty()) {
-            this.level.setBlock(p, burnt, Block.UPDATE_ALL);
+            this.scars.set(p, burnt, Block.UPDATE_ALL);
         }
     }
 
@@ -435,7 +438,7 @@ final class ParticleBeamJob {
         BlockPos above = new BlockPos(cx, ground(cx, cz, (int) Math.floor(this.y)), cz);
         BlockState fire = GBOrdnance.NAPALM_FIRE.get().defaultBlockState();
         if (this.level.getBlockState(above).isAir() && fire.canSurvive(this.level, above)) {
-            this.level.setBlock(above, fire, Block.UPDATE_ALL);
+            this.scars.set(above, fire, Block.UPDATE_ALL);
         }
     }
 

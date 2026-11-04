@@ -181,14 +181,14 @@ public final class Plumes extends SavedData {
             if (here.getBlock() instanceof AshLayerBlock) {
                 int layers = here.getValue(AshLayerBlock.LAYERS);
                 if (layers < AshLayerBlock.MAX_HEIGHT) {
-                    level.setBlock(p, fallout.layers(layers + 1), Block.UPDATE_ALL);
+                    dev.groundburst.heal.Scars.set(level, p, fallout.layers(layers + 1), Block.UPDATE_ALL, dev.groundburst.heal.Scars.FALLOUT, dev.groundburst.heal.HealSettings.Kind.NUCLEAR);
                 }
                 return;
             }
         }
         BlockState state = fallout.layers(1);
         if (level.getBlockState(at).isAir() && state.canSurvive(level, at)) {
-            level.setBlock(at, state, Block.UPDATE_ALL);
+            dev.groundburst.heal.Scars.set(level, at, state, Block.UPDATE_ALL, dev.groundburst.heal.Scars.FALLOUT, dev.groundburst.heal.HealSettings.Kind.NUCLEAR);
         }
     }
 
