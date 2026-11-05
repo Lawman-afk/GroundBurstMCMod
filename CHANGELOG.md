@@ -1,13 +1,17 @@
 # Changelog
 
-## Unreleased
+## 0.8.1 — 2026-11-05
+
+The blast effects with shader packs, and healed machines, cables and pipes that work again. For Minecraft 26.3 and
+1.21.1; the 26.1.2 build stays at 0.8.0 for now.
 
 ### Shader packs (Iris)
 - **The blast effects work with shader packs.** With Iris and a pack on (tried with Complementary Reimagined and BSL),
-  fireballs, smoke, dust and mushroom clouds drew as huge black and coloured shards across the screen. Now each effect
-  uses the pack's own program for its kind: glows (the white-hot core, shock waves, sparks, beams, lasers) glow, and
-  fire and smoke are lit by the pack. The look differs a little from pack to pack (smoke darker in Complementary,
-  warmer in BSL), and a mushroom cloud far beyond the render distance fades into the pack's fog.
+  fireballs, smoke, dust and mushroom clouds drew as huge black and coloured shards across the screen (on 1.21.1 the
+  fireball glowed white and the smoke was missing). Now each effect uses the pack's own program for its kind: glows (the
+  white-hot core, shock waves, sparks, beams, lasers) glow, and fire and smoke are lit by the pack. The look differs a
+  little from pack to pack (smoke darker in Complementary, warmer in BSL), and a mushroom cloud far beyond the render
+  distance fades into the pack's fog.
 
 ### Healing
 - **Cables, pipes and machines work again once healed.** A healed cable run powers its machines again and a healed pipe
@@ -16,8 +20,8 @@
   and every container's contents come back as they were, as before.
 - **Other mods' blocks** come back with all their data and settings, now placed the way a structure places its blocks,
   and the other mods' blocks beside them are told, so their pipes, cables and machines pick them up again.
-- **1.21.1**: a formed structure (a reactor, an accelerator) being healed is no longer taken apart as its parts come back
-  and put together again at the end, and a healed pipe keeps its pull sides even when its chest comes back after it.
+- **1.21.1**: a formed structure (a reactor, an accelerator) is no longer taken apart while it heals and put together
+  again at the end, and a healed pipe keeps its pull sides even when its chest comes back after it.
 
 ## 0.8.0 — 2026-11-04
 
