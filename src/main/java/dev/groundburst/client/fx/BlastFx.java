@@ -47,15 +47,19 @@ final class BlastFx {
     private final int earth;
     /** The mushroom cloud, for nukes. */
     final MushroomCloud mushroom;
+    /** The column of water, for a charge going off under water (DESIGN.md §14.6). */
+    final @org.jspecify.annotations.Nullable WaterColumn water;
 
     private record Candidate(double x, double y, double z, float r, BlockState state, int tint) {}
 
     BlastFx(BlastPayloads.Start start, double now, ClientLevel level, Vec3 camera) {
         this.start = start;
-        this.preset = FxPreset.byName(start.visual());
         this.noiseSeed = StreakNoise.seed(start.seed());
         this.random = RandomSource.create(start.seed() ^ 0x9E3779B97F4A7C15L);
         this.born = now - Math.max(0, level.getGameTime() - start.startTick());
+        // A charge under water is its column of water (should this client see no water there, an ordinary blast).
+        this.water = FxPreset.water(start.visual()) ? WaterColumn.of(level, start, this.born, this.random) : null;
+        this.preset = FxPreset.water(start.visual()) && this.water == null ? FxPreset.MEDIUM : FxPreset.byName(start.visual());
         this.distance = camera.distanceTo(start.center());
         this.reaches = this.distance / Math.max(8, start.reach());
         Vec3 c = start.center();
@@ -128,7 +132,8 @@ final class BlastFx {
         double t = age(now);
         FxPreset p = this.preset;
         return this.ended && t > p.fireballLife() + 5 && t > p.smokeTicks() && t > p.skyTicks() && this.candidates.isEmpty()
-                && frontRadius(t) >= this.start.outer() - 0.5f && t > p.flashTicks() * 4 + 10 && (this.mushroom == null || this.mushroom.done(t));
+                && frontRadius(t) >= this.start.outer() - 0.5f && t > p.flashTicks() * 4 + 10 && (this.mushroom == null || this.mushroom.done(t))
+                && (this.water == null || this.water.done(t));
     }
 
     // --- set-up ----------------------------------------------------------------------------------------------------------------
@@ -159,6 +164,10 @@ final class BlastFx {
 
     /** Effects that start the moment it goes off: the flare, the fireball's body, fire and dirt jets, sparks. */
     void ignite(Puffs puffs, double now, float quality) {
+        if (this.water != null) {
+            this.water.ignite(puffs, quality);
+            return;
+        }
         Vec3 c = this.start.center();
         float big = fireballRadius();
         int life = this.preset.fireballLife();
@@ -324,6 +333,9 @@ final class BlastFx {
         double t = age(now);
         if (this.mushroom != null && t >= 0 && !this.mushroom.done(t)) {
             this.mushroom.tick(t);
+        }
+        if (this.water != null) {
+            this.water.tick(level, t, quality);
         }
         float front = frontRadius(t);
         releaseDebris(level, debris, front, quality);

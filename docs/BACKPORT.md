@@ -4,7 +4,9 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `464565de` (2026-11-05: 0.8.1, released for this version and 26.3:
+- **Last brought up to:** `main` at `d4df3de0` (2026-11-06: sea mines, moored on their chains and adrift, and depth
+  charges, main's DESIGN.md §14.6, with blasts under water that keep the sea; the port tool taught that 1.21.1 tells an
+  entity a player uses it without where; before them, at `464565de`, 0.8.1, released for this version and 26.3:
   `groundburst-mc1.21.1-0.8.1.jar` is this branch's; before it, at `59d16c5d`, healing wakes cables, pipes and other mods' blocks and leaves
   this mod's blocks as they come back, main's DESIGN.md §21.9, here where a block's onPlace always runs; the blast effects
   under shader packs, main's §12.3, this branch's own way, below; before them 0.8.0 at `01689009`, and at `07db772c`
@@ -54,7 +56,8 @@ errors with their lines. `gradlew runGameTestServer` loads everything on a serve
 (`dev.groundburst.port.SmokeTest`: it loads; a particle beam carves its trench; transactions are each thread's own; the
 Wrench splits and joins pipes and cables; healing puts a blast's damage back block for block, a chest with its diamonds); `gradlew runPortCheck` opens a world, sets the mod's blocks out (a Warning
 Beacon lit by redstone, buckets in the hotbar), opens the Field Manual, sets a blast off, brings a particle beam down and
-looks into its pit, screenshots each into `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it
+looks into its pit, lays sea mines in a walled sea (seen from under the water and from above) and sets a depth charge
+off under them (its column), screenshots each into `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it
 keeps the game from pausing when its window is behind another).
 
 ## Where it stands (2026-11-03)

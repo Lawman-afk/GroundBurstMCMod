@@ -221,6 +221,46 @@
     ],
     "subtitle": "subtitles.groundburst.blast.medium.very_far"
   },
+  "blast.naval.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 1024,
+        "name": "groundburst:blast/naval_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.naval.far"
+  },
+  "blast.naval.mid": {
+    "sounds": [
+      {
+        "attenuation_distance": 512,
+        "name": "groundburst:blast/naval_mid",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.naval.mid"
+  },
+  "blast.naval.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundburst:blast/naval_near",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.naval.near"
+  },
+  "blast.naval.very_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 2048,
+        "name": "groundburst:blast/naval_very_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.naval.very_far"
+  },
   "blast.nuke.far": {
     "sounds": [
       {

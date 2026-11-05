@@ -103,7 +103,12 @@ public record BlastProfile(float core, float crater, float structural, float sco
 
     /** The sound set heard: the profile's, or one chosen by the crater's size. */
     public String soundSet() {
-        return this.sound.orElse(this.crater <= 4 ? "small" : this.crater <= 14 ? "medium" : this.crater <= 40 ? "large" : "nuke");
+        return this.sound.orElse(sizeSet());
+    }
+
+    /** The sound and visual set for a blast of this crater's size (small, medium, large, nuke). */
+    public String sizeSet() {
+        return this.crater <= 4 ? "small" : this.crater <= 14 ? "medium" : this.crater <= 40 ? "large" : "nuke";
     }
 
     /** This profile with every radius multiplied by {@code k} and capped at {@code max}. */

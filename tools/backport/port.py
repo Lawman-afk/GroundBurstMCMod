@@ -193,6 +193,9 @@ RULES = [
     sub(r"\bnet\.minecraft\.world\.level\.storage\.Value(Input|Output)\b", r"dev.groundburst.port.Value\1"),
     # --- methods --------------------------------------------------------------------------------------------------------
     sub(r"\.sendOverlayMessage\(((?:[^()]|\((?:[^()]|\([^()]*\))*\))*)\)", r".displayClientMessage(\1, true)"),
+    # An entity used by a player (a sea mine): 26.x also hands it where it was used; 1.21.1 does not.
+    sub(r"\bpublic InteractionResult interact\(Player (\w+), InteractionHand (\w+), Vec3 \w+\)",
+        r"public InteractionResult interact(Player \1, InteractionHand \2)"),
     sub(r"\bChunkPos\.containing\(", "new ChunkPos("),
     sub(r"\bChunkPos\.pack\(", "ChunkPos.asLong("),
     sub(r"\.getMinY\(\)", ".getMinBuildHeight()"),

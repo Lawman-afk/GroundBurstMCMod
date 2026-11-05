@@ -1,0 +1,17 @@
+{
+  "parent": "groundburst:item/moored_mine_own",
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 3029411
+      },
+      "model": "groundburst:item/naval/mine_body"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3707359
+      },
+      "model": "groundburst:item/naval/mine_sinker"
+    }
+  ]
+}

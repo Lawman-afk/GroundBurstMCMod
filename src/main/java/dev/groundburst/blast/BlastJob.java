@@ -81,6 +81,9 @@ import net.neoforged.neoforge.common.Tags;
 final class BlastJob implements Blast {
     static final float AIR_COST = 0.05f;
     static final float FLUID_COST = 0.6f;
+    /** A naval blast's rays through water (DESIGN.md §14.6): the sea carries a shock well, and is left as it is. */
+    static final float WATER_COST = 0.08f;
+    private static final BlockState WATER = Blocks.WATER.defaultBlockState();
     /** Block set flags: tell clients, skip neighbour shape updates, drops, block-entity side effects and on-place hooks. */
     static final int WRITE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
@@ -114,7 +117,13 @@ final class BlastJob implements Blast {
     final long seed;
     private final @Nullable Entity source;
     private final boolean terrain;
-    private final TerrainTable table;
+    final TerrainTable table;
+    /**
+     * A naval charge set off in water (DESIGN.md §14.6): the sea stays, and what is broken below {@link #waterline} (the
+     * height of the first block over the burst that is not water) fills with water.
+     */
+    final boolean naval;
+    private final int waterline;
     private final @Nullable BlockPos protectedCenter;
     private final int protectedRadius;
     private final RandomSource random;
@@ -173,6 +182,8 @@ final class BlastJob implements Blast {
         this.source = source;
         this.terrain = terrain;
         this.table = TerrainTable.byId(profile.terrain());
+        this.naval = this.table.naval() && inWater(level, BlockPos.containing(center));
+        this.waterline = this.naval ? waterline(level, BlockPos.containing(center)) : Integer.MIN_VALUE;
         this.protectedCenter = protectedCenter;
         this.protectedRadius = protectedRadius;
         this.random = RandomSource.create(seed);
@@ -433,8 +444,10 @@ final class BlastJob implements Blast {
                 continue;
             }
             BlockState state = this.level.getBlockState(this.pos);
-            if (state.isAir()) {
-                f.energy[k] -= AIR_COST;
+            // A naval blast's rays pass through the sea as through air (it carries the shock, and stays): DESIGN.md §14.6.
+            boolean sea = this.naval && state.getBlock() instanceof LiquidBlock && state.getFluidState().is(net.minecraft.tags.FluidTags.WATER);
+            if (state.isAir() || sea) {
+                f.energy[k] -= sea ? WATER_COST : AIR_COST;
                 // Above everything there is to hit in the whole blast, and not coming down: nothing more to do.
                 // (Not the ground under the ray itself: a tree or a hill further out may still be in its path.)
                 if (f.dy[k] >= 0 && by > this.ceiling) {
@@ -487,7 +500,7 @@ final class BlastJob implements Blast {
             return;
         }
         if (r <= this.profile.structural() && this.table.blowsOut(state)) {
-            write(this.pos, AIR);                          // blown out; the shock carries on through the gap
+            write(this.pos, hollow(this.pos));             // blown out; the shock carries on through the gap
             return;
         }
         f.kill(k);                                         // (the ground pass scorches and sets fires)
@@ -655,7 +668,7 @@ final class BlastJob implements Blast {
         if (this.profile.drops() > 0 && this.random.nextFloat() < this.profile.drops() && this.scars.mayDrop(heals)) {
             Block.dropResources(state, this.level, this.pos, this.level.getBlockEntity(this.pos));
         }
-        write(this.pos, AIR);
+        write(this.pos, hollow(this.pos));
         markDestroyed(this.pos.getX(), this.pos.getY(), this.pos.getZ());
     }
 
@@ -663,6 +676,34 @@ final class BlastJob implements Blast {
         if (this.scars.set(at, state, WRITE_FLAGS)) {
             this.blocksChanged++;
         }
+    }
+
+    /** What a block the blast takes leaves behind: air, or below the sea's surface in a naval blast, the sea. */
+    private BlockState hollow(BlockPos at) {
+        return at.getY() < this.waterline ? WATER : AIR;
+    }
+
+    private static boolean inWater(ServerLevel level, BlockPos at) {
+        return level.isLoaded(at) && level.getFluidState(at).is(net.minecraft.tags.FluidTags.WATER);
+    }
+
+    /** The height of the first block over {@code at} (in water) that is not water: the sea's surface there. */
+    private static int waterline(ServerLevel level, BlockPos at) {
+        BlockPos.MutableBlockPos p = at.mutable();
+        for (int i = 0; i < 384 && inWater(level, p); i++) {
+            p.move(Direction.UP);
+        }
+        return p.getY();
+    }
+
+    /** The sound set heard: a naval charge set off out of water sounds as an ordinary blast of its size. */
+    String soundSet() {
+        return this.table.naval() && !this.naval ? this.profile.sizeSet() : this.profile.soundSet();
+    }
+
+    /** The visual set: a naval charge set off out of water looks like an ordinary blast of its size. */
+    String visual() {
+        return this.table.naval() && !this.naval ? this.profile.sizeSet() : this.profile.visual().orElse(this.profile.soundSet());
     }
 
     private boolean isProtected() {
@@ -737,7 +778,7 @@ final class BlastJob implements Blast {
             if (isProtected() || s.getDestroySpeed(this.level, at) < 0 || s.hasBlockEntity()) {
                 break;
             }
-            write(at, AIR);
+            write(at, hollow(at));
             markDestroyed(at.getX(), at.getY(), at.getZ());
             gone |= depth == 0;
             at.move(Direction.DOWN);
@@ -771,7 +812,7 @@ final class BlastJob implements Blast {
                 if (isProtected() || s.getDestroySpeed(this.level, at) < 0 || s.hasBlockEntity()) {
                     break;
                 }
-                write(at, AIR);
+                write(at, hollow(at));
                 at.move(Direction.DOWN);
             }
         }
@@ -860,7 +901,7 @@ final class BlastJob implements Blast {
         }
         for (int i = 0; i < size; i++) {
             BlockPos at = BlockPos.of(cluster[i]);
-            write(at, AIR);
+            write(at, hollow(at));
             long[] words = this.visited.get(key(at.getX(), at.getY(), at.getZ()));
             if (words != null) {
                 int b = bit(at.getX(), at.getY(), at.getZ());
@@ -986,6 +1027,13 @@ final class BlastJob implements Blast {
         }
         for (Entity e : entities) {
             double d = e.position().distanceTo(this.center);
+            if (e instanceof ShockReceiver receiver) {
+                // A sea mine or a sinking depth charge: the shock sets it off, or parts a mine's mooring (DESIGN.md §14.6).
+                this.hit.add(e.getId());
+                this.waiting.remove(e.getId());
+                receiver.shocked(this.level, this.center, d, p);
+                continue;
+            }
             if (e instanceof ItemEntity || e instanceof ExperienceOrb) {
                 this.hit.add(e.getId());
                 this.waiting.remove(e.getId());
@@ -1017,7 +1065,8 @@ final class BlastJob implements Blast {
                     || e instanceof net.minecraft.world.entity.decoration.ArmorStand && dmg > 0) && this.scars.takeDown(e)) {
                 continue;
             }
-            if (dmg > 0 && e instanceof LivingEntity) {
+            // Creatures, and boats and minecarts (DESIGN.md §14.6: a sea mine breaks the boat that strikes it).
+            if (dmg > 0 && (e instanceof LivingEntity || e instanceof net.minecraft.world.entity.vehicle.VehicleEntity)) {
                 e.hurt(Blasts.damageSource(this.level, this.source, this.center), dmg);
             }
             if (falloff > 0) {

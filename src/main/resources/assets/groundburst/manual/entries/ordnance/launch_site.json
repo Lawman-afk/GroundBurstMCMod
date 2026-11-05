@@ -1,7 +1,7 @@
 {
   "title": "Launch site",
   "icon": "groundburst:launch_silo",
-  "order": 9,
+  "order": 10,
   "items": [
     "groundburst:launch_silo",
     "groundburst:launch_computer",

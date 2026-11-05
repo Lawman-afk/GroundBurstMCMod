@@ -21,7 +21,8 @@ import net.neoforged.neoforge.common.NeoForge;
  * This branch's check that the mod draws on 1.21.1 ({@code gradlew runPortCheck}): makes a flat creative world, sets the
  * mod's blocks out in a row (machines, launchers, guns, charges, warheads; a Warning Beacon lit by redstone; buckets in
  * the hotbar), photographs them, opens the Field Manual, sets a blast off and photographs that, brings a Particle Uplink
- * beam down beside the row and photographs it and its trench, then quits. The pictures go to
+ * beam down beside the row and photographs it and its trench, lays sea mines in a walled sea and photographs them from
+ * under the water and from above, sets a depth charge off under them and photographs its column, then quits. The pictures go to
  * run/screenshots/port_*.png; anything that goes wrong is in the log.
  */
 public final class PortCheck {
@@ -156,7 +157,34 @@ public final class PortCheck {
             }
             case 445 -> tidy(mc);
             case 450 -> shot(mc, "beam_trench");
-            case 470 -> {
+            // Sea mines and depth charges (main's DESIGN.md §14.6): a walled sea 13 deep, two moored mines (one awash, one 3
+            // down) and a drifting one, from under the water and from above; then a depth charge 5 down, its column.
+            case 470 -> command(mc, "fill 40 -60 -10 70 -48 20 minecraft:stone");
+            case 472 -> command(mc, "fill 41 -60 -9 69 -48 19 minecraft:water");
+            case 474 -> command(mc, "fill 55 -48 -3 55 -42 -3 minecraft:stone");      // a post to look down from
+            case 476 -> {
+                var server = mc.getSingleplayerServer();
+                if (server != null) {
+                    server.execute(() -> {
+                        var level = server.overworld();
+                        dev.groundburst.content.naval.SeaMine.lay(level, new net.minecraft.world.phys.Vec3(55.5, -48.6, 5.5), true, 0, null);
+                        dev.groundburst.content.naval.SeaMine.lay(level, new net.minecraft.world.phys.Vec3(58.5, -48.6, 8.5), true, 3, null);
+                        dev.groundburst.content.naval.SeaMine.lay(level, new net.minecraft.world.phys.Vec3(52.5, -48.6, 2.5), false, 0, null);
+                    });
+                }
+            }
+            case 480 -> command(mc, "tp @s 55.5 -54 -6 0 -4");
+            case 640 -> tidy(mc);
+            case 645 -> shot(mc, "naval_under");
+            case 650 -> command(mc, "tp @s 55.5 -41 -3 0 40");
+            case 670 -> tidy(mc);
+            case 675 -> shot(mc, "naval_mines");
+            case 680 -> command(mc, "tp @s 62.5 -47 -10 15 -6");                    // on the sea's wall, the post out of the way
+            case 690 -> command(mc, "groundburst blast groundburst:depth_charge 55 -53 14");
+            case 708 -> tidy(mc);
+            case 710 -> shot(mc, "naval_column");
+            case 735 -> shot(mc, "naval_column_late");
+            case 760 -> {
                 GroundBurst.LOGGER.info("Port check: done");
                 mc.stop();
             }

@@ -160,8 +160,11 @@ public final class Spectacle {
         float facing = 0.35f + 0.65f * (float) Math.max(0, look.dot(toward));
         float near = 1 / (1 + (float) (fx.reaches * fx.reaches) / 9);
         fx.flash = fx.preset.flash() * GBClientConfig.FLASH_STRENGTH.get().floatValue() * near * (seen ? 1 : 0.25f) * facing;
-        if (fx.age(ticks) < fx.preset.fireballLife()) {
-            fx.ignite(PUFFS, ticks, quality());
+        if (fx.water != null && mc.player.isUnderWater() && fx.reaches < 3) {
+            fx.flash = 0.3f * GBClientConfig.FLASH_STRENGTH.get().floatValue() * near;     // a diver near a charge going off sees it
+        }
+        if (fx.water != null || fx.age(ticks) < fx.preset.fireballLife()) {
+            fx.ignite(PUFFS, ticks, quality());            // (a column of water has no fireball: its spray is all laid out at once)
         }
         BLASTS.put(start.id(), fx);
     }
@@ -1091,8 +1094,8 @@ public final class Spectacle {
 
     private static void fireball(BlastFx fx, double t, Vec3 camera, List<float[]> out, List<float[]> cores) {
         int life = fx.preset.fireballLife();
-        if (t < 0 || t > life) {
-            return;
+        if (life <= 0 || t < 0 || t > life) {
+            return;                                        // (a charge under water has none)
         }
         float u = (float) (t / life);
         float big = fx.fireballRadius();
