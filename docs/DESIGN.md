@@ -1499,6 +1499,52 @@ As built (2026-10-21):
 - Reviewed with `runFxShots` scenes small, medium, large, nuclear (230 blocks, to 80 s), nuclear_close (130 blocks) and
   nuclear_night.
 
+### 12.3 Shader packs (Iris) (2026-11-05; a commenter asked for shader support, "mushroom clouds/smoke")
+With Iris and a shader pack (Complementary Reimagined, BSL) every effect drew as long black, purple and green shards
+across the screen; the fire blocks a blast leaves were fine. A pack draws the world with its own programs, which read
+more from each vertex than vanilla's shaders, and Iris lays entity-format vertices out for them; our effect pipelines
+were ones Iris did not know, so it drew them with their own shaders from vertices laid out for the pack.
+
+**26.3** (`client/fx/IrisFx`, loaded only when Iris is): each effect pipeline is handed to the pack program it is most
+like through Iris's API (`IrisApi.assignPipeline`, API 0.3, Iris 1.11): the glow (the fireball's white-hot core, the shock
+shell, sparks, beams, lasers) to the emissive entity program (spider eyes: unlit, glowing); the fire (the fireball's
+body, fire puffs) and the cloud (smoke, dust, the mushroom cloud) to the translucent entity program, which the pack
+lights. Tried and dropped, with screenshots of both packs:
+- everything on the emissive program: the shards gone, but each pack made it all glow white, smoke and the mushroom cloud
+  with it;
+- the pack lighting the smoke alone (its plain colour, its plume's normal, the world's real light, the mushroom cloud's
+  glow as block light): dark, bluish smoke in both packs and the cap's glow gone. Kept instead: colours shaded here as
+  without a pack (`FxLight`) and marked full-bright, as vanilla draws them; the pack lights them on top (BSL: warm brown
+  smoke, an orange-glowing cap, close to the look without a pack; Complementary: darker smoke, a duller cap);
+- the glow on the translucent program: dark blotches inside the fireball (Complementary).
+Iris picks a program by the pipeline's vertex layout, or failing that by its alpha cutout; ours are vanilla's entity
+layout, which Iris extends, so each pipeline declares a cutout (the cloud its own 0.16, which `fx_cloud.fsh` applies
+itself; the glow and fire a 255th, which drops nothing seen) and Iris gives them its emissive or translucent entity
+program for the entity layout (`ENTITIES_EYES_TRANS`, `ENTITIES_TRANSLUCENT`). Without one the glow and fire got a
+program for another vertex layout. The effects stay out of the pack's shadow pass (they cast no shadow). Iris turns
+improved transparency off, so the OIT pipeline sets need nothing.
+
+**1.21.1** (the branch's own `FxRenderTypes` and `IrisFx`; its docs/BACKPORT.md): Iris 1.8 puts a pack's programs in place
+of the game's own shaders by name. There the effects did not shatter, but the fire, on vanilla's eyes shader, glowed
+white, and the smoke, on the branch's own cloud shader, did not show at all. With a pack on, the fire and the clouds
+switch to vanilla's translucent entity shader (the pack's lit entity program; the lightmap is set up for it) and the
+glow stays on the eyes shader (the pack's glowing one); effects skip the shadow pass. Checked with the port check's blast
+and particle beam under both packs: an orange fireball and its smoke again.
+
+**What a pack changes**: the cloud's own fragment shader (hazed toward the fog colour rather than fading into the
+render distance, out to the clouds' range) gives way to the pack's program, so a mushroom cloud far beyond the loaded
+terrain fades into the pack's fog like everything else; the sky's tint after a nuclear blast is the pack's own sky; the
+smoke's shading is the pack's lighting over ours.
+
+**Dev runs**: `-PwithIris` loads Iris and Sodium (26.3: Iris 1.11.7, Sodium 0.9.3 beta; 1.21.1: Iris 1.8.14, Sodium
+0.8.13) with Complementary Reimagined r5.9.3 and BSL 10.1.8 put in run/shaderpacks (`-PirisPack=complementary|bsl|off`,
+Complementary by default); `runFxShots -PwithIris` photographs the effects under a pack (1.21.1: `runPortCheck
+-PwithIris`), and on 26.3 `-PirisFx=glow:EMISSIVE_ENTITIES,fire:...` tries other programs. Checked on 26.3 with eight
+scenes besides the first two (a nuke at night, antimatter, a singularity, a storm, cryo, napalm, the designator): no
+shards under either pack, and the shots without a pack unchanged. With Iris the dev runs turn off two things players never meet: the game's strict draw checks (dev
+runs only; Iris's depth-of-field sampler fails one, `neoforge.disableBlaze3DValidation`) and NeoForge's load-warning
+screen (Iris's metadata warns, and the screen held the photographers).
+
 ## 13. Sound system
 
 - Every sound is made by `tools/sound`: synthesised (layered noise, filtered sweeps, convolution reverb, saturation) or,
@@ -4221,6 +4267,11 @@ as it is placed (GameTests found both). So, as each block comes back (`Healer.Ce
   cables and pipes beside it work their networks out again instead.
 NeoForge itself refreshes the capabilities round a block entity that comes back and calls its `onLoad` the next tick. What
 a mod keeps outside its blocks altogether (connections held in the level's own data, say) is that mod's to put back.
+On 1.21.1 every block's onPlace runs as it is set (that version has no flag to skip it), so this mod's blocks whose
+onPlace works something out afresh (a cable's or pipe's sides, a structure's forming, a tank's joining) leave it be while
+healing sets them back (`Healer.restoring()`): a healed structure part had made its structure check itself while still
+half-built, taking it apart until its last part was back, and a healed pipe could lose a pull side whose chest was not
+back yet.
 
 **Players.** Where a player puts a block over remembered damage, `playerBlocks` says what healing does: `KEEP` (the
 default) leaves it, and leaves the ground within `keepRadius` of it, and the air over that up to the sky, as they are,
@@ -5057,6 +5108,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-05 | **Shader packs (Iris)** (a commenter: "Any plans for shader support? (mushroom clouds/smoke)"; the user: if that means the effects under shaders, today's project, on 26.3 and 1.21.1, 26.1.2 left for now): §12.3. Under a pack every effect drew as long black and coloured shards (Iris laid their vertices out for the pack and drew them with shaders it did not know). On 26.3 each effect pipeline is handed to a pack program through Iris's API: the glow to the emissive entity program, the fire and smoke to the translucent entity program the pack lights, our own shading kept; chosen from screenshots of Complementary Reimagined and BSL over three other ways tried. On 1.21.1 the fire and smoke switch to vanilla's translucent entity shader while a pack is on (Iris swaps the game's shaders by name; the glow is already on vanilla's eyes shader). |
 | 2026-11-05 | **Healing wakes cables, pipes and other mods' blocks** (the user: does healing account for modded blocks, their block entities, wires and pipes, placing them back as they should be with their input/output settings, "very important and must be implemented if not"): settings already came back with each block entity's data, but healed cable and pipe runs carried nothing (their networks were never told). Now this mod's cables and pipes are told they are back (`heal.Healable`) instead of placed afresh (which would lose a pull side whose chest is not back yet), another mod's block is placed as a structure places its blocks, and a block with a block entity or from another mod tells the other mods' blocks beside it (§21.9); the game's own blocks stay quiet as before. |
 | 2026-11-04 | **Minecraft 26.1.2, backported from main; 0.8.0 for all three** (the user: a version for 26.1.2, "not sure if it's better to backport, or forward port this"; 0.8.0 on every version): a backport from main (26.3) by a port tool like the 1.21.1 branch's, on its own branch `26.1.2` (its `docs/BACKPORT.md`): 26.1.2 is two minor versions before 26.3 and shares its rendering by render states and submitted geometry, item model definitions, data components and GameTest framework, so most of main comes over by renaming and main's own GameTests run there (392/392); a forward port from 1.21.1 would cross every change from 1.21.2 to 26.1. Its data is main's generated output converted (configured features, loot tables' lists, recipe unlocks, biomes' spawners), not the data generators run on 26.1.2 (they are much of the API that differs). Found on the way: main saves structure templates with 26.x's lowercase palette names, which 1.21.1 and 26.1.2 read as air, so the 1.21.1 0.7.0 build's world sites were empty; both ports rename them. |
 | 2026-11-04 | **Fire is never healed back; a performance check** (the user, testing healing: molotovs on trees healed with their fire and burnt again; "strangely laggy" at 32 chunks; an optimisation check over everything before the next release): a fire is remembered as the air it burns in, and a chunk waits while a fire that will go out burns by its damage (§21.9), rather than putting fires out when it heals (the forest round it would still be burning) or keeping fires out of the record only (one remembered before would still come back). Measured, not guessed: a play bench and flight recordings (§11.8) put the mod at about 1% of the server's and the client's time at 32 chunks, healing included, and a Tsar's crater healing within its budget; the checks that run everywhere were made quick where nothing is damaged, healing's effects capped. |
