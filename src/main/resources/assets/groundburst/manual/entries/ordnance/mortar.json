@@ -1,7 +1,7 @@
 {
   "title": "81 mm Mortar",
   "icon": "groundburst:mortar",
-  "order": 3,
+  "order": 4,
   "items": [
     "groundburst:mortar",
     "groundburst:mortar_shell_he",

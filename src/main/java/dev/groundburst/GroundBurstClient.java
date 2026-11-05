@@ -106,6 +106,8 @@ public class GroundBurstClient {
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(dev.groundburst.content.ordnance.GBOrdnance.THROWN_EXPLOSIVE.get(), dev.groundburst.client.fx.GrenadeRenderer::new);
         event.registerEntityRenderer(dev.groundburst.content.ordnance.GBOrdnance.SHRAPNEL.get(), dev.groundburst.client.fx.ShrapnelRenderer::new);
+        event.registerEntityRenderer(dev.groundburst.content.naval.GBNaval.SEA_MINE.get(), dev.groundburst.client.fx.SeaMineRenderer::new);
+        event.registerEntityRenderer(dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE_ENTITY.get(), dev.groundburst.client.fx.DepthChargeRenderer::new);
         event.registerBlockEntityRenderer(dev.groundburst.content.ordnance.GBOrdnance.CHARGE.get(), dev.groundburst.client.render.ChargeRenderer::new);
         // The alarm system (DESIGN.md §18.6): the siren's head turning over its block, the beacon in its colour, the display's text.
         event.registerBlockEntityRenderer(dev.groundburst.content.alarm.GBAlarms.SIREN_ENTITY.get(),

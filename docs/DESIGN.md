@@ -1895,6 +1895,68 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   blocks or more whistles all the way down (`bomb.whistle`, bound to the falling block) and lands harder: its reach
   grows with the fall, up to 30% for 24 blocks.
 
+### 14.6 Sea mines and depth charges (2026-11-05; the first of the user's underwater and naval weapons)
+The user asked for naval mines and depth charges on both versions, and "the classic sea mines with the chains that
+stick them to the bottom". Three weapons, all entities (a mine must ride a current, swing on its chain and float free,
+which a block cannot), and a way for a blast to go off under water (`content/naval`).
+- **Moored Sea Mine** (`moored_mine`): the contact mine of both world wars, a black steel sphere with lead Hertz horns
+  (a horn bent by a hull breaks the glass vial inside it, and the electrolyte makes the battery that fires the mine),
+  moored by a chain to a sinker on the bottom. Used on water (the water's surface where the player looks; from under
+  water, just ahead of a diver's eyes) it is laid there: mine and sinker sink together to the bottom (0.25 blocks a
+  tick), the sinker settles, and the mine rises on its chain, paying it out with a rattle, until its top is its depth
+  under the surface; 5 s later its salt plug has dissolved and it is live (a click). Its depth is set on the item before
+  laying (sneak and use in the air): 0 (awash, its horns just under the surface: boats strike it), 1, 2, 3, 5 or 8
+  blocks. In water too shallow for its chain it sits on its sinker on the bottom, still live. On its chain it rides on
+  the sphere round its sinker that the chain allows: a current pushes it aside and it dips as it swings.
+- **Drifting Sea Mine** (`drifting_mine`): the same mine without a sinker. Laid on water it floats awash and drifts
+  with the current (flowing water) and a tenth of the dimension's wind (the fallout's), coming to rest on shores; live
+  5 s after it is laid. As the Hague Convention of 1907 asks of mines adrift, it makes itself harmless within the hour:
+  after an hour adrift (while loaded) it floods and sinks, gone.
+- **What sets a mine off**: a boat, a minecart, or a block of a Create ship or contraption touching it (on 1.21.1,
+  through `Hulls`); a player, or any creature but the sea's own (fish, squid, dolphins and axolotls, the water creature
+  categories), which slip past its horns; a projectile striking it (an arrow, a trident, a shell: mines cut loose were
+  swept by shooting them); a punch; another blast close by (inside that blast's lethal reach: sympathetic, 2 to 5 ticks
+  later). A blast a little further off (inside its damage reach) parts a moored mine's chain: the mine bobs up to the
+  surface and drifts, still live. Mines never set each other off by touch.
+- **Handling**: use a mine to make it safe (a click) or to arm it again (live 5 s later). Punched while safe, it is
+  taken up: its item, the sinker and chain with it, its depth kept. A dispenser facing into water lays a mine there (a
+  minelayer); facing anything else it drops it as an item.
+- **Depth Charge** (`depth_charge`): the "ashcan" of the Second World War, a drum of explosive with a hydrostatic pistol
+  that fires at a set depth. Thrown (0.6 blocks a tick, a second's cooldown) or rolled out of a dispenser (a ship's
+  stern rack: a short shove out of its front), it sinks at 0.2 blocks a tick, tumbling, and goes off at its depth under
+  the surface where it went in, or on the bottom if that comes first. Depth on the item (sneak and use in the air): 3,
+  5, 8, 12, 16 or 24 blocks. Out of water its pistol never fires: on dry ground it comes to rest as an item to pick up.
+  Caught in another blast's lethal reach under water, it goes off too.
+- **Blasts under water** (the `naval` terrain table): the sea is not blown away. Rays pass through water for little
+  energy (0.08 a block: it carries a shock well) and leave it as it is; what they break below the surface fills with
+  water (the sea rushes in), what they break above it is left open. Exposure lines already passed through water. A naval
+  blast set off out of water is an ordinary one, seen and heard by its size. Every blast now breaks the boats and
+  minecarts it hurts (vanilla's vehicles), as it hurts creatures.
+  - `sea_mine`: core 1.5, crater 4.5, lethal 8, damage 18 (60 and 18 damage, knockback 2.8), instant. `depth_charge`:
+    core 1, crater 3.5, lethal 6.5, damage 14 (45 and 14, knockback 2.2), instant. No scorch, fire or ejecta. Sound set
+    `naval`; visual sets `sea_mine` and `depth_charge`.
+- **The water column** (`WaterColumn`, client): the shock reaches the surface first, a white dome; then the column of
+  spray stands up out of it, jets streaking up, and falls back as a curtain of spray spreading out, a ring of mist
+  rolling over the water from its foot; bubbles boil up from the burst for seconds, and seen from under water there is
+  a brief flash. Its height is about five craters (23 blocks for a mine, 18 for a depth charge), cut by its depth to
+  under a fifth five craters down; a deep charge's dome and column come late (the bubble's rise). No fireball, smoke,
+  dust or debris.
+- **Sound**: the `naval` set (near, mid, far, very far): the deep thud of a charge under water, the roar of the column
+  going up and the rain of its water falling back.
+- **Models** (`tools/assets/naval.py`): the mine a black sphere 14 px across in bands from a true circle (as the
+  singularity warhead's), nine lead horns (one on top, four round its shoulder at 45 degrees, four round its waist
+  between them), a bolted flange round its middle, the chain's shackle under it; rust weeping from the flange, paint worn
+  at the horns' feet, a green-brown band of sea growth low down. The sinker a box-shaped iron trolley on four small
+  wheels (mines were rolled along a minelayer's rails on them) with the chain's drum in it, rusty cast iron. The chain
+  rusty links on two crossed planes (as vanilla's chain), drawn by the renderer from the sinker to the mine's shackle.
+  The moored mine's item is the mine on its sinker, as stowed on a minelayer's deck; its item model has
+  `custom_model_data` cases "body" and "sinker" for the renderer's parts (as the missile's). The drifting mine's item is
+  the mine alone. The depth charge a navy-grey drum with two rolling hoops, the pistol's dial in one end and the
+  primer's cap in the other, a yellow band and white stencils.
+- **Recipes**: Drifting Sea Mine (2 lead ingots, 3 steel plates, TNT); Moored Sea Mine (a drifting sea mine, 2 iron
+  ingots and 2 chains: its sinker); Depth Charge x2 (3 steel plates, 2 TNT, a copper ingot). Field Manual: Ordnance,
+  "Sea mines and depth charges".
+
 ## 15. Nuclear weapons
 
 Rescaled after the in-game look at slice 8a (2026-10-22): the smallest nuclear weapon is half as big again as the
@@ -5108,6 +5170,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-06 | **Sea mines and depth charges** (§14.6; the user: "Let's do the naval mines and depth charges please. for the 2 main versions", and "the classic sea mines with the chains that stick them to the bottom"; paused for the 0.8.1 release, then taken up again): entities, not blocks (a mine rides a current, swings on its chain and floats free); a moored and a drifting mine (one model: the moored one's item is the mine on its sinker), a depth charge on a hydrostatic pistol; the naval terrain table (set off in water, a blast's rays pass through the sea as through air and what it breaks under the surface fills with water; set off out of water, an ordinary blast of its size); every blast now breaks the boats and minecarts it hurts; `ShockReceiver` (a blast sets off the mines and charges close by and parts mines' chains further off); the water column (`WaterColumn`) and the naval sound set, made from recordings already credited. |
 | 2026-11-05 | Version **0.8.1** for Minecraft 26.3 and 1.21.1 (the user: a stable release of the two main versions; 26.1.2 stays at 0.8.0, the user's wish earlier the same day): the blast effects under shader packs (§12.3) and healing's cables, pipes and other mods' blocks (§21.9); the changelog, README and the CurseForge description (shader packs, Iris among the optional mods, healed machines, cables and pipes). |
 | 2026-11-05 | **Shader packs (Iris)** (a commenter: "Any plans for shader support? (mushroom clouds/smoke)"; the user: if that means the effects under shaders, today's project, on 26.3 and 1.21.1, 26.1.2 left for now): §12.3. Under a pack every effect drew as long black and coloured shards (Iris laid their vertices out for the pack and drew them with shaders it did not know). On 26.3 each effect pipeline is handed to a pack program through Iris's API: the glow to the emissive entity program, the fire and smoke to the translucent entity program the pack lights, our own shading kept; chosen from screenshots of Complementary Reimagined and BSL over three other ways tried. On 1.21.1 the fire and smoke switch to vanilla's translucent entity shader while a pack is on (Iris swaps the game's shaders by name; the glow is already on vanilla's eyes shader). |
 | 2026-11-05 | **Healing wakes cables, pipes and other mods' blocks** (the user: does healing account for modded blocks, their block entities, wires and pipes, placing them back as they should be with their input/output settings, "very important and must be implemented if not"): settings already came back with each block entity's data, but healed cable and pipe runs carried nothing (their networks were never told). Now this mod's cables and pipes are told they are back (`heal.Healable`) instead of placed afresh (which would lose a pull side whose chest is not back yet), another mod's block is placed as a structure places its blocks, and a block with a block entity or from another mod tells the other mods' blocks beside it (§21.9); the game's own blocks stay quiet as before. |

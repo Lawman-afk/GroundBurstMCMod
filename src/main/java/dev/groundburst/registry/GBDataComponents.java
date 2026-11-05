@@ -21,6 +21,10 @@ public final class GBDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> FREQUENCY = COMPONENTS.registerComponentType("frequency",
             b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
+    /** A sea mine's or depth charge's depth setting, blocks under the surface (DESIGN.md §14.6). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> NAVAL_DEPTH = COMPONENTS.registerComponentType("naval_depth",
+            b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
+
     /** A Laser Designator's mode, from its first build (no longer read: kept so a designator saved with it still loads). */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> DESIGNATOR_MODE = COMPONENTS.registerComponentType("designator_mode",
             b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));

@@ -351,12 +351,55 @@ public final class FxPhotographer {
                 new Scene("vls_aerial", "vls", 22, 32, List.of(229, 245, 272)),
                 new Scene("vls_ui", "vls", 5, 0, List.of(30)),                  // its screen: the CRT's four lines
                 new Scene("vls_close", "vls", 10, 16, List.of(229, 233, 237, 241, 245, 249, 253)),   // missiles out of their cells
-                new Scene("cruise_dive", "cruise_dive", 40, -12, List.of(6, 16, 24, 32, 38, 44, 47, 60)))) {
+                new Scene("cruise_dive", "cruise_dive", 40, -12, List.of(6, 16, 24, 32, 38, 44, 47, 60)),
+                // Sea mines and depth charges (DESIGN.md §14.6) on a sea laid over the flat world: two moored mines (one
+                // awash, one 3 down) and a drifting one, settled, from above and from under the water (the chains, the
+                // sinkers); the columns of a mine near the surface, a depth charge 5 down and one 11 down.
+                new Scene("naval_mines", "naval_mines", 10, 30, List.of(170, 230)),
+                new Scene("naval_mines_under", "naval_mines", 9, -6, List.of(170)),
+                new Scene("naval_column_mine", "naval_column_mine", 45, -6, List.of(2, 6, 12, 20, 30, 45, 65, 90, 140)),
+                new Scene("naval_column_charge", "naval_column_charge", 38, -6, List.of(2, 8, 16, 26, 40, 60, 90)),
+                new Scene("naval_column_deep", "naval_column_deep", 38, -6, List.of(10, 20, 30, 50, 80)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
             }
         }
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> tick());
+    }
+
+    /** How deep the naval scenes' sea is. */
+    private static final int SEA = 14;
+
+    /** The naval scenes' sea: a pool {@link #SEA} deep laid over the flat ground round x (the camera's side and beyond), walled in, a sandy bottom. */
+    private static void sea(ServerLevel level, int x, int ground) {
+        var water = net.minecraft.world.level.block.Blocks.WATER.defaultBlockState();
+        var wall = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        var sand = net.minecraft.world.level.block.Blocks.SAND.defaultBlockState();
+        var p = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int dx = -70; dx <= 40; dx++) {
+            for (int dz = -50; dz <= 50; dz++) {
+                boolean edge = dx == -70 || dx == 40 || dz == -50 || dz == 50;
+                level.setBlock(p.set(x + dx, ground - 1, dz), sand, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                for (int dy = 0; dy < SEA; dy++) {
+                    level.setBlock(p.set(x + dx, ground + dy, dz), edge ? wall : water, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                }
+            }
+        }
+    }
+
+    /** The naval scenes on the sea whose surface is at {@code surface}: mines laid, or a charge set off under it. */
+    private static void naval(ServerLevel level, int x, int surface, String what) {
+        switch (what) {
+            case "naval_mines" -> {
+                dev.groundburst.content.naval.SeaMine.lay(level, new Vec3(x + 0.5, surface - 0.6, 0.5), true, 0, null);
+                dev.groundburst.content.naval.SeaMine.lay(level, new Vec3(x + 3.5, surface - 0.6, 3.5), true, 3, null);
+                dev.groundburst.content.naval.SeaMine.lay(level, new Vec3(x - 2.5, surface - 0.6, -2.5), false, 0, null);
+            }
+            case "naval_column_mine" -> Blasts.detonate(level, new Vec3(x + 0.5, surface - 2.0, 0.5), Blasts.profile("sea_mine"), null);
+            case "naval_column_charge" -> Blasts.detonate(level, new Vec3(x + 0.5, surface - 5.5, 0.5), Blasts.profile("depth_charge"), null);
+            case "naval_column_deep" -> Blasts.detonate(level, new Vec3(x + 0.5, surface - 11, 0.5), Blasts.profile("depth_charge"), null);
+            default -> { }
+        }
     }
 
     /** Two armour stands wearing the hazmat suits, side by side, facing the camera (or turned away). */
@@ -1940,6 +1983,10 @@ public final class FxPhotographer {
                 if (s.profile().equals("msilo")) {             // on the silo's plateau, looking down at it (steeply, into its shaft)
                     lift = SILO_PLATEAU + (s.name().endsWith("_ui") ? 1.6 : s.distance() * (s.name().endsWith("_aerial") ? 1.6 : 0.42));
                 }
+                if (s.profile().startsWith("naval_")) {        // over the sea (or under it), laid now for the client to have
+                    sea(level, x, ground);
+                    lift = s.name().endsWith("_under") ? SEA - 6 : SEA + 1.6 + (s.pitch() > 10 ? s.distance() * 0.5 : 0);
+                }
                 player.teleportTo(level, x - s.distance() + 0.5, ground + lift, 0.5, java.util.Set.of(), -90, s.pitch(), true);
             });
             return;
@@ -1955,6 +2002,10 @@ public final class FxPhotographer {
                 level.getChunk(x >> 4, 0);                 // a far scene's middle may have unloaded: its height would read the world's floor
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0);
                 Vec3 at = new Vec3(x + 0.5, ground + 0.5, 0.5);
+                if (s.profile().startsWith("naval_")) {
+                    naval(level, x, ground, s.profile());    // (the ground is the sea's surface now)
+                    return;
+                }
                 if (s.profile().equals("grenades")) {
                     grenades(level, x, ground);
                     return;

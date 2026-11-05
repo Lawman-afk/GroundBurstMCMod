@@ -83,7 +83,7 @@ public final class BlastPayloads {
 
     static Start start(BlastJob job) {
         BlastProfile p = job.profile;
-        return new Start(job.netId, p.soundSet(), p.visual().orElse(p.soundSet()), job.center, p.crater(), p.crater() * p.craterDepth(),
+        return new Start(job.netId, job.soundSet(), job.visual(), job.center, p.crater(), p.crater() * p.craterDepth(),
                 Math.max(p.damage(), Math.max(p.lethal(), p.crater())), p.outerRadius(), p.isInstant() ? 0 : p.frontSpeed(), job.seed, job.startTick);
     }
 }

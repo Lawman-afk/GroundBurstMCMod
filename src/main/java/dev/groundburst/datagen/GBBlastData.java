@@ -169,6 +169,13 @@ public final class GBBlastData {
                 TerrainTable.CONVENTIONAL, Optional.of(true)), "he"));
         ctx.register(Blasts.profile("howitzer_shell_incendiary"), profile(0.6f, 2, 3.5f, 9, 9, 3, 7, 4, 0.7f, 0f, 0.1f, 0.1f, 16, 6, 1.0f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
+        // Sea mines and depth charges (DESIGN.md §14.6): the naval terrain table (set off in water, the sea stays and fills
+        // what they break under it), deadly to whatever is in the water round them, their own look (a column of water)
+        // and sound. Set off out of water they are ordinary blasts of their size.
+        ctx.register(Blasts.profile("sea_mine"), new BlastProfile(1.5f, 4.5f, 0, 0, 0, new BlastProfile.EntityZones(8, 18, 60, 18, 2.8f), 4,
+                0.8f, 0.1f, 0.1f, 0f, 0f, TerrainTable.NAVAL, Optional.of(true), Optional.of("naval"), Optional.of("sea_mine")));
+        ctx.register(Blasts.profile("depth_charge"), new BlastProfile(1, 3.5f, 0, 0, 0, new BlastProfile.EntityZones(6.5f, 14, 45, 14, 2.2f), 4,
+                0.8f, 0.1f, 0.1f, 0f, 0f, TerrainTable.NAVAL, Optional.of(true), Optional.of("naval"), Optional.of("depth_charge")));
         // GameTest profiles (smooth, so their shapes are predictable): a crater-only charge, and a slow one that must take several ticks.
         ctx.register(Blasts.profile("test/crater_only"), profile(0, 6, 0, 0, 0, 0, 0, 4, 1.0f, 0f, 0f, 0f, 0, 0, 0,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));

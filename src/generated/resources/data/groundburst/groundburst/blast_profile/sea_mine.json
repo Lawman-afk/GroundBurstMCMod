@@ -1,0 +1,20 @@
+{
+  "core": 1.5,
+  "crater": 4.5,
+  "crater_depth": 0.8,
+  "ejecta": 0.0,
+  "entities": {
+    "damage": 18.0,
+    "edge_damage": 18.0,
+    "knockback": 2.8,
+    "lethal": 8.0,
+    "lethal_damage": 60.0
+  },
+  "front_speed": 4.0,
+  "instant": true,
+  "lobes": 0.1,
+  "sound": "naval",
+  "streaks": 0.1,
+  "terrain": "groundburst:naval",
+  "visual": "sea_mine"
+}

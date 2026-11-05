@@ -366,6 +366,21 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBChemicals.PLASTIC_EXPLOSIVE).requires(Items.IRON_NUGGET).requires(Items.IRON_NUGGET).requires(Items.IRON_NUGGET)
                 .requires(Items.IRON_NUGGET).requires(GBTags.commonItem("plates/steel")).requires(GBParts.BASIC_CIRCUIT)
                 .unlockedBy(getHasName(GBChemicals.PLASTIC_EXPLOSIVE), has(GBChemicals.PLASTIC_EXPLOSIVE)).save(output);
+        // Sea mines and depth charges (DESIGN.md §14.6): the mine's lead horns, its steel case and its charge; a moored one is
+        // a drifting one with its sinker (iron) and chain.
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.naval.GBNaval.DRIFTING_MINE, 1)
+                .requires(GBTags.commonItem("ingots/lead")).requires(GBTags.commonItem("ingots/lead")).requires(GBTags.commonItem("plates/steel"))
+                .requires(GBTags.commonItem("plates/steel")).requires(GBTags.commonItem("plates/steel")).requires(Items.TNT)
+                .unlockedBy(getHasName(GBParts.STEEL_PLATE), has(GBParts.STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.naval.GBNaval.MOORED_MINE, 1)
+                .requires(dev.groundburst.content.naval.GBNaval.DRIFTING_MINE).requires(Items.IRON_INGOT).requires(Items.IRON_INGOT)
+                .requires(Items.IRON_CHAIN).requires(Items.IRON_CHAIN)
+                .unlockedBy(getHasName(dev.groundburst.content.naval.GBNaval.DRIFTING_MINE), has(dev.groundburst.content.naval.GBNaval.DRIFTING_MINE))
+                .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE, 2)
+                .requires(GBTags.commonItem("plates/steel")).requires(GBTags.commonItem("plates/steel")).requires(GBTags.commonItem("plates/steel"))
+                .requires(Items.TNT).requires(Items.TNT).requires(Items.COPPER_INGOT)
+                .unlockedBy(getHasName(GBParts.STEEL_PLATE), has(GBParts.STEEL_PLATE)).save(output);
         // Warheads are assembled at the Ordnance Assembly Bench (Phase 7): payload cores, casings and fuzes.
         shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.HE_CHARGE, 1)
                 .requires(GBChemicals.RDX_CRYSTALS).requires(GBChemicals.RDX_CRYSTALS)

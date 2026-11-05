@@ -63,6 +63,15 @@ public final class GBSounds {
             register("blast.medium.far", "Distant explosion", List.of("blast/medium_far"), true, 1024);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_MEDIUM_VERY_FAR =
             register("blast.medium.very_far", "Far-off rumble", List.of("blast/medium_very_far"), true, 2048);
+    // Charges going off under water (DESIGN.md §14.6): a deep thud, the column going up and its water falling back.
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_NAVAL_NEAR =
+            register("blast.naval.near", "Underwater explosion", List.of("blast/naval_near"), true, 256);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_NAVAL_MID =
+            register("blast.naval.mid", "Underwater explosion, water falling", List.of("blast/naval_mid"), true, 512);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_NAVAL_FAR =
+            register("blast.naval.far", "Distant underwater explosion", List.of("blast/naval_far"), true, 1024);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_NAVAL_VERY_FAR =
+            register("blast.naval.very_far", "Far-off thud", List.of("blast/naval_very_far"), true, 2048);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_LARGE_NEAR =
             register("blast.large.near", "Huge explosion", List.of("blast/large_near"), true, 256);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_LARGE_MID =
@@ -321,6 +330,7 @@ public final class GBSounds {
             case "large" -> List.of(BLAST_LARGE_NEAR, BLAST_LARGE_MID, BLAST_LARGE_FAR, BLAST_LARGE_VERY_FAR);
             case "nuke" -> List.of(BLAST_NUKE_NEAR, BLAST_NUKE_MID, BLAST_NUKE_FAR, BLAST_NUKE_VERY_FAR);
             case "tsar" -> List.of(BLAST_TSAR_NEAR, BLAST_TSAR_MID, BLAST_TSAR_FAR, BLAST_TSAR_VERY_FAR);
+            case "naval" -> List.of(BLAST_NAVAL_NEAR, BLAST_NAVAL_MID, BLAST_NAVAL_FAR, BLAST_NAVAL_VERY_FAR);
             default -> List.of(BLAST_MEDIUM_NEAR, BLAST_MEDIUM_MID, BLAST_MEDIUM_FAR, BLAST_MEDIUM_VERY_FAR);
         };
         return sounds.get(Math.max(0, Math.min(3, band))).get();

@@ -23,6 +23,8 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 
 - **Explosives:** grenades, Molotov cocktails, placed charges with a remote detonator, landmines, bouncing mines and
   claymores.
+- **At sea:** the classic horned sea mine, moored on its chain to the bottom or set adrift, and depth charges set to
+  fire at a depth. Charges under water throw up towering columns of spray instead of blowing holes in the sea.
 - **Artillery:** an 81 mm mortar and a towed 155 mm howitzer that reaches 600 blocks, both crewed and aimed from a
   strategic view over the battlefield, as artillery is aimed in *World of Tanks*: an aiming circle on the ground that
   blooms as the gun fires and turns and settles as you wait. HE, smoke, incendiary, chemical, cryo and EMP shells for the

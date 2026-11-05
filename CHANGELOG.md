@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Sea mines and depth charges
+- **Moored Sea Mine**: the classic horned mine on its chain. Use it on water and it sinks to the bottom with its
+  sinker, then rises on its chain to its depth: awash, just under the surface where boats strike it, or 1 to 8 blocks
+  down (sneak and use it to set the depth). It is live 5 seconds after it settles.
+- **Drifting Sea Mine**: floats awash and drifts with the current and the wind, and floods and sinks after an hour
+  adrift.
+- **What sets a mine off**: a boat or minecart touching it (on 1.21.1, a Create ship or contraption too), a player or
+  any creature but fish, squid, dolphins and axolotls, an arrow or shell striking it, a punch, or a blast close by. A
+  blast a little further off parts a moored mine's chain, and the mine bobs up to drift. Use a mine to make it safe, and
+  punch it while safe to take it up. A dispenser facing into water lays its mines there.
+- **Depth Charge**: throw it, or roll it out of a dispenser. In water it sinks and fires at its depth (3 to 24 blocks:
+  sneak and use it to set the depth), or on the bottom if that comes first. Out of water it never fires.
+- **Blasts under water** no longer blow holes in the sea: the water carries the shock, deadly to anything in it, and
+  throws up a tall column of spray that falls back as rain and mist; what the blast breaks under water fills with
+  water. Their own sounds: a deep thud, the column's roar and its water falling back.
+- Every blast now breaks the boats and minecarts it hits.
+
 ## 0.8.1 — 2026-11-05
 
 The blast effects with shader packs, and healed machines, cables and pipes that work again. For Minecraft 26.3 and

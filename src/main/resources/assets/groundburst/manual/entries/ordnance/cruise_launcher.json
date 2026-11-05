@@ -1,7 +1,7 @@
 {
   "title": "Cruise Missile Launcher",
   "icon": "groundburst:cruise_launcher",
-  "order": 14,
+  "order": 15,
   "items": [
     "groundburst:cruise_launcher",
     "groundburst:launch_box",

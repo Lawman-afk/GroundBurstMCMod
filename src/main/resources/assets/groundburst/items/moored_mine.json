@@ -1,0 +1,26 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:custom_model_data",
+    "cases": [
+      {
+        "when": "body",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/naval/mine_body"
+        }
+      },
+      {
+        "when": "sinker",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/naval/mine_sinker"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "groundburst:item/moored_mine"
+    }
+  }
+}

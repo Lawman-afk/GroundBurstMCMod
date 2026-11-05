@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:drifting_mine",
+    "minecraft:iron_ingot",
+    "minecraft:iron_ingot",
+    "minecraft:iron_chain",
+    "minecraft:iron_chain"
+  ],
+  "result": {
+    "id": "groundburst:moored_mine"
+  }
+}
