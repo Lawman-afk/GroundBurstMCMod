@@ -81,8 +81,8 @@ public class SeaMine extends Entity implements ShockReceiver {
     public static final int ADRIFT_LIFE = 72_000;
     /** Its depth settings: its top this many blocks under the surface (0: awash, where boats strike it). */
     public static final int[] DEPTHS = {0, 1, 2, 3, 5, 8};
-    /** Its centre under the surface adrift (a little of it above the water). */
-    static final double AWASH = 0.28;
+    /** Its centre under the surface adrift (the top of it and its horns above the water). */
+    static final double AWASH = 0.1;
 
     static final String T_SAFE = GBLang.add("message." + GroundBurst.MODID + ".sea_mine.safe", "Sea mine made safe");
     static final String T_ARMED = GBLang.add("message." + GroundBurst.MODID + ".sea_mine.armed", "Sea mine armed: live in 5 seconds");
@@ -382,7 +382,7 @@ public class SeaMine extends Entity implements ShockReceiver {
         }
         if (!this.armed && source.getDirectEntity() instanceof Player player && source.getEntity() == player) {
             if (!player.getAbilities().instabuild) {
-                spawnAtLocation(level, item(), (float) CENTRE);
+                GBNaval.drop(level, centre(), item());
             }
             discard();
             return true;

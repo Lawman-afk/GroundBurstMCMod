@@ -163,7 +163,7 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
         setPos(hit.getLocation().add(n.scale(0.03)));
         if (face == Direction.UP && out.lengthSqr() < 0.004) {
             if (level() instanceof ServerLevel server) {
-                spawnAtLocation(server, getItem().copy(), 0.1f);
+                GBNaval.drop(server, position().add(0, 0.1, 0), getItem().copy());
                 discard();
             }
             return;

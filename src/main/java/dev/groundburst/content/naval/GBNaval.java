@@ -42,6 +42,13 @@ public final class GBNaval {
 
     public static void init() {}
 
+    /** {@code stack} dropped as an item at {@code at} (a mine taken up, a depth charge come to rest on dry ground). */
+    static void drop(net.minecraft.server.level.ServerLevel level, Vec3 at, ItemStack stack) {
+        var item = new net.minecraft.world.entity.item.ItemEntity(level, at.x, at.y, at.z, stack);
+        item.setDefaultPickUpDelay();
+        level.addFreshEntity(item);
+    }
+
     public static void register(IEventBus modBus) {
         modBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(GBNaval::dispensers));
     }

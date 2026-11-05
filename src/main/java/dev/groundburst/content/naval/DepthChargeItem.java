@@ -50,7 +50,9 @@ public class DepthChargeItem extends Item {
             return InteractionResult.SUCCESS;
         }
         if (level instanceof ServerLevel server) {
-            Projectile.spawnProjectileFromRotation((l, owner, item) -> new DepthCharge(l, owner, item), server, stack, player, 0f, 0.6f, 1.0f);
+            DepthCharge thrown = new DepthCharge(server, player, stack);
+            thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0f, 0.6f, 1.0f);
+            server.addFreshEntity(thrown);
             server.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_WEAK, SoundSource.PLAYERS, 0.8f, 0.6f);
         }
         player.awardStat(Stats.ITEM_USED.get(this));

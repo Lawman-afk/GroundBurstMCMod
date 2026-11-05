@@ -163,8 +163,8 @@ public final class Spectacle {
         if (fx.water != null && mc.player.isUnderWater() && fx.reaches < 3) {
             fx.flash = 0.3f * GBClientConfig.FLASH_STRENGTH.get().floatValue() * near;     // a diver near a charge going off sees it
         }
-        if (fx.age(ticks) < fx.preset.fireballLife()) {
-            fx.ignite(PUFFS, ticks, quality());
+        if (fx.water != null || fx.age(ticks) < fx.preset.fireballLife()) {
+            fx.ignite(PUFFS, ticks, quality());            // (a column of water has no fireball: its spray is all laid out at once)
         }
         BLASTS.put(start.id(), fx);
     }

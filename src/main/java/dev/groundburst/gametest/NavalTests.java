@@ -144,7 +144,7 @@ final class NavalTests {
             m.shocked(helper.getLevel(), m.centre().add(10, 0, 0), 10, profile(helper, "depth_charge"));
             helper.assertTrue(m.stage() == SeaMine.Stage.ADRIFT, "its chain parted");
             helper.succeedWhen(() -> {
-                helper.assertTrue(Math.abs(m.centre().y - (surface - 0.28)) < 0.2, "awash at the surface (" + m.centre().y + ", surface " + surface + ")");
+                helper.assertTrue(Math.abs(m.centre().y - (surface - 0.1)) < 0.2, "awash at the surface (" + m.centre().y + ", surface " + surface + ")");
                 m.discard();
             });
         });

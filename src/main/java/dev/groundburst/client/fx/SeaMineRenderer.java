@@ -168,13 +168,9 @@ public class SeaMineRenderer extends EntityRenderer<SeaMine, SeaMineRenderer.Sta
                 .setNormal(pose, (float) n.x, (float) n.y, (float) n.z);
     }
 
+    /** Drawn wherever it is in sight or not: its chain and sinker reach far below its own box. */
     @Override
-    protected AABB getBoundingBoxForCulling(SeaMine mine, float partialTicks) {
-        AABB box = super.getBoundingBoxForCulling(mine, partialTicks);
-        if (mine.moored() && mine.stage() != SeaMine.Stage.ADRIFT && mine.stage() != SeaMine.Stage.SINKING) {
-            Vec3 a = mine.anchor();
-            box = box.minmax(new AABB(a.x - 0.5, a.y, a.z - 0.5, a.x + 0.5, a.y + 0.6, a.z + 0.5));
-        }
-        return box;
+    protected boolean affectedByCulling(SeaMine mine) {
+        return false;
     }
 }
