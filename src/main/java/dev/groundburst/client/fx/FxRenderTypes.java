@@ -33,8 +33,16 @@ import net.neoforged.neoforge.client.event.RegisterShadersEvent;
  * else.)</li>
  * </ul>
  * Effects are drawn after the translucent terrain and the particles ({@code RenderBridge}), into the game's buffers.
+ *
+ * <p>With a shader pack on (Iris, {@link IrisFx}) the fire and the clouds draw on vanilla's translucent entity shader
+ * instead, which Iris swaps for the pack's lit entity program: on the eyes shader a pack made the fire glow white, and
+ * the clouds' own shader is one Iris does not know (the smoke did not show at all). The glow stays on the eyes shader,
+ * the pack's glowing program. Effects stay out of the pack's shadow pass.
  */
 final class FxRenderTypes {
+    /** Iris is installed: with a shader pack on, the fire and clouds switch shaders ({@link IrisFx}). */
+    static final boolean IRIS = net.neoforged.fml.ModList.get().isLoaded("iris");
+
     private static final Function<ResourceLocation, RenderType> CLOUD = Util.memoize(t -> Shards.make("cloud", t, false, true));
     private static final Function<ResourceLocation, RenderType> FIRE = Util.memoize(t -> Shards.make("fire", t, false, false));
     private static final Function<ResourceLocation, RenderType> GLOW = Util.memoize(t -> Shards.make("glow", t, true, false));
@@ -58,6 +66,9 @@ final class FxRenderTypes {
 
     /** Draws effect geometry now, into the collector's buffers (1.21.1 draws them after the translucent terrain). */
     static void submit(SubmitNodeCollector collector, PoseStack poseStack, RenderType type, SubmitNodeCollector.CustomGeometryRenderer renderer) {
+        if (IRIS && IrisFx.shadowPass()) {
+            return;                                        // a shader pack's shadow map: effects cast no shadows
+        }
         collector.submitCustomGeometry(poseStack, type, renderer);
     }
 
@@ -82,20 +93,32 @@ final class FxRenderTypes {
             super("", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 0, false, false, () -> {}, () -> {});
         }
 
-        private static final ShaderStateShard CLOUD_SHADER = new ShaderStateShard(() -> cloudShader);
+        private static final ShaderStateShard CLOUD_SHADER = new ShaderStateShard(
+                () -> packOn() ? net.minecraft.client.renderer.GameRenderer.getRendertypeEntityTranslucentShader() : cloudShader);
+        private static final ShaderStateShard FIRE_SHADER = new ShaderStateShard(
+                () -> packOn() ? net.minecraft.client.renderer.GameRenderer.getRendertypeEntityTranslucentShader()
+                        : net.minecraft.client.renderer.GameRenderer.getRendertypeEyesShader());
+
+        /** A shader pack is on: the fire and clouds draw on the translucent entity shader, the pack's lit program. */
+        private static boolean packOn() {
+            return IRIS && IrisFx.packInUse();
+        }
 
         /**
          * Blended additively ({@code additive}, as lightning) or over what is behind; writing depth or not. One that writes
          * depth is drawn with the cloud shader, which drops the faint pixels: on the eyes shader each puff's clear
          * corners would write depth too, hiding what is drawn behind them after it, a clear rectangle round the puff.
+         * The lightmap and overlay are set up for a shader pack's lit program (the game's own shaders here read neither).
          */
         static RenderType make(String name, ResourceLocation texture, boolean additive, boolean writeDepth) {
             return create(GroundBurst.MODID + "_" + name, DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, false, true,
                     CompositeState.builder()
-                            .setShaderState(writeDepth ? CLOUD_SHADER : RENDERTYPE_EYES_SHADER)
+                            .setShaderState(writeDepth ? CLOUD_SHADER : additive ? RENDERTYPE_EYES_SHADER : FIRE_SHADER)
                             .setTextureState(new TextureStateShard(texture, false, false))
                             .setTransparencyState(additive ? LIGHTNING_TRANSPARENCY : TRANSLUCENT_TRANSPARENCY)
                             .setCullState(NO_CULL)
+                            .setLightmapState(LIGHTMAP)
+                            .setOverlayState(OVERLAY)
                             .setWriteMaskState(writeDepth ? COLOR_DEPTH_WRITE : COLOR_WRITE)
                             .createCompositeState(false));
         }

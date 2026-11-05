@@ -539,13 +539,15 @@ public final class CreateCheck {
                 check(ship2 != null && now < ship2Blocks, "a mortar shell fired at the ship burst on it (" + ship2Blocks + " -> " + now + " blocks)");
             });
             case 1206 -> shot(mc, "ship_shelled");
-            case ShipCheck.END -> {
+            case HealCheck.END -> {
                 GroundBurst.LOGGER.info("Create check: done, {} of {} checks OK", passed, checks);
                 mc.stop();
             }
             default -> {
                 if (ticks >= ShipCheck.START && ticks < ShipCheck.END) {
                     ShipCheck.tick(mc, ticks);                   // ships under the slower weapons, and aimed at
+                } else if (ticks >= HealCheck.START && ticks < HealCheck.END) {
+                    HealCheck.tick(mc, ticks);                   // Create's shafts healed back, turning again
                 }
                 // The bearing stops once its launcher has turned a quarter (its boxes pointing east): Create sets its blocks
                 // down turned a quarter, the launcher somewhere new.

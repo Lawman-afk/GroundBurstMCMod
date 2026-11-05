@@ -51,6 +51,9 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
   End's islands.
 - **Construction blocks** for building your own: chain-link fencing, barbed wire, corrugated steel, I-beams, radome
   panels, floodlights, sandbags, warning signs, a Large Silo Door whose leaves slide apart, and a Search Radar that turns.
+- **Create and Create Aeronautics** (Minecraft 1.21.1, optional): missile launchers on trains, bearings and airships,
+  every machine working on Create's moving contraptions and Create Aeronautics' ships, and weapons that hit them (more
+  below).
 - **The Field Manual**, an in-game guide to all of it.
 
 ## Screenshots
@@ -105,6 +108,43 @@ Every player gets the **Field Manual** the first time they join (or craft one fr
 find any block, item or machine, how to build it and what it does. With JEI installed, R on any item shows how it is
 made.
 
+## Create and Create Aeronautics (Minecraft 1.21.1)
+
+Both are optional. With either installed, Ground Burst's machines work on the structures they move, and its weapons hit
+them.
+
+- **Every machine rides along:** Create's moving contraptions (trains, mechanical bearings, pistons, gantries, pulleys
+  and minecart contraptions) carry launchers, missile assemblers, Launch Computers, Launch Control Stations, Radar
+  Arrays, generators, capacitor banks and the processing machines. Glue or attach any part of a formed structure and the
+  whole of it moves. Carried, a machine keeps working: an assembler goes on building its missile, a generator burns its
+  fuel.
+- **Menus on the move:** right-click a carried machine, or any block of a carried structure, to open its menu, or its
+  screen for a Launch Computer, Control Station or Radar Array.
+- **Power and pipes aboard:** a contraption's generators and capacitor banks power every machine on it, no cables
+  needed, each getting a fair share. Item and fluid pipes on it keep working, moving things between its machines, the
+  launchers' Item Ports and Create's chests, vaults and tanks.
+- **Launchers on the move:** aim, arm and fire one as always from a Launch Computer, a Launch Control Station or a Laser
+  Designator. It counts down and launches from wherever the contraption or ship has it, its missiles heading the way it
+  points. Set down again, a structure forms where it lands and stays on its network. Missile launchers, superweapons and
+  both interceptor launchers all work this way.
+- **Create Aeronautics ships, planes, cars and boats:** a launcher aboard works as it does on the ground, and a Launch
+  Computer, Control Station or Radar Array aboard a ship works there too, seeing the world from where the ship has
+  taken it.
+- **Weapons hit ships and contraptions:** a warhead's, shell's, bomb's or charge's blast breaks their blocks in its
+  reach, just as it breaks the world's (dense blocks still shield what is behind them), and shoves ships away, turning
+  them by the side that faced it. What a blast sees of a ship is scorched and may catch fire. Missiles and shells hit
+  ships and contraptions in their way instead of passing through, and a chest or machine blown off one goes with what it
+  held.
+- **The special weapons too:** the Particle Uplink Cannon's beam burns down through ships and contraptions under it, the
+  Cryo ICBM's freeze ices them over, a singularity pulls ships in and swallows them, and antimatter erases whatever of
+  them it reaches.
+- **Aim at a ship:** the Laser Designator's beam lands on a ship where you see it and missiles home on it there; a mortar
+  or howitzer aims at the ship, at its height.
+- **Not yet:** reactors pause while carried, and pipes and cables on a contraption reach only what is on it, not the
+  blocks round it.
+
+Made and tested with Create 6.0.10, Create Aeronautics 1.3.2 and Sable 2.0.6.
+
 ## Settings
 
 Ground Burst can be tuned to your world: how big blasts are and how much they may destroy (or that they destroy
@@ -144,6 +184,8 @@ Ground Burst comes in three files, one for each version of Minecraft; take the o
   simpler on it: Rad-Away, Potassium Iodide Tablets and the Anti-Rad Injector are used as food is (with no
   nourishment), the pointer stays an arrow over the mod's screens, and flash particles are not tinted.
 - **JEI** (optional) on any
+- **Create** 6 and **Create Aeronautics** (with Sable 2) (optional, Minecraft 1.21.1 only), for the machines and weapons
+  on moving structures above
 
 Install it on the server and on every player's game: it adds blocks and items, so both sides need it.
 

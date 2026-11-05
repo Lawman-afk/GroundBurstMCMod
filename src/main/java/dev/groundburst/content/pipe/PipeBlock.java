@@ -37,7 +37,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * Pipes only join pipes of their own kind ({@link #isSameKind}). Subclasses say what they connect to, which network
  * they belong to and how a pull side draws.
  */
-public abstract class PipeBlock extends Block {
+public abstract class PipeBlock extends Block implements dev.groundburst.heal.Healable {
     public enum Mode implements StringRepresentable {
         NONE, NORMAL, PULL, DISABLED;
 
@@ -210,6 +210,9 @@ public abstract class PipeBlock extends Block {
      */
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        if (dev.groundburst.heal.Healer.restoring()) {
+            return;                                        // healed back with its sides as they were: healing tells it (healed)
+        }
         if (!oldState.is(this) && !movedByPiston) {
             BlockState connected = connections(level, pos, state);
             if (connected != state) {
@@ -223,6 +226,15 @@ public abstract class PipeBlock extends Block {
     @Override
     protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
         invalidateNetworks(level);
+    }
+
+    /**
+     * Healed back with its sides as they were (pull and switched-off sides too), or a chest or machine beside it healed:
+     * the network is worked out again and a pull side pulls again.
+     */
+    @Override
+    public void healed(ServerLevel level, BlockPos pos, BlockState state) {
+        changed(level, pos, state);
     }
 
     /** Connections changed: rebuild networks and keep pulling sides ticking. */

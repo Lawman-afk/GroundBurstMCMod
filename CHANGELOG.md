@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Shader packs (Iris)
+- **The blast effects work with shader packs.** With Iris and a pack on (tried with Complementary Reimagined and BSL),
+  fireballs, smoke, dust and mushroom clouds drew as huge black and coloured shards across the screen. Now each effect
+  uses the pack's own program for its kind: glows (the white-hot core, shock waves, sparks, beams, lasers) glow, and
+  fire and smoke are lit by the pack. The look differs a little from pack to pack (smoke darker in Complementary,
+  warmer in BSL), and a mushroom cloud far beyond the render distance fades into the pack's fog.
+
+### Healing
+- **Cables, pipes and machines work again once healed.** A healed cable run powers its machines again and a healed pipe
+  run carries items and fluids again, pulling where it pulled (before, they came back looking right but carried
+  nothing until something was rebuilt). Machines' side and input/output settings, pipes' pull and switched-off sides
+  and every container's contents come back as they were, as before.
+- **Other mods' blocks** come back with all their data and settings, now placed the way a structure places its blocks,
+  and the other mods' blocks beside them are told, so their pipes, cables and machines pick them up again.
+- **1.21.1**: a formed structure (a reactor, an accelerator) being healed is no longer taken apart as its parts come back
+  and put together again at the end, and a healed pipe keeps its pull sides even when its chest comes back after it.
+
 ## 0.8.0 — 2026-11-04
 
 Damage that heals over time (off until you turn it on), a build for Minecraft 26.1.2, Create and Create Aeronautics on

@@ -4,7 +4,10 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `07db772c` (2026-11-04: fire never healed back, and damage waiting while a fire burns
+- **Last brought up to:** `main` at `59d16c5d` (2026-11-05: healing wakes cables, pipes and other mods' blocks and leaves
+  this mod's blocks as they come back, main's DESIGN.md §21.9, here where a block's onPlace always runs; the blast effects
+  under shader packs, main's §12.3, this branch's own way, below; before them 0.8.0 at `01689009`, and at `07db772c`
+  fire never healed back, and damage waiting while a fire burns
   by it; main's performance check, its DESIGN.md §11.8, with the play bench, which runs here too: `gradlew runPlayBench`
   `[-Pjfr=<name>]`, its client half this branch's own (`client/fx/PlayBenchClient`, the world made as the port check
   makes its); before them healing, off by default, main's DESIGN.md §21.9: the damage every weapon does grows back over
@@ -86,8 +89,25 @@ Still to do:
 
 1. **Kept simpler than main**: consumables (Rad-Away, potassium iodide, the injector) are eaten as food with no
    nourishment; mouse cursors stay the arrow; flash particles are not tinted.
-2. **GameTests**: main's 362 are not ported yet (this branch has its own four).
+2. **GameTests**: main's 394 are not ported yet (this branch has its own six).
 3. Play it through in the 1.21.1 instance.
+
+## Shader packs (Iris)
+
+Main hands its effect pipelines to Iris's programs (main's DESIGN.md §12.3); 1.21.1 has no pipelines, and Iris 1.8 puts
+a pack's programs in place of the game's own shaders by name. Under Complementary Reimagined (2026-11-05) the effects did
+not shatter as on 26.3, but the fire, on vanilla's eyes shader, glowed white (the pack's glowing program) and the smoke,
+on this branch's own cloud shader, did not show at all. So with a pack on (`client/fx/IrisFx`, `FxRenderTypes`, both
+kept by hand) the fire and the clouds switch to vanilla's translucent entity shader, which Iris swaps for the pack's lit
+entity program, with the lightmap set up for it; the glow stays on the eyes shader; effects stay out of the pack's shadow
+pass. As on main, our own shading of the smoke is kept and the pack lights it on top.
+
+- **Dev runs**: `-PwithIris` loads Iris 1.8.14 and Sodium 0.8.13, with Complementary Reimagined and BSL in run/shaderpacks
+  (`-PirisPack=complementary|bsl|off`), e.g. `gradlew runPortCheck -PwithIris -PirisPack=bsl`. Sodium for 1.21.1 comes
+  as a wrapper (a library of its early start-up classes, with the mod and its Fabric API parts packed inside): on the
+  runs' classpath the launcher took the wrapper for the mod and loaded none of Sodium, and the packed mod alone lacks the
+  wrapper's classes, so the runs with Iris copy it into run/mods (`sodiumToMods`, as `sodium-dev-iris.jar`), where it
+  loads as it does for players, and every other run deletes it again (`sodiumFromMods`).
 
 ## Create and Create Aeronautics (this branch only)
 
@@ -138,7 +158,9 @@ nothing touches either mod's classes unless it is installed.
   ship's deck falls on it, not blocked; a particle beam eats through a wooden platform's middle and chars its edge; a
   deep freeze rimes and snows on a stone ship; a small singularity draws a floating ship in; a nuclear blast eighty
   blocks off chars a wooden ship, sets it alight and throws it, no server tick stalling (the emptied ship before it,
-  the crater's lake). Pictures: run/screenshots/create_*.png. 49 of 49.
+  the crater's lake). Then `HealCheck`: a creative motor turns a row of shafts, a weapon takes three out of the middle
+  where healing is on (the far end stops), and healing puts them back turning at the speed they had. Pictures:
+  run/screenshots/create_*.png. 51 of 51.
 - **Test world**: `gradlew runTestRange -PwithCreate` builds "Ground Burst Test Range" in the dev client and saves it to
   run/saves (copy that folder into the 1.21.1 instance's saves; it plays there as is): a flat world 64 layers deep (the
   ground at y 0) with a command post at the spawn (Launch Control Station, Launch Computer, Radar Array, an armory of

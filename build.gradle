@@ -210,6 +210,94 @@ dependencies {
         localRuntime "maven.modrinth:sable:${sable_version}"
         localRuntime "maven.modrinth:create-aeronautics:${aeronautics_version}"
     }
+    // Iris (optional): compiled against its API for shader packs; -PwithIris loads Iris and Sodium into the dev runs
+    // (Sodium from run/mods, sodiumToMods below).
+    compileOnly "maven.modrinth:iris:${iris_version}"
+    if (providers.gradleProperty('withIris').isPresent()) {
+        localRuntime "maven.modrinth:iris:${iris_version}"
+    }
+}
+
+// Sodium for 1.21.1 comes as a wrapper: a library of its early start-up classes with the mod itself and its Fabric API
+// parts packed inside. On the dev runs' classpath the launcher took the wrapper for the mod and loaded none of Sodium,
+// and the packed mod alone lacks the wrapper's classes; from a mods folder it loads as it does for players. So the dev
+// runs with Iris put it in run/mods, and the others take it out again.
+configurations {
+    sodiumWrapper {
+        canBeConsumed = false
+        transitive = false
+    }
+}
+dependencies {
+    sodiumWrapper "maven.modrinth:sodium:${sodium_version}"
+}
+var sodiumToMods = tasks.register('sodiumToMods', Sync) {
+    from(configurations.sodiumWrapper)
+    into file('run/mods')
+    preserve { include '**/*' }
+    rename { 'sodium-dev-iris.jar' }
+}
+var sodiumFromMods = tasks.register('sodiumFromMods', Delete) {
+    delete file('run/mods/sodium-dev-iris.jar')
+}
+
+// The shader packs the dev runs test with (-PwithIris; -PirisPack=complementary|bsl|off picks one, Complementary by
+// default): put in run/shaderpacks, and Iris's config pointed at the one picked.
+configurations {
+    shaderPacks {
+        canBeConsumed = false
+        transitive = false
+    }
+}
+dependencies {
+    shaderPacks "maven.modrinth:complementary-reimagined:${complementary_version}@zip"
+    shaderPacks "maven.modrinth:bsl-shaders:${bsl_version}@zip"
+}
+var installShaderPacks = tasks.register('installShaderPacks') {
+    group = 'development'
+    description = 'Puts the test shader packs in run/shaderpacks and sets Iris to the one -PirisPack names.'
+    var packs = configurations.shaderPacks
+    var pick = (project.findProperty('irisPack') ?: 'complementary').toString()
+    var runDir = file('run')
+    inputs.files(packs)
+    outputs.upToDateWhen { false }
+    doLast {
+        var dir = new File(runDir, 'shaderpacks')
+        dir.mkdirs()
+        String chosen = null
+        packs.files.each { f ->
+            var name = f.name.startsWith('complementary') ? 'ComplementaryReimagined.zip' : f.name.startsWith('bsl') ? 'BSL.zip' : f.name
+            java.nio.file.Files.copy(f.toPath(), new File(dir, name).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            if (name.toLowerCase().startsWith(pick.toLowerCase().substring(0, Math.min(3, pick.length())))) {
+                chosen = name
+            }
+        }
+        var config = new File(runDir, 'config/iris.properties')
+        config.parentFile.mkdirs()
+        var props = new Properties()
+        if (config.exists()) {
+            config.withInputStream { props.load(it) }
+        }
+        props.setProperty('enableShaders', (pick != 'off' && chosen != null).toString())
+        if (chosen != null) {
+            props.setProperty('shaderPack', chosen)
+        }
+        config.withOutputStream { props.store(it, 'Set by gradle installShaderPacks') }
+        // Iris's own metadata may warn as it loads, and NeoForge's warning screen would hold the photographers before
+        // the title screen: the dev runs with Iris skip it.
+        var neo = new File(runDir, 'config/neoforge-client.toml')
+        if (neo.exists()) {
+            neo.text = neo.text.replaceAll(/(?m)^showLoadWarnings\s*=\s*true/, 'showLoadWarnings = false')
+        } else {
+            neo.text = 'showLoadWarnings = false\n'
+        }
+        logger.lifecycle("Shader packs in ${dir}; Iris set to ${pick == 'off' ? 'no pack' : chosen}")
+    }
+}
+if (providers.gradleProperty('withIris').isPresent()) {
+    tasks.matching { it.name.startsWith('run') && it.name != 'runData' }.configureEach { it.dependsOn installShaderPacks, sodiumToMods }
+} else {
+    tasks.matching { it.name.startsWith('run') }.configureEach { it.dependsOn sodiumFromMods }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

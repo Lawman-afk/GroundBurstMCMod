@@ -56,7 +56,8 @@ public class MultiblockPartBlock extends Block {
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        if (!oldState.is(this) && !movedByPiston) {           // moved with its structure: its controller sees to it
+        // Moved with its structure: its controller sees to it. Healed back as it was: its structure is as it was.
+        if (!oldState.is(this) && !movedByPiston && !dev.groundburst.heal.Healer.restoring()) {
             Multiblocks.notifyChanged(level, pos);
         }
     }
