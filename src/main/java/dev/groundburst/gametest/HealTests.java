@@ -55,6 +55,8 @@ final class HealTests {
         GBGameTests.test("heal_remembers_falling_sand", GBGameTests.FLOOR_16, 20, HealTests::fallingSand);
         GBGameTests.test("heal_off_remembers_nothing", GBGameTests.FLOOR_16, 20, HealTests::off);
         GBGameTests.test("heal_never_brings_fire_back", GBGameTests.FLOOR_16, 20, HealTests::fire);
+        GBGameTests.test("heal_wakes_cables_and_machines", GBGameTests.FLOOR_16, 600, HealTests::cables);
+        GBGameTests.test("heal_wakes_pipes", GBGameTests.FLOOR_16, 200, HealTests::pipes);
     }
 
     private static final BlockPos C = new BlockPos(8, 4, 8);
@@ -327,6 +329,83 @@ final class HealTests {
         Healer.of(level).healNow(box(helper), s);
         HealSettings.endTestArea(level, area(helper));
         helper.succeed();
+    }
+
+    /**
+     * Machines and cables come back working: a generator's cable run to a crusher, cut by a weapon (the crusher with it)
+     * and pushed into while broken, heals and carries power again, the crusher's side settings as they were.
+     */
+    private static void cables(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        HealSettings s = HealSettings.forTests(HealPlayerBlocks.KEEP, 0);
+        HealSettings.testArea(level, area(helper), s);
+        BlockPos gen = new BlockPos(2, 1, 4), crusherPos = new BlockPos(8, 1, 4);
+        helper.setBlock(gen, dev.groundburst.content.machine.GBMachines.COMBUSTION_GENERATOR.block().get());
+        for (int x = 3; x <= 7; x++) {
+            helper.setBlock(new BlockPos(x, 1, 4), dev.groundburst.content.machine.GBMachines.CABLES.get(0).block().get());
+        }
+        helper.setBlock(crusherPos, dev.groundburst.content.machine.GBMachines.ORE_CRUSHER.block().get());
+        helper.getBlockEntity(crusherPos, dev.groundburst.content.machine.OreCrusherBlockEntity.class).changeSides(c -> {
+            while (c.items(dev.groundburst.content.machine.SideConfig.Face.TOP) != dev.groundburst.content.machine.SideConfig.ItemMode.NONE) {
+                c.cycleItems(dev.groundburst.content.machine.SideConfig.Face.TOP, true);
+            }
+        });
+        helper.getBlockEntity(gen, dev.groundburst.content.power.CombustionGeneratorBlockEntity.class).inventory().setItem(0, new ItemStack(Items.COAL, 4));
+        Scars.Recorder weapon = Scars.recorder(level, helper.absoluteVec(Vec3.atCenterOf(new BlockPos(5, 1, 4))), Scars.BREACH, HealSettings.Kind.CONVENTIONAL);
+        for (int x = 4; x <= 6; x++) {
+            weapon.remove(helper.absolutePos(new BlockPos(x, 1, 4)));
+        }
+        weapon.remove(helper.absolutePos(crusherPos));
+        helper.runAfterDelay(10, () -> {                   // the generator pushes into the broken run meanwhile
+            Healer.of(level).healNow(box(helper), s);
+            HealSettings.endTestArea(level, area(helper));
+            var crusher = helper.getBlockEntity(crusherPos, dev.groundburst.content.machine.OreCrusherBlockEntity.class);
+            helper.assertTrue(crusher.sides().items(dev.groundburst.content.machine.SideConfig.Face.TOP)
+                    == dev.groundburst.content.machine.SideConfig.ItemMode.NONE, "the crusher's top face is set as it was");
+            crusher.inventory().setItem(0, new ItemStack(Items.RAW_COPPER, 2));
+            helper.succeedWhen(() -> {
+                ItemStack out = crusher.inventory().getItem(1);
+                helper.assertTrue(out.is(dev.groundburst.content.resource.GBResources.COPPER_DUST.get()) && out.getCount() == 4,
+                        "the healed cables power the crusher again: " + out);
+            });
+        });
+    }
+
+    /** A pipe run pulling from a chest, cut by a weapon (its pulling end with it), heals pulling again and carries items. */
+    private static void pipes(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        HealSettings s = HealSettings.forTests(HealPlayerBlocks.KEEP, 0);
+        HealSettings.testArea(level, area(helper), s);
+        BlockPos from = new BlockPos(1, 1, 2), to = new BlockPos(6, 1, 2);
+        helper.setBlock(from, Blocks.CHEST);
+        helper.setBlock(to, Blocks.CHEST);
+        for (int x = 2; x <= 5; x++) {
+            helper.setBlock(new BlockPos(x, 1, 2), dev.groundburst.content.pipe.GBPipes.ITEM_PIPE.block().get());
+        }
+        BlockPos first = helper.absolutePos(new BlockPos(2, 1, 2));
+        BlockState pulling = level.getBlockState(first).setValue(dev.groundburst.content.pipe.PipeBlock.SIDES.get(Direction.WEST),
+                dev.groundburst.content.pipe.PipeBlock.Mode.PULL);
+        level.setBlock(first, pulling, Block.UPDATE_ALL);
+        dev.groundburst.content.pipe.PipeBlock.changed(level, first, pulling);
+        Scars.Recorder weapon = Scars.recorder(level, helper.absoluteVec(Vec3.atCenterOf(new BlockPos(3, 1, 2))), Scars.BREACH, HealSettings.Kind.CONVENTIONAL);
+        for (int x = 2; x <= 4; x++) {
+            weapon.remove(helper.absolutePos(new BlockPos(x, 1, 2)));
+        }
+        helper.runAfterDelay(10, () -> {
+            Healer.of(level).healNow(box(helper), s);
+            HealSettings.endTestArea(level, area(helper));
+            helper.assertTrue(dev.groundburst.content.pipe.PipeBlock.mode(level.getBlockState(first), Direction.WEST)
+                    == dev.groundburst.content.pipe.PipeBlock.Mode.PULL, "the first pipe pulls from the chest again, as it was set");
+            ((Container) helper.getBlockEntity(from, BlockEntity.class)).setItem(0, new ItemStack(Items.COBBLESTONE, 16));
+            helper.succeedWhen(() -> {
+                Container far = (Container) helper.getBlockEntity(to, BlockEntity.class);
+                int n = 0;
+                for (int i = 0; i < far.getContainerSize(); i++) {
+                    n += far.getItem(i).getCount();
+                }
+                helper.assertTrue(n == 16, "the healed pipes carry everything to the far chest: " + n);
+            });
+        });
     }
 
     /** With healing off (the default) a blast remembers nothing, and a chest it takes is gone with its contents as before. */

@@ -45,6 +45,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * nothing dropped, nothing placed off it. Whatever stands in its way (the blast's leftovers, water or sand that has come
  * in, a fire) gives way; a block a player put there since is kept, dropped or replaced as the server says. A creature
  * a block comes back round is lifted out on top.
+ *
+ * <p>What keeps track of more than one block wakes up again. The game's own blocks need nothing: a blast set its blocks
+ * as quietly, so what was round them never heard they went. This mod's cables and pipes are told they are back
+ * ({@link Healable}: their networks are worked out again and a pull side pulls again). Another mod's block is placed as a
+ * structure places its blocks, its onPlace running before its data is loaded. And a block with a block entity or from
+ * another mod tells the other mods' blocks beside it, as a block set down beside them would, since their pipes and
+ * machines may have noticed it go (a capability gone, a network rebuilt).
  */
 public final class Healer {
     /** Ticks in a day. */
@@ -52,6 +59,9 @@ public final class Healer {
     /** Block set flags for a healed block. */
     static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS
             | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS | Block.UPDATE_SKIP_ON_PLACE;
+    /** ...and for another mod's block: placed as a structure places its blocks (its onPlace runs, before its data is back). */
+    static final int PLACE_FLAGS = FLAGS & ~Block.UPDATE_SKIP_ON_PLACE;
+    private static final net.minecraft.core.Direction[] DIRECTIONS = net.minecraft.core.Direction.values();
     /** Sparkles a chunk shows a tick at most; ticks between its sounds. */
     private static final int SPARKLES = 3, SOUND_EVERY = 5;
     /**
@@ -97,6 +107,12 @@ public final class Healer {
         if (last != null && last.level == level) {
             last = null;
         }
+    }
+
+    /** Another mod's block: not the game's own, and not this mod's. */
+    static boolean modded(Block block) {
+        String namespace = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getNamespace();
+        return !"minecraft".equals(namespace) && !dev.groundburst.GroundBurst.MODID.equals(namespace);
     }
 
     /** Whether any damaged chunk is loaded in this level. */
@@ -544,7 +560,9 @@ public final class Healer {
             if (current.hasBlockEntity()) {
                 level.removeBlockEntity(p);                // what stands there gives way quietly
             }
-            if (!level.setBlock(p, original, FLAGS)) {
+            Block block = original.getBlock();
+            boolean modded = modded(block);
+            if (!level.setBlock(p, original, modded ? PLACE_FLAGS : FLAGS)) {
                 return;
             }
             if (be != null) {
@@ -553,6 +571,12 @@ public final class Healer {
                     Snapshots.load(now, be, level);
                     now.setChanged();
                 }
+            }
+            if (block instanceof Healable healable) {
+                healable.healed(level, p.immutable(), original);
+            }
+            if (modded || original.hasBlockEntity()) {
+                wake(level, p.immutable(), block);
             }
             if (original.is(net.minecraft.tags.BlockTags.LOGS)) {
                 // A trunk back: its leaves hear of it (they had begun to count themselves cut off, and would decay).
@@ -571,6 +595,32 @@ public final class Healer {
                 if (!original.isAir()) {
                     this.heard = p.immutable();
                     this.heardState = original;
+                }
+            }
+        }
+
+        /**
+         * A block with a block entity, or another mod's, is back: the blocks beside it that keep track of their
+         * neighbours hear of it, this mod's cables and pipes through {@link Healable} and another mod's blocks as a block
+         * set down beside them would tell them. The game's own blocks are not told (they never heard it go), nor is a
+         * neighbour whose chunk is not loaded.
+         */
+        private void wake(ServerLevel level, BlockPos at, Block block) {
+            int cx = this.x0 >> 4, cz = this.z0 >> 4;
+            for (net.minecraft.core.Direction d : DIRECTIONS) {
+                BlockPos n = at.relative(d);
+                BlockState there;
+                if (n.getX() >> 4 == cx && n.getZ() >> 4 == cz) {
+                    there = this.chunk.getBlockState(n);
+                } else if (level.hasChunkAt(n)) {
+                    there = level.getBlockState(n);
+                } else {
+                    continue;
+                }
+                if (there.getBlock() instanceof Healable healable) {
+                    healable.besideHealed(level, n, there);
+                } else if (modded(there.getBlock())) {
+                    Snapshots.tellNeighbour(level, there, n, block, at);
                 }
             }
         }

@@ -4202,6 +4202,26 @@ which had begun to count themselves cut off. Whatever stands in the way gives wa
 that came in, a fire), and a creature a block comes back round is lifted out on top. A few green sparkles and the
 block's own sound now and then (`effects`).
 
+**Waking what keeps track of more than one block** (2026-11-05; the user asked whether healing brings back other mods'
+blocks, their machines, wires and pipes, set as they were). Every block comes back with its block entity's data whole,
+another mod's as much as the game's, so a machine's side and input/output settings, a pipe's pull and switched-off sides
+and a chest's goods come back as they were. But set quietly, a healed cable or pipe run carried nothing: the networks
+are worked out from runs kept in memory that nothing told to look again, and a pulling pipe pulls on ticks it schedules
+as it is placed (GameTests found both). So, as each block comes back (`Healer.Cell.heal`):
+- the game's own blocks stay quiet: a blast set its blocks as quietly, so what was round them never heard they went,
+  and the states agree again once they are back;
+- this mod's cables and pipes are told (`heal.Healable`): their networks are worked out again and a pull side pulls
+  again. They are not placed afresh: placing works their sides out from whatever round them is back yet, and a pull side
+  whose chest was not back yet would be lost;
+- another mod's block is placed as a structure template places its blocks: its onPlace runs, before its block entity's
+  data is loaded (the order mods meet in structures and schematics);
+- a block with a block entity, or from another mod, tells the other mods' blocks beside it that it is back, as a block
+  set down beside them would (`neighborChanged`; the game's own blocks beside it are not told, nor one in a chunk that
+  is not loaded): their pipes and machines may have seen it go (a capability gone, a network rebuilt). This mod's
+  cables and pipes beside it work their networks out again instead.
+NeoForge itself refreshes the capabilities round a block entity that comes back and calls its `onLoad` the next tick. What
+a mod keeps outside its blocks altogether (connections held in the level's own data, say) is that mod's to put back.
+
 **Players.** Where a player puts a block over remembered damage, `playerBlocks` says what healing does: `KEEP` (the
 default) leaves it, and leaves the ground within `keepRadius` of it, and the air over that up to the sky, as they are,
 so a base built in a crater is not filled in round it or buried; `DROP` pops it off as an item and heals the ground;
@@ -4233,12 +4253,15 @@ damage; what falls over ticks later (a column of sugar cane or cactus, scaffoldi
 trunk afresh once the trunk is back (a number nobody sees; a tree grown by world generation counts it one higher here
 and there).
 
-**Checked.** GameTests `HealTests` (11): a blast over ground, grass, a chest of diamonds, stairs, glass and a fence put
+**Checked.** GameTests `HealTests` (14): a blast over ground, grass, a chest of diamonds, stairs, glass and a fence put
 back block for block, the chest with its diamonds, nothing dropped; KEEP keeping a player's block and the hole round it
 and over it; DROP dropping it; the record reading back from its saved form; the schedule (the wait, its random share,
 the morning, command only, off); explosives, excluded blocks and tags, excluded weapons; a freeze over a pond thawed
 back; the wasteland's biome turned back; an item frame taken down and hung again with its diamond; sand that fell
-remembered; with healing off nothing remembered. `runHealShots` (`HealPhotographer`): a farmstead under a thermobaric
+remembered; fire never brought back; a generator's cable run and the ore crusher it powers cut by a weapon (the
+generator pushing into the broken run meanwhile) and healed, the crusher's top face still set to take nothing and the
+crusher powered again; a pipe run pulling from a chest cut (its pulling end with it) and healed, pulling and carrying
+again; with healing off nothing remembered. `runHealShots` (`HealPhotographer`): a farmstead under a thermobaric
 warhead and a little town under a tactical nuke, with healing on and short waits, photographed before, after, healing
 and healed (run/screenshots/heal_*.png), then every block compared with what it was (run/heal/heal_check.txt):
 the farmstead came back 122 719 of its 122 793 blocks exactly and the town 1 660 194 of its 1 660 437; every block that differs is a leaf's count of its distance to its trunk; the five chests had their goods, every item frame and armour stand hung or stood again, and no item lay about. Getting there found the grass dying under rubble, farmland drying and turning to earth, and the crater lake's water taking crops (each now remembered), and a test scene's own mistakes (sand laid on grass, farmland five blocks from its water).
@@ -5034,6 +5057,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-05 | **Healing wakes cables, pipes and other mods' blocks** (the user: does healing account for modded blocks, their block entities, wires and pipes, placing them back as they should be with their input/output settings, "very important and must be implemented if not"): settings already came back with each block entity's data, but healed cable and pipe runs carried nothing (their networks were never told). Now this mod's cables and pipes are told they are back (`heal.Healable`) instead of placed afresh (which would lose a pull side whose chest is not back yet), another mod's block is placed as a structure places its blocks, and a block with a block entity or from another mod tells the other mods' blocks beside it (§21.9); the game's own blocks stay quiet as before. |
 | 2026-11-04 | **Minecraft 26.1.2, backported from main; 0.8.0 for all three** (the user: a version for 26.1.2, "not sure if it's better to backport, or forward port this"; 0.8.0 on every version): a backport from main (26.3) by a port tool like the 1.21.1 branch's, on its own branch `26.1.2` (its `docs/BACKPORT.md`): 26.1.2 is two minor versions before 26.3 and shares its rendering by render states and submitted geometry, item model definitions, data components and GameTest framework, so most of main comes over by renaming and main's own GameTests run there (392/392); a forward port from 1.21.1 would cross every change from 1.21.2 to 26.1. Its data is main's generated output converted (configured features, loot tables' lists, recipe unlocks, biomes' spawners), not the data generators run on 26.1.2 (they are much of the API that differs). Found on the way: main saves structure templates with 26.x's lowercase palette names, which 1.21.1 and 26.1.2 read as air, so the 1.21.1 0.7.0 build's world sites were empty; both ports rename them. |
 | 2026-11-04 | **Fire is never healed back; a performance check** (the user, testing healing: molotovs on trees healed with their fire and burnt again; "strangely laggy" at 32 chunks; an optimisation check over everything before the next release): a fire is remembered as the air it burns in, and a chunk waits while a fire that will go out burns by its damage (§21.9), rather than putting fires out when it heals (the forest round it would still be burning) or keeping fires out of the record only (one remembered before would still come back). Measured, not guessed: a play bench and flight recordings (§11.8) put the mod at about 1% of the server's and the client's time at 32 chunks, healing included, and a Tsar's crater healing within its budget; the checks that run everywhere were made quick where nothing is damaged, healing's effects capped. |
 | 2026-11-04 | **Healing, off by default** (a commenter's suggestion, passed on by the user: damage that heals over time, "the EXACT same state", "with a wide config like the Explosion't mod"; the user: highly adjustable and intuitive, off by default, both versions): §21.9. Every weapon's block changes go through one recorder that remembers each block as it was before the first damage (state and block entity), kept with its chunk (an attachment saved with it: nothing in memory for chunks not loaded, and a Tsar's crater is twenty million blocks); what the damage sets going is remembered where damage already is (fire by a mixin, as Explosion't needs, decaying leaves and dying grass by mixins, falling sand and decorations by entity events); a chunk heals when its wait is over, at a speed with a longest time (Explosion't's speed-up for big damage), bottom up by default; nothing that will heal drops or spills (no duplication); players' blocks kept with the ground round them and the air over them, so a base in a crater is not buried. Not by snapshots of the land before a blast (a nuke's reach is millions of blocks, most of them never touched) nor by recording every block change near damage (a player's own building would be undone). |

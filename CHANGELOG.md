@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Healing
+- **Cables, pipes and machines work again once healed.** A healed cable run powers its machines again and a healed pipe
+  run carries items and fluids again, pulling where it pulled (before, they came back looking right but carried
+  nothing until something was rebuilt). Machines' side and input/output settings, pipes' pull and switched-off sides
+  and every container's contents come back as they were, as before.
+- **Other mods' blocks** come back with all their data and settings, now placed the way a structure places its blocks,
+  and the other mods' blocks beside them are told, so their pipes, cables and machines pick them up again.
+
 ## 0.8.0 — 2026-11-04
 
 Damage that heals over time (off until you turn it on), a build for Minecraft 26.1.2, Create and Create Aeronautics on

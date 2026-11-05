@@ -31,7 +31,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
  * side was switched off with the Wrench (DESIGN.md §7). Cables
  * store nothing: energy offered to a cable is delivered straight to the network's consumers (see {@link CableNetwork}).
  */
-public class CableBlock extends Block {
+public class CableBlock extends Block implements dev.groundburst.heal.Healable {
     /** A cable side: nothing there, connected, or switched off with the Wrench (and remembered). */
     public enum Side implements StringRepresentable {
         NONE, CONNECTED, DISABLED;
@@ -197,6 +197,12 @@ public class CableBlock extends Block {
 
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        CableNetwork.invalidate(level);
+    }
+
+    /** Healed back with its sides as they were, or a machine beside it healed: the network is worked out again. */
+    @Override
+    public void healed(ServerLevel level, BlockPos pos, BlockState state) {
         CableNetwork.invalidate(level);
     }
 }
