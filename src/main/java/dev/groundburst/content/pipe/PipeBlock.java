@@ -211,6 +211,9 @@ public abstract class PipeBlock extends Block implements dev.groundburst.heal.He
      */
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        if (dev.groundburst.heal.Healer.restoring()) {
+            return;                                        // healed back with its sides as they were: healing tells it (healed)
+        }
         if (!oldState.is(this) && !movedByPiston) {
             BlockState connected = connections(level, pos, state);
             if (connected != state) {

@@ -184,6 +184,9 @@ public class CableBlock extends Block implements dev.groundburst.heal.Healable {
      */
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        if (dev.groundburst.heal.Healer.restoring()) {
+            return;                                        // healed back with its sides as they were: healing tells it (healed)
+        }
         if (!oldState.is(state.getBlock()) && movedByPiston) {
             CableNetwork.invalidate(level);
         } else if (!oldState.is(state.getBlock())) {

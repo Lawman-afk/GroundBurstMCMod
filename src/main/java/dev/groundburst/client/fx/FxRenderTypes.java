@@ -45,8 +45,18 @@ import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
  * transparent").
  */
 final class FxRenderTypes {
+    /** Iris is installed: the effects are handed to a shader pack's programs ({@link IrisFx}). */
+    static final boolean IRIS = net.neoforged.fml.ModList.get().isLoaded("iris");
+    /**
+     * The glow's and fire's alpha cutout: only what is all but clear (a 255th) is dropped, nothing anyone sees. It is
+     * there for Iris, which gives a pipeline with a cutout the shader pack's entity program for this vertex layout
+     * (without one, the glow and fire got a program for another layout).
+     */
+    private static final float NEARLY_CLEAR = 1.0F / 255;
+
     static final RenderPipeline GLOW_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
             .withLocation(GroundBurst.id("pipeline/glow"))
+            .withShaderDefine("ALPHA_CUTOUT", NEARLY_CLEAR)
             .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
             .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
             .withCull(false)
@@ -57,6 +67,7 @@ final class FxRenderTypes {
 
     static final RenderPipeline FIRE_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
             .withLocation(GroundBurst.id("pipeline/fire"))
+            .withShaderDefine("ALPHA_CUTOUT", NEARLY_CLEAR)
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
             .withCull(false)
@@ -68,6 +79,8 @@ final class FxRenderTypes {
     static final RenderPipeline CLOUD_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
             .withLocation(GroundBurst.id("pipeline/cloud"))
             .withFragmentShader(CLOUD_SHADER)
+            // (fx_cloud.fsh cuts its own fringe out; the define tells Iris to give a shader pack's version a cutout too)
+            .withShaderDefine("ALPHA_CUTOUT", 0.16F)
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
             .withCull(false)
@@ -93,6 +106,13 @@ final class FxRenderTypes {
             event.registerOitPipelineSet(OIT_FIRE);
             event.registerPipeline(CLOUD_PIPELINE);
             event.registerOitPipelineSet(OIT_CLOUD);
+            if (IRIS) {
+                try {
+                    IrisFx.register();
+                } catch (LinkageError e) {                 // an Iris without the API this was built against
+                    GroundBurst.LOGGER.warn("Could not hand the blast effects to Iris: {}", e.toString());
+                }
+            }
         });
     }
 
@@ -101,6 +121,9 @@ final class FxRenderTypes {
      * particles; with improved transparency that is the same OIT pass as any other translucent geometry.
      */
     static void submit(SubmitNodeCollector collector, PoseStack poseStack, RenderType type, SubmitNodeCollector.CustomGeometryRenderer renderer) {
+        if (IRIS && IrisFx.shadowPass()) {
+            return;                                        // a shader pack's shadow map: effects cast no shadows
+        }
         SubmitNodeCollection collection = collector instanceof SubmitNodeStorage storage ? storage.order(0)
                 : collector instanceof SubmitNodeCollection c ? c : null;
         if (collection == null) {

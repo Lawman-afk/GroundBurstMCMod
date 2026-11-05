@@ -60,7 +60,8 @@ public final class Healer {
     static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS
             | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS | Block.UPDATE_SKIP_ON_PLACE;
     /** ...and for another mod's block: placed as a structure places its blocks (its onPlace runs, before its data is back). */
-    static final int PLACE_FLAGS = FLAGS & ~Block.UPDATE_SKIP_ON_PLACE;
+    static final int PLACE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS
+            | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS;
     private static final net.minecraft.core.Direction[] DIRECTIONS = net.minecraft.core.Direction.values();
     /** Sparkles a chunk shows a tick at most; ticks between its sounds. */
     private static final int SPARKLES = 3, SOUND_EVERY = 5;
@@ -107,6 +108,19 @@ public final class Healer {
         if (last != null && last.level == level) {
             last = null;
         }
+    }
+
+    /** True while healing sets a block back ({@link #restoring}). */
+    private static boolean restoring;
+
+    /**
+     * Whether healing is setting a block back this moment. One of this mod's blocks whose onPlace works something out
+     * afresh (a cable's or pipe's sides, a structure's forming, a tank's joining) leaves it be then: the block is back
+     * exactly as it was, and healing tells it so ({@link Healable}). (Healing skips this mod's blocks' onPlace anyway on
+     * game versions that let it; on 1.21.1 a block's onPlace always runs.)
+     */
+    public static boolean restoring() {
+        return restoring;
     }
 
     /** Another mod's block: not the game's own, and not this mod's. */
@@ -562,7 +576,14 @@ public final class Healer {
             }
             Block block = original.getBlock();
             boolean modded = modded(block);
-            if (!level.setBlock(p, original, modded ? PLACE_FLAGS : FLAGS)) {
+            boolean set;
+            restoring = true;
+            try {
+                set = level.setBlock(p, original, modded ? PLACE_FLAGS : FLAGS);
+            } finally {
+                restoring = false;
+            }
+            if (!set) {
                 return;
             }
             if (be != null) {
