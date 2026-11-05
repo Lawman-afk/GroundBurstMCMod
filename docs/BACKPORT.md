@@ -4,7 +4,8 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `59d16c5d` (2026-11-05: healing wakes cables, pipes and other mods' blocks and leaves
+- **Last brought up to:** `main` at `464565de` (2026-11-05: 0.8.1, released for this version and 26.3:
+  `groundburst-mc1.21.1-0.8.1.jar` is this branch's; before it, at `59d16c5d`, healing wakes cables, pipes and other mods' blocks and leaves
   this mod's blocks as they come back, main's DESIGN.md §21.9, here where a block's onPlace always runs; the blast effects
   under shader packs, main's §12.3, this branch's own way, below; before them 0.8.0 at `01689009`, and at `07db772c`
   fire never healed back, and damage waiting while a fire burns
