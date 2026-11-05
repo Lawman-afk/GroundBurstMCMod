@@ -292,8 +292,9 @@ public class SeaMine extends Entity implements ShockReceiver {
         if (!Double.isNaN(surface)) {
             double want = surface - AWASH + 0.04 * Math.sin((this.tickCount + getId() * 7) * 0.12);
             double vy = Mth.clamp((want - (getY() + CENTRE)) * 0.25, -0.1, 0.12);
+            // It settles to a tenth of the wind's speed (blocks a tick), on top of the current's push.
             Vec3 wind = dev.groundburst.content.fallout.Wind.of(level).vector().scale(0.1 / 20);
-            v = new Vec3(v.x * 0.9 + wind.x, vy, v.z * 0.9 + wind.z);
+            v = new Vec3(v.x * 0.9 + wind.x * 0.1, vy, v.z * 0.9 + wind.z * 0.1);
         } else {
             v = new Vec3(v.x * 0.7, v.y - 0.04, v.z * 0.7);
         }

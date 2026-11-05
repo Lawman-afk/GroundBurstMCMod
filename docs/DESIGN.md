@@ -1908,8 +1908,9 @@ which a block cannot), and a way for a blast to go off under water (`content/nav
   laying (sneak and use in the air): 0 (awash, its horns just under the surface: boats strike it), 1, 2, 3, 5 or 8
   blocks. In water too shallow for its chain it sits on its sinker on the bottom, still live. On its chain it rides on
   the sphere round its sinker that the chain allows: a current pushes it aside and it dips as it swings.
-- **Drifting Sea Mine** (`drifting_mine`): the same mine without a sinker. Laid on water it floats awash and drifts
-  with the current (flowing water) and a tenth of the dimension's wind (the fallout's), coming to rest on shores; live
+- **Drifting Sea Mine** (`drifting_mine`): the same mine without a sinker. Laid on water it floats awash (its middle a
+  tenth of a block under the surface: its top and horns show; first a quarter down, where it was all but lost from
+  above) and drifts with the current (flowing water) and a tenth of the dimension's wind (the fallout's), coming to rest on shores; live
   5 s after it is laid. As the Hague Convention of 1907 asks of mines adrift, it makes itself harmless within the hour:
   after an hour adrift (while loaded) it floods and sinks, gone.
 - **What sets a mine off**: a boat, a minecart, or a block of a Create ship or contraption touching it (on 1.21.1,
@@ -1938,9 +1939,11 @@ which a block cannot), and a way for a blast to go off under water (`content/nav
 - **The water column** (`WaterColumn`, client): the shock reaches the surface first, a white dome; then the column of
   spray stands up out of it, jets streaking up, and falls back as a curtain of spray spreading out, a ring of mist
   rolling over the water from its foot; bubbles boil up from the burst for seconds, and seen from under water there is
-  a brief flash. Its height is about five craters (23 blocks for a mine, 18 for a depth charge), cut by its depth to
+  a brief flash. Its height is about six craters (27 blocks for a mine, 21 for a depth charge), cut by its depth to
   under a fifth five craters down; a deep charge's dome and column come late (the bubble's rise). No fireball, smoke,
-  dust or debris.
+  dust or debris. The outer jets fan out, feathering the column's edges. It is laid out all at once when the blast is
+  heard of (the Spectacle starts a blast's puffs only while its fireball lasts, and this has none: at first the column
+  never came).
 - **Sound**: the `naval` set (near, mid, far, very far): the deep thud of a charge under water, the roar of the column
   going up and the rain of its water falling back.
 - **Models** (`tools/assets/naval.py`): the mine a black sphere 14 px across in bands from a true circle (as the
@@ -1950,7 +1953,9 @@ which a block cannot), and a way for a blast to go off under water (`content/nav
   wheels (mines were rolled along a minelayer's rails on them) with the chain's drum in it, rusty cast iron. The chain
   rusty links on two crossed planes (as vanilla's chain), drawn by the renderer from the sinker to the mine's shackle.
   The moored mine's item is the mine on its sinker, as stowed on a minelayer's deck; its item model has
-  `custom_model_data` cases "body" and "sinker" for the renderer's parts (as the missile's). The drifting mine's item is
+  `custom_model_data` cases "body" and "sinker" for the renderer's parts (as the missile's), their stacks made when it
+  first draws a mine (made with the renderer, at the resources' reload, they had no components yet: the client hung on
+  a black screen in the first test). The drifting mine's item is
   the mine alone. The depth charge a navy-grey drum with two rolling hoops, the pistol's dial in one end and the
   primer's cap in the other, a yellow band and white stencils.
 - **Recipes**: Drifting Sea Mine (2 lead ingots, 3 steel plates, TNT); Moored Sea Mine (a drifting sea mine, 2 iron

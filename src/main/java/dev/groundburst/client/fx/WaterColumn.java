@@ -50,8 +50,8 @@ final class WaterColumn {
         this.born = born;
         this.random = random;
         double depth = Math.max(0, surface - burst.y);
-        this.height = 5.2f * crater * (float) Mth.clamp(1 - depth / (5 * crater), 0.15, 1);
-        this.speed = (float) Math.sqrt(2 * G * this.height) * 1.06f;
+        this.height = 6f * crater * (float) Mth.clamp(1 - depth / (5 * crater), 0.15, 1);
+        this.speed = (float) Math.sqrt(2 * G * this.height) * 1.2f;     // (the drag takes a fifth of its rise)
         this.rise = depth * 0.6;
         this.flight = 2 * this.speed / G;
     }
@@ -80,9 +80,9 @@ final class WaterColumn {
         flash.alpha = 0.55f;
         puffs.add(flash, 1);
         // The dome: the surface bulging up white where the shock breaks it.
-        for (int i = 0; i < 36 * quality; i++) {
+        for (int i = 0; i < 40 * quality; i++) {
             Puffs.Puff p = spray(up, Puffs.Kind.SMOKE);
-            double a = this.random.nextDouble() * 2 * Math.PI, r = Math.sqrt(this.random.nextDouble()) * this.crater * 0.6;
+            double a = this.random.nextDouble() * 2 * Math.PI, r = Math.sqrt(this.random.nextDouble()) * this.crater * 0.9;
             p.x = this.burst.x + Math.cos(a) * r;
             p.z = this.burst.z + Math.sin(a) * r;
             p.vx = (float) Math.cos(a) * (0.05f + 0.1f * this.random.nextFloat()) * s;
@@ -95,11 +95,14 @@ final class WaterColumn {
             p.alpha = 0.9f;
             puffs.add(p, quality);
         }
-        // The jets: streaks of spray thrown up out of the dome, each a line of puffs along one path.
-        for (int i = 0; i < 26 * quality; i++) {
-            double a = this.random.nextDouble() * 2 * Math.PI, r = Math.sqrt(this.random.nextDouble()) * this.crater * 0.35;
-            float v = this.speed * (0.75f + 0.3f * this.random.nextFloat());
-            float hx = (float) this.random.nextGaussian() * this.speed * 0.06f, hz = (float) this.random.nextGaussian() * this.speed * 0.06f;
+        // The jets: streaks of spray thrown up out of the dome, each a line of puffs along one path; the outer ones fan
+        // out, so the column's edges are feathered with them.
+        for (int i = 0; i < 44 * quality; i++) {
+            double a = this.random.nextDouble() * 2 * Math.PI, out = Math.sqrt(this.random.nextDouble()), r = out * this.crater * 0.7;
+            float v = this.speed * (0.7f + 0.35f * this.random.nextFloat());
+            float fan = this.speed * (0.03f + 0.11f * (float) out);
+            float hx = (float) (Math.cos(a) * fan + this.random.nextGaussian() * this.speed * 0.02);
+            float hz = (float) (Math.sin(a) * fan + this.random.nextGaussian() * this.speed * 0.02);
             int parts = 4 + this.random.nextInt(3);
             for (int k = 0; k < parts; k++) {
                 Puffs.Puff p = spray(up + 1 + k * 0.8, Puffs.Kind.DUST);
@@ -110,18 +113,18 @@ final class WaterColumn {
                 p.vy = v * f;
                 p.vz = hz * f;
                 p.life = (int) (2 * v * f / G * (0.85f + 0.2f * this.random.nextFloat()));
-                p.size0 = 0.5f * s;
-                p.size1 = (1.4f + 0.6f * this.random.nextFloat()) * s * (1 + 0.2f * k);
-                p.stretch = 1.4f;
-                p.alpha = 0.85f - 0.1f * k;
+                p.size0 = 0.6f * s;
+                p.size1 = (1.5f + 0.7f * this.random.nextFloat()) * s * (1 + 0.2f * k);
+                p.stretch = 2.2f;
+                p.alpha = 0.95f - 0.12f * k;
                 p.variant = this.random.nextInt(3);
                 puffs.add(p, quality);
             }
         }
         // The column's body: spray at every height up it, growing as it goes.
-        for (int i = 0; i < 70 * quality; i++) {
+        for (int i = 0; i < 90 * quality; i++) {
             Puffs.Puff p = spray(up + 1 + this.random.nextFloat() * 3, Puffs.Kind.SMOKE);
-            double a = this.random.nextDouble() * 2 * Math.PI, r = Math.sqrt(this.random.nextDouble()) * this.crater * 0.45;
+            double a = this.random.nextDouble() * 2 * Math.PI, r = Math.sqrt(this.random.nextDouble()) * this.crater * 0.6;
             p.x = this.burst.x + Math.cos(a) * r;
             p.z = this.burst.z + Math.sin(a) * r;
             float v = this.speed * (0.35f + 0.65f * this.random.nextFloat());
@@ -131,8 +134,8 @@ final class WaterColumn {
             p.drag = 0.015f;
             p.life = (int) (2 * v / G * (0.9f + 0.3f * this.random.nextFloat()));
             p.size0 = this.crater * 0.5f;
-            p.size1 = this.crater * (1.2f + 0.6f * this.random.nextFloat());
-            p.alpha = 0.75f;
+            p.size1 = this.crater * (1.0f + 0.6f * this.random.nextFloat());
+            p.alpha = 0.8f;
             puffs.add(p, quality);
         }
         // Its head: spray reaching the top, spreading out there before it falls.
@@ -166,22 +169,22 @@ final class WaterColumn {
             puffs.add(p, quality);
         }
         // The base surge: a ring of mist rolling out over the water as the column comes down.
-        for (int i = 0; i < 40 * quality; i++) {
-            Puffs.Puff p = spray(up + this.flight * (0.75 + 0.25 * this.random.nextDouble()), Puffs.Kind.SMOKE);
-            double a = this.random.nextDouble() * 2 * Math.PI, r = this.crater * (0.3 + 0.6 * this.random.nextDouble());
+        for (int i = 0; i < 56 * quality; i++) {
+            Puffs.Puff p = spray(up + this.flight * (0.7 + 0.3 * this.random.nextDouble()), Puffs.Kind.SMOKE);
+            double a = this.random.nextDouble() * 2 * Math.PI, r = this.crater * (0.4 + 0.7 * this.random.nextDouble());
             p.x = this.burst.x + Math.cos(a) * r;
             p.z = this.burst.z + Math.sin(a) * r;
-            p.y = this.surface + 0.4 * s;
-            float out = (0.12f + 0.18f * this.random.nextFloat()) * s;
+            p.y = this.surface + 0.5 * s;
+            float out = (0.16f + 0.22f * this.random.nextFloat()) * s;
             p.vx = (float) Math.cos(a) * out;
             p.vz = (float) Math.sin(a) * out;
             p.vy = 0;
             p.gravity = 0;
             p.rise = 0.003f;
             p.drag = 0.04f;
-            p.life = 120 + this.random.nextInt(60);
-            p.size0 = this.crater * 0.9f;
-            p.size1 = this.crater * (2.2f + this.random.nextFloat());
+            p.life = 130 + this.random.nextInt(70);
+            p.size0 = this.crater * 1.1f;
+            p.size1 = this.crater * (2.8f + 1.2f * this.random.nextFloat());
             p.color0 = MIST;
             p.color1 = MIST;
             p.alpha = 0.5f;
