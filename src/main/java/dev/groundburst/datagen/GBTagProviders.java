@@ -70,6 +70,11 @@ public final class GBTagProviders {
                 tag(sand ? BlockTags.MINEABLE_WITH_SHOVEL : BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key());
             }
             dev.groundburst.content.construction.GBConstruction.DOORS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.construction.GBConstruction.BLAST_DOOR.block().key());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH.block().key(),
+                    dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().key());
+            tag(BlockTags.TRAPDOORS).add(dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH.block().key());
+            tag(BlockTags.DOORS).add(dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().key());
             dev.groundburst.content.construction.GBConstruction.STAIRS.forEach(b -> tag(BlockTags.STAIRS).add(b.block().key()));
             dev.groundburst.content.construction.GBConstruction.SLABS.forEach(b -> tag(BlockTags.SLABS).add(b.block().key()));
             for (Ore ore : GBResources.ores()) {
@@ -252,6 +257,9 @@ public final class GBTagProviders {
             for (BlockItemTagId id : COPIED) {
                 copy(id);
             }
+            // The bunker doors as vanilla's doors and trapdoors (DESIGN.md §22.3).
+            tag(net.minecraft.tags.BlockItemTags.DOORS.item()).add(dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.item().key());
+            tag(net.minecraft.tags.BlockItemTags.TRAPDOORS.item()).add(dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH.item().key());
             // Hazmat suits: repaired with what they are made of; armour tags for enchanting and other mods.
             tag(dev.groundburst.content.gear.GBArmor.REPAIRS_HAZMAT).add(dev.groundburst.content.chem.GBChemicals.PLASTIC_SHEET.key());
             tag(dev.groundburst.content.gear.GBArmor.REPAIRS_LEAD_HAZMAT).add(dev.groundburst.content.part.GBParts.LEAD_PLATE.key());

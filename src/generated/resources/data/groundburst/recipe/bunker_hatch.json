@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "D": "groundburst:dense_steel_plate",
+    "P": "groundburst:steel_plate"
+  },
+  "pattern": [
+    "PDP"
+  ],
+  "result": {
+    "id": "groundburst:bunker_hatch"
+  }
+}

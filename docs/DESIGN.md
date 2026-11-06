@@ -4864,6 +4864,64 @@ set it (spacing/separation in chunks; per 100 km², the vanilla match in bracket
 (pillager outposts 9.06); the Test Site 24/9, 2.15 (desert pyramids 1.91); the Command Bunker 38/15, 15.0 (igloos 15.5);
 the Crashed Missile 27/10, 21.5 (20.7 before). The silo (8.8), the waste store (24.8) and the station (42.9) kept theirs.
 
+### 22.3 The bunker doors (2026-11-07)
+
+The first of the four sets of cosmetic blocks with 3D models the user chose after 0.9.0 (§30: "people love that kind of
+decoration"; the sets in their order: blast doors and hatches, the command room, bunker fittings, outdoor defences and the
+yard). Each block's models, textures and sounds are made by scripts, painted with the material library, and each works
+as a door: by hand and by redstone.
+
+- **Blast Door** (`content/construction/BlastDoorBlock`, `BlastDoorBlockEntity`; GeckoLib model `tools/assets/blast_door.py`):
+  a steel leaf for a doorway two blocks wide and three high, after the hinged blast doors of Cold War shelters. A steel
+  frame lines the doorway (jambs, lintel and sill; hazard paint on its front, seen round the leaf and when it is open);
+  the leaf closes on the frame's front, a pixel proud of the wall, a raised rim and two ribs on its face, hazard stripes
+  at its foot, a stencilled number; two heavy hinges whose pins stand in front of the leaf past its hinge edge (so the
+  leaf swings clear of the frame's knuckles); a red handwheel on each face (on the leaf's face, and behind on a gearbox)
+  and three bolts the wheel drives into the lintel, the sill and the latch jamb (always behind the frame's front, so
+  where they enter the frame they are inside it).
+  - One item lays the doorway's six blocks, the leaf reaching to the placer's right (sneaking: left; either way where
+    there is room); the hinges' lowest block holds the block entity that draws the whole door; breaking any block takes
+    the whole door, one item back (the hinges' lowest block's loot).
+  - A click on any of its blocks, or a redstone signal coming on or going off at any of them, sets it opening or
+    shutting: the wheel turns a turn and a quarter drawing the bolts (1.2 s), then the leaf swings out 90 degrees (2.3 s,
+    eased); shutting, the leaf swings home with a thud and the wheel throws the bolts. Each stage has its own sound
+    (`tools/sound/doors.py`, from recordings already credited: a ratchet's pawl over a slow grind for the wheel, small
+    metal parts for the bolts, a big steel door's creak for the hinges and its slam for the leaf meeting its frame).
+  - Open, the leaf stands in front of the hinges' column, two blocks out: as the door starts to open it lays six blocks
+    of its own there (a slab of collision where the leaf stands) and takes them away when it has shut, and it will not
+    open while anything but air, plants and the like stands there (a message says why).
+  - Shut, a doorway block is the leaf across its front four pixels with the frame behind (someone in the frame's depth
+    is not shut inside a block); open, the frame alone, and mobs path through it. Its resistance is reinforced
+    concrete's (1200).
+  - The mirrored door (hinges on the left, seen from the front) is the model mirrored, not turned (`blast_door_mirrored`),
+    so both swing out to the front: the machines' renderer now takes another model, not only another texture, from its
+    block entity (`AnimatedMachine.modelVariant`, `VariantGeoModel`).
+- **Bunker Hatch** (`BunkerHatchBlock`, a trapdoor; block models `tools/assets/bunker_hatch.py`): a round lid (planks
+  every 22.5 degrees) with a small handwheel, in a square steel coaming round an octagonal opening; hazard paint on the
+  coaming, two hinges, a clamp. A trapdoor in all but its open shape and models: shut, a trapdoor's slab (a floor hatch at
+  its block's top, a ceiling hatch at its bottom, its wheel down); open, the coaming stays as a thin ring round the hole
+  and the lid stands where its hinges swing it, up out of the floor into the block above (a ceiling hatch's hangs down
+  into the room), not inside its own block as a trapdoor's does. Its blockstate is multipart, the frame and one lid
+  turned for each facing and half; the open lid's model is the shut one moved so that the blockstate's quarter turn about
+  the block's middle leaves it where a quarter turn about its hinge pins would, and a ceiling hatch is a floor hatch
+  turned over.
+- **Pressure Door** (vanilla's `DoorBlock`; block models `tools/assets/pressure_door.py`): a steel door a block wide and two
+  high, as the doors between a bunker's rooms and a ship's compartments: a porthole of tinted glass at eye height (seen
+  through: its models are translucent), a red dog lever on either face, two heavy hinges, hazard paint at its foot. The
+  whole door is built and painted as one (no lip where its halves meet) and cut into vanilla's two half models; an open
+  door is drawn with the other hand's model, turned, as vanilla's are.
+- The hatch and the door share the block set `groundburst:bunker` (`BunkerSet`): opened by hand and by redstone, not by a
+  wind charge, with their own sounds, and in vanilla's doors and trapdoors tags (not `mob_interactable_doors`: villagers
+  leave them shut). Strength 6, resistance 300 (vanilla's iron door: 5).
+- Recipes: the Blast Door from dense steel plates (its leaf), steel plates (its frame), steel rods (its bolts) and an iron
+  door; the hatch, a dense plate between two plates; two Pressure Doors from plates, a glass pane and a rod.
+- Checked: GameTests (`ConstructionTests`: the blast door swings open and shuts, laying and taking away its leaf's blocks,
+  will not swing into a wall, follows redstone, and breaks whole for one item; the hatch opens up out of the floor with
+  the way through clear; the door opens both halves on a signal); in game (`runSiteShots -Psite=doors`,
+  `client/fx/BunkerDoorBoard`: a concrete wall with the doors shut and open, both hands, from all round, in front and
+  behind, hatches in the ground and in a ceiling). `tools/preview/state_view.py` draws a block's states as its blockstate
+  puts them together (the hatch's frame and lid, the door's halves).
+
 ---
 
 ## 23. Multiblock framework and layouts
@@ -5368,6 +5426,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-07 | **The bunker doors** (§22.3; the cosmetic blocks, the plan's second item after 0.9.0, in the four sets the user chose in order: blast doors and hatches, the command room, bunker fittings, outdoor defences and the yard, "showing you previews as each set is done"): a two-by-three Blast Door whose handwheel draws three bolts before its leaf swings out on two heavy hinges (a block entity's model, both hands, its leaf's blocks laid in front of its hinges while it stands open, so it will not swing into a wall and the open leaf is solid); a round Bunker Hatch whose lid lifts up out of the floor (a trapdoor's behaviour, its own open shape and models); a Pressure Door with a see-through porthole (vanilla's door). Opened by hand and by redstone, each with its own sounds made from recordings already credited. |
 | 2026-11-07 | **The plan after 0.9.0** (the user, choosing from what was left on the plan and a list of new ideas: "Start with the high priority stuff, then the cosmetics, then the 3 you picked, then naval, then we decide on everything else"): first, top priority, the loose ends (healing's containers coming back full after spilling with Healing blocks drop items too on; main's GameTests on the 1.21.1 build; a test instance for 26.1.2) and the performance pass (effects, fallout, saving; §11); then more cosmetic blocks with 3D models, such as blast doors ("people love that kind of decoration"); then the war room displays, seismographs and the Dead Hand, each with an easy way to test it in game ("they rely on being fired upon"); then more naval weapons; then the rest is decided, contamination and the protective gear (§21.8's 12c) among it, and Jade and WTHIT tooltips ("a great idea", placed with the rest: the user restated the order without them when they had been put before the cosmetics). **Pinned for later:** nuclear winter; the server tools (claimed land spared by blasts, a log of launches and blasts, weapon permissions). **Undecided**, beside the special warheads' handheld weapons: remote cameras ("it doesn't exactly fit with the mod") and irradiated mobs. The fireball lighting the world at night is liked, with care for the frame rate. |
 | 2026-11-06 | Version **0.9.0** for Minecraft 26.3, 26.1.2 and 1.21.1 (the user: "create a release file for all 3 versions and change logs and update github"): sea mines, depth charges and the Depth Charge Rack (§14.6), the effects drawn last under shader packs and with Distant Horizons (§12.3, on 26.3 and 1.21.1), healing the game's own explosions and other mods' (§21.9). The 26.1.2 build brought up to main from 0.8.0, its port leaving the shader-pack drawing out (built on 26.3's renderer and Iris's API for it). A changelog for each upload; the branches pushed (no release made on GitHub's page: its command-line tool is not installed here). |
 | 2026-11-06 | **Healing the game's own explosions and other mods'** (§21.9; the user: "please add a heal config to heal the vanilla explosions and if possible the explosions of other mods"): one hook, the block state's `onExplosionHit`, through which the game's explosion and other mods' explosion classes hit every block, so it covers vanilla and most mods; a switch each for creepers, TNT, end crystals, ghast fireballs, the Wither, and beds and respawn anchors, one for other mods' (and their ids in `excludedWeapons`), all on (healing itself stays off by default). An explosion is named by what set it off: its entity, else its damage type. TNT an explosion lights is never put back; decorations are saved before the hit and kept only if it broke them. Not covered: mods that set their crater's blocks themselves (no general way to tell their changes from any other; a list of such mods' entities to watch while they tick was considered and left for later). |

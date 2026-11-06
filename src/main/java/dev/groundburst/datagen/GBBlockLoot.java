@@ -179,6 +179,21 @@ public class GBBlockLoot extends BlockLootSubProvider {
                                             net.minecraft.advancements.predicates.StatePropertiesPredicate.Builder.properties()
                                                     .hasProperty(dev.groundburst.content.construction.SiloDoorBlock.CENTER, true)))))));
         }
+        // The Blast Door: only the hinges' lowest block drops it (breaking any block takes the whole).
+        var blastDoor = dev.groundburst.content.construction.GBConstruction.BLAST_DOOR.block().get();
+        add(blastDoor, net.minecraft.world.level.storage.loot.LootTable.lootTable().withPool(applyExplosionCondition(blastDoor,
+                net.minecraft.world.level.storage.loot.LootPool.lootPool()
+                        .setRolls(net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders.exactly(1))
+                        .add(net.minecraft.world.level.storage.loot.entries.LootItem.lootTableItem(blastDoor).when(
+                                net.minecraft.world.level.storage.loot.predicates.MatchBlock.blockMatches(this.blocks, blastDoor,
+                                        net.minecraft.advancements.predicates.StatePropertiesPredicate.Builder.properties()
+                                                .hasProperty(dev.groundburst.content.construction.BlastDoorBlock.U, 0)
+                                                .hasProperty(dev.groundburst.content.construction.BlastDoorBlock.V, 0)
+                                                .hasProperty(dev.groundburst.content.construction.BlastDoorBlock.W, 0)))))));
+        // The Bunker Hatch drops itself; the Pressure Door its lower half, as vanilla's doors.
+        dropSelf(dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH.block().get());
+        add(dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().get(),
+                createDoorTable(dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().get()));
         // The Construction set: each drops itself (a doubled slab two).
         for (var b : dev.groundburst.content.construction.GBConstruction.ALL) {
             if (b.block().get() instanceof net.minecraft.world.level.block.SlabBlock slab) {

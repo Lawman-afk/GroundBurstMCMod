@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Bunker doors
+- **Blast Door**: a heavy steel blast door for a doorway two blocks wide and three high. Click it, or give it a
+  redstone signal: its red handwheel turns and draws the bolts, then the leaf swings out on its hinges; shutting, it
+  swings home with a thud and the bolts are thrown. It reaches to your right as you place it (sneak to place it
+  reaching left), needs two blocks clear in front of its hinges to swing open, and stands up to blasts as reinforced
+  concrete does.
+- **Bunker Hatch**: a round steel hatch with a handwheel, in a square steel frame. It opens as a trapdoor does, by hand or
+  by redstone, but its lid lifts up out of the floor (a hatch in a ceiling swings down).
+- **Pressure Door**: a steel door with a porthole you can see through and a red lever on both sides. It opens as a door
+  does, by hand or by redstone.
+- Each with its own sounds; in the Construction tab.
+
 ### Performance
 - **Blast effects cost less to draw.** Under a mushroom cloud the mod's share of each frame's work is down by about a
   third: every effect vertex is written in one go, the fallout clouds no longer work out their layout every frame, and

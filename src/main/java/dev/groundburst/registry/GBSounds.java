@@ -152,6 +152,24 @@ public final class GBSounds {
     /** The Depth Charge Rack's trap letting a charge go: its clack, the drum rumbling off over the edge (DESIGN.md §14.6). */
     public static final DeferredHolder<SoundEvent, SoundEvent> RACK_RELEASE =
             register("naval.rack_release", "Depth charge rolls off", List.of("naval/rack_release"), false, 24);
+    /** The Blast Door (DESIGN.md §22.3): its handwheel drawing the bolts, the leaf swinging, the leaf home on its frame, the bolts thrown. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_DOOR_UNLOCK =
+            register("door.blast_door_unlock", "Blast door unbolts", List.of("door/blast_door_unlock"), false, 24);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_DOOR_SWING =
+            register("door.blast_door_swing", "Blast door swings", List.of("door/blast_door_swing"), false, 24);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_DOOR_SEAT =
+            register("door.blast_door_seat", "Blast door thuds shut", List.of("door/blast_door_seat"), false, 32);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_DOOR_LOCK =
+            register("door.blast_door_lock", "Blast door bolts", List.of("door/blast_door_lock"), false, 24);
+    /** The Bunker Hatch and the Pressure Door (DESIGN.md §22.3): the bunker set's open and shut sounds. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BUNKER_HATCH_OPEN =
+            register("door.bunker_hatch_open", "Hatch opens", List.of("door/bunker_hatch_open"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BUNKER_HATCH_CLOSE =
+            register("door.bunker_hatch_close", "Hatch shuts", List.of("door/bunker_hatch_close"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> PRESSURE_DOOR_OPEN =
+            register("door.pressure_door_open", "Pressure door opens", List.of("door/pressure_door_open"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> PRESSURE_DOOR_CLOSE =
+            register("door.pressure_door_close", "Pressure door shuts", List.of("door/pressure_door_close"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> MINE_CLICK =
             register("mine.click", "Mine clicks", List.of("ordnance/mine_click"), false, 12);
     public static final DeferredHolder<SoundEvent, SoundEvent> MINE_POP =

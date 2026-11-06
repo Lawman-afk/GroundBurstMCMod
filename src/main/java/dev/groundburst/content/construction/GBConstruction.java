@@ -138,6 +138,28 @@ public final class GBConstruction {
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("rusted_large_silo_door", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
                     (pos, state) -> new SiloDoorBlockEntity(GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get(), pos, state),
                     RUSTED_LARGE_SILO_DOOR.block().get()));
+    // --- the bunker doors -------------------------------------------------------------------------------------------------------
+    /** A steel blast door for a doorway two wide and three high: its handwheel draws the bolts and the leaf swings out (DESIGN.md §22.3). */
+    public static final WithItem<BlastDoorBlock> BLAST_DOOR = GBBlocks.register("blast_door", "Blast Door", TAB,
+            p -> new BlastDoorBlock(p, () -> GBConstruction.BLAST_DOOR_ENTITY.get()),
+            p -> metal(p, MapColor.METAL).strength(15f, 1200f).sound(SoundType.NETHERITE_BLOCK).noOcclusion()
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.IMMOVEABLE).isRedstoneConductor((s, l, at) -> false)
+                    .isSuffocating((s, l, at) -> false).isViewBlocking((s, l, at, box) -> false));
+    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+            net.minecraft.world.level.block.entity.BlockEntityType<BlastDoorBlockEntity>> BLAST_DOOR_ENTITY =
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("blast_door", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
+                    (pos, state) -> new BlastDoorBlockEntity(GBConstruction.BLAST_DOOR_ENTITY.get(), pos, state), BLAST_DOOR.block().get()));
+
+    /** A round steel hatch in a square coaming, opening as a trapdoor does: its lid stands up out of the floor (§22.3). */
+    public static final WithItem<BunkerHatchBlock> BUNKER_HATCH = GBBlocks.register("bunker_hatch", "Bunker Hatch", TAB,
+            BunkerHatchBlock::new, p -> metal(p, MapColor.METAL).strength(6f, 300f).noOcclusion()
+                    .isValidSpawn(Blocks::never).isRedstoneConductor((s, l, at) -> false));
+    /** A steel door with a porthole and a dog lever, a block wide and two high, opening as a door does (§22.3). */
+    public static final WithItem<net.minecraft.world.level.block.DoorBlock> PRESSURE_DOOR = GBBlocks.register("pressure_door", "Pressure Door",
+            TAB, p -> new net.minecraft.world.level.block.DoorBlock(BunkerSet.get(), p),
+            p -> metal(p, MapColor.METAL).strength(6f, 300f).noOcclusion()
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+
     /** The doors (their loot is the middle's alone). */
     public static final List<WithItem<SiloDoorBlock>> DOORS = List.of(LARGE_SILO_DOOR, RUSTED_LARGE_SILO_DOOR);
 

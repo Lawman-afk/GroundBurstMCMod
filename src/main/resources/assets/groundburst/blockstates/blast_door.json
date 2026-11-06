@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "groundburst:block/blast_door"
+      }
+    }
+  ]
+}

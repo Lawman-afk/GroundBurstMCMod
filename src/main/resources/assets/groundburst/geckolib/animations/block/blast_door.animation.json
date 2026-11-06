@@ -1,0 +1,80 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "idle": {
+      "animation_length": 0.05,
+      "bones": {
+        "frame": {
+          "position": {
+            "0": [
+              -0.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    },
+    "open": {
+      "animation_length": 0.05,
+      "bones": {
+        "leaf": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -90.0,
+              0.0
+            ]
+          }
+        },
+        "wheel_f": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -60.0,
+              0.0
+            ]
+          }
+        },
+        "wheel_b": {
+          "rotation": {
+            "0": [
+              -0.0,
+              60.0,
+              0.0
+            ]
+          }
+        },
+        "bolt_top": {
+          "position": {
+            "0": [
+              -0.0,
+              -3.0,
+              0.0
+            ]
+          }
+        },
+        "bolt_bottom": {
+          "position": {
+            "0": [
+              -0.0,
+              3.0,
+              0.0
+            ]
+          }
+        },
+        "bolt_side": {
+          "position": {
+            "0": [
+              3.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    }
+  }
+}

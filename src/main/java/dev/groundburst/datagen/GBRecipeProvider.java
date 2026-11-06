@@ -1121,6 +1121,19 @@ public class GBRecipeProvider extends RecipeProvider {
         shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.construction.GBConstruction.RUSTED_LARGE_SILO_DOOR.item(), 1)
                 .requires(dev.groundburst.content.construction.GBConstruction.LARGE_SILO_DOOR.item()).requires(Items.WATER_BUCKET)
                 .unlockedBy(getHasName(dev.groundburst.content.construction.GBConstruction.LARGE_SILO_DOOR.item()), has(dev.groundburst.content.construction.GBConstruction.LARGE_SILO_DOOR.item())).save(output);
+        // The Blast Door: dense plate for its leaf, plate for its frame, rods for its bolts, an iron door's hinges and lock.
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.construction.GBConstruction.BLAST_DOOR.item(), 1)
+                .define('D', GBParts.DENSE_STEEL_PLATE).define('P', plate).define('S', rod).define('I', Items.IRON_DOOR)
+                .pattern("PDP").pattern("SIS").pattern("PDP")
+                .unlockedBy(getHasName(GBParts.DENSE_STEEL_PLATE), has(GBParts.DENSE_STEEL_PLATE)).save(output);
+        // The Bunker Hatch: a dense plate for its lid between two plates; the Pressure Door: plates, a pane for its porthole, a rod for its lever.
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH.item(), 1)
+                .define('D', GBParts.DENSE_STEEL_PLATE).define('P', plate).pattern("PDP")
+                .unlockedBy(getHasName(GBParts.DENSE_STEEL_PLATE), has(GBParts.DENSE_STEEL_PLATE)).save(output);
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.item(), 2)
+                .define('P', plate).define('G', Items.GLASS_PANE).define('S', rod)
+                .pattern("PG").pattern("PS").pattern("PP")
+                .unlockedBy(getHasName(plate), has(plate)).save(output);
         sign(dev.groundburst.content.construction.GBConstruction.RADIATION_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.DYE.black()));
         sign(dev.groundburst.content.construction.GBConstruction.HIGH_VOLTAGE_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.REDSTONE));
         sign(dev.groundburst.content.construction.GBConstruction.KEEP_OUT_SIGN.item(), Tags.Items.DYES_RED, Ingredient.of(Items.DYE.white()));

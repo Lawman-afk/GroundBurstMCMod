@@ -1,0 +1,270 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north",
+        "half": "top"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_frame"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "half": "bottom"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_frame",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "half": "top",
+        "open": "false"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "half": "bottom",
+        "open": "false"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "half": "top",
+        "open": "true"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid_open",
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "half": "bottom",
+        "open": "true"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid_open",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "half": "top"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_frame",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "half": "bottom"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_frame",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "half": "top",
+        "open": "false"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "half": "bottom",
+        "open": "false"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "half": "top",
+        "open": "true"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid_open",
+        "x": 270,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "half": "bottom",
+        "open": "true"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid_open",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "half": "top"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_frame",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "half": "bottom"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_frame",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "half": "top",
+        "open": "false"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "half": "bottom",
+        "open": "false"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "half": "top",
+        "open": "true"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid_open",
+        "x": 270,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "half": "bottom",
+        "open": "true"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid_open",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "half": "top"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_frame",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "half": "bottom"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_frame",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "half": "top",
+        "open": "false"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "half": "bottom",
+        "open": "false"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "half": "top",
+        "open": "true"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid_open",
+        "x": 270,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "half": "bottom",
+        "open": "true"
+      },
+      "apply": {
+        "model": "groundburst:block/bunker_hatch_lid_open",
+        "x": 90,
+        "y": 90
+      }
+    }
+  ]
+}
