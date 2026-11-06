@@ -351,12 +351,139 @@ public final class FxPhotographer {
                 new Scene("vls_aerial", "vls", 22, 32, List.of(229, 245, 272)),
                 new Scene("vls_ui", "vls", 5, 0, List.of(30)),                  // its screen: the CRT's four lines
                 new Scene("vls_close", "vls", 10, 16, List.of(229, 233, 237, 241, 245, 249, 253)),   // missiles out of their cells
-                new Scene("cruise_dive", "cruise_dive", 40, -12, List.of(6, 16, 24, 32, 38, 44, 47, 60)))) {
+                new Scene("cruise_dive", "cruise_dive", 40, -12, List.of(6, 16, 24, 32, 38, 44, 47, 60)),
+                // Sea mines and depth charges (DESIGN.md §14.6) on a sea laid over the flat world: two moored mines (one
+                // awash, one 3 down) and a drifting one, settled, from above and from under the water (the chains, the
+                // sinkers); the columns of a mine near the surface, a depth charge 5 down and one 11 down.
+                new Scene("naval_mines", "naval_mines", 10, 30, List.of(170, 230)),
+                new Scene("naval_mines_under", "naval_mines", 9, -6, List.of(170)),
+                new Scene("naval_column_mine", "naval_column_mine", 45, -6, List.of(2, 6, 12, 20, 30, 45, 65, 90, 140)),
+                new Scene("naval_column_charge", "naval_column_charge", 38, -6, List.of(2, 8, 16, 26, 40, 60, 90)),
+                new Scene("naval_column_deep", "naval_column_deep", 38, -6, List.of(10, 20, 30, 50, 80)),
+                // The Depth Charge Rack on a quay's end two blocks over the sea, side on (its release end to the camera's
+                // left), six charges on it set to 8 blocks, set rolling at clock 20: the trap dropping and the front charge
+                // rolling over it and off into the sea, the rest rolling down, the next off 30 ticks later, the first one's
+                // column; and close up, a tick apart.
+                new Scene("naval_rack", "naval_rack", 6, 24, List.of(15, 24, 28, 31, 36, 40, 58, 78, 96)),
+                new Scene("naval_rack_close", "naval_rack", 3, 20, List.of(15, 21, 22, 23, 24, 25, 26, 27, 28, 30, 34, 40)),
+                new Scene("naval_rack_ui", "naval_rack", 3, 20, List.of(18, 30)),             // its screen, before and releasing
+                // A mushroom cloud in frames a tick apart (a player saw it flicker under a shader pack): what changes from
+                // one to the next is flicker, not the cloud's own slow motion.
+                new Scene("flicker_nuke", "tactical_nuclear_warhead", 200, -10, List.of(400, 401, 402, 403, 404, 405)),
+                new Scene("flicker_nuke_close", "tactical_nuclear_warhead", 120, -14, List.of(400, 401, 402, 403)),
+                // A shader pack's test (-PfxOnly=shader_): every kind of effect once (a fireball's glow, fire and smoke; a
+                // mushroom cloud by day, frame by frame and at night; a column of water; the particle beam's glow).
+                new Scene("shader_thermobaric", "thermobaric_warhead", 55, 2, List.of(3, 10, 25, 80)),
+                new Scene("shader_nuke", "tactical_nuclear_warhead", 200, -10, List.of(20, 300, 301, 302, 303)),
+                new Scene("shader_nuke_night", "tactical_nuclear_warhead", 130, -32, List.of(60, 300), "midnight"),
+                new Scene("shader_column", "naval_column_charge", 38, -6, List.of(16, 40)),
+                new Scene("shader_beam", "particle_beam", 30, 8, List.of(40, 160)),
+                // Distant Horizons (-PwithDH, on -PfxWorld=sea: a flat sea to the horizon): a nuke set off on a small island,
+                // seen from 230 and 520 blocks across the water, the view only 8 chunks, so that its far terrain (the sea)
+                // stands round and behind the cloud (a player saw its water drawn over a mushroom cloud).
+                new Scene("dh_nuke", "tactical_nuclear_warhead", 230, -6, List.of(300, 700)),
+                new Scene("dh_nuke_far", "tactical_nuclear_warhead", 520, -10, List.of(400, 900)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
             }
         }
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> tick());
+    }
+
+    /** How deep the naval scenes' sea is. */
+    private static final int SEA = 14;
+
+    /** The naval scenes' sea: a pool {@link #SEA} deep laid over the flat ground round x (the camera's side and beyond), walled in, a sandy bottom. */
+    /** A stone island 15 blocks across, its top two above the sea at {@code surface}; the height of its top. */
+    private static int island(ServerLevel level, int x, int surface) {
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        var p = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int dx = -7; dx <= 7; dx++) {
+            for (int dz = -7; dz <= 7; dz++) {
+                for (int y = surface - 26; y <= surface + 1; y++) {
+                    level.setBlock(p.set(x + dx, y, dz), stone, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                }
+            }
+        }
+        return surface + 2;
+    }
+
+    /** {@code -PfxWorld=sea}: a flat sea to the horizon (bedrock, stone, sand and 24 of water; ocean), for Distant Horizons. */
+    private static net.minecraft.world.level.levelgen.WorldDimensions seaWorld(net.minecraft.core.HolderLookup.Provider registries) {
+        var biomes = registries.lookupOrThrow(net.minecraft.core.registries.Registries.BIOME);
+        var flat = net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings.getDefault(biomes,
+                        registries.lookupOrThrow(net.minecraft.core.registries.Registries.STRUCTURE_SET),
+                        registries.lookupOrThrow(net.minecraft.core.registries.Registries.PLACED_FEATURE))
+                .withBiomeAndLayers(List.of(
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(1, net.minecraft.world.level.block.Blocks.BEDROCK),
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(40, net.minecraft.world.level.block.Blocks.STONE),
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(3, net.minecraft.world.level.block.Blocks.SAND),
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(24, net.minecraft.world.level.block.Blocks.WATER)),
+                        java.util.Optional.empty(), biomes.getOrThrow(net.minecraft.world.level.biome.Biomes.OCEAN));
+        return net.minecraft.world.level.levelgen.presets.WorldPresets.createFlatWorldDimensions(registries)
+                .replaceOverworldGenerator(registries, new net.minecraft.world.level.levelgen.FlatLevelSource(flat));
+    }
+
+    private static void sea(ServerLevel level, int x, int ground) {
+        var water = net.minecraft.world.level.block.Blocks.WATER.defaultBlockState();
+        var wall = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        var sand = net.minecraft.world.level.block.Blocks.SAND.defaultBlockState();
+        var p = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int dx = -70; dx <= 40; dx++) {
+            for (int dz = -50; dz <= 50; dz++) {
+                boolean edge = dx == -70 || dx == 40 || dz == -50 || dz == 50;
+                level.setBlock(p.set(x + dx, ground - 1, dz), sand, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                for (int dy = 0; dy < SEA; dy++) {
+                    level.setBlock(p.set(x + dx, ground + dy, dz), edge ? wall : water, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                }
+            }
+        }
+    }
+
+    /** The naval scenes on the sea whose surface is at {@code surface}: mines laid, or a charge set off under it. */
+    private static void naval(ServerLevel level, int x, int surface, String what) {
+        switch (what) {
+            case "naval_mines" -> {
+                dev.groundburst.content.naval.SeaMine.lay(level, new Vec3(x + 0.5, surface - 0.6, 0.5), true, 0, null);
+                dev.groundburst.content.naval.SeaMine.lay(level, new Vec3(x + 3.5, surface - 0.6, 3.5), true, 3, null);
+                dev.groundburst.content.naval.SeaMine.lay(level, new Vec3(x - 2.5, surface - 0.6, -2.5), false, 0, null);
+            }
+            case "naval_column_mine" -> Blasts.detonate(level, new Vec3(x + 0.5, surface - 2.0, 0.5), Blasts.profile("sea_mine"), null);
+            case "naval_column_charge" -> Blasts.detonate(level, new Vec3(x + 0.5, surface - 5.5, 0.5), Blasts.profile("depth_charge"), null);
+            case "naval_column_deep" -> Blasts.detonate(level, new Vec3(x + 0.5, surface - 11, 0.5), Blasts.profile("depth_charge"), null);
+            case "naval_rack" -> rackAt = rack(level, x, surface);
+            default -> { }
+        }
+    }
+
+    private static net.minecraft.core.BlockPos rackAt;
+
+    /**
+     * The Depth Charge Rack on the end of a stone quay standing two blocks out of the sea: facing north (its release end
+     * to the camera's left, its rails running back to its Item Port), six depth charges on it, set to 8 blocks.
+     */
+    private static net.minecraft.core.BlockPos rack(ServerLevel level, int x, int surface) {
+        var stone = net.minecraft.world.level.block.Blocks.STONE_BRICKS.defaultBlockState();
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int z = -1; z <= 9; z++) {
+                for (int y = surface - SEA; y <= surface + 1; y++) {
+                    level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + dx, y, z), stone);
+                }
+            }
+        }
+        var at = new net.minecraft.core.BlockPos(x, surface + 2, -1);
+        formed(level, at, dev.groundburst.content.naval.GBNaval.RACK.block().get(), dev.groundburst.content.naval.GBNaval.RACK_STRUCTURE,
+                net.minecraft.core.Direction.NORTH);
+        if (level.getBlockEntity(at) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity be) {
+            be.revalidate();
+            for (int i = 0; i < dev.groundburst.content.naval.DepthChargeRackBlockEntity.SLOTS; i++) {
+                be.inventory().setItem(i, new net.minecraft.world.item.ItemStack(dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE.get()));
+            }
+            for (int i = 0; i < 3; i++) {
+                be.handleButton(2);                    // its own depth, then 3, 5, 8
+            }
+        }
+        return at;
     }
 
     /** Two armour stands wearing the hazmat suits, side by side, facing the camera (or turned away). */
@@ -1881,9 +2008,14 @@ public final class FxPhotographer {
                         net.minecraft.world.level.LevelSettings.DifficultySettings.DEFAULT, true,
                         net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
                 String folder = dev.groundburst.client.fx.DevWorlds.fresh(mc, "fx_shots");
-                mc.createWorldOpenFlows().createFreshLevel(folder, settings,
-                        net.minecraft.client.gui.screens.worldselection.SelectWorldScreen.TEST_OPTIONS,
-                        net.minecraft.world.level.levelgen.presets.WorldPresets::createFlatWorldDimensions, mc.screen);
+                if ("sea".equals(System.getProperty("groundburst.fxShots.world", ""))) {
+                    mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(0L, false, false),
+                            FxPhotographer::seaWorld, mc.screen);
+                } else {
+                    mc.createWorldOpenFlows().createFreshLevel(folder, settings,
+                            net.minecraft.client.gui.screens.worldselection.SelectWorldScreen.TEST_OPTIONS,
+                            net.minecraft.world.level.levelgen.presets.WorldPresets::createFlatWorldDimensions, mc.screen);
+                }
             } catch (java.io.IOException e) {
                 GroundBurst.LOGGER.error("Fx shots: could not make a world", e);
             }
@@ -1905,8 +2037,8 @@ public final class FxPhotographer {
             clock = 0;
             site++;
             mc.setScreen(null);                        // a screen a scene opened stays shut for the next
-            mc.options.renderDistance().set(scene.name().equals("howitzer_edge") ? 12 : 24);
-            if (scene.name().equals("designator_far") || scene.name().equals("howitzer_edge")) {
+            mc.options.renderDistance().set(scene.name().equals("howitzer_edge") ? 12 : scene.name().startsWith("dh_") ? 8 : 24);
+            if (scene.name().equals("designator_far") || scene.name().equals("howitzer_edge") || scene.name().startsWith("dh_")) {
                 mc.options.broadcastOptions();             // the server sends a player only as far as it said it sees when it joined
             }
             Scene s = scene;
@@ -1940,13 +2072,17 @@ public final class FxPhotographer {
                 if (s.profile().equals("msilo")) {             // on the silo's plateau, looking down at it (steeply, into its shaft)
                     lift = SILO_PLATEAU + (s.name().endsWith("_ui") ? 1.6 : s.distance() * (s.name().endsWith("_aerial") ? 1.6 : 0.42));
                 }
+                if (s.profile().startsWith("naval_")) {        // over the sea (or under it), laid now for the client to have
+                    sea(level, x, ground);
+                    lift = s.name().endsWith("_under") ? SEA - 6 : SEA + 1.6 + (s.pitch() > 10 ? s.distance() * 0.5 : 0);
+                }
                 player.teleportTo(level, x - s.distance() + 0.5, ground + lift, 0.5, java.util.Set.of(), -90, s.pitch(), true);
             });
             return;
         }
         if (step == -1) {
-            if (clock < 100) {
-                return;                                    // let the chunks round the new site load
+            if (clock < (scene.name().startsWith("dh_") ? 900 : 100)) {
+                return;                                    // let the chunks round the new site load (Distant Horizons: its far terrain)
             }
             Scene s = scene;
             int x = site * 1200;
@@ -1955,6 +2091,14 @@ public final class FxPhotographer {
                 level.getChunk(x >> 4, 0);                 // a far scene's middle may have unloaded: its height would read the world's floor
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0);
                 Vec3 at = new Vec3(x + 0.5, ground + 0.5, 0.5);
+                if (s.profile().startsWith("naval_")) {
+                    naval(level, x, ground, s.profile());    // (the ground is the sea's surface now)
+                    return;
+                }
+                if (s.name().startsWith("dh_")) {            // on an island, so that it is a blast on land
+                    Blasts.detonate(level, new Vec3(x + 0.5, island(level, x, ground) + 0.5, 0.5), Blasts.profile(s.profile()), null);
+                    return;
+                }
                 if (s.profile().equals("grenades")) {
                     grenades(level, x, ground);
                     return;
@@ -2432,6 +2576,24 @@ public final class FxPhotographer {
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(computerAt) instanceof dev.groundburst.content.launch.LaunchComputerBlockEntity be) {
                     be.launchArmed(server.overworld(), null);              // LAUNCH: every armed silo
+                }
+            });
+        }
+        if (scene.name().equals("naval_rack_ui") && step >= 0 && clock == 10 && rackAt != null) {
+            var at = rackAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
+                    player.openMenu(be, at);
+                }
+            });
+        }
+        if (scene.profile().equals("naval_rack") && step >= 0 && clock == 20 && rackAt != null) {
+            var at = rackAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity be) {
+                    be.releaseAll();                       // a pattern: one off now, the next each 30 ticks
                 }
             });
         }

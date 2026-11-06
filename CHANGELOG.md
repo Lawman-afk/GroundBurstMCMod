@@ -1,5 +1,81 @@
 # Changelog
 
+## 0.9.0 — 2026-11-06
+
+Sea mines and depth charges with a stern rack to roll them off, healing for creepers, TNT and other mods' explosions,
+and, on 26.3 and 1.21.1, blast effects that look the same under every shader pack. For Minecraft 26.3, 26.1.2 and
+1.21.1; the 26.1.2 build catches up from 0.8.0, with 0.8.1's healed cables, pipes and machines.
+
+### Sea mines and depth charges
+- **Moored Sea Mine**: the classic horned mine on its chain. Use it on water and it sinks to the bottom with its
+  sinker, then rises on its chain to its depth: awash, just under the surface where boats strike it, or 1 to 8 blocks
+  down (sneak and use it to set the depth). It is live 5 seconds after it settles.
+- **Drifting Sea Mine**: floats awash and drifts with the current and the wind, and floods and sinks after an hour
+  adrift.
+- **What sets a mine off**: a boat or minecart touching it (on 1.21.1, a Create ship or contraption too), a player or
+  any creature but fish, squid, dolphins and axolotls, an arrow or shell striking it, a punch, or a blast close by. A
+  blast a little further off parts a moored mine's chain, and the mine bobs up to drift. Use a mine to make it safe, and
+  punch it while safe to take it up. A dispenser facing into water lays its mines there.
+- **Depth Charge**: throw it, or roll it out of a dispenser. In water it sinks and fires at its depth (3 to 24 blocks:
+  sneak and use it to set the depth), or on the bottom if that comes first. Out of water it never fires.
+- **Depth Charge Rack**: a ship's stern rack that rolls depth charges off into the sea. Build it one block wide and four
+  long: the Depth Charge Rack at the end over the water, two Depth Charge Rails behind it and an Item Port at the top
+  end. Load up to six charges by hand, or by hopper, pipe or Create's funnels into the Item Port, and they roll down the
+  rails to the trap. A redstone pulse rolls one off; a held signal rolls one off every 1.5 seconds (0.8 to 3, set in its
+  screen) until it is empty. Its screen releases one or all of them and can set every charge to one depth. A comparator
+  reads how many it holds. On 1.21.1 it works aboard Create ships and contraptions.
+- **Blasts under water** no longer blow holes in the sea: the water carries the shock, deadly to anything in it, and
+  throws up a tall column of spray that falls back as rain and mist; what the blast breaks under water fills with
+  water. Their own sounds: a deep thud, the column's roar and its water falling back.
+- Every blast now breaks the boats and minecarts it hits.
+
+### Healing
+- **The game's own explosions heal too**: creepers, TNT and TNT minecarts, end crystals, ghasts' fireballs, the Wither,
+  and beds and respawn anchors that blow up, each with its own switch under Healing, Other explosions (all on). They
+  come back as the mod's blasts do: chests with their contents, nothing dropped meanwhile, item frames, paintings and
+  armour stands hung and stood again. TNT an explosion lights goes off, so it does not come back.
+- **Other mods' explosions** heal too when they go through the game's own explosion code, as most do (one switch;
+  leave one mod out by its id under Weapons that never heal, such as "somemod:*"). An explosion that digs its own
+  crater, as this mod's weapons do, is not seen.
+- With healing off nothing changes: explosions drop and spill as they always have.
+- **Damage that was burning heals even when nobody stays to watch.** Healing waits for the fires by the damage to go
+  out, but a fire far from every player neither spreads nor goes out (on Minecraft 26.x, beyond 128 blocks), so a
+  crater left burning when its players went away never healed. Now such a fire goes out once the wait is over.
+
+### Shader packs and Distant Horizons
+- With a shader pack on (Iris), blast effects are now drawn over the pack's finished picture with the mod's own
+  shading, so they look as they do without shaders, the same in every pack and steady from frame to frame. Under Bliss
+  the mushroom cloud no longer shows as a hole in the sky or vanishes in the distance, smoke is no longer black and the
+  fireball no longer changes colour as the flash fades. On Minecraft 26.3 and 1.21.1; checked under Bliss,
+  Complementary Reimagined and Unbound, BSL, Photon, Solas and MakeUp Ultra Fast (on 1.21.1 under Bliss and
+  Complementary Reimagined).
+- With Distant Horizons, its far terrain no longer covers the foot of a mushroom cloud.
+- The way 0.8.1 drew them, lit and fogged by the pack like the world round them, is a client option: Effects with
+  shader packs, Lit by the pack.
+
+## 0.8.1 — 2026-11-05
+
+The blast effects with shader packs, and healed machines, cables and pipes that work again. For Minecraft 26.3 and
+1.21.1; the 26.1.2 build stays at 0.8.0 for now.
+
+### Shader packs (Iris)
+- **The blast effects work with shader packs.** With Iris and a pack on (tried with Complementary Reimagined and BSL),
+  fireballs, smoke, dust and mushroom clouds drew as huge black and coloured shards across the screen (on 1.21.1 the
+  fireball glowed white and the smoke was missing). Now each effect uses the pack's own program for its kind: glows (the
+  white-hot core, shock waves, sparks, beams, lasers) glow, and fire and smoke are lit by the pack. The look differs a
+  little from pack to pack (smoke darker in Complementary, warmer in BSL), and a mushroom cloud far beyond the render
+  distance fades into the pack's fog.
+
+### Healing
+- **Cables, pipes and machines work again once healed.** A healed cable run powers its machines again and a healed pipe
+  run carries items and fluids again, pulling where it pulled (before, they came back looking right but carried
+  nothing until something was rebuilt). Machines' side and input/output settings, pipes' pull and switched-off sides
+  and every container's contents come back as they were, as before.
+- **Other mods' blocks** come back with all their data and settings, now placed the way a structure places its blocks,
+  and the other mods' blocks beside them are told, so their pipes, cables and machines pick them up again.
+- **1.21.1**: a formed structure (a reactor, an accelerator) is no longer taken apart while it heals and put together
+  again at the end, and a healed pipe keeps its pull sides even when its chest comes back after it.
+
 ## 0.8.0 — 2026-11-04
 
 Damage that heals over time (off until you turn it on), a build for Minecraft 26.1.2, Create and Create Aeronautics on

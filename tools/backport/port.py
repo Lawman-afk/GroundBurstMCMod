@@ -40,6 +40,9 @@ DROP = [re.compile(p) for p in (
     r"src/main/java/dev/groundburst/world/structure/WorldSurvey\.java",
     r"src/generated/resources/\.cache/.*",
     r"docs/BACKPORT\.md", r"tools/backport/.*",
+    # The blast effects handed to a shader pack and drawn after the level (main's DESIGN.md §12.3): built on 26.3's
+    # renderer and Iris's API for it. This branch keeps its own FxRenderTypes (drawn after the translucent terrain).
+    r"src/main/java/dev/groundburst/client/fx/(IrisFx|DrawnLast)\.java",
 )]
 # Main's paths that are this branch's own (build files changed here by hand): never overwritten.
 OWN = {"build.gradle", "gradle.properties"}
@@ -382,6 +385,11 @@ def drop_method(signature: str):
 SKY = "dev.groundburst.port.SkyColors"
 
 FILE_FIXES: dict[str, list] = {
+    # The way under a shader pack (main's DESIGN.md §12.3) has no place here (no IrisFx, no DrawnLast): its option goes.
+    "src/main/java/dev/groundburst/config/GBClientConfig.java": [
+        resub(r'\n    public static final ModConfigSpec\.EnumValue<PackFx> SHADER_PACK_FX = B\n(?:.*\n)*?            \.defineEnum\("shaderPackFx", PackFx\.OVER\);\n',
+              "\n", 1),
+    ],
     # Fuel: 26.1.2 has its fuel values (26.3 reads the item's cooking-fuel component through a loot context).
     "src/main/java/dev/groundburst/content/power/CombustionGeneratorBlockEntity.java": [
         swap("return stack.has(DataComponents.COOKING_FUEL);",

@@ -21,10 +21,14 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -46,9 +50,10 @@ import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * Development aid for healing (DESIGN.md §21.9): with {@code -Dgroundburst.healShots} (the {@code healShots} Gradle
- * run) the client makes a flat creative world, turns healing on with short waits, builds two scenes (a farmstead for a
- * thermobaric warhead, a little town for a tactical nuke: houses with chests, doors, torches, windows, an item frame and
- * an armour stand, trees, a pond, a wheat field, sand), and photographs each before the blast, after it, while it heals
+ * run) the client makes a flat creative world, turns healing on with short waits, builds three scenes (a farmstead for a
+ * thermobaric warhead, a little town for a tactical nuke, a cottage for the game's own explosions, lit TNT and a creeper:
+ * houses with chests, doors, torches, windows, an item frame and an armour stand, trees, a pond, a wheat field, sand),
+ * and photographs each before the blast, after it, while it heals
  * and once it has, into {@code run/screenshots/heal_<scene>_<stage>.png}. Then it compares every block of each scene
  * with what it was and writes {@code run/heal/heal_check.txt} (and the log's "Heal check" lines), and quits.
  */
@@ -57,6 +62,9 @@ public final class HealPhotographer {
     private static final int SETTLE = 30, STABLE = 20, MOST = 600;
     /** The longest the healing may take before the check gives up waiting (ticks). */
     private static final int HEAL_TIMEOUT = 20 * 60 * 8;
+
+    /** The scene the game's own explosions blow up (DESIGN.md §21.9), not one of the mod's blast profiles. */
+    private static final String VANILLA = "tnt_and_a_creeper";
 
     private record Scene(String name, BlockPos centre, int half, int below, int above, String profile, Vec3 camera) {
         AABB box() {
@@ -188,7 +196,11 @@ public final class HealPhotographer {
                 busy = true;
                 server.execute(() -> {
                     for (Scene s : SCENES) {
-                        Blasts.detonate(level, Vec3.atCenterOf(s.centre()), Blasts.profile(s.profile()), null);
+                        if (s.profile().equals(VANILLA)) {
+                            vanilla(level, s);
+                        } else {
+                            Blasts.detonate(level, Vec3.atCenterOf(s.centre()), Blasts.profile(s.profile()), null);
+                        }
                     }
                     busy = false;
                 });
@@ -327,9 +339,10 @@ public final class HealPhotographer {
         GBServerConfig.HEAL_ORDER.set(GBServerConfig.HealOrder.BOTTOM_UP);
         GBServerConfig.HEAL_EFFECTS.set(true);
         int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0) - 1;
-        BlockPos farm = new BlockPos(0, top, 0), town = new BlockPos(1000, top, 0);
+        BlockPos farm = new BlockPos(0, top, 0), town = new BlockPos(1000, top, 0), cottage = new BlockPos(-600, top, 0);
         SCENES.add(new Scene("farmstead", farm, 30, 16, 16, "thermobaric_warhead", new Vec3(farm.getX() + 34, top + 26, farm.getZ() + 34)));
         SCENES.add(new Scene("town", town, 88, 30, 22, "tactical_nuclear_warhead", new Vec3(town.getX() + 95, top + 70, town.getZ() + 95)));
+        SCENES.add(new Scene("cottage", cottage, 22, 10, 14, VANILLA, new Vec3(cottage.getX() + 20, top + 15, cottage.getZ() + 20)));
         for (Scene s : SCENES) {
             AABB b = s.box();
             commands.performPrefixedCommand(source, "forceload add " + (int) b.minX + " " + (int) b.minZ + " " + (int) b.maxX + " " + (int) b.maxZ);
@@ -341,6 +354,7 @@ public final class HealPhotographer {
         }
         farmstead(level, farm);
         town(level, town);
+        cottage(level, cottage);
         for (Scene s : SCENES) {
             settle(level, s);
             BEFORE.put(s.name(), snapshot(level, s));
@@ -382,6 +396,42 @@ public final class HealPhotographer {
         pond(level, c.offset(-25, 0, 32), 7, 3);
         sandBank(level, c.offset(40, 1, -40), c.offset(46, 3, -34));
         flowers(level, c, 70);
+    }
+
+    /** A house, a tree, a fence and a wheat field round {@code c}, for the game's own explosions. */
+    private static void cottage(ServerLevel level, BlockPos c) {
+        house(level, c.offset(-3, 1, -3), "cottage");
+        tree(level, c.offset(-9, 1, 6));
+        field(level, c.offset(5, 0, 5), 5, 5);
+        for (int i = -6; i <= 6; i++) {
+            level.setBlock(c.offset(i, 1, -8), Blocks.OAK_FENCE.defaultBlockState(), Block.UPDATE_CLIENTS);
+        }
+        flowers(level, c, 12);
+    }
+
+    /**
+     * The game's own explosions over the cottage, as they go off in play: TNT lit in the house, with a block of TNT
+     * beside it (put down after the scene was taken: the first lights it, it goes off and is never put back), TNT lit by
+     * the tree, and a creeper by the fence, lit.
+     */
+    private static void vanilla(ServerLevel level, Scene s) {
+        BlockPos c = s.centre(), house = c.offset(-3, 1, -3);
+        lit(level, Vec3.atBottomCenterOf(house.offset(3, 0, 3)), 20);
+        level.setBlock(house.offset(4, 0, 4), Blocks.TNT.defaultBlockState(), Block.UPDATE_ALL);
+        lit(level, Vec3.atBottomCenterOf(c.offset(-8, 1, 4)), 50);
+        Creeper creeper = EntityType.CREEPER.create(level, EntitySpawnReason.COMMAND);
+        if (creeper != null) {
+            creeper.setPos(Vec3.atBottomCenterOf(c.offset(2, 1, -6)));
+            creeper.setNoAi(true);                         // (it still swells: that is its own tick, not its AI)
+            level.addFreshEntity(creeper);
+            creeper.ignite();
+        }
+    }
+
+    private static void lit(ServerLevel level, Vec3 at, int fuse) {
+        PrimedTnt tnt = new PrimedTnt(level, at.x, at.y, at.z, null);
+        tnt.setFuse(fuse);
+        level.addFreshEntity(tnt);
     }
 
     /** A 7x7 plank house (stone floor, glass windows, a door, a torch, a chest of goods, an item frame and an armour stand by the door). */

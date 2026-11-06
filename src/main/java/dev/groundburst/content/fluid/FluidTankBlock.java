@@ -68,7 +68,7 @@ public class FluidTankBlock extends Block implements EntityBlock {
     // The block entity exists only after placement finishes, so joining up happens on the next tick.
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        if (!oldState.is(this)) {
+        if (!oldState.is(this) && !dev.groundburst.heal.Healer.restoring()) {   // (healed back: joined as it was)
             level.scheduleTick(pos, this, 1);
         }
     }

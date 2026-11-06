@@ -171,6 +171,8 @@
     "groundburst:war_factory",
     "groundburst:mortar",
     "groundburst:howitzer",
+    "groundburst:depth_charge_rail",
+    "groundburst:depth_charge_rack",
     "groundburst:copper_fluid_pipe",
     "groundburst:fluid_pipe",
     "groundburst:pressurized_fluid_pipe",

@@ -161,8 +161,10 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
         // Redstone mode icon on its button.
         MachineLayout.Rect r = this.layout.redstone();
-        g.blit(RenderPipelines.GUI_TEXTURED, pageLayout().texture(), x + r.x() + 1, y + r.y() + 1,
-                this.layout.redstoneU() + this.menu.redstoneMode().ordinal() * 16, this.layout.redstoneV(), 16, 16, pageLayout().textureWidth(), 256);
+        if (r.w() > 0) {                                    // (a machine redstone sets off has no mode: the rack)
+            g.blit(RenderPipelines.GUI_TEXTURED, pageLayout().texture(), x + r.x() + 1, y + r.y() + 1,
+                    this.layout.redstoneU() + this.menu.redstoneMode().ordinal() * 16, this.layout.redstoneV(), 16, 16, pageLayout().textureWidth(), 256);
+        }
     }
 
     @Override

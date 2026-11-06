@@ -1365,6 +1365,22 @@ Client config (`groundburst-client.toml`): `fx.quality` (low/medium/high/ultra, 
 
 ---
 
+### 11.9 Against 0.7.0 (2026-11-06)
+- **Why:** the user asked for the newest version's performance to be compared with 0.7.0's.
+- **How:** 0.7.0 (d81db058) checked out beside main as its own worktree, each version's own blast bench (the same but
+  for healing, which main's bench turns off unless asked), run one after the other with nothing else running: the Tsar
+  once each, the tactical nuclear warhead three times each, alternating. 0.7.0's bench left vsync and the game's
+  background frame cap on (34 and 60 fps in the first pair); its runs were repeated with main's display settings
+  (vsync off, no frame limit, the cap only when minimised).
+- **The Tsar:** blast done in 131.2 s (0.7.0) and 131.3 s (now); server ticks mean 18.5 and 18.4 ms, p95 21.4 and
+  20.9, p99 26.4 and 26.2, max 57.3 and 60.6; ticks over 50 ms 1 and 2; 21.5 and 21.7 million blocks changed; the save
+  30 s in 102 and 106 ms; heap peak 5.4 and 5.6 GB; client 1,031 and 1,016 fps (min 697 and 685).
+- **The tactical warhead** (done in 2 s, 39 ticks, so each run is noisy): ticks mean 12.3 and 13.2 ms (0.7.0) against
+  13.5, 12.8 and 12.6 (now); max 27-29 against 23-29; client about 1,250 against 1,233 fps; rays in flight vary from run
+  to run on either (72,000 to 85,000).
+- **So:** no change beyond the runs' own spread. What came after 0.7.0 (healing, off by default; hulls; sea blasts)
+  costs a blast on land nothing measurable.
+
 ## 12. Visual effects system (`client.fx`, "Spectacle")
 
 Principle: **the server is authoritative for radii.** Clients receive `BlastStart(id, profile, center, seed,
@@ -1498,6 +1514,88 @@ As built (2026-10-21):
   dust lit by `FxLight` and the world light; base surge (`surge`: dust lasts and spreads more, 2.5x for nukes).
 - Reviewed with `runFxShots` scenes small, medium, large, nuclear (230 blocks, to 80 s), nuclear_close (130 blocks) and
   nuclear_night.
+
+### 12.3 Shader packs (Iris) and Distant Horizons (2026-11-05; a commenter asked for shader support; drawn last 2026-11-06)
+With Iris and a shader pack (Complementary Reimagined, BSL) every effect drew as long black, purple and green shards
+across the screen; the fire blocks a blast leaves were fine. A pack draws the world with its own programs, which read
+more from each vertex than vanilla's shaders, and Iris lays entity-format vertices out for them; our effect pipelines
+were ones Iris did not know, so it drew them with their own shaders from vertices laid out for the pack.
+
+**0.8.1: drawn by the pack.** Each effect pipeline was handed to the pack program it is most like
+(`IrisApi.assignPipeline`, API 0.3, Iris 1.11): the glow (the fireball's core, the shock shell, sparks, beams, lasers) to
+the emissive entity program (spider eyes), the fire and the cloud (smoke, dust, the mushroom cloud) to the translucent
+entity program, which the pack lights, their colours still shaded here (`FxLight`) and marked full-bright. Iris picks a
+program by the pipeline's vertex layout, or failing that by its alpha cutout, so each pipeline declares one (the cloud
+its own 0.16, the glow and fire a 255th) and gets the entity layout's programs (`ENTITIES_EYES_TRANS`,
+`ENTITIES_TRANSLUCENT`). Tried and dropped then: everything emissive (all of it glowed white), the pack lighting the
+smoke by the world's light (dark, blue smoke), the glow on the translucent program (dark blotches). Complementary and
+BSL looked close to the game without a pack.
+
+**Then a player on Bliss** (2026-11-06): "mushroom clouds appear to flicker much more frequently than without shading,
+while also drastically changing color", and Distant Horizons' far water drawn through the cloud. Bliss reproduced it in
+the photographer: the mushroom cloud a hole of sky colour in the pack's clouds, the smoke black. Its own programs say
+why, and no pack program suits a soft cloud seen from afar:
+- its translucent entity program lights in a deferred pass of its own: smoke black, the cloud's colour lost;
+- its particle program (tried: the fire and clouds on vanilla's particle layout, assigned to `PARTICLES_TRANSLUCENT`,
+  each puff's light level handed over, a neutral sun) fades every half-clear particle out by 100 blocks, for its world
+  border (`if (TEXTURE.a < 0.7 && TEXTURE.a > 0.2) gl_FragData[0] *= clamp(1.0 - length(feetPlayerPos) / 100.0,
+  0.0, 1.0)`): the mushroom cloud vanished whole, the near smoke went faint;
+- its emissive programs scale the glow by its auto-exposure (`mix(0.5, 100.0, exp(-10.0 * exposure))`), so the
+  fireball's colour swung as the flash lit the scene and the exposure followed (the "changing colour").
+
+**Drawn last** (`client/fx/DrawnLast`; the default since, `shaderPackFx = OVER` in the client config, "Effects with
+shader packs: Over the pack"): with a pack on (and with Distant Horizons, below), the effects are not drawn in the level
+at all. `FxRenderTypes.submit` keeps their submits in a `SubmitNodeStorage` of their own, and they are drawn at
+NeoForge's after-level stage, through a `FeatureRenderDispatcher` of their own, into the main target's colour and depth.
+On 26.3 that stage comes after Iris's composite and final passes (Iris runs them inside `LevelRenderer.render`, just
+before the view is popped) and before the game clears the depth for the hand. There Iris swaps in no pack program
+(`shouldOverrideShaders` is false once the level is done) and lays out no vertex differently
+(`ImmediateState.isRenderingLevel` is false), so the effects' own pipelines draw them, depth tested against what the
+pack drew: they look as without shaders, in every pack, steady from frame to frame. That depth is vanilla's own,
+reversed (read back after the pack: the sky 0.0, the near ground highest; Iris 1.11 ships mixins that would turn it
+round but applies none of them, and converts inside the pack's shaders instead), so the pipelines, the projection (still
+the level's) and the depth test serve as they are. (A first try turned the projection and the depth test round for a
+pack, as those unused mixins would: nothing passed, not even against the sky.) The view is the stage's (Iris has put the
+view's bobbing in it); the fog is the level's main pass's, taken at the after-translucent-particles stage. Under a pack
+the effects keep the look and lighting they have without one: the pack's fog, lighting, bloom and tone mapping do not
+reach them, and the pack's water or glass in front of a cloud hides it rather than tinting it.
+
+The 0.8.1 way stays as an option ("Lit by the pack", `shaderPackFx = IN`), for a pack that draws them well and a player
+who wants the effects in its light; the dev runs switch with `-PpackFx=in|over`.
+
+**1.21.1** (the branch's own `FxRenderTypes`, `IrisFx` and `DrawnLast`; its docs/BACKPORT.md): drawn last there too.
+NeoForge 21.1 fires its after-level stage from the game renderer once the level's drawing has returned, after Iris 1.8's
+last passes (it runs them as `LevelRenderer.renderLevel` returns) and before the hand's depth is cleared; the effects go
+into the game's buffers there, the view and fog as the level had them, against a depth that runs the usual way round,
+near 0 and far 1, as Iris leaves it. "Lit by the pack" keeps 0.8.1's way there: Iris 1.8 puts a pack's programs in
+place of the game's own shaders by name, and the fire and the clouds switch to vanilla's translucent entity shader (on
+the eyes shader a pack made the fire glow white, and the clouds' own shader is one Iris does not know: the smoke did not
+show), the glow staying on the eyes shader. Checked with the port check's blast, particle beam and water column under
+Bliss and Complementary Reimagined and without a pack, and with Distant Horizons 3.3.3.
+
+**Distant Horizons** (3.3.4; the same player: its far water drawn through the cloud). Reproduced without a pack, on a
+flat sea (`-PfxWorld=sea`) with the view at 8 chunks and a nuke 230 blocks off: the cloud's foot cut off flat by a band
+of far sea in DH's fog colour, where without DH the base surge reaches down to the water. DH draws its far terrain
+before the main pass and then, at the outline stage after it (`executeOutline`), fades it in over what the level drew
+beyond the view distance, our effects with it. So with DH loaded the effects are drawn last too
+(`FxRenderTypes.drawnLast`), pack or none: after DH's fade, they stand in front of its far terrain. What DH draws leaves
+no depth in the game's buffer, so a cloud behind far hills drawn by DH would show in front of them (the lesser fault: a
+cloud is tall, and its foot is rarely behind a far hill). The same goes for DH's far sea: a cloud's foot dipping under
+the water shows over the strip of it at the horizon, a few pixels. Checked under Bliss too, DH's sea drawn by the pack
+(`-PwithDH -PwithIris -PirisPack=bliss -PfxWorld=sea -PfxOnly=dh_`): the whole cloud stands on it.
+
+**Dev runs**: `-PwithIris` loads Iris and Sodium (26.3: Iris 1.11.7, Sodium 0.9.3 beta; 1.21.1: Iris 1.8.14, Sodium
+0.8.13) with the test packs put in run/shaderpacks and Iris set to the one `-PirisPack` names: `complementary`
+(Reimagined r5.9.3, the default), `unbound` (Complementary Unbound r5.9.3), `bsl` (10.1.8), `bliss` (2.1.2), `photon`
+(1.4), `solas` (3.9), `makeup` (MakeUp Ultra Fast 9.6) or `off`. `runFxShots -PwithIris -PirisPack=<pack>
+-PfxOnly=shader_` photographs every kind of effect once (a fireball's glow, fire and smoke; a mushroom cloud by day,
+frame by frame and at night; a column of water; the particle beam). Checked (2026-11-06) under all seven packs and
+without one: every effect shows and they agree, pack to pack and with the shots without one, except for the fireball's
+first second, whose shots catch it a few ticks younger under the heavier packs (Bliss, Photon, Unbound): the depth read
+back at the fireball was the same under Photon as under Complementary, so that is when the client began it, not how it
+was drawn. With Iris the dev runs turn off two things players never meet: the game's strict draw checks (dev runs only;
+Iris's depth-of-field sampler fails one, `neoforge.disableBlaze3DValidation`) and NeoForge's load-warning screen (Iris's
+metadata warns, and the screen held the photographers).
 
 ## 13. Sound system
 
@@ -1848,6 +1946,113 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   grey dust mushroom that hangs for 100 s: `MushroomCloud` gained a dusty mode, barely glowing). A bomb that falls 8
   blocks or more whistles all the way down (`bomb.whistle`, bound to the falling block) and lands harder: its reach
   grows with the fall, up to 30% for 24 blocks.
+
+### 14.6 Sea mines and depth charges (2026-11-05; the first of the user's underwater and naval weapons)
+The user asked for naval mines and depth charges on both versions, and "the classic sea mines with the chains that
+stick them to the bottom". Three weapons, all entities (a mine must ride a current, swing on its chain and float free,
+which a block cannot), and a way for a blast to go off under water (`content/naval`).
+- **Moored Sea Mine** (`moored_mine`): the contact mine of both world wars, a black steel sphere with lead Hertz horns
+  (a horn bent by a hull breaks the glass vial inside it, and the electrolyte makes the battery that fires the mine),
+  moored by a chain to a sinker on the bottom. Used on water (the water's surface where the player looks; from under
+  water, just ahead of a diver's eyes) it is laid there: mine and sinker sink together to the bottom (0.25 blocks a
+  tick), the sinker settles, and the mine rises on its chain, paying it out with a rattle, until its top is its depth
+  under the surface; 5 s later its salt plug has dissolved and it is live (a click). Its depth is set on the item before
+  laying (sneak and use in the air): 0 (awash, its horns just under the surface: boats strike it), 1, 2, 3, 5 or 8
+  blocks. In water too shallow for its chain it sits on its sinker on the bottom, still live. On its chain it rides on
+  the sphere round its sinker that the chain allows: a current pushes it aside and it dips as it swings.
+- **Drifting Sea Mine** (`drifting_mine`): the same mine without a sinker. Laid on water it floats awash (its middle a
+  tenth of a block under the surface: its top and horns show; first a quarter down, where it was all but lost from
+  above) and drifts with the current (flowing water) and a tenth of the dimension's wind (the fallout's), coming to rest on shores; live
+  5 s after it is laid. As the Hague Convention of 1907 asks of mines adrift, it makes itself harmless within the hour:
+  after an hour adrift (while loaded) it floods and sinks, gone.
+- **What sets a mine off**: a boat, a minecart, or a block of a Create ship or contraption touching it (on 1.21.1,
+  through `Hulls`); a player, or any creature but the sea's own (fish, squid, dolphins and axolotls, the water creature
+  categories), which slip past its horns; a projectile striking it (an arrow, a trident, a shell: mines cut loose were
+  swept by shooting them); a punch; another blast close by (inside that blast's lethal reach: sympathetic, 2 to 5 ticks
+  later). A blast a little further off (inside its damage reach) parts a moored mine's chain: the mine bobs up to the
+  surface and drifts, still live. Mines never set each other off by touch.
+- **Handling**: use a mine to make it safe (a click) or to arm it again (live 5 s later). Punched while safe, it is
+  taken up: its item, the sinker and chain with it, its depth kept. A dispenser facing into water lays a mine there (a
+  minelayer); facing anything else it drops it as an item.
+- **Depth Charge** (`depth_charge`): the "ashcan" of the Second World War, a drum of explosive with a hydrostatic pistol
+  that fires at a set depth. Thrown (0.6 blocks a tick, a second's cooldown), rolled out of a dispenser (a short shove
+  out of its front) or off a Depth Charge Rack, it sinks at 0.2 blocks a tick, tumbling, and goes off at its depth under
+  the surface where it went in, or on the bottom if that comes first. Depth on the item (sneak and use in the air): 3,
+  5, 8, 12, 16 or 24 blocks. Out of water its pistol never fires: on dry ground it comes to rest as an item to pick up.
+  Caught in another blast's lethal reach under water, it goes off too.
+- **Depth Charge Rack** (2026-11-06; the user: "instead of having the dropped out of a dropper, can we add a small
+  multiblock that rolls them off? And can be piped into it with charges please? This should also work with create
+  stuff."): the stern rack of the Second World War's destroyers and escorts (`DepthChargeRackBlockEntity`). A multiblock
+  one block wide and four long: the Depth Charge Rack (its controller, the release end with the trap, placed facing
+  where the player looks: out over the water), two Depth Charge Rails behind it and an Item Port at the top end; a
+  creative Structure Spawner builds it. It holds six charges, one to each place on the rails (its six slots, slot 0
+  against the trap), and takes nothing else.
+  - **Loading**: by hand in its screen, or by anything that puts items into its Item Port: a hopper, item pipes, other
+    mods' pipes, and on 1.21.1 Create's funnels (checked; anything of Create's that fills an inventory should too). A charge with an empty place in front of it rolls down
+    a place in 8 ticks (all those behind a gap together); the client rolls their drums down the rails on their hoops.
+  - **Releasing**: a redstone signal on any of its blocks. A pulse rolls the front charge off; a held signal rolls one off
+    each interval (1.5 s by default; 0.8, 1, 2 or 3 s, trip to trip: 0.8 is as fast as the rack cycles), a pattern, until
+    it stops or the rack is empty. Its screen's buttons release one, or all it holds as a pattern (the only way aboard a
+    Create contraption, where no redstone reaches it). Tripped, the trap drops (2 ticks) and the release lever is thrown;
+    the front charge rolls forward over the trap to the edge (4 ticks, 10 px along the rails) and leaves the front there,
+    0.16 blocks a tick out and 0.02 down (as fast as it rolled), with the way of whatever carries the rack; the rest roll
+    down behind it at once, and the trap is back up 10 ticks after the trip, before the next charge reaches it. Next trip
+    no sooner than 12 ticks after, with the next charge settled. The charge goes lying on its side across the rack's
+    front as it lay on the rails (its dial to the rack's left; its axis is the entity's own synced data: 1.21.1's client
+    turns a new projectile's rotation to its motion, so its pitch could not say it) and rolls on
+    about its axis as it falls; a thrown or dispensed one tumbles end over end. Every charge is drawn at its item's size,
+    as the rack's drums (it had been drawn at three quarters). (At first it left upright and smaller, a jump from the drum
+    on the rails, and from where its drum lay: it had to start clear of the rack's own block.)
+  - **Depth**: each charge its own, or every charge it rolls off set to 3, 5, 8, 12, 16 or 24 blocks (the screen).
+    A comparator reads how many it holds (15 full). Its screen shows the charges, the depth, the interval and its state
+    (READY, RELEASING, Load depth charges, Structure incomplete).
+  - **Create** (1.21.1): it works aboard a Create Aeronautics ship (redstone and all, its charges going off the stern
+    with the ship's way; checked) and, carried by a contraption, from its screen (as every machine is carried; not yet
+    checked); funnels load it as any machine.
+  - **Model** (`tools/assets/depth_charge_rack.py`, GeckoLib): two steel rails on short legs sloping 3 degrees down to the
+    front, the charges lying across them on their rolling hoops (each the depth charge's own drum), guard rails along
+    both sides over their ends, the hinged trap at the front on its shaft, the hand release lever on its quadrant on the
+    left, the loading end over the Item Port's housing. Navy haze grey, the rails' running tops worn bright, the trap and
+    the lever red. Bones: the incline, a slot per place (an empty place's charge hidden, a charge rolled down along the
+    rails and turned on its hoops), the trap, the lever. The Rail block and the controller have their own block models
+    for the unformed structure.
+  - **Sound** `naval.rack_release`: the trap's latch, the drum rolling off the rails and its thud going over, cut from the
+    metal parts, hoist chain and door slam recordings already credited.
+  - **Recipes**: Depth Charge Rack (3 steel plates, 2 steel rods, a lever, redstone); Depth Charge Rail x2 (4 steel rods,
+    2 steel plates). Field Manual: the sea mines entry, with its structure and the releasing.
+- **Blasts under water** (the `naval` terrain table): the sea is not blown away. Rays pass through water for little
+  energy (0.08 a block: it carries a shock well) and leave it as it is; what they break below the surface fills with
+  water (the sea rushes in), what they break above it is left open. Exposure lines already passed through water. A naval
+  blast set off out of water is an ordinary one, seen and heard by its size. Every blast now breaks the boats and
+  minecarts it hurts (vanilla's vehicles), as it hurts creatures.
+  - `sea_mine`: core 1.5, crater 4.5, lethal 8, damage 18 (60 and 18 damage, knockback 2.8), instant. `depth_charge`:
+    core 1, crater 3.5, lethal 6.5, damage 14 (45 and 14, knockback 2.2), instant. No scorch, fire or ejecta. Sound set
+    `naval`; visual sets `sea_mine` and `depth_charge`.
+- **The water column** (`WaterColumn`, client): the shock reaches the surface first, a white dome; then the column of
+  spray stands up out of it, jets streaking up, and falls back as a curtain of spray spreading out, a ring of mist
+  rolling over the water from its foot; bubbles boil up from the burst for seconds, and seen from under water there is
+  a brief flash. Its height is about six craters (27 blocks for a mine, 21 for a depth charge), cut by its depth to
+  under a fifth five craters down; a deep charge's dome and column come late (the bubble's rise). No fireball, smoke,
+  dust or debris. The outer jets fan out, feathering the column's edges. It is laid out all at once when the blast is
+  heard of (the Spectacle starts a blast's puffs only while its fireball lasts, and this has none: at first the column
+  never came).
+- **Sound**: the `naval` set (near, mid, far, very far): the deep thud of a charge under water, the roar of the column
+  going up and the rain of its water falling back.
+- **Models** (`tools/assets/naval.py`): the mine a black sphere 14 px across in bands from a true circle (as the
+  singularity warhead's), nine lead horns (one on top, four round its shoulder at 45 degrees, four round its waist
+  between them), a bolted flange round its middle, the chain's shackle under it; rust weeping from the flange, paint worn
+  at the horns' feet, a green-brown band of sea growth low down. The sinker a box-shaped iron trolley on four small
+  wheels (mines were rolled along a minelayer's rails on them) with the chain's drum in it, rusty cast iron. The chain
+  rusty links on two crossed planes (as vanilla's chain), drawn by the renderer from the sinker to the mine's shackle.
+  The moored mine's item is the mine on its sinker, as stowed on a minelayer's deck; its item model has
+  `custom_model_data` cases "body" and "sinker" for the renderer's parts (as the missile's), their stacks made when it
+  first draws a mine (made with the renderer, at the resources' reload, they had no components yet: the client hung on
+  a black screen in the first test). The drifting mine's item is
+  the mine alone. The depth charge a navy-grey drum with two rolling hoops, the pistol's dial in one end and the
+  primer's cap in the other, a yellow band and white stencils.
+- **Recipes**: Drifting Sea Mine (2 lead ingots, 3 steel plates, TNT); Moored Sea Mine (a drifting sea mine, 2 iron
+  ingots and 2 chains: its sinker); Depth Charge x2 (3 steel plates, 2 TNT, a copper ingot). Field Manual: Ordnance,
+  "Sea mines and depth charges".
 
 ## 15. Nuclear weapons
 
@@ -4177,8 +4382,12 @@ this heals as air. And a chunk does not begin to heal while a fire that will go 
 it, near its damage (in its damaged sections or the ones above and below: the palette tells at once a section that
 never held fire; `Healer.fireNear`): it waits again, looking every 5 s, so the trees come back once the forest is out
 and nothing is left to set them alight. A fire on netherrack or another block that keeps a fire burning (a hearth, the
-Nether) burns for good and is no reason to wait. Told to heal now (the heal command), a chunk puts the fires by it out
-first.
+Nether) burns for good and is no reason to wait. Nor is a fire that cannot burn out where it is (2026-11-06, found by
+the heal check's third scene): on 26.x a fire neither spreads nor goes out beyond `fire_spread_radius_around_player`
+(128 blocks) of every player, nor anywhere in a chunk that is not ticking, so it would stand there for good and hold the
+healing off for ever (a crater burning when its players went away never healed). Once its chunk is due, such a fire goes
+out (`Snapshots.burnsOut`), quietly, as every fire the healer puts out: nothing round it is told, or a crop the
+damage left hanging by it would fall now and drop its seeds (the heal check's town lost nine wheat so). Told to heal now (the heal command), a chunk puts the fires by it out first.
 
 **Kept with the chunk.** What a chunk remembers is a data attachment on it (`ChunkScars`), saved and loaded with it:
 per section, a bit for each remembered cell and its old state as the game keeps sections (a palette and an index a
@@ -4202,6 +4411,63 @@ which had begun to count themselves cut off. Whatever stands in the way gives wa
 that came in, a fire), and a creature a block comes back round is lifted out on top. A few green sparkles and the
 block's own sound now and then (`effects`).
 
+**Waking what keeps track of more than one block** (2026-11-05; the user asked whether healing brings back other mods'
+blocks, their machines, wires and pipes, set as they were). Every block comes back with its block entity's data whole,
+another mod's as much as the game's, so a machine's side and input/output settings, a pipe's pull and switched-off sides
+and a chest's goods come back as they were. But set quietly, a healed cable or pipe run carried nothing: the networks
+are worked out from runs kept in memory that nothing told to look again, and a pulling pipe pulls on ticks it schedules
+as it is placed (GameTests found both). So, as each block comes back (`Healer.Cell.heal`):
+- the game's own blocks stay quiet: a blast set its blocks as quietly, so what was round them never heard they went,
+  and the states agree again once they are back;
+- this mod's cables and pipes are told (`heal.Healable`): their networks are worked out again and a pull side pulls
+  again. They are not placed afresh: placing works their sides out from whatever round them is back yet, and a pull side
+  whose chest was not back yet would be lost;
+- another mod's block is placed as a structure template places its blocks: its onPlace runs, before its block entity's
+  data is loaded (the order mods meet in structures and schematics);
+- a block with a block entity, or from another mod, tells the other mods' blocks beside it that it is back, as a block
+  set down beside them would (`neighborChanged`; the game's own blocks beside it are not told, nor one in a chunk that
+  is not loaded): their pipes and machines may have seen it go (a capability gone, a network rebuilt). This mod's
+  cables and pipes beside it work their networks out again instead.
+NeoForge itself refreshes the capabilities round a block entity that comes back and calls its `onLoad` the next tick. What
+a mod keeps outside its blocks altogether (connections held in the level's own data, say) is that mod's to put back.
+On 1.21.1 every block's onPlace runs as it is set (that version has no flag to skip it), so this mod's blocks whose
+onPlace works something out afresh (a cable's or pipe's sides, a structure's forming, a tank's joining) leave it be while
+healing sets them back (`Healer.restoring()`): a healed structure part had made its structure check itself while still
+half-built, taking it apart until its last part was back, and a healed pipe could lose a pull side whose chest was not
+back yet.
+
+**The game's own explosions and other mods'** (2026-11-06; the user: "please add a heal config to heal the vanilla
+explosions and if possible the explosions of other mods"). An explosion that goes through the game's explosion code
+heals as this mod's weapons do (`heal.Explosions`): the game's own (creepers, TNT and TNT minecarts, end crystals, ghasts'
+fireballs, the Wither as it is made and its skulls, beds and respawn anchors that blow up where they do not work) and
+any other mod's that uses that code, as most do, its own explosion class too. What set it off is its weapon: the entity
+that blew up (`minecraft:creeper`, `minecraft:tnt`, another mod's rocket) or, with none, its damage type
+(`minecraft:bad_respawn_point`, plain `minecraft:explosion`). The game's own, by name, have a switch each under
+`healing.explosions`; anything else is another mod's, under one switch; `what.excludedWeapons` takes these ids too
+(`"somemod:*"`), and the dimensions, blocks and players' rules are the same as for the mod's weapons.
+- The hook is the block state's `onExplosionHit` (`mixin/BlockStateBaseMixin`, wrapping it): the one call through
+  which the game's explosion, and another mod's explosion class, hit each block, after every other mod has had its say
+  over which blocks it takes (a claim's protection takes its blocks out of the explosion's list first). Each explosion
+  has its recorder (the first block it hits makes it). A block is remembered before the hit; one that will heal has its
+  block entity taken out quietly first (nothing spilt: it comes back with its contents), and the game's own hit runs
+  with its drops swallowed and its experience held back, inside a remembered course, so what its going takes with it
+  round it (a torch on the far side of a wall, a door's other half) is remembered too and drops nothing. So the
+  explosion still does to each block what it does in the game (a beehive angers its bees, a creaking heart loses its
+  creaking).
+- A block the explosion sets off rather than breaks is never put back: it went off. TNT (which an explosion lights, and
+  which drops nothing in one), any block that drops nothing in an explosion (`canDropFromExplosion` false: other mods'
+  explosives), and this mod's charges.
+- A painting, item frame or armour stand the explosion breaks (`mixin/ServerExplosionMixin`, round its `hurtServer`)
+  is saved as it was before the hit and put back with the ground, what it drops held back; a fixed frame or a marker
+  stand, which the explosion leaves be, is left as it is.
+- Fire an explosion starts (a ghast's, a bed's) is the aftermath's, as a blast's fire is: what it burns near the damage
+  heals once it is out.
+- A wind charge's explosion only works doors and buttons, and is left alone. With healing off nothing changes: the
+  game's explosions drop and spill as they always did.
+- Not seen: an explosion that works out its own crater and sets its blocks itself, as this mod's weapons do, never
+  meets the hook, so another mod's of that kind does not heal. Its changes are any block changes; telling them from a
+  player's building would take a list of that mod's entities to watch while they tick (considered, left for later).
+
 **Players.** Where a player puts a block over remembered damage, `playerBlocks` says what healing does: `KEEP` (the
 default) leaves it, and leaves the ground within `keepRadius` of it, and the air over that up to the sky, as they are,
 so a base built in a crater is not filled in round it or buried; `DROP` pops it off as an item and heals the ground;
@@ -4219,7 +4485,9 @@ so a base built in a crater is not filled in round it or buried; `DROP` pops it 
 | `effects` | true | sparkles and sounds |
 | `what.conventional`, `what.nuclear`, `what.special`, `what.chemical` | true | which kinds of weapon heal |
 | `what.aftermath`, `what.decorations`, `what.biomes`, `what.clearRadiation` | true | the fire and what falls and decays; paintings, frames, stands; the wasteland; radiation |
-| `what.excludedWeapons`, `what.excludedBlocks`, `what.excludedDimensions` | [] | blast profiles and the other weapons' ids (a * matches anything); blocks and #tags; dimensions |
+| `what.excludedWeapons`, `what.excludedBlocks`, `what.excludedDimensions` | [] | blast profiles, the other weapons' ids and what set off an explosion (its entity's or damage type's id; a * matches anything); blocks and #tags; dimensions |
+| `explosions.creepers`, `explosions.tnt`, `explosions.endCrystals`, `explosions.ghastFireballs`, `explosions.wither`, `explosions.bedsAndAnchors` | true | the game's own explosions, by what set them off |
+| `explosions.otherMods` | true | other mods' explosions through the game's explosion code |
 | `players.playerBlocks`, `players.keepRadius`, `players.dropItems` | KEEP, 3, false | see Players |
 | `performance.maxBlocksPerTick`, `performance.msPerTick` | 2 000, 5 | the server's budget for it |
 
@@ -4227,21 +4495,30 @@ The weapons that are not blast profiles, by id: `particle_beam`, `cryo_freeze`, 
 `storm`, `fallout`, `radiation`, `meltdown`, `toxin`, `breach`, `incendiary`. A profile's kind is nuclear by its terrain
 table (and the meltdown, the fizzle, the dirty bomb), special and chemical by name, conventional otherwise.
 
-**Not healed:** damage done while healing was off; vanilla's own explosions (creepers, TNT: Explosion't and its kind do
-those); ships and contraptions; creatures, and items blown away; a fire that has spread more than a chunk past any
+**Not healed:** damage done while healing was off; other mods' explosions that set their crater's blocks themselves;
+TNT an explosion lights (it went off); ships and contraptions; creatures, and items blown away; a fire that has spread more than a chunk past any
 damage; what falls over ticks later (a column of sugar cane or cactus, scaffolding). A leaf counts its distance to its
 trunk afresh once the trunk is back (a number nobody sees; a tree grown by world generation counts it one higher here
 and there).
 
-**Checked.** GameTests `HealTests` (11): a blast over ground, grass, a chest of diamonds, stairs, glass and a fence put
+**Checked.** GameTests `HealTests` (19): a blast over ground, grass, a chest of diamonds, stairs, glass and a fence put
 back block for block, the chest with its diamonds, nothing dropped; KEEP keeping a player's block and the hole round it
 and over it; DROP dropping it; the record reading back from its saved form; the schedule (the wait, its random share,
 the morning, command only, off); explosives, excluded blocks and tags, excluded weapons; a freeze over a pond thawed
 back; the wasteland's biome turned back; an item frame taken down and hung again with its diamond; sand that fell
-remembered; with healing off nothing remembered. `runHealShots` (`HealPhotographer`): a farmstead under a thermobaric
-warhead and a little town under a tactical nuke, with healing on and short waits, photographed before, after, healing
-and healed (run/screenshots/heal_*.png), then every block compared with what it was (run/heal/heal_check.txt):
-the farmstead came back 122 719 of its 122 793 blocks exactly and the town 1 660 194 of its 1 660 437; every block that differs is a leaf's count of its distance to its trunk; the five chests had their goods, every item frame and armour stand hung or stood again, and no item lay about. Getting there found the grass dying under rubble, farmland drying and turning to earth, and the crater lake's water taking crops (each now remembered), and a test scene's own mistakes (sand laid on grass, farmland five blocks from its water).
+remembered; fire never brought back; a generator's cable run and the ore crusher it powers cut by a weapon (the
+generator pushing into the broken run meanwhile) and healed, the crusher's top face still set to take nothing and the
+crusher powered again; a pipe run pulling from a chest cut (its pulling end with it) and healed, pulling and carrying
+again; with healing off nothing remembered; the game's own explosions: a creeper's over dirt, grass, a chest of
+diamonds, stairs and a wall with a torch behind it and an item frame on it, put back block for block, nothing dropped,
+the frame hung again; TNT an explosion lit not put back; each switch, an id left out, a bed's explosion by its damage;
+another mod's explosion class (nothing behind it) with a barrel of emeralds; with healing off a creeper's explosion
+spilling a chest as ever. `runHealShots` (`HealPhotographer`): a farmstead under a thermobaric warhead, a little town
+under a tactical nuke and a cottage under the game's own explosions (lit TNT in the house and a block of TNT it lights,
+TNT by a tree, a creeper by the fence, all set going as in play), with healing on and short waits, photographed before,
+after, healing and healed (run/screenshots/heal_*.png), then every block compared with what it was
+(run/heal/heal_check.txt): the farmstead came back 122 719 of its 122 793 blocks exactly, the town 1 660 194 of its 1 660 437 and the cottage
+50 589 of its 50 625; every block that differs is a leaf's count of its distance to its trunk; the six chests had their goods, every item frame and armour stand hung or stood again, and no item lay about. Getting there found the grass dying under rubble, farmland drying and turning to earth, and the crater lake's water taking crops (each now remembered), and a test scene's own mistakes (sand laid on grass, farmland five blocks from its water); the cottage, the third scene, found the fires that never go out far from players (the camera now stays by the cottage: the farmstead and town waited for their fires until the check gave up), and then the wheat a put-out fire's neighbours were told to drop.
 ---
 
 ## 22. World structures and loot
@@ -5034,6 +5311,14 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-06 | Version **0.9.0** for Minecraft 26.3, 26.1.2 and 1.21.1 (the user: "create a release file for all 3 versions and change logs and update github"): sea mines, depth charges and the Depth Charge Rack (§14.6), the effects drawn last under shader packs and with Distant Horizons (§12.3, on 26.3 and 1.21.1), healing the game's own explosions and other mods' (§21.9). The 26.1.2 build brought up to main from 0.8.0, its port leaving the shader-pack drawing out (built on 26.3's renderer and Iris's API for it). A changelog for each upload; the branches pushed (no release made on GitHub's page: its command-line tool is not installed here). |
+| 2026-11-06 | **Healing the game's own explosions and other mods'** (§21.9; the user: "please add a heal config to heal the vanilla explosions and if possible the explosions of other mods"): one hook, the block state's `onExplosionHit`, through which the game's explosion and other mods' explosion classes hit every block, so it covers vanilla and most mods; a switch each for creepers, TNT, end crystals, ghast fireballs, the Wither, and beds and respawn anchors, one for other mods' (and their ids in `excludedWeapons`), all on (healing itself stays off by default). An explosion is named by what set it off: its entity, else its damage type. TNT an explosion lights is never put back; decorations are saved before the hit and kept only if it broke them. Not covered: mods that set their crater's blocks themselves (no general way to tell their changes from any other; a list of such mods' entities to watch while they tick was considered and left for later). |
+| 2026-11-06 | **Depth Charge Rack** (§14.6; the user: "instead of having the dropped out of a dropper, can we add a small multiblock that rolls them off? And can be piped into it with charges please? This should also work with create stuff."): a stern rack one block wide and four long (its controller the release end, two Depth Charge Rails, an Item Port at the top end), six charges rolling down its rails to a hinged trap; loaded through the Item Port (hoppers, pipes, Create's funnels), released by redstone (a pulse one, a held signal a pattern at its interval) or its screen (the way aboard a contraption), every charge set to one depth or left at its own, a comparator reading how full it is. A machine like the others, so the 1.21.1 Create compat carries it on contraptions and ships. Two GameTests that had passed by luck of the grid fixed with it: the storm test's interceptor battery engages nothing (once its EMP wore off it shot down a neighbouring test's missile), and a silo's missile flies at the bomb scale its launch was ordered at, not the one a test started since has set. |
+| 2026-11-06 | **Effects drawn last under shader packs and with Distant Horizons** (a player's comment the user passed on: under Bliss "mushroom clouds appear to flicker much more frequently than without shading, while also drastically changing color", and Distant Horizons' far water drawn through the cloud; then the user: more tests with other packs): §12.3. Bliss reproduced it (the cloud a hole of sky colour, the smoke black); its programs fade half-clear particles out by 100 blocks, light entities in a pass of their own and scale glows by its auto-exposure, so no pack program suits the effects. Under a pack they are now drawn after the level, over the pack's finished picture, by their own pipelines against the depth the pack left (`client/fx/DrawnLast`), and with Distant Horizons too (its fade laid its far sea over the cloud's foot). Checked under seven packs (Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas, MakeUp Ultra Fast) and with Distant Horizons, without a pack and under Bliss, on 26.3 and 1.21.1. The 0.8.1 way stays as a client option ("Effects with shader packs: Lit by the pack"). Tried first and dropped: the fire and clouds on the pack's particle program (Bliss's fade lost the cloud whole). |
+| 2026-11-06 | **Sea mines and depth charges** (§14.6; the user: "Let's do the naval mines and depth charges please. for the 2 main versions", and "the classic sea mines with the chains that stick them to the bottom"; paused for the 0.8.1 release, then taken up again): entities, not blocks (a mine rides a current, swings on its chain and floats free); a moored and a drifting mine (one model: the moored one's item is the mine on its sinker), a depth charge on a hydrostatic pistol; the naval terrain table (set off in water, a blast's rays pass through the sea as through air and what it breaks under the surface fills with water; set off out of water, an ordinary blast of its size); every blast now breaks the boats and minecarts it hurts; `ShockReceiver` (a blast sets off the mines and charges close by and parts mines' chains further off); the water column (`WaterColumn`) and the naval sound set, made from recordings already credited. |
+| 2026-11-05 | Version **0.8.1** for Minecraft 26.3 and 1.21.1 (the user: a stable release of the two main versions; 26.1.2 stays at 0.8.0, the user's wish earlier the same day): the blast effects under shader packs (§12.3) and healing's cables, pipes and other mods' blocks (§21.9); the changelog, README and the CurseForge description (shader packs, Iris among the optional mods, healed machines, cables and pipes). |
+| 2026-11-05 | **Shader packs (Iris)** (a commenter: "Any plans for shader support? (mushroom clouds/smoke)"; the user: if that means the effects under shaders, today's project, on 26.3 and 1.21.1, 26.1.2 left for now): §12.3. Under a pack every effect drew as long black and coloured shards (Iris laid their vertices out for the pack and drew them with shaders it did not know). On 26.3 each effect pipeline is handed to a pack program through Iris's API: the glow to the emissive entity program, the fire and smoke to the translucent entity program the pack lights, our own shading kept; chosen from screenshots of Complementary Reimagined and BSL over three other ways tried. On 1.21.1 the fire and smoke switch to vanilla's translucent entity shader while a pack is on (Iris swaps the game's shaders by name; the glow is already on vanilla's eyes shader). |
+| 2026-11-05 | **Healing wakes cables, pipes and other mods' blocks** (the user: does healing account for modded blocks, their block entities, wires and pipes, placing them back as they should be with their input/output settings, "very important and must be implemented if not"): settings already came back with each block entity's data, but healed cable and pipe runs carried nothing (their networks were never told). Now this mod's cables and pipes are told they are back (`heal.Healable`) instead of placed afresh (which would lose a pull side whose chest is not back yet), another mod's block is placed as a structure places its blocks, and a block with a block entity or from another mod tells the other mods' blocks beside it (§21.9); the game's own blocks stay quiet as before. |
 | 2026-11-04 | **Minecraft 26.1.2, backported from main; 0.8.0 for all three** (the user: a version for 26.1.2, "not sure if it's better to backport, or forward port this"; 0.8.0 on every version): a backport from main (26.3) by a port tool like the 1.21.1 branch's, on its own branch `26.1.2` (its `docs/BACKPORT.md`): 26.1.2 is two minor versions before 26.3 and shares its rendering by render states and submitted geometry, item model definitions, data components and GameTest framework, so most of main comes over by renaming and main's own GameTests run there (392/392); a forward port from 1.21.1 would cross every change from 1.21.2 to 26.1. Its data is main's generated output converted (configured features, loot tables' lists, recipe unlocks, biomes' spawners), not the data generators run on 26.1.2 (they are much of the API that differs). Found on the way: main saves structure templates with 26.x's lowercase palette names, which 1.21.1 and 26.1.2 read as air, so the 1.21.1 0.7.0 build's world sites were empty; both ports rename them. |
 | 2026-11-04 | **Fire is never healed back; a performance check** (the user, testing healing: molotovs on trees healed with their fire and burnt again; "strangely laggy" at 32 chunks; an optimisation check over everything before the next release): a fire is remembered as the air it burns in, and a chunk waits while a fire that will go out burns by its damage (§21.9), rather than putting fires out when it heals (the forest round it would still be burning) or keeping fires out of the record only (one remembered before would still come back). Measured, not guessed: a play bench and flight recordings (§11.8) put the mod at about 1% of the server's and the client's time at 32 chunks, healing included, and a Tsar's crater healing within its budget; the checks that run everywhere were made quick where nothing is damaged, healing's effects capped. |
 | 2026-11-04 | **Healing, off by default** (a commenter's suggestion, passed on by the user: damage that heals over time, "the EXACT same state", "with a wide config like the Explosion't mod"; the user: highly adjustable and intuitive, off by default, both versions): §21.9. Every weapon's block changes go through one recorder that remembers each block as it was before the first damage (state and block entity), kept with its chunk (an attachment saved with it: nothing in memory for chunks not loaded, and a Tsar's crater is twenty million blocks); what the damage sets going is remembered where damage already is (fire by a mixin, as Explosion't needs, decaying leaves and dying grass by mixins, falling sand and decorations by entity events); a chunk heals when its wait is over, at a speed with a longest time (Explosion't's speed-up for big damage), bottom up by default; nothing that will heal drops or spills (no duplication); players' blocks kept with the ground round them and the air over them, so a base in a crater is not buried. Not by snapshots of the land before a blast (a nuke's reach is millions of blocks, most of them never touched) nor by recording every block change near damage (a player's own building would be undone). |

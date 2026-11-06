@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "#c:ingots/lead",
+    "#c:ingots/lead",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "minecraft:tnt"
+  ],
+  "result": {
+    "id": "groundburst:drifting_mine"
+  }
+}

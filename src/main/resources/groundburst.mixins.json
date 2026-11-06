@@ -5,10 +5,12 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BlockMixin",
+    "BlockStateBaseMixin",
     "FarmlandBlockMixin",
     "FireBlockMixin",
     "FlowingFluidMixin",
     "LeavesBlockMixin",
+    "ServerExplosionMixin",
     "SpreadingSnowyBlockMixin"
   ],
   "injectors": {

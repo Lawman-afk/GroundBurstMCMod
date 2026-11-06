@@ -38,6 +38,22 @@ public final class GBClientConfig {
         }
     }
 
+    /** How the blast effects are drawn with a shader pack on (DESIGN.md §12.3). */
+    public enum PackFx implements TranslatableEnum {
+        OVER("Over the pack"), IN("Lit by the pack");
+
+        private final String key;
+
+        PackFx(String english) {
+            this.key = GBLang.add(GroundBurst.MODID + ".configuration.shaderPackFx." + name().toLowerCase(java.util.Locale.ROOT), english);
+        }
+
+        @Override
+        public Component getTranslatedName() {
+            return Component.translatable(key);
+        }
+    }
+
     private static final ModConfigSpec.Builder B = new ModConfigSpec.Builder();
 
     static {
@@ -63,6 +79,7 @@ public final class GBClientConfig {
             .comment("Draw mushroom clouds and smoke columns beyond your chunk render distance.")
             .translation(GBLang.config("fx.farClouds", "Distant clouds"))
             .define("farClouds", true);
+
 
     static {
         B.pop();

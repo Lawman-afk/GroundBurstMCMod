@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/depth_charge_rail"
+    },
+    "formed=true": {
+      "model": "groundburst:block/depth_charge_rail_formed"
+    }
+  }
+}

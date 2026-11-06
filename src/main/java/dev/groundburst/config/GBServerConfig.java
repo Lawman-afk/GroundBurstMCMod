@@ -183,14 +183,15 @@ public final class GBServerConfig {
     static {
         B.pop();
         B.translation(GBLang.config("healing", "Healing"))
-                .comment("Healing: the damage weapons do grows back over time, block for block as it was (DESIGN.md §21.9).",
+                .comment("Healing: the damage weapons and explosions do grows back over time, block for block as it was (DESIGN.md §21.9).",
                         "Off by default. Only damage done while it is on is remembered, so turn it on before the war starts.")
                 .push("healing");
     }
 
     public static final ModConfigSpec.BooleanValue HEAL_ENABLED = B
-            .comment("Master switch. When on, every block a weapon changes is remembered as it was (with a chest's contents,",
-                    "a sign's words, a door's facing) and put back later. Drops are held back so nothing is duplicated.")
+            .comment("Master switch. When on, every block a weapon or an explosion changes is remembered as it was (with a chest's",
+                    "contents, a sign's words, a door's facing) and put back later. Drops are held back so nothing is duplicated.",
+                    "What heals is set below: this mod's weapons under What heals, creepers, TNT and other mods' under Other explosions.")
             .translation(GBLang.config("healing.enabled", "Heal damage over time"))
             .define("enabled", false);
 
@@ -290,7 +291,9 @@ public final class GBServerConfig {
             .comment("Weapons whose damage never heals: blast profile ids as /groundburst blast lists them (a * matches anything, so",
                     "\"groundburst:tsar*\" is the Tsar), or groundburst:particle_beam, groundburst:cryo_freeze, groundburst:frost,",
                     "groundburst:singularity, groundburst:antimatter, groundburst:storm, groundburst:fallout, groundburst:radiation,",
-                    "groundburst:meltdown, groundburst:toxin, groundburst:breach, groundburst:incendiary.")
+                    "groundburst:meltdown, groundburst:toxin, groundburst:breach, groundburst:incendiary.",
+                    "Other explosions by what set them off: its entity's id (\"minecraft:tnt_minecart\", or another mod's, such as",
+                    "\"somemod:rocket\" or \"somemod:*\"), or with no entity its damage type (\"minecraft:explosion\").")
             .translation(GBLang.config("healing.what.excludedWeapons", "Weapons that never heal"))
             .defineListAllowEmpty("excludedWeapons", List.of(), () -> "groundburst:", GBServerConfig::isPattern);
 
@@ -303,6 +306,53 @@ public final class GBServerConfig {
             .comment("Dimensions (e.g. \"minecraft:the_nether\") where damage never heals.")
             .translation(GBLang.config("healing.what.excludedDimensions", "Dimensions that never heal"))
             .defineListAllowEmpty("excludedDimensions", List.of(), () -> "minecraft:overworld", GBServerConfig::isIdentifier);
+
+    static {
+        B.pop();
+        B.translation(GBLang.config("healing.explosions", "Other explosions"))
+                .comment("The game's own explosions, and other mods' that go through the game's explosion code. Healing must be on",
+                        "(the master switch above). Turn one off here if another mod heals it already.")
+                .push("explosions");
+    }
+
+    public static final ModConfigSpec.BooleanValue HEAL_CREEPERS = B
+            .comment("Creepers' explosions, charged ones too.")
+            .translation(GBLang.config("healing.explosions.creepers", "Creepers"))
+            .define("creepers", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_TNT = B
+            .comment("TNT and TNT minecarts. TNT that an explosion lights goes off, so it is not put back. Turn this off if you",
+                    "dig with TNT and want the holes to stay.")
+            .translation(GBLang.config("healing.explosions.tnt", "TNT"))
+            .define("tnt", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_END_CRYSTALS = B
+            .comment("End crystals.")
+            .translation(GBLang.config("healing.explosions.endCrystals", "End crystals"))
+            .define("endCrystals", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_FIREBALLS = B
+            .comment("Ghasts' fireballs (and, with the fire spread above on, what their fire burns).")
+            .translation(GBLang.config("healing.explosions.ghastFireballs", "Ghast fireballs"))
+            .define("ghastFireballs", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_WITHER = B
+            .comment("The Wither: the blast as it is made, and its skulls.")
+            .translation(GBLang.config("healing.explosions.wither", "The Wither"))
+            .define("wither", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_BEDS = B
+            .comment("Beds and respawn anchors that blow up where they do not work (a bed in the Nether or the End, an anchor",
+                    "outside the Nether).")
+            .translation(GBLang.config("healing.explosions.bedsAndAnchors", "Beds and respawn anchors"))
+            .define("bedsAndAnchors", true);
+
+    public static final ModConfigSpec.BooleanValue HEAL_OTHER_MODS = B
+            .comment("Other mods' explosions that go through the game's own explosion code, as most mods' do. One that works out",
+                    "its own crater (as this mod's weapons do) is not seen. Leave one mod's out by its id under What heals >",
+                    "Weapons that never heal (\"somemod:*\").")
+            .translation(GBLang.config("healing.explosions.otherMods", "Other mods' explosions"))
+            .define("otherMods", true);
 
     static {
         B.pop();

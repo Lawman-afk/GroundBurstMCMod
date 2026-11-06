@@ -966,6 +966,43 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
     craft("claymore"),
 ])
 
+entry("ordnance/sea_mines", "Sea Mines and Depth Charges", "moored_mine", ["moored_mine", "drifting_mine", "depth_charge",
+                                                                          "depth_charge_rack", "depth_charge_rail"], [
+    text("""
+Weapons for the water. A charge going off under water does not blow a hole in the sea: the water carries its shock, deadly to anything in it, and throws up a tall **column of water**. Whatever it breaks under the surface, the sea fills. Boats and minecarts caught in any blast break.
+"""),
+    spot("moored_mine", """
+The classic horned mine on its chain. **Use it on water** to lay it where you look: mine and sinker sink to the bottom, then the mine rises on its chain until its top is at its **depth** under the surface. **Sneak and use** it first to set the depth: **awash** (just under the surface, where boats strike it), or 1 to 8 blocks down for deeper hulls. It is live **5 seconds** after it settles.
+"""),
+    spot("drifting_mine", """
+The same mine without a sinker: laid on water it floats awash and **drifts** with the current and the wind, coming to rest on shores. After an hour adrift it floods and sinks, harmless.
+"""),
+    text("""
+**What sets a mine off:** a boat, a minecart or a ship's hull touching its horns, a player or any creature but fish, squid, dolphins and axolotls (they slip past), an arrow or shell striking it, a punch, or another blast close by. A blast a little further off **parts a moored mine's chain**: it bobs up to the surface and drifts, still live. To sweep mines, part their chains with a blast, then shoot them.
+
+**Handling:** use a mine to make it **safe** (or arm it again: live 5 seconds later). Punch it while safe to take it up, its sinker and chain with it. A **dispenser** facing into water lays its mines there: a minelayer.
+"""),
+    spot("depth_charge", """
+A drum of explosive with a pistol that fires it at a set **depth**. **Use** to throw it (a short, heavy throw); **sneak and use** to set its depth, 3 to 24 blocks. In water it sinks and fires at its depth under the surface, or on the bottom if that comes first. **Out of water it never fires**: it lands and lies there to pick up. A **dispenser** rolls them out of its front.
+"""),
+    spot("depth_charge_rack", """
+A ship's **stern rack**: six depth charges lying across two rails that slope down to a hinged **trap** over the water. Build it one block wide and **four long**: the Depth Charge Rack at the end over the water (place it **facing out**, the way you look), two **Depth Charge Rails** behind it and an **Item Port** at the top end.
+
+**Load** it in its screen, or by **pipe or hopper** into the Item Port (on Minecraft 1.21.1, Create's funnels and chutes too): the charges roll down to the trap.
+"""),
+    text("""
+**Releasing.** A **redstone pulse** on any of its blocks rolls the front charge off over the trap; a **held signal** rolls one off each **interval**, a pattern, until it stops or the rack is empty. Its screen does the same (one, or all of them), sets the interval (0.8 to 3 s), and can set **every charge it rolls off to one depth**, or leave each at its own. A **comparator** reads how many it holds.
+
+**Aboard Create's ships** (Minecraft 1.21.1) it works as anywhere, rolling its charges off as the ship goes. On a moving contraption no redstone reaches it: release from its screen, and load it by pipe from chests aboard.
+"""),
+    structure("depth_charge_rack", "The Depth Charge Rack at the front, its trap over the water; two Depth Charge Rails behind it; the Item Port at the top end."),
+    craft("drifting_mine"),
+    craft("moored_mine"),
+    craft("depth_charge"),
+    craft("depth_charge_rack"),
+    craft("depth_charge_rail"),
+])
+
 entry("ordnance/mortar", "81 mm Mortar", "mortar", ["mortar", "mortar_shell_he", "mortar_shell_smoke", "mortar_shell_incendiary",
                                                    "mortar_shell_chemical", "mortar_shell_cryo", "mortar_shell_emp"], [
     text("""

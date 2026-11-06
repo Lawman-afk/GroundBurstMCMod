@@ -6,7 +6,9 @@ Main is written for Minecraft 26.3 (NeoForge 26.3). This branch is the same mod 
 - **Why a backport from main** (main's DESIGN.md §30): 26.1.2 is two minor versions before 26.3 and shares most of its
   code (the same rendering by render states and submitted geometry, item model definitions, data components, the same
   GameTest framework); a forward port from the 1.21.1 branch would cross every change from 1.21.2 to 26.1.
-- **Last brought up to:** `main` at `07db772c` (2026-11-04: fire never healed back; main's performance check, its
+- **Last brought up to:** `main` at `c2acaac1` (2026-11-06, for 0.9.0: sea mines, depth charges and the Depth Charge
+  Rack, main's DESIGN.md §14.6; healing the game's own explosions and other mods', §21.9; 0.8.1's healed cables, pipes
+  and other mods' blocks; before it, at `07db772c`, 2026-11-04: fire never healed back; main's performance check, its
   DESIGN.md §11.8).
 
 ## How it is made
@@ -26,7 +28,9 @@ main at the commit in `tools\backport\base.txt` straight from git and writes its
   that need 26.2's or 26.3's items left out; structure templates' palettes named as 26.1.2 reads them (`Name`,
   `Properties`; 26.3's lowercase names read as air) and saved at 26.1.2's data version; a model's upward shading
   override as no shading.
-- **Left out** (`DROP`): the data generators (their output is ported instead) and the world survey.
+- **Left out** (`DROP`): the data generators (their output is ported instead), the world survey, and the blast effects
+  handed to a shader pack and drawn after the level (`client/fx/IrisFx`, `DrawnLast`; main's DESIGN.md §12.3: built on
+  26.3's renderer and Iris's API), with their client option (`fx.shaderPackFx`, a `FILE_FIXES` entry).
 - **Kept by hand** (`tools\backport\manual.txt`): `client/fx/FxRenderTypes` (26.1.2 has no order-independent
   transparency: the effects are drawn after the translucent terrain, as main's are), its cloud shader
   (`shaders/core/fx_cloud.fsh`), and the worldgen toggle (`world/ConfigToggleFilter`, `GBWorldgen`: 26.1.2's placement
@@ -45,10 +49,12 @@ their lines).
 - **Effects:** drawn after the water without order-independent transparency; with Fabulous graphics, smoke in front of
   water may show the water over it where the smoke does not write depth.
 - **Recipes** that use 26.2's or 26.3's items (sulfur, cinnabar) are not in this version.
+- **Shader packs and Distant Horizons:** the effects are not drawn over a pack's finished picture or after Distant
+  Horizons' far terrain, as main's are (DESIGN.md §12.3); there is no client option for it.
 
 ## Checks
 
-- `gradlew runGameTestServer`: main's GameTests.
+- `gradlew runGameTestServer`: main's GameTests (416 at `c2acaac1`).
 - `gradlew runPlayBench [-Pjfr=<name>]`, `runBlastBench`, `runFxShots`, `runManualShots`, `runSiteShots`,
   `runHealShots`: main's benches and photographers.
 - The build deploys to the folder in `deploy_instance_dir_26_1_2` (in `%USERPROFILE%\.gradle\gradle.properties`), if set.

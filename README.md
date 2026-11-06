@@ -23,6 +23,8 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 
 - **Explosives:** grenades, Molotov cocktails, placed charges with a remote detonator, landmines, bouncing mines and
   claymores.
+- **At sea:** the classic horned sea mine, moored on its chain to the bottom or set adrift, and depth charges set to
+  fire at a depth. Charges under water throw up towering columns of spray instead of blowing holes in the sea.
 - **Artillery:** an 81 mm mortar and a towed 155 mm howitzer that reaches 600 blocks, both crewed and aimed from a
   strategic view over the battlefield, as artillery is aimed in *World of Tanks*: an aiming circle on the ground that
   blooms as the gun fires and turns and settles as you wait. HE, smoke, incendiary, chemical, cryo and EMP shells for the
@@ -46,8 +48,9 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 - **Nuclear weapons and their aftermath:** mushroom clouds, craters, fallout drifting with the wind, radiation you can
   measure, hazmat suits, and a wasteland biome over the scorched ground.
 - **Healing, if you want it** (off by default): turn it on in the server config and the damage grows back over time,
-  block for block as it was, chests with their contents and all, at a speed and on a schedule you choose. For forever
-  worlds that still want their wars.
+  block for block as it was: chests with their contents, machines with their settings, cables and pipes that carry
+  again, other mods' blocks too, at a speed and on a schedule you choose. Creepers' and TNT's holes and other mods'
+  explosions heal too, if you like. For forever worlds that still want their wars.
 - **Industry and power:** new ores, processing machines on FE power with upgrade chips for speed and efficiency, and
   multiblock fission, fusion and singularity reactors.
 - **Chips made the hard way:** silicon purified and grown into crystals in a Crystal Puller, sapphire for
@@ -67,6 +70,9 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 - **Construction blocks** for building your own: chain-link fencing, barbed wire, corrugated steel, steel panels,
   grating, I-beams, lattice frames, radome panels, floodlights, sandbags and warning signs. Plus two showpieces: a
   Large Silo Door whose leaves slide apart on a redstone signal, and a Search Radar that turns.
+- **Shader packs:** fireballs, smoke and mushroom clouds draw right with Iris shader packs and look the same in every
+  pack (tried with Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas and MakeUp Ultra Fast), and stand
+  in front of Distant Horizons' far terrain, on Minecraft 26.3 and 1.21.1.
 - **The Field Manual**, an in-game guide to all of it.
 
 What changed in each version is in the [changelog](CHANGELOG.md).
@@ -134,9 +140,12 @@ Save the file, then start the game (or the server) again.
 
 **Healing in short:** under `[healing]`, set `enabled = true` (in game: **Healing**, then **Heal damage over time**). By
 default an area starts to grow back 5 minutes after the last blast near it and takes at most 5 minutes to heal, with
-everything just as it was, chests and their contents too. You can change when it heals (after a wait, every morning, or
+everything just as it was: chests and their contents, machines and their settings, cables and pipes working again, other
+mods' blocks too. You can change when it heals (after a wait, every morning, or
 only when an operator says), how fast and in what order, which weapons, blocks and dimensions heal, and what happens to
-blocks players have built in a crater. Operators also have `/groundburst heal now`, `/groundburst heal forget` and
+blocks players have built in a crater. The game's own explosions heal too (creepers, TNT, end crystals, ghasts'
+fireballs, the Wither, beds and respawn anchors), and other mods' explosions that use the game's explosion code, each
+with a switch under **Other explosions**. Operators also have `/groundburst heal now`, `/groundburst heal forget` and
 `/groundburst heal status`. Only damage done while healing is on comes back, so turn it on before the war starts.
 
 ## Requirements
@@ -152,6 +161,9 @@ Ground Burst comes in three files, one for each version of Minecraft; take the o
   Injector are used as food is (with no nourishment), the pointer stays an arrow over the mod's screens, and flash
   particles are not tinted.
 - [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) (optional) on any
+- [Iris](https://www.curseforge.com/minecraft/mc-mods/irisshaders) (optional) on 26.3 and 1.21.1, for shader packs
+- [Distant Horizons](https://www.curseforge.com/minecraft/mc-mods/distant-horizons) (optional) on 26.3 and 1.21.1:
+  blast effects stand in front of its far terrain
 
 Install it on the server and on every player's game: it adds blocks and items, so both sides need it.
 

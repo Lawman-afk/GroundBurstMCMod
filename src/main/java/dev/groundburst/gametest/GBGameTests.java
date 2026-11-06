@@ -76,6 +76,7 @@ public final class GBGameTests {
         OrdnanceTests.register();
         ChargeTests.register();
         MineTests.register();
+        NavalTests.register();
         BombTests.register();
         EffectTests.register();
         AssemblyTests.register();

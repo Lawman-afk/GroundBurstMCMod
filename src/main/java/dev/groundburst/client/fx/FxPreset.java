@@ -60,8 +60,22 @@ public record FxPreset(float fireball, int fireballLife, float fireballRise, int
     public static final FxPreset MASSIVE_WARHEAD = new FxPreset(0.6f, 40, 0.35f, 90, 0.4f, 8, 1.0f,
             220, 80, 170, 260, 560, 0.35f, 0.32f, 0.3f, 2000, 70, 2.0f, 0, false);
 
+    /**
+     * Charges going off under water (DESIGN.md §14.6): no fireball, smoke, dust or debris (the water column is theirs,
+     * {@link WaterColumn}), only the shake as the shock arrives.
+     */
+    public static final FxPreset SEA_MINE = new FxPreset(0, 0, 0, 0, 0, 3, 0.75f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false);
+    public static final FxPreset DEPTH_CHARGE = new FxPreset(0, 0, 0, 0, 0, 3, 0.6f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false);
+
+    /** Whether a visual set is a charge's under water (drawn as a column of water). */
+    public static boolean water(String name) {
+        return name.equals("sea_mine") || name.equals("depth_charge");
+    }
+
     public static FxPreset byName(String name) {
         return switch (name) {
+            case "sea_mine" -> SEA_MINE;
+            case "depth_charge" -> DEPTH_CHARGE;
             case "meltdown" -> MELTDOWN;
             case "small" -> SMALL;
             case "medium" -> MEDIUM;

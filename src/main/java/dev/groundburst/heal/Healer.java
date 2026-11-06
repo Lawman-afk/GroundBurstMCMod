@@ -45,6 +45,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * nothing dropped, nothing placed off it. Whatever stands in its way (the blast's leftovers, water or sand that has come
  * in, a fire) gives way; a block a player put there since is kept, dropped or replaced as the server says. A creature
  * a block comes back round is lifted out on top.
+ *
+ * <p>What keeps track of more than one block wakes up again. The game's own blocks need nothing: a blast set its blocks
+ * as quietly, so what was round them never heard they went. This mod's cables and pipes are told they are back
+ * ({@link Healable}: their networks are worked out again and a pull side pulls again). Another mod's block is placed as a
+ * structure places its blocks, its onPlace running before its data is loaded. And a block with a block entity or from
+ * another mod tells the other mods' blocks beside it, as a block set down beside them would, since their pipes and
+ * machines may have noticed it go (a capability gone, a network rebuilt).
  */
 public final class Healer {
     /** Ticks in a day. */
@@ -52,6 +59,10 @@ public final class Healer {
     /** Block set flags for a healed block. */
     static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS
             | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS | Block.UPDATE_SKIP_ON_PLACE;
+    /** ...and for another mod's block: placed as a structure places its blocks (its onPlace runs, before its data is back). */
+    static final int PLACE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS
+            | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS;
+    private static final net.minecraft.core.Direction[] DIRECTIONS = net.minecraft.core.Direction.values();
     /** Sparkles a chunk shows a tick at most; ticks between its sounds. */
     private static final int SPARKLES = 3, SOUND_EVERY = 5;
     /**
@@ -97,6 +108,25 @@ public final class Healer {
         if (last != null && last.level == level) {
             last = null;
         }
+    }
+
+    /** True while healing sets a block back ({@link #restoring}). */
+    private static boolean restoring;
+
+    /**
+     * Whether healing is setting a block back this moment. One of this mod's blocks whose onPlace works something out
+     * afresh (a cable's or pipe's sides, a structure's forming, a tank's joining) leaves it be then: the block is back
+     * exactly as it was, and healing tells it so ({@link Healable}). (Healing skips this mod's blocks' onPlace anyway on
+     * game versions that let it; on 1.21.1 a block's onPlace always runs.)
+     */
+    public static boolean restoring() {
+        return restoring;
+    }
+
+    /** Another mod's block: not the game's own, and not this mod's. */
+    static boolean modded(Block block) {
+        String namespace = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getNamespace();
+        return !"minecraft".equals(namespace) && !dev.groundburst.GroundBurst.MODID.equals(namespace);
     }
 
     /** Whether any damaged chunk is loaded in this level. */
@@ -314,6 +344,9 @@ public final class Healer {
      * Whether a fire burns in the chunk or one beside it, near the chunk's damage (in a section with damage, or the one
      * above or below), that will go out by itself (not one on netherrack or the like, which burns for good, nor a soul
      * fire, which never spreads): what heals there now could burn again. With {@code putOut}, each such fire goes out.
+     * A fire that cannot burn out where it is (nobody near enough for fire to burn, or its chunk not ticking:
+     * {@link Snapshots#burnsOut}) would stand there for good and hold the healing off for ever: it goes out now, and is
+     * no reason to wait (this is asked only of a chunk that is due).
      */
     public boolean fireNear(LevelChunk chunk, boolean putOut) {
         ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
@@ -354,16 +387,19 @@ public final class Healer {
                         if (this.level.getBlockState(below).isFireSource(this.level, below, net.minecraft.core.Direction.UP)) {
                             continue;                      // it burns for good there: a hearth, the Nether's netherrack
                         }
-                        if (!putOut) {
+                        if (!putOut && Snapshots.burnsOut(this.level, p)) {
                             return true;
                         }
                         found = true;
-                        this.level.removeBlock(p, false);
+                        // Quietly: nothing's shape hangs on a fire, and told, what the damage left hanging by it (a crop
+                        // over a blown-out field) would fall and drop now, where it stands until its ground heals.
+                        this.level.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),
+                                Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
                     }
                 }
             }
         }
-        return found;
+        return putOut && found;
     }
 
     /** A chunk's last block is back: its decorations hang again and its record goes. */
@@ -544,7 +580,16 @@ public final class Healer {
             if (current.hasBlockEntity()) {
                 level.removeBlockEntity(p);                // what stands there gives way quietly
             }
-            if (!level.setBlock(p, original, FLAGS)) {
+            Block block = original.getBlock();
+            boolean modded = modded(block);
+            boolean set;
+            restoring = true;
+            try {
+                set = level.setBlock(p, original, modded ? PLACE_FLAGS : FLAGS);
+            } finally {
+                restoring = false;
+            }
+            if (!set) {
                 return;
             }
             if (be != null) {
@@ -553,6 +598,12 @@ public final class Healer {
                     Snapshots.load(now, be, level);
                     now.setChanged();
                 }
+            }
+            if (block instanceof Healable healable) {
+                healable.healed(level, p.immutable(), original);
+            }
+            if (modded || original.hasBlockEntity()) {
+                wake(level, p.immutable(), block);
             }
             if (original.is(net.minecraft.tags.BlockTags.LOGS)) {
                 // A trunk back: its leaves hear of it (they had begun to count themselves cut off, and would decay).
@@ -571,6 +622,32 @@ public final class Healer {
                 if (!original.isAir()) {
                     this.heard = p.immutable();
                     this.heardState = original;
+                }
+            }
+        }
+
+        /**
+         * A block with a block entity, or another mod's, is back: the blocks beside it that keep track of their
+         * neighbours hear of it, this mod's cables and pipes through {@link Healable} and another mod's blocks as a block
+         * set down beside them would tell them. The game's own blocks are not told (they never heard it go), nor is a
+         * neighbour whose chunk is not loaded.
+         */
+        private void wake(ServerLevel level, BlockPos at, Block block) {
+            int cx = this.x0 >> 4, cz = this.z0 >> 4;
+            for (net.minecraft.core.Direction d : DIRECTIONS) {
+                BlockPos n = at.relative(d);
+                BlockState there;
+                if (n.getX() >> 4 == cx && n.getZ() >> 4 == cz) {
+                    there = this.chunk.getBlockState(n);
+                } else if (level.hasChunkAt(n)) {
+                    there = level.getBlockState(n);
+                } else {
+                    continue;
+                }
+                if (there.getBlock() instanceof Healable healable) {
+                    healable.besideHealed(level, n, there);
+                } else if (modded(there.getBlock())) {
+                    Snapshots.tellNeighbour(level, there, n, block, at);
                 }
             }
         }

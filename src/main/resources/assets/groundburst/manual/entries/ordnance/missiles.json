@@ -1,7 +1,7 @@
 {
   "title": "Missiles",
   "icon": "groundburst:missile",
-  "order": 6,
+  "order": 7,
   "items": [
     "groundburst:missile",
     "groundburst:tactical_missile_body",

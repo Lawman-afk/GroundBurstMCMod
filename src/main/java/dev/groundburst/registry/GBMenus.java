@@ -54,6 +54,9 @@ public final class GBMenus {
     /** The Cruise Missile Launcher's (DESIGN.md §17.11): its two boxes' missiles. */
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> VERTICAL_LAUNCH_BATTERY = machine("vertical_launch_battery",
             () -> MachineLayouts.VERTICAL_LAUNCH_BATTERY);
+    /** The Depth Charge Rack (DESIGN.md §14.6): its six charges, the release, a pattern, the depth and the interval. */
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> DEPTH_CHARGE_RACK = machine("depth_charge_rack",
+            () -> MachineLayouts.DEPTH_CHARGE_RACK);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CRUISE_LAUNCHER = machine("cruise_launcher", () -> MachineLayouts.CRUISE_LAUNCHER);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> ASSEMBLY_BENCH = machine("assembly_bench", () -> MachineLayouts.ASSEMBLY_BENCH);
     /** The ICBM Assembly Hall's controller screen (DESIGN.md §15.2). */

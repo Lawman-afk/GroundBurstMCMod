@@ -13,6 +13,8 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 
 - **Explosives:** grenades, Molotov cocktails, placed charges with a remote detonator, landmines, bouncing mines and
   claymores.
+- **At sea:** the classic horned sea mine, moored on its chain to the bottom or set adrift, and depth charges set to
+  fire at a depth. Charges under water throw up towering columns of spray instead of blowing holes in the sea.
 - **Artillery:** an 81 mm mortar and a towed 155 mm howitzer that reaches 600 blocks, both crewed and aimed from a
   strategic view over the battlefield, as artillery is aimed in *World of Tanks*: an aiming circle on the ground that
   blooms as the gun fires and turns and settles as you wait. HE, smoke, incendiary, chemical, cryo and EMP shells for the
@@ -36,8 +38,9 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 - **Nuclear weapons and their aftermath:** mushroom clouds, craters, fallout drifting with the wind, radiation you can
   measure, hazmat suits, and a wasteland biome over the scorched ground.
 - **Healing, if you want it** (off by default): turn it on in the server config and the damage grows back over time,
-  block for block as it was, chests with their contents and all, at a speed and on a schedule you choose. For forever
-  worlds that still want their wars.
+  block for block as it was: chests with their contents, machines with their settings, cables and pipes that carry
+  again, other mods' blocks too, at a speed and on a schedule you choose. Creepers' and TNT's holes and other mods'
+  explosions heal too, if you like. For forever worlds that still want their wars.
 - **Industry and power:** new ores, processing machines on FE power with upgrade chips for speed and efficiency, and
   multiblock fission, fusion and singularity reactors.
 - **Chips made the hard way:** silicon purified and grown into crystals in a Crystal Puller, sapphire for
@@ -51,6 +54,12 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
   End's islands.
 - **Construction blocks** for building your own: chain-link fencing, barbed wire, corrugated steel, I-beams, radome
   panels, floodlights, sandbags, warning signs, a Large Silo Door whose leaves slide apart, and a Search Radar that turns.
+- **Create and Create Aeronautics** (Minecraft 1.21.1, optional): missile launchers on trains, bearings and airships,
+  every machine working on Create's moving contraptions and Create Aeronautics' ships, and weapons that hit them (more
+  below).
+- **Shader packs:** fireballs, smoke and mushroom clouds draw right with Iris shader packs and look the same in every
+  pack (tried with Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas and MakeUp Ultra Fast), and stand
+  in front of Distant Horizons' far terrain, on Minecraft 26.3 and 1.21.1.
 - **The Field Manual**, an in-game guide to all of it.
 
 ## Screenshots
@@ -105,6 +114,43 @@ Every player gets the **Field Manual** the first time they join (or craft one fr
 find any block, item or machine, how to build it and what it does. With JEI installed, R on any item shows how it is
 made.
 
+## Create and Create Aeronautics (Minecraft 1.21.1)
+
+Both are optional. With either installed, Ground Burst's machines work on the structures they move, and its weapons hit
+them.
+
+- **Every machine rides along:** Create's moving contraptions (trains, mechanical bearings, pistons, gantries, pulleys
+  and minecart contraptions) carry launchers, missile assemblers, Launch Computers, Launch Control Stations, Radar
+  Arrays, generators, capacitor banks and the processing machines. Glue or attach any part of a formed structure and the
+  whole of it moves. Carried, a machine keeps working: an assembler goes on building its missile, a generator burns its
+  fuel.
+- **Menus on the move:** right-click a carried machine, or any block of a carried structure, to open its menu, or its
+  screen for a Launch Computer, Control Station or Radar Array.
+- **Power and pipes aboard:** a contraption's generators and capacitor banks power every machine on it, no cables
+  needed, each getting a fair share. Item and fluid pipes on it keep working, moving things between its machines, the
+  launchers' Item Ports and Create's chests, vaults and tanks.
+- **Launchers on the move:** aim, arm and fire one as always from a Launch Computer, a Launch Control Station or a Laser
+  Designator. It counts down and launches from wherever the contraption or ship has it, its missiles heading the way it
+  points. Set down again, a structure forms where it lands and stays on its network. Missile launchers, superweapons and
+  both interceptor launchers all work this way.
+- **Create Aeronautics ships, planes, cars and boats:** a launcher aboard works as it does on the ground, and a Launch
+  Computer, Control Station or Radar Array aboard a ship works there too, seeing the world from where the ship has
+  taken it.
+- **Weapons hit ships and contraptions:** a warhead's, shell's, bomb's or charge's blast breaks their blocks in its
+  reach, just as it breaks the world's (dense blocks still shield what is behind them), and shoves ships away, turning
+  them by the side that faced it. What a blast sees of a ship is scorched and may catch fire. Missiles and shells hit
+  ships and contraptions in their way instead of passing through, and a chest or machine blown off one goes with what it
+  held.
+- **The special weapons too:** the Particle Uplink Cannon's beam burns down through ships and contraptions under it, the
+  Cryo ICBM's freeze ices them over, a singularity pulls ships in and swallows them, and antimatter erases whatever of
+  them it reaches.
+- **Aim at a ship:** the Laser Designator's beam lands on a ship where you see it and missiles home on it there; a mortar
+  or howitzer aims at the ship, at its height.
+- **Not yet:** reactors pause while carried, and pipes and cables on a contraption reach only what is on it, not the
+  blocks round it.
+
+Made and tested with Create 6.0.10, Create Aeronautics 1.3.2 and Sable 2.0.6.
+
 ## Settings
 
 Ground Burst can be tuned to your world: how big blasts are and how much they may destroy (or that they destroy
@@ -128,9 +174,12 @@ Save the file, then start the game (or the server) again.
 
 **Healing in short:** under `[healing]`, set `enabled = true` (in game: **Healing**, then **Heal damage over time**). By
 default an area starts to grow back 5 minutes after the last blast near it and takes at most 5 minutes to heal, with
-everything just as it was, chests and their contents too. You can change when it heals (after a wait, every morning, or
+everything just as it was: chests and their contents, machines and their settings, cables and pipes working again, other
+mods' blocks too. You can change when it heals (after a wait, every morning, or
 only when an operator says), how fast and in what order, which weapons, blocks and dimensions heal, and what happens to
-blocks players have built in a crater. Operators also have `/groundburst heal now`, `/groundburst heal forget` and
+blocks players have built in a crater. The game's own explosions heal too (creepers, TNT, end crystals, ghasts'
+fireballs, the Wither, beds and respawn anchors), and other mods' explosions that use the game's explosion code, each
+with a switch under **Other explosions**. Operators also have `/groundburst heal now`, `/groundburst heal forget` and
 `/groundburst heal status`. Only damage done while healing is on comes back, so turn it on before the war starts.
 
 ## Requirements
@@ -144,6 +193,10 @@ Ground Burst comes in three files, one for each version of Minecraft; take the o
   simpler on it: Rad-Away, Potassium Iodide Tablets and the Anti-Rad Injector are used as food is (with no
   nourishment), the pointer stays an arrow over the mod's screens, and flash particles are not tinted.
 - **JEI** (optional) on any
+- **Iris** (optional) on 26.3 and 1.21.1, for shader packs
+- **Distant Horizons** (optional) on 26.3 and 1.21.1: blast effects stand in front of its far terrain
+- **Create** 6 and **Create Aeronautics** (with Sable 2) (optional, Minecraft 1.21.1 only), for the machines and weapons
+  on moving structures above
 
 Install it on the server and on every player's game: it adds blocks and items, so both sides need it.
 
@@ -153,7 +206,7 @@ Install it on the server and on every player's game: it adds blocks and items, s
 - War room displays
 - Seismographs
 - A Dead Hand system
-- Underwater and naval weapons
+- More underwater and naval weapons
 - A performance pass
 - Being considered: handheld weapons based on the special warheads
 

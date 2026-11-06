@@ -22,20 +22,34 @@ import net.neoforged.neoforge.common.Tags;
  */
 public enum TerrainTable {
     /** Conventional explosives: blown-out glass and plants, grass burnt to dirt. */
-    CONVENTIONAL_TABLE(GroundBurst.id("conventional"), false),
+    CONVENTIONAL_TABLE(GroundBurst.id("conventional"), false, false),
     /** Nuclear and other big blasts: as conventional, but the ground is scorched harder. */
-    NUCLEAR_TABLE(GroundBurst.id("nuclear"), true);
+    NUCLEAR_TABLE(GroundBurst.id("nuclear"), true, false),
+    /**
+     * Charges made to go off in water (sea mines, depth charges; DESIGN.md §14.6): as conventional, but set off in water
+     * the sea is not blown away. It carries the shock (rays pass through it for little energy and leave it as it is),
+     * and what the blast breaks below its surface fills with water.
+     */
+    NAVAL_TABLE(GroundBurst.id("naval"), false, true);
 
     public static final Identifier CONVENTIONAL = GroundBurst.id("conventional");
     public static final Identifier NUCLEAR = GroundBurst.id("nuclear");
-    private static final Map<Identifier, TerrainTable> BY_ID = Map.of(CONVENTIONAL, CONVENTIONAL_TABLE, NUCLEAR, NUCLEAR_TABLE);
+    public static final Identifier NAVAL = GroundBurst.id("naval");
+    private static final Map<Identifier, TerrainTable> BY_ID = Map.of(CONVENTIONAL, CONVENTIONAL_TABLE, NUCLEAR, NUCLEAR_TABLE, NAVAL, NAVAL_TABLE);
 
     private final Identifier id;
     private final boolean harsh;
+    private final boolean naval;
 
-    TerrainTable(Identifier id, boolean harsh) {
+    TerrainTable(Identifier id, boolean harsh, boolean naval) {
         this.id = id;
         this.harsh = harsh;
+        this.naval = naval;
+    }
+
+    /** Whether, set off in water, the blast leaves the sea as it is and fills what it breaks under it with water. */
+    public boolean naval() {
+        return this.naval;
     }
 
     public Identifier id() {
