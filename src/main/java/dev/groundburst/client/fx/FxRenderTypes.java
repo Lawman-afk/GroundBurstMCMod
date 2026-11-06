@@ -2,6 +2,7 @@ package dev.groundburst.client.fx;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Locale;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
@@ -11,6 +12,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 
 import dev.groundburst.GroundBurst;
+import dev.groundburst.config.GBClientConfig;
 import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.RenderType;
@@ -34,14 +36,21 @@ import net.neoforged.neoforge.client.event.RegisterShadersEvent;
  * </ul>
  * Effects are drawn after the translucent terrain and the particles ({@code RenderBridge}), into the game's buffers.
  *
- * <p>With a shader pack on (Iris, {@link IrisFx}) the fire and the clouds draw on vanilla's translucent entity shader
- * instead, which Iris swaps for the pack's lit entity program: on the eyes shader a pack made the fire glow white, and
- * the clouds' own shader is one Iris does not know (the smoke did not show at all). The glow stays on the eyes shader,
+ * <p>With a shader pack on (Iris), and with Distant Horizons, they are drawn last ({@link DrawnLast}, main's DESIGN.md
+ * §12.3): kept out of the level and drawn once the pack has finished its picture and Distant Horizons has laid its far
+ * terrain over it, on these same shaders. A player who would rather have the pack draw them says so in the client config
+ * ({@link GBClientConfig#SHADER_PACK_FX}): then the fire and the clouds draw on vanilla's translucent entity shader,
+ * which Iris swaps for the pack's lit entity program (on the eyes shader a pack made the fire glow white, and the
+ * clouds' own shader is one Iris does not know: the smoke did not show at all), and the glow stays on the eyes shader,
  * the pack's glowing program. Effects stay out of the pack's shadow pass.
  */
 final class FxRenderTypes {
-    /** Iris is installed: with a shader pack on, the fire and clouds switch shaders ({@link IrisFx}). */
+    /** Iris is installed: with a shader pack on, the effects are drawn last, or the pack draws them ({@link IrisFx}). */
     static final boolean IRIS = net.neoforged.fml.ModList.get().isLoaded("iris");
+    /** Distant Horizons is installed: its far terrain is laid over the level after the effects, so they are drawn after it. */
+    static final boolean DISTANT_HORIZONS = net.neoforged.fml.ModList.get().isLoaded("distanthorizons");
+    /** Dev runs: {@code -PpackFx=over|in} sets the way under a pack whatever the config says. */
+    private static final String DEV_PACK_FX = System.getProperty("groundburst.packFx", "").trim().toLowerCase(Locale.ROOT);
 
     private static final Function<ResourceLocation, RenderType> CLOUD = Util.memoize(t -> Shards.make("cloud", t, false, true));
     private static final Function<ResourceLocation, RenderType> FIRE = Util.memoize(t -> Shards.make("fire", t, false, false));
@@ -62,14 +71,44 @@ final class FxRenderTypes {
                 throw new UncheckedIOException(e);
             }
         });
+        DrawnLast.register();
     }
 
-    /** Draws effect geometry now, into the collector's buffers (1.21.1 draws them after the translucent terrain). */
+    /**
+     * Draws effect geometry now, into the collector's buffers (1.21.1 draws them after the translucent terrain); under a
+     * shader pack or with Distant Horizons ({@link #drawnLast}) it is kept to be drawn after the level instead.
+     */
     static void submit(SubmitNodeCollector collector, PoseStack poseStack, RenderType type, SubmitNodeCollector.CustomGeometryRenderer renderer) {
         if (IRIS && IrisFx.shadowPass()) {
             return;                                        // a shader pack's shadow map: effects cast no shadows
         }
+        if (drawnLast()) {
+            DrawnLast.submit(poseStack, type, renderer);
+            return;
+        }
         collector.submitCustomGeometry(poseStack, type, renderer);
+    }
+
+    /**
+     * Whether the effects are drawn after the level now ({@link DrawnLast}): under a shader pack (unless the player asked
+     * the pack to draw them), and with Distant Horizons.
+     */
+    static boolean drawnLast() {
+        if (IRIS && IrisFx.packInUse()) {
+            return !packDraws();
+        }
+        return DISTANT_HORIZONS;
+    }
+
+    /** A shader pack is on and the player asked it to draw the effects (0.8.1's way): the fire and clouds on its lit program. */
+    private static boolean packDraws() {
+        if (!IRIS || !IrisFx.packInUse()) {
+            return false;
+        }
+        if (!DEV_PACK_FX.isEmpty()) {
+            return DEV_PACK_FX.equals("in");
+        }
+        return GBClientConfig.SHADER_PACK_FX.get() == GBClientConfig.PackFx.IN;
     }
 
     /** Blended, unlit, two-sided, with this texture. */
@@ -94,15 +133,10 @@ final class FxRenderTypes {
         }
 
         private static final ShaderStateShard CLOUD_SHADER = new ShaderStateShard(
-                () -> packOn() ? net.minecraft.client.renderer.GameRenderer.getRendertypeEntityTranslucentShader() : cloudShader);
+                () -> packDraws() ? net.minecraft.client.renderer.GameRenderer.getRendertypeEntityTranslucentShader() : cloudShader);
         private static final ShaderStateShard FIRE_SHADER = new ShaderStateShard(
-                () -> packOn() ? net.minecraft.client.renderer.GameRenderer.getRendertypeEntityTranslucentShader()
+                () -> packDraws() ? net.minecraft.client.renderer.GameRenderer.getRendertypeEntityTranslucentShader()
                         : net.minecraft.client.renderer.GameRenderer.getRendertypeEyesShader());
-
-        /** A shader pack is on: the fire and clouds draw on the translucent entity shader, the pack's lit program. */
-        private static boolean packOn() {
-            return IRIS && IrisFx.packInUse();
-        }
 
         /**
          * Blended additively ({@code additive}, as lightning) or over what is behind; writing depth or not. One that writes

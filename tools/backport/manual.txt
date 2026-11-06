@@ -22,3 +22,4 @@ src/main/java/dev/groundburst/mixin/SpreadingSnowyBlockMixin.java
 src/main/java/dev/groundburst/mixin/FarmlandBlockMixin.java
 src/main/java/dev/groundburst/client/fx/PlayBenchClient.java
 src/main/java/dev/groundburst/client/fx/IrisFx.java
+src/main/java/dev/groundburst/client/fx/DrawnLast.java

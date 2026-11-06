@@ -19,6 +19,17 @@
   water. Their own sounds: a deep thud, the column's roar and its water falling back.
 - Every blast now breaks the boats and minecarts it hits.
 
+### Shader packs and Distant Horizons
+- With a shader pack on (Iris), blast effects are now drawn over the pack's finished picture with the mod's own
+  shading, so they look as they do without shaders, the same in every pack and steady from frame to frame. Under Bliss
+  the mushroom cloud no longer shows as a hole in the sky or vanishes in the distance, smoke is no longer black and the
+  fireball no longer changes colour as the flash fades. On Minecraft 26.3 and 1.21.1; checked under Bliss,
+  Complementary Reimagined and Unbound, BSL, Photon, Solas and MakeUp Ultra Fast (on 1.21.1 under Bliss and
+  Complementary Reimagined).
+- With Distant Horizons, its far terrain no longer covers the foot of a mushroom cloud.
+- The way 0.8.1 drew them, lit and fogged by the pack like the world round them, is a client option: Effects with
+  shader packs, Lit by the pack.
+
 ## 0.8.1 — 2026-11-05
 
 The blast effects with shader packs, and healed machines, cables and pipes that work again. For Minecraft 26.3 and

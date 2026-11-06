@@ -4,7 +4,9 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `d4df3de0` (2026-11-06: sea mines, moored on their chains and adrift, and depth
+- **Last brought up to:** `main` at `e2e3df4f` (2026-11-06: the blast effects drawn last under shader packs and with
+  Distant Horizons, main's DESIGN.md §12.3, here by this branch's own `client/fx/DrawnLast`, below; before them, at
+  `d4df3de0`, sea mines, moored on their chains and adrift, and depth
   charges, main's DESIGN.md §14.6, with blasts under water that keep the sea; the port tool taught that 1.21.1 tells an
   entity a player uses it without where; before them, at `464565de`, 0.8.1, released for this version and 26.3:
   `groundburst-mc1.21.1-0.8.1.jar` is this branch's; before it, at `59d16c5d`, healing wakes cables, pipes and other mods' blocks and leaves
@@ -96,22 +98,33 @@ Still to do:
 2. **GameTests**: main's 394 are not ported yet (this branch has its own six).
 3. Play it through in the 1.21.1 instance.
 
-## Shader packs (Iris)
+## Shader packs (Iris) and Distant Horizons
 
-Main hands its effect pipelines to Iris's programs (main's DESIGN.md §12.3); 1.21.1 has no pipelines, and Iris 1.8 puts
-a pack's programs in place of the game's own shaders by name. Under Complementary Reimagined (2026-11-05) the effects did
-not shatter as on 26.3, but the fire, on vanilla's eyes shader, glowed white (the pack's glowing program) and the smoke,
-on this branch's own cloud shader, did not show at all. So with a pack on (`client/fx/IrisFx`, `FxRenderTypes`, both
-kept by hand) the fire and the clouds switch to vanilla's translucent entity shader, which Iris swaps for the pack's lit
-entity program, with the lightmap set up for it; the glow stays on the eyes shader; effects stay out of the pack's shadow
-pass. As on main, our own shading of the smoke is kept and the pack lights it on top.
+Under a pack (and with Distant Horizons) the effects are drawn last, as on main (main's DESIGN.md §12.3): kept out of
+the level and drawn into the finished picture at NeoForge's after-level stage (`client/fx/DrawnLast`, `FxRenderTypes`
+and `IrisFx`, all kept by hand). NeoForge 21.1 fires that stage from the game renderer once `LevelRenderer.renderLevel`
+has returned, so after Iris 1.8's last passes (Iris runs them as the level's drawing returns, after the stage of the
+same name inside it) and Distant Horizons' fade, and before the hand's depth is cleared. Iris swaps none of the pack's
+programs in there, so the effects draw on the game's own shaders and this branch's cloud shader, into the game's buffers,
+with the view and fog the level had and its depth, near 0 and far 1, as Iris leaves it.
 
-- **Dev runs**: `-PwithIris` loads Iris 1.8.14 and Sodium 0.8.13, with Complementary Reimagined and BSL in run/shaderpacks
-  (`-PirisPack=complementary|bsl|off`), e.g. `gradlew runPortCheck -PwithIris -PirisPack=bsl`. Sodium for 1.21.1 comes
-  as a wrapper (a library of its early start-up classes, with the mod and its Fabric API parts packed inside): on the
-  runs' classpath the launcher took the wrapper for the mod and loaded none of Sodium, and the packed mod alone lacks the
-  wrapper's classes, so the runs with Iris copy it into run/mods (`sodiumToMods`, as `sodium-dev-iris.jar`), where it
-  loads as it does for players, and every other run deletes it again (`sodiumFromMods`).
+The client option "Effects with shader packs: Lit by the pack" (`-PpackFx=in` in dev runs) keeps the way 0.8.1 had it:
+Iris 1.8 puts a pack's programs in place of the game's own shaders by name; under Complementary Reimagined (2026-11-05)
+the effects did not shatter as on 26.3, but the fire, on vanilla's eyes shader, glowed white (the pack's glowing
+program) and the smoke, on this branch's own cloud shader, did not show at all. So then the fire and the clouds switch to
+vanilla's translucent entity shader, which Iris swaps for the pack's lit entity program, with the lightmap set up for it,
+and the glow stays on the eyes shader. Either way effects stay out of the pack's shadow pass.
+
+- **Checked** (2026-11-06): `runPortCheck` under Bliss and Complementary Reimagined and without a pack (the blast, the
+  particle beam, the water column, the mines: all alike), and with Distant Horizons 3.3.3 (`-PwithDH`), without a pack and
+  under Bliss.
+- **Dev runs**: `-PwithIris` loads Iris 1.8.14 and Sodium 0.8.13, with seven packs in run/shaderpacks
+  (`-PirisPack=complementary|unbound|bsl|bliss|photon|solas|makeup|off`), e.g. `gradlew runPortCheck -PwithIris
+  -PirisPack=bliss`; `-PwithDH` loads Distant Horizons. Sodium for 1.21.1 comes as a wrapper (a library of its early
+  start-up classes, with the mod and its Fabric API parts packed inside): on the runs' classpath the launcher took the
+  wrapper for the mod and loaded none of Sodium, and the packed mod alone lacks the wrapper's classes, so the runs with
+  Iris copy it into run/mods (`sodiumToMods`, as `sodium-dev-iris.jar`), where it loads as it does for players, and every
+  other run deletes it again (`sodiumFromMods`).
 
 ## Create and Create Aeronautics (this branch only)
 

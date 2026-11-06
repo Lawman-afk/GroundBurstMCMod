@@ -56,8 +56,9 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 - **Create and Create Aeronautics** (Minecraft 1.21.1, optional): missile launchers on trains, bearings and airships,
   every machine working on Create's moving contraptions and Create Aeronautics' ships, and weapons that hit them (more
   below).
-- **Shader packs:** fireballs, smoke and mushroom clouds draw right with Iris shader packs (tried with Complementary
-  Reimagined and BSL), on Minecraft 26.3 and 1.21.1.
+- **Shader packs:** fireballs, smoke and mushroom clouds draw right with Iris shader packs and look the same in every
+  pack (tried with Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas and MakeUp Ultra Fast), and stand
+  in front of Distant Horizons' far terrain, on Minecraft 26.3 and 1.21.1.
 - **The Field Manual**, an in-game guide to all of it.
 
 ## Screenshots
@@ -190,6 +191,7 @@ Ground Burst comes in three files, one for each version of Minecraft; take the o
   nourishment), the pointer stays an arrow over the mod's screens, and flash particles are not tinted.
 - **JEI** (optional) on any
 - **Iris** (optional) on 26.3 and 1.21.1, for shader packs
+- **Distant Horizons** (optional) on 26.3 and 1.21.1: blast effects stand in front of its far terrain
 - **Create** 6 and **Create Aeronautics** (with Sable 2) (optional, Minecraft 1.21.1 only), for the machines and weapons
   on moving structures above
 
