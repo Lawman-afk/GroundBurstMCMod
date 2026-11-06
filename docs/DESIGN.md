@@ -1365,6 +1365,22 @@ Client config (`groundburst-client.toml`): `fx.quality` (low/medium/high/ultra, 
 
 ---
 
+### 11.9 Against 0.7.0 (2026-11-06)
+- **Why:** the user asked for the newest version's performance to be compared with 0.7.0's.
+- **How:** 0.7.0 (d81db058) checked out beside main as its own worktree, each version's own blast bench (the same but
+  for healing, which main's bench turns off unless asked), run one after the other with nothing else running: the Tsar
+  once each, the tactical nuclear warhead three times each, alternating. 0.7.0's bench left vsync and the game's
+  background frame cap on (34 and 60 fps in the first pair); its runs were repeated with main's display settings
+  (vsync off, no frame limit, the cap only when minimised).
+- **The Tsar:** blast done in 131.2 s (0.7.0) and 131.3 s (now); server ticks mean 18.5 and 18.4 ms, p95 21.4 and
+  20.9, p99 26.4 and 26.2, max 57.3 and 60.6; ticks over 50 ms 1 and 2; 21.5 and 21.7 million blocks changed; the save
+  30 s in 102 and 106 ms; heap peak 5.4 and 5.6 GB; client 1,031 and 1,016 fps (min 697 and 685).
+- **The tactical warhead** (done in 2 s, 39 ticks, so each run is noisy): ticks mean 12.3 and 13.2 ms (0.7.0) against
+  13.5, 12.8 and 12.6 (now); max 27-29 against 23-29; client about 1,250 against 1,233 fps; rays in flight vary from run
+  to run on either (72,000 to 85,000).
+- **So:** no change beyond the runs' own spread. What came after 0.7.0 (healing, off by default; hulls; sea blasts)
+  costs a blast on land nothing measurable.
+
 ## 12. Visual effects system (`client.fx`, "Spectacle")
 
 Principle: **the server is authoritative for radii.** Clients receive `BlastStart(id, profile, center, seed,
@@ -1499,51 +1515,84 @@ As built (2026-10-21):
 - Reviewed with `runFxShots` scenes small, medium, large, nuclear (230 blocks, to 80 s), nuclear_close (130 blocks) and
   nuclear_night.
 
-### 12.3 Shader packs (Iris) (2026-11-05; a commenter asked for shader support, "mushroom clouds/smoke")
+### 12.3 Shader packs (Iris) and Distant Horizons (2026-11-05; a commenter asked for shader support; drawn last 2026-11-06)
 With Iris and a shader pack (Complementary Reimagined, BSL) every effect drew as long black, purple and green shards
 across the screen; the fire blocks a blast leaves were fine. A pack draws the world with its own programs, which read
 more from each vertex than vanilla's shaders, and Iris lays entity-format vertices out for them; our effect pipelines
 were ones Iris did not know, so it drew them with their own shaders from vertices laid out for the pack.
 
-**26.3** (`client/fx/IrisFx`, loaded only when Iris is): each effect pipeline is handed to the pack program it is most
-like through Iris's API (`IrisApi.assignPipeline`, API 0.3, Iris 1.11): the glow (the fireball's white-hot core, the shock
-shell, sparks, beams, lasers) to the emissive entity program (spider eyes: unlit, glowing); the fire (the fireball's
-body, fire puffs) and the cloud (smoke, dust, the mushroom cloud) to the translucent entity program, which the pack
-lights. Tried and dropped, with screenshots of both packs:
-- everything on the emissive program: the shards gone, but each pack made it all glow white, smoke and the mushroom cloud
-  with it;
-- the pack lighting the smoke alone (its plain colour, its plume's normal, the world's real light, the mushroom cloud's
-  glow as block light): dark, bluish smoke in both packs and the cap's glow gone. Kept instead: colours shaded here as
-  without a pack (`FxLight`) and marked full-bright, as vanilla draws them; the pack lights them on top (BSL: warm brown
-  smoke, an orange-glowing cap, close to the look without a pack; Complementary: darker smoke, a duller cap);
-- the glow on the translucent program: dark blotches inside the fireball (Complementary).
-Iris picks a program by the pipeline's vertex layout, or failing that by its alpha cutout; ours are vanilla's entity
-layout, which Iris extends, so each pipeline declares a cutout (the cloud its own 0.16, which `fx_cloud.fsh` applies
-itself; the glow and fire a 255th, which drops nothing seen) and Iris gives them its emissive or translucent entity
-program for the entity layout (`ENTITIES_EYES_TRANS`, `ENTITIES_TRANSLUCENT`). Without one the glow and fire got a
-program for another vertex layout. The effects stay out of the pack's shadow pass (they cast no shadow). Iris turns
-improved transparency off, so the OIT pipeline sets need nothing.
+**0.8.1: drawn by the pack.** Each effect pipeline was handed to the pack program it is most like
+(`IrisApi.assignPipeline`, API 0.3, Iris 1.11): the glow (the fireball's core, the shock shell, sparks, beams, lasers) to
+the emissive entity program (spider eyes), the fire and the cloud (smoke, dust, the mushroom cloud) to the translucent
+entity program, which the pack lights, their colours still shaded here (`FxLight`) and marked full-bright. Iris picks a
+program by the pipeline's vertex layout, or failing that by its alpha cutout, so each pipeline declares one (the cloud
+its own 0.16, the glow and fire a 255th) and gets the entity layout's programs (`ENTITIES_EYES_TRANS`,
+`ENTITIES_TRANSLUCENT`). Tried and dropped then: everything emissive (all of it glowed white), the pack lighting the
+smoke by the world's light (dark, blue smoke), the glow on the translucent program (dark blotches). Complementary and
+BSL looked close to the game without a pack.
 
-**1.21.1** (the branch's own `FxRenderTypes` and `IrisFx`; its docs/BACKPORT.md): Iris 1.8 puts a pack's programs in place
-of the game's own shaders by name. There the effects did not shatter, but the fire, on vanilla's eyes shader, glowed
-white, and the smoke, on the branch's own cloud shader, did not show at all. With a pack on, the fire and the clouds
-switch to vanilla's translucent entity shader (the pack's lit entity program; the lightmap is set up for it) and the
-glow stays on the eyes shader (the pack's glowing one); effects skip the shadow pass. Checked with the port check's blast
-and particle beam under both packs: an orange fireball and its smoke again.
+**Then a player on Bliss** (2026-11-06): "mushroom clouds appear to flicker much more frequently than without shading,
+while also drastically changing color", and Distant Horizons' far water drawn through the cloud. Bliss reproduced it in
+the photographer: the mushroom cloud a hole of sky colour in the pack's clouds, the smoke black. Its own programs say
+why, and no pack program suits a soft cloud seen from afar:
+- its translucent entity program lights in a deferred pass of its own: smoke black, the cloud's colour lost;
+- its particle program (tried: the fire and clouds on vanilla's particle layout, assigned to `PARTICLES_TRANSLUCENT`,
+  each puff's light level handed over, a neutral sun) fades every half-clear particle out by 100 blocks, for its world
+  border (`if (TEXTURE.a < 0.7 && TEXTURE.a > 0.2) gl_FragData[0] *= clamp(1.0 - length(feetPlayerPos) / 100.0,
+  0.0, 1.0)`): the mushroom cloud vanished whole, the near smoke went faint;
+- its emissive programs scale the glow by its auto-exposure (`mix(0.5, 100.0, exp(-10.0 * exposure))`), so the
+  fireball's colour swung as the flash lit the scene and the exposure followed (the "changing colour").
 
-**What a pack changes**: the cloud's own fragment shader (hazed toward the fog colour rather than fading into the
-render distance, out to the clouds' range) gives way to the pack's program, so a mushroom cloud far beyond the loaded
-terrain fades into the pack's fog like everything else; the sky's tint after a nuclear blast is the pack's own sky; the
-smoke's shading is the pack's lighting over ours.
+**Drawn last** (`client/fx/DrawnLast`; the default since, `shaderPackFx = OVER` in the client config, "Effects with
+shader packs: Over the pack"): with a pack on (and with Distant Horizons, below), the effects are not drawn in the level
+at all. `FxRenderTypes.submit` keeps their submits in a `SubmitNodeStorage` of their own, and they are drawn at
+NeoForge's after-level stage, through a `FeatureRenderDispatcher` of their own, into the main target's colour and depth.
+On 26.3 that stage comes after Iris's composite and final passes (Iris runs them inside `LevelRenderer.render`, just
+before the view is popped) and before the game clears the depth for the hand. There Iris swaps in no pack program
+(`shouldOverrideShaders` is false once the level is done) and lays out no vertex differently
+(`ImmediateState.isRenderingLevel` is false), so the effects' own pipelines draw them, depth tested against what the
+pack drew: they look as without shaders, in every pack, steady from frame to frame. That depth is vanilla's own,
+reversed (read back after the pack: the sky 0.0, the near ground highest; Iris 1.11 ships mixins that would turn it
+round but applies none of them, and converts inside the pack's shaders instead), so the pipelines, the projection (still
+the level's) and the depth test serve as they are. (A first try turned the projection and the depth test round for a
+pack, as those unused mixins would: nothing passed, not even against the sky.) The view is the stage's (Iris has put the
+view's bobbing in it); the fog is the level's main pass's, taken at the after-translucent-particles stage. Under a pack
+the effects keep the look and lighting they have without one: the pack's fog, lighting, bloom and tone mapping do not
+reach them, and the pack's water or glass in front of a cloud hides it rather than tinting it.
+
+The 0.8.1 way stays as an option ("Lit by the pack", `shaderPackFx = IN`), for a pack that draws them well and a player
+who wants the effects in its light; the dev runs switch with `-PpackFx=in|over`.
+
+**1.21.1** (the branch's own `FxRenderTypes` and `IrisFx`; its docs/BACKPORT.md): Iris 1.8 puts a pack's programs in
+place of the game's own shaders by name. There the effects did not shatter, but the fire, on vanilla's eyes shader,
+glowed white, and the smoke, on the branch's own cloud shader, did not show at all; so under a pack the fire and the
+clouds switch to vanilla's translucent entity shader (the pack's lit entity program) and the glow stays on the eyes
+shader. NeoForge 21.1 fires its after-level stage from the game renderer once the level's drawing has returned, after
+Iris 1.8's last passes and before the hand's depth is cleared, so the same drawing last can be had there.
+
+**Distant Horizons** (3.3.4; the same player: its far water drawn through the cloud). Reproduced without a pack, on a
+flat sea (`-PfxWorld=sea`) with the view at 8 chunks and a nuke 230 blocks off: the cloud's foot cut off flat by a band
+of far sea in DH's fog colour, where without DH the base surge reaches down to the water. DH draws its far terrain
+before the main pass and then, at the outline stage after it (`executeOutline`), fades it in over what the level drew
+beyond the view distance, our effects with it. So with DH loaded the effects are drawn last too
+(`FxRenderTypes.drawnLast`), pack or none: after DH's fade, they stand in front of its far terrain. What DH draws leaves
+no depth in the game's buffer, so a cloud behind far hills drawn by DH would show in front of them (the lesser fault: a
+cloud is tall, and its foot is rarely behind a far hill). The same goes for DH's far sea: a cloud's foot dipping under
+the water shows over the strip of it at the horizon, a few pixels. Checked under Bliss too, DH's sea drawn by the pack
+(`-PwithDH -PwithIris -PirisPack=bliss -PfxWorld=sea -PfxOnly=dh_`): the whole cloud stands on it.
 
 **Dev runs**: `-PwithIris` loads Iris and Sodium (26.3: Iris 1.11.7, Sodium 0.9.3 beta; 1.21.1: Iris 1.8.14, Sodium
-0.8.13) with Complementary Reimagined r5.9.3 and BSL 10.1.8 put in run/shaderpacks (`-PirisPack=complementary|bsl|off`,
-Complementary by default); `runFxShots -PwithIris` photographs the effects under a pack (1.21.1: `runPortCheck
--PwithIris`), and on 26.3 `-PirisFx=glow:EMISSIVE_ENTITIES,fire:...` tries other programs. Checked on 26.3 with eight
-scenes besides the first two (a nuke at night, antimatter, a singularity, a storm, cryo, napalm, the designator): no
-shards under either pack, and the shots without a pack unchanged. With Iris the dev runs turn off two things players never meet: the game's strict draw checks (dev
-runs only; Iris's depth-of-field sampler fails one, `neoforge.disableBlaze3DValidation`) and NeoForge's load-warning
-screen (Iris's metadata warns, and the screen held the photographers).
+0.8.13) with the test packs put in run/shaderpacks and Iris set to the one `-PirisPack` names: `complementary`
+(Reimagined r5.9.3, the default), `unbound` (Complementary Unbound r5.9.3), `bsl` (10.1.8), `bliss` (2.1.2), `photon`
+(1.4), `solas` (3.9), `makeup` (MakeUp Ultra Fast 9.6) or `off`. `runFxShots -PwithIris -PirisPack=<pack>
+-PfxOnly=shader_` photographs every kind of effect once (a fireball's glow, fire and smoke; a mushroom cloud by day,
+frame by frame and at night; a column of water; the particle beam). Checked (2026-11-06) under all seven packs and
+without one: every effect shows and they agree, pack to pack and with the shots without one, except for the fireball's
+first second, whose shots catch it a few ticks younger under the heavier packs (Bliss, Photon, Unbound): the depth read
+back at the fireball was the same under Photon as under Complementary, so that is when the client began it, not how it
+was drawn. With Iris the dev runs turn off two things players never meet: the game's strict draw checks (dev runs only;
+Iris's depth-of-field sampler fails one, `neoforge.disableBlaze3DValidation`) and NeoForge's load-warning screen (Iris's
+metadata warns, and the screen held the photographers).
 
 ## 13. Sound system
 
@@ -5175,6 +5224,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-06 | **Effects drawn last under shader packs and with Distant Horizons** (a player's comment the user passed on: under Bliss "mushroom clouds appear to flicker much more frequently than without shading, while also drastically changing color", and Distant Horizons' far water drawn through the cloud; then the user: more tests with other packs): §12.3. Bliss reproduced it (the cloud a hole of sky colour, the smoke black); its programs fade half-clear particles out by 100 blocks, light entities in a pass of their own and scale glows by its auto-exposure, so no pack program suits the effects. Under a pack they are now drawn after the level, over the pack's finished picture, by their own pipelines against the depth the pack left (`client/fx/DrawnLast`), and with Distant Horizons too (its fade laid its far sea over the cloud's foot). Checked under seven packs (Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas, MakeUp Ultra Fast) and with Distant Horizons, without a pack and under Bliss. The 0.8.1 way stays as a client option ("Effects with shader packs: Lit by the pack"). Tried first and dropped: the fire and clouds on the pack's particle program (Bliss's fade lost the cloud whole). |
 | 2026-11-06 | **Sea mines and depth charges** (§14.6; the user: "Let's do the naval mines and depth charges please. for the 2 main versions", and "the classic sea mines with the chains that stick them to the bottom"; paused for the 0.8.1 release, then taken up again): entities, not blocks (a mine rides a current, swings on its chain and floats free); a moored and a drifting mine (one model: the moored one's item is the mine on its sinker), a depth charge on a hydrostatic pistol; the naval terrain table (set off in water, a blast's rays pass through the sea as through air and what it breaks under the surface fills with water; set off out of water, an ordinary blast of its size); every blast now breaks the boats and minecarts it hurts; `ShockReceiver` (a blast sets off the mines and charges close by and parts mines' chains further off); the water column (`WaterColumn`) and the naval sound set, made from recordings already credited. |
 | 2026-11-05 | Version **0.8.1** for Minecraft 26.3 and 1.21.1 (the user: a stable release of the two main versions; 26.1.2 stays at 0.8.0, the user's wish earlier the same day): the blast effects under shader packs (§12.3) and healing's cables, pipes and other mods' blocks (§21.9); the changelog, README and the CurseForge description (shader packs, Iris among the optional mods, healed machines, cables and pipes). |
 | 2026-11-05 | **Shader packs (Iris)** (a commenter: "Any plans for shader support? (mushroom clouds/smoke)"; the user: if that means the effects under shaders, today's project, on 26.3 and 1.21.1, 26.1.2 left for now): §12.3. Under a pack every effect drew as long black and coloured shards (Iris laid their vertices out for the pack and drew them with shaders it did not know). On 26.3 each effect pipeline is handed to a pack program through Iris's API: the glow to the emissive entity program, the fire and smoke to the translucent entity program the pack lights, our own shading kept; chosen from screenshots of Complementary Reimagined and BSL over three other ways tried. On 1.21.1 the fire and smoke switch to vanilla's translucent entity shader while a pack is on (Iris swaps the game's shaders by name; the glow is already on vanilla's eyes shader). |

@@ -1,5 +1,6 @@
 package dev.groundburst.client.fx;
 
+import java.util.Locale;
 import java.util.function.Function;
 
 import com.mojang.renderpearl.api.pipeline.BlendFunction;
@@ -9,6 +10,7 @@ import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 
 import dev.groundburst.GroundBurst;
+import dev.groundburst.config.GBClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.renderer.RenderPipelines;
@@ -43,51 +45,70 @@ import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
  * particles are: blended custom geometry is otherwise drawn before it, and water behind any smoke then failed the depth
  * test against the cloud pipeline's depth and was not drawn at all (after the in-game look: "smoke makes all water
  * transparent").
+ * <p>
+ * With a shader pack on (Iris; DESIGN.md §12.3), and with Distant Horizons, they are drawn last ({@link DrawnLast}): kept
+ * out of the level and drawn once the pack has finished its picture and Distant Horizons has laid its far terrain over
+ * it, by these same pipelines, against the depth left behind. A player who would rather have the pack draw them says so
+ * in the client config ({@link GBClientConfig#SHADER_PACK_FX}).
  */
 final class FxRenderTypes {
-    /** Iris is installed: the effects are handed to a shader pack's programs ({@link IrisFx}). */
+    /** Iris is installed: the effects are handed to a shader pack's programs ({@link IrisFx}), or drawn over the pack. */
     static final boolean IRIS = net.neoforged.fml.ModList.get().isLoaded("iris");
+    /** Distant Horizons is installed: its far terrain is laid over the level after the effects, so they are drawn after it. */
+    static final boolean DISTANT_HORIZONS = net.neoforged.fml.ModList.get().isLoaded("distanthorizons");
+    /** Dev runs: {@code -PpackFx=over|in} sets the way under a pack whatever the config says. */
+    private static final String DEV_PACK_FX = System.getProperty("groundburst.packFx", "").trim().toLowerCase(Locale.ROOT);
     /**
      * The glow's and fire's alpha cutout: only what is all but clear (a 255th) is dropped, nothing anyone sees. It is
      * there for Iris, which gives a pipeline with a cutout the shader pack's entity program for this vertex layout
      * (without one, the glow and fire got a program for another layout).
      */
     private static final float NEARLY_CLEAR = 1.0F / 255;
+    private static final Identifier CLOUD_SHADER = GroundBurst.id("core/fx_cloud");
 
-    static final RenderPipeline GLOW_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
-            .withLocation(GroundBurst.id("pipeline/glow"))
-            .withShaderDefine("ALPHA_CUTOUT", NEARLY_CLEAR)
-            .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
-            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
-            .withCull(false)
-            .build();
+    static final RenderPipeline GLOW_PIPELINE = glow();
     static final OitPipelineSet OIT_GLOW = OitPipelineSet.builder(GroundBurst.id("glow"),
             RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withCull(false).withShaderDefine("OIT_ADDITIVE"))
             .build();
-
-    static final RenderPipeline FIRE_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
-            .withLocation(GroundBurst.id("pipeline/fire"))
-            .withShaderDefine("ALPHA_CUTOUT", NEARLY_CLEAR)
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
-            .withCull(false)
-            .build();
+    static final RenderPipeline FIRE_PIPELINE = fire();
     static final OitPipelineSet OIT_FIRE = OitPipelineSet.builder(GroundBurst.id("fire"),
             RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withCull(false)).build();
-
-    private static final Identifier CLOUD_SHADER = GroundBurst.id("core/fx_cloud");
-    static final RenderPipeline CLOUD_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
-            .withLocation(GroundBurst.id("pipeline/cloud"))
-            .withFragmentShader(CLOUD_SHADER)
-            // (fx_cloud.fsh cuts its own fringe out; the define tells Iris to give a shader pack's version a cutout too)
-            .withShaderDefine("ALPHA_CUTOUT", 0.16F)
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
-            .withCull(false)
-            .build();
+    static final RenderPipeline CLOUD_PIPELINE = cloud();
     static final OitPipelineSet OIT_CLOUD = OitPipelineSet.builder(GroundBurst.id("cloud"),
             RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withFragmentShader(CLOUD_SHADER).withCull(false))
             .build();
+
+    private static RenderPipeline glow() {
+        return RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
+                .withLocation(GroundBurst.id("pipeline/glow"))
+                .withShaderDefine("ALPHA_CUTOUT", NEARLY_CLEAR)
+                .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
+                .withCull(false)
+                .build();
+    }
+
+    private static RenderPipeline fire() {
+        return RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
+                .withLocation(GroundBurst.id("pipeline/fire"))
+                .withShaderDefine("ALPHA_CUTOUT", NEARLY_CLEAR)
+                .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
+                .withCull(false)
+                .build();
+    }
+
+    private static RenderPipeline cloud() {
+        return RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
+                .withLocation(GroundBurst.id("pipeline/cloud"))
+                .withFragmentShader(CLOUD_SHADER)
+                // (fx_cloud.fsh cuts its own fringe out; the define tells Iris to give a shader pack's version a cutout too)
+                .withShaderDefine("ALPHA_CUTOUT", 0.16F)
+                .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
+                .withCull(false)
+                .build();
+    }
 
     private static final Function<Identifier, RenderType> CLOUD = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_cloud",
             RenderSetup.builder(CLOUD_PIPELINE).setOitPipelines(OIT_CLOUD).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
@@ -114,15 +135,21 @@ final class FxRenderTypes {
                 }
             }
         });
+        DrawnLast.register();
     }
 
     /**
      * Submits effect geometry to be drawn after the translucent terrain (water), where vanilla draws its translucent
-     * particles; with improved transparency that is the same OIT pass as any other translucent geometry.
+     * particles; with improved transparency that is the same OIT pass as any other translucent geometry. Under a shader
+     * pack or with Distant Horizons ({@link #drawnLast}) it is kept to be drawn after the level instead.
      */
     static void submit(SubmitNodeCollector collector, PoseStack poseStack, RenderType type, SubmitNodeCollector.CustomGeometryRenderer renderer) {
         if (IRIS && IrisFx.shadowPass()) {
             return;                                        // a shader pack's shadow map: effects cast no shadows
+        }
+        if (drawnLast()) {
+            DrawnLast.submit(poseStack, type, renderer);
+            return;
         }
         SubmitNodeCollection collection = collector instanceof SubmitNodeStorage storage ? storage.order(0)
                 : collector instanceof SubmitNodeCollection c ? c : null;
@@ -131,6 +158,20 @@ final class FxRenderTypes {
             return;
         }
         collection.afterTerrain.submit(new CustomFeatureRenderer.Submit(poseStack.last().copy(), type, renderer));
+    }
+
+    /**
+     * Whether the effects are drawn after the level now ({@link DrawnLast}): under a shader pack (unless the player asked
+     * the pack to draw them), and with Distant Horizons.
+     */
+    static boolean drawnLast() {
+        if (IRIS && IrisFx.packInUse()) {
+            if (!DEV_PACK_FX.isEmpty()) {
+                return !DEV_PACK_FX.equals("in");
+            }
+            return GBClientConfig.SHADER_PACK_FX.get() == GBClientConfig.PackFx.OVER;
+        }
+        return DISTANT_HORIZONS;
     }
 
     /** Blended, unlit, two-sided, with this texture. */

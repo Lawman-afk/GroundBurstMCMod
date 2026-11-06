@@ -359,7 +359,23 @@ public final class FxPhotographer {
                 new Scene("naval_mines_under", "naval_mines", 9, -6, List.of(170)),
                 new Scene("naval_column_mine", "naval_column_mine", 45, -6, List.of(2, 6, 12, 20, 30, 45, 65, 90, 140)),
                 new Scene("naval_column_charge", "naval_column_charge", 38, -6, List.of(2, 8, 16, 26, 40, 60, 90)),
-                new Scene("naval_column_deep", "naval_column_deep", 38, -6, List.of(10, 20, 30, 50, 80)))) {
+                new Scene("naval_column_deep", "naval_column_deep", 38, -6, List.of(10, 20, 30, 50, 80)),
+                // A mushroom cloud in frames a tick apart (a player saw it flicker under a shader pack): what changes from
+                // one to the next is flicker, not the cloud's own slow motion.
+                new Scene("flicker_nuke", "tactical_nuclear_warhead", 200, -10, List.of(400, 401, 402, 403, 404, 405)),
+                new Scene("flicker_nuke_close", "tactical_nuclear_warhead", 120, -14, List.of(400, 401, 402, 403)),
+                // A shader pack's test (-PfxOnly=shader_): every kind of effect once (a fireball's glow, fire and smoke; a
+                // mushroom cloud by day, frame by frame and at night; a column of water; the particle beam's glow).
+                new Scene("shader_thermobaric", "thermobaric_warhead", 55, 2, List.of(3, 10, 25, 80)),
+                new Scene("shader_nuke", "tactical_nuclear_warhead", 200, -10, List.of(20, 300, 301, 302, 303)),
+                new Scene("shader_nuke_night", "tactical_nuclear_warhead", 130, -32, List.of(60, 300), "midnight"),
+                new Scene("shader_column", "naval_column_charge", 38, -6, List.of(16, 40)),
+                new Scene("shader_beam", "particle_beam", 30, 8, List.of(40, 160)),
+                // Distant Horizons (-PwithDH, on -PfxWorld=sea: a flat sea to the horizon): a nuke set off on a small island,
+                // seen from 230 and 520 blocks across the water, the view only 8 chunks, so that its far terrain (the sea)
+                // stands round and behind the cloud (a player saw its water drawn over a mushroom cloud).
+                new Scene("dh_nuke", "tactical_nuclear_warhead", 230, -6, List.of(300, 700)),
+                new Scene("dh_nuke_far", "tactical_nuclear_warhead", 520, -10, List.of(400, 900)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
             }
@@ -371,6 +387,36 @@ public final class FxPhotographer {
     private static final int SEA = 14;
 
     /** The naval scenes' sea: a pool {@link #SEA} deep laid over the flat ground round x (the camera's side and beyond), walled in, a sandy bottom. */
+    /** A stone island 15 blocks across, its top two above the sea at {@code surface}; the height of its top. */
+    private static int island(ServerLevel level, int x, int surface) {
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        var p = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int dx = -7; dx <= 7; dx++) {
+            for (int dz = -7; dz <= 7; dz++) {
+                for (int y = surface - 26; y <= surface + 1; y++) {
+                    level.setBlock(p.set(x + dx, y, dz), stone, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                }
+            }
+        }
+        return surface + 2;
+    }
+
+    /** {@code -PfxWorld=sea}: a flat sea to the horizon (bedrock, stone, sand and 24 of water; ocean), for Distant Horizons. */
+    private static net.minecraft.world.level.levelgen.WorldDimensions seaWorld(net.minecraft.core.HolderLookup.Provider registries) {
+        var biomes = registries.lookupOrThrow(net.minecraft.core.registries.Registries.BIOME);
+        var flat = net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings.getDefault(biomes,
+                        registries.lookupOrThrow(net.minecraft.core.registries.Registries.STRUCTURE_SET),
+                        registries.lookupOrThrow(net.minecraft.core.registries.Registries.PLACED_FEATURE))
+                .withBiomeAndLayers(List.of(
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(1, net.minecraft.world.level.block.Blocks.BEDROCK),
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(40, net.minecraft.world.level.block.Blocks.STONE),
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(3, net.minecraft.world.level.block.Blocks.SAND),
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(24, net.minecraft.world.level.block.Blocks.WATER)),
+                        java.util.Optional.empty(), biomes.getOrThrow(net.minecraft.world.level.biome.Biomes.OCEAN));
+        return net.minecraft.world.level.levelgen.presets.WorldPresets.createTestWorldDimensions(registries)
+                .replaceOverworldGenerator(registries, new net.minecraft.world.level.levelgen.FlatLevelSource(flat));
+    }
+
     private static void sea(ServerLevel level, int x, int ground) {
         var water = net.minecraft.world.level.block.Blocks.WATER.defaultBlockState();
         var wall = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
@@ -1924,9 +1970,14 @@ public final class FxPhotographer {
                         net.minecraft.world.level.LevelSettings.DifficultySettings.DEFAULT, true,
                         net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
                 String folder = dev.groundburst.client.fx.DevWorlds.fresh(mc, "fx_shots");
-                mc.createWorldOpenFlows().createFreshLevel(folder, settings,
-                        net.minecraft.client.gui.screens.worldselection.SelectWorldScreen.TEST_OPTIONS,
-                        net.minecraft.world.level.levelgen.presets.WorldPresets::createTestWorldDimensions, mc.gui.screen());
+                if ("sea".equals(System.getProperty("groundburst.fxShots.world", ""))) {
+                    mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(0L, false, false),
+                            FxPhotographer::seaWorld, mc.gui.screen());
+                } else {
+                    mc.createWorldOpenFlows().createFreshLevel(folder, settings,
+                            net.minecraft.client.gui.screens.worldselection.SelectWorldScreen.TEST_OPTIONS,
+                            net.minecraft.world.level.levelgen.presets.WorldPresets::createTestWorldDimensions, mc.gui.screen());
+                }
             } catch (java.io.IOException e) {
                 GroundBurst.LOGGER.error("Fx shots: could not make a world", e);
             }
@@ -1948,8 +1999,8 @@ public final class FxPhotographer {
             clock = 0;
             site++;
             mc.gui.setScreen(null);                        // a screen a scene opened stays shut for the next
-            mc.options.renderDistance().set(scene.name().equals("howitzer_edge") ? 12 : 24);
-            if (scene.name().equals("designator_far") || scene.name().equals("howitzer_edge")) {
+            mc.options.renderDistance().set(scene.name().equals("howitzer_edge") ? 12 : scene.name().startsWith("dh_") ? 8 : 24);
+            if (scene.name().equals("designator_far") || scene.name().equals("howitzer_edge") || scene.name().startsWith("dh_")) {
                 mc.options.broadcastOptions();             // the server sends a player only as far as it said it sees when it joined
             }
             Scene s = scene;
@@ -1992,8 +2043,8 @@ public final class FxPhotographer {
             return;
         }
         if (step == -1) {
-            if (clock < 100) {
-                return;                                    // let the chunks round the new site load
+            if (clock < (scene.name().startsWith("dh_") ? 900 : 100)) {
+                return;                                    // let the chunks round the new site load (Distant Horizons: its far terrain)
             }
             Scene s = scene;
             int x = site * 1200;
@@ -2004,6 +2055,10 @@ public final class FxPhotographer {
                 Vec3 at = new Vec3(x + 0.5, ground + 0.5, 0.5);
                 if (s.profile().startsWith("naval_")) {
                     naval(level, x, ground, s.profile());    // (the ground is the sea's surface now)
+                    return;
+                }
+                if (s.name().startsWith("dh_")) {            // on an island, so that it is a blast on land
+                    Blasts.detonate(level, new Vec3(x + 0.5, island(level, x, ground) + 0.5, 0.5), Blasts.profile(s.profile()), null);
                     return;
                 }
                 if (s.profile().equals("grenades")) {

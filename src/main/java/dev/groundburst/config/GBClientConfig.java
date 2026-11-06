@@ -38,6 +38,22 @@ public final class GBClientConfig {
         }
     }
 
+    /** How the blast effects are drawn with a shader pack on (DESIGN.md §12.3). */
+    public enum PackFx implements TranslatableEnum {
+        OVER("Over the pack"), IN("Lit by the pack");
+
+        private final String key;
+
+        PackFx(String english) {
+            this.key = GBLang.add(GroundBurst.MODID + ".configuration.shaderPackFx." + name().toLowerCase(java.util.Locale.ROOT), english);
+        }
+
+        @Override
+        public Component getTranslatedName() {
+            return Component.translatable(key);
+        }
+    }
+
     private static final ModConfigSpec.Builder B = new ModConfigSpec.Builder();
 
     static {
@@ -63,6 +79,13 @@ public final class GBClientConfig {
             .comment("Draw mushroom clouds and smoke columns beyond your chunk render distance.")
             .translation(GBLang.config("fx.farClouds", "Distant clouds"))
             .define("farClouds", true);
+
+    public static final ModConfigSpec.EnumValue<PackFx> SHADER_PACK_FX = B
+            .comment("With a shader pack on (Iris): draw blast effects over the pack's finished picture, as they look without "
+                    + "shaders and the same in every pack, or have the pack draw them, lit and fogged like the world round them "
+                    + "(some packs then draw smoke dark or lose far clouds).")
+            .translation(GBLang.config("fx.shaderPackFx", "Effects with shader packs"))
+            .defineEnum("shaderPackFx", PackFx.OVER);
 
     static {
         B.pop();
