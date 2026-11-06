@@ -60,7 +60,7 @@ code is not ported by hand file by file. `tools/backport/port.py` turns main's s
 
 `tools/backport/compile.ps1` (run with PowerShell 7) compiles and sorts the errors; `errs.py <words>` prints a file's
 errors with their lines. `gradlew runGameTestServer` loads everything on a server and runs **all of main's GameTests**
-(426 at main 27ad9525, every one: `PortSkips` is empty) beside this branch's own seven (433). Main's are ported like the
+(433 at main c7851148, every one: `PortSkips` is empty) beside this branch's own seven (440). Main's are ported like the
 rest of its code (the gametest package; `port.py`'s rules for 26.x's test helper: `getBlockEntity(pos, Type.class)`,
 `makeMockServerPlayer` as `port/Tests.mockServerPlayer`, a missile's look by number, and a few per-file fixes); how they
 reach the game is this branch's own `gametest/GameTestRegistration` (`manual.txt`): a generator of 1.21.1's test
@@ -88,7 +88,10 @@ its Item Port, the log saying how many it holds) and rolls them all off as a pat
 wall (a Blast Door opened, the mirrored model, and one shut; a Pressure Door shut and one open; two floor hatches before
 it, one open; the log saying whether the blast door opened and laid its leaf's blocks), sets out the command room
 (consoles in a row, a desk, two filing cabinets, one open, two tape drives running, the map table; the log saying whether
-the drives stand two high, the cabinet holds its 27 slots and the table is laid), screenshots each into
+the drives stand two high, the cabinet holds its 27 slots and the table is laid), sets the bunker fittings against a
+wall (wall pipes through an open valve, a fuse box on, a lamp, a duct over a grille, an open locker, a bunk bed, an
+extinguisher; the log saying whether the pipes joined, the bunk stands four blocks, the locker holds 27 with its door
+open and the lamp is lit), screenshots each into
 `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it
 keeps the game from pausing when its window is behind another).
 
@@ -129,6 +132,14 @@ nothing spills, and a healed block runs its on-place hook (a healed water source
 cloud's quicker sums come over with main's code; main's sorting of the effects' blended quads itself (`FxSort`) does
 not: this branch's `FxRenderTypes` is its own (kept by hand) and keeps the game's sorting, its `FxSort` holding nothing
 back.
+
+**The cosmetic blocks** (main's DESIGN.md §22.3 to §22.5) come over with main's code but for three things. The Filing
+Cabinet's storage is kept by hand (`FilingCabinetBlockEntity`: 1.21.1's containers are saved to tags and opened by
+players); the Steel Locker's is main's, on top of it. The cabinet and the locker drop what they hold as their block goes
+(`port.py`: 1.21.1's containers drop in `onRemove`, not from their block entity). And the Bunk Bed: 1.21.1's bed is drawn
+by a block entity and lays its sleeper at a height of its own, so `port.py` draws it by its blockstate's model, gives it
+no block entity and takes out main's sleep height (on the mattress, a pixel and a half lower than here) and its bed
+rule's blowing up (1.21.1's bed blows up in the Nether its own way).
 
 Still to do:
 

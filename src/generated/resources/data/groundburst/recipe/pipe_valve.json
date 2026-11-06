@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "L": {
+      "item": "minecraft:lever"
+    },
+    "W": {
+      "item": "groundburst:wall_pipes"
+    }
+  },
+  "pattern": [
+    "L",
+    "W"
+  ],
+  "result": {
+    "id": "groundburst:pipe_valve"
+  }
+}

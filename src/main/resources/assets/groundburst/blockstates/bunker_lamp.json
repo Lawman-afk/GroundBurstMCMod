@@ -1,0 +1,56 @@
+{
+  "variants": {
+    "facing=up,lit=true": {
+      "model": "groundburst:block/bunker_lamp"
+    },
+    "facing=up,lit=false": {
+      "model": "groundburst:block/bunker_lamp_off"
+    },
+    "facing=down,lit=true": {
+      "model": "groundburst:block/bunker_lamp",
+      "x": 180
+    },
+    "facing=down,lit=false": {
+      "model": "groundburst:block/bunker_lamp_off",
+      "x": 180
+    },
+    "facing=north,lit=true": {
+      "model": "groundburst:block/bunker_lamp",
+      "x": 90
+    },
+    "facing=north,lit=false": {
+      "model": "groundburst:block/bunker_lamp_off",
+      "x": 90
+    },
+    "facing=south,lit=true": {
+      "model": "groundburst:block/bunker_lamp",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,lit=false": {
+      "model": "groundburst:block/bunker_lamp_off",
+      "x": 90,
+      "y": 180
+    },
+    "facing=east,lit=true": {
+      "model": "groundburst:block/bunker_lamp",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,lit=false": {
+      "model": "groundburst:block/bunker_lamp_off",
+      "x": 90,
+      "y": 90
+    },
+    "facing=west,lit=true": {
+      "model": "groundburst:block/bunker_lamp",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,lit=false": {
+      "model": "groundburst:block/bunker_lamp_off",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

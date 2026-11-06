@@ -356,7 +356,70 @@ public final class PortCheck {
                 GroundBurst.LOGGER.info("Port check: the tape drive two high {}, the cabinet's 27 slots {}, the map table laid {}: {}", tape, cabinet, table,
                         tape && cabinet && table ? "OK" : "WRONG");
             });
-            case 1220 -> {
+            // The bunker fittings (main's DESIGN.md §22.5) against a concrete wall: wall pipes through an open valve, a fuse box
+            // on, a lamp, a duct over a grille, an open locker, a bunk bed, an extinguisher; the log saying whether they stand.
+            case 1220 -> command(mc, "fill -51 -61 -60 -38 -61 -54 " + GroundBurst.MODID + ":reinforced_concrete");
+            case 1221 -> command(mc, "fill -51 -60 -54 -38 -57 -54 " + GroundBurst.MODID + ":reinforced_concrete");
+            case 1223 -> onServer(mc, level -> {
+                var facing = net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
+                var north = net.minecraft.core.Direction.NORTH;
+                var pipes = dev.groundburst.content.construction.GBConstruction.WALL_PIPES.block().get();
+                var valve = dev.groundburst.content.construction.GBConstruction.PIPE_VALVE.block().get();
+                for (int i = 0; i < 4; i++) {
+                    BlockPos at = new BlockPos(-50 + i, -59, -55);
+                    var s = (i == 2 ? valve.defaultBlockState().setValue(dev.groundburst.content.construction.PipeValveBlock.OPEN, true)
+                            : pipes.defaultBlockState()).setValue(facing, north);
+                    level.setBlockAndUpdate(at, s);
+                }
+                for (int i = 0; i < 4; i++) {
+                    BlockPos at = new BlockPos(-50 + i, -59, -55);
+                    var s = level.getBlockState(at);
+                    level.setBlockAndUpdate(at, ((dev.groundburst.content.construction.WallPipesBlock) s.getBlock()).joined(s, level, at));
+                }
+                level.setBlockAndUpdate(new BlockPos(-45, -59, -55), dev.groundburst.content.construction.GBConstruction.FUSE_BOX.block().get()
+                        .defaultBlockState().setValue(facing, north).setValue(dev.groundburst.content.construction.FuseBoxBlock.POWERED, true));
+                level.setBlockAndUpdate(new BlockPos(-47, -57, -55), dev.groundburst.content.construction.GBConstruction.BUNKER_LAMP.block().get()
+                        .defaultBlockState().setValue(net.minecraft.world.level.block.DirectionalBlock.FACING, north));
+                var duct = dev.groundburst.content.construction.GBConstruction.VENTILATION_DUCT.block().get();
+                for (int i = 0; i < 3; i++) {
+                    level.setBlockAndUpdate(new BlockPos(-44 + i, -57, -55), duct.defaultBlockState());
+                }
+                level.setBlockAndUpdate(new BlockPos(-43, -58, -55), dev.groundburst.content.construction.GBConstruction.VENT_GRILLE.block().get()
+                        .defaultBlockState().setValue(net.minecraft.world.level.block.DirectionalBlock.FACING, net.minecraft.core.Direction.DOWN));
+                for (int i = 0; i < 3; i++) {
+                    BlockPos at = new BlockPos(-44 + i, -57, -55);
+                    level.setBlockAndUpdate(at, duct.joined(level.getBlockState(at), level, at));
+                }
+                var locker = dev.groundburst.content.construction.GBConstruction.STEEL_LOCKER.block().get();
+                BlockPos la = new BlockPos(-41, -60, -55);
+                var ls = locker.defaultBlockState().setValue(facing, north).setValue(dev.groundburst.content.construction.SteelLockerBlock.OPEN, true);
+                level.setBlockAndUpdate(la, ls);
+                locker.setPlacedBy(level, la, ls, null, net.minecraft.world.item.ItemStack.EMPTY);
+                var bunk = dev.groundburst.content.construction.GBConstruction.BUNK_BED.block().get();
+                BlockPos foot = new BlockPos(-39, -60, -57);
+                var bs = bunk.defaultBlockState().setValue(facing, net.minecraft.core.Direction.SOUTH);
+                level.setBlockAndUpdate(foot, bs);
+                bunk.setPlacedBy(level, foot, bs, null, net.minecraft.world.item.ItemStack.EMPTY);
+                level.setBlockAndUpdate(new BlockPos(-46, -60, -57), dev.groundburst.content.construction.GBConstruction.FIRE_EXTINGUISHER.block().get()
+                        .defaultBlockState().setValue(facing, north));
+            });
+            case 1226 -> command(mc, "tp @s -44.5 -58.4 -61.5 0 12");
+            case 1290 -> tidy(mc);
+            case 1295 -> shot(mc, "fittings");
+            case 1300 -> command(mc, "tp @s -43.0 -58.2 -61.0 -31 10");
+            case 1330 -> tidy(mc);
+            case 1335 -> shot(mc, "fittings_locker_bunk");
+            case 1340 -> onServer(mc, level -> {
+                boolean pipes = level.getBlockState(new BlockPos(-50, -59, -55)).getValue(dev.groundburst.content.construction.WallPipesBlock.LEFT);
+                boolean bunk = level.getBlockState(new BlockPos(-39, -59, -56)).is(dev.groundburst.content.construction.GBConstruction.BUNK_BED.block().get());
+                boolean locker = level.getBlockEntity(new BlockPos(-41, -60, -55)) instanceof dev.groundburst.content.construction.SteelLockerBlockEntity l
+                        && l.getContainerSize() == 27 && level.getBlockState(new BlockPos(-41, -59, -55))
+                                .getValue(dev.groundburst.content.construction.SteelLockerBlock.OPEN);
+                boolean lit = level.getBlockState(new BlockPos(-47, -57, -55)).getLightEmission() == 14;
+                GroundBurst.LOGGER.info("Port check: the pipes joined {}, the bunk four blocks {}, the locker's 27 slots and open door {}, the lamp lit {}: {}",
+                        pipes, bunk, locker, lit, pipes && bunk && locker && lit ? "OK" : "WRONG");
+            });
+            case 1350 -> {
                 GroundBurst.LOGGER.info("Port check: done");
                 mc.stop();
             }

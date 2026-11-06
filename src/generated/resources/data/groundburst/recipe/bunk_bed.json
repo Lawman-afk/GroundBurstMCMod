@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "B": {
+      "tag": "minecraft:beds"
+    },
+    "S": {
+      "item": "groundburst:steel_rod"
+    }
+  },
+  "pattern": [
+    "SBS",
+    "SBS"
+  ],
+  "result": {
+    "id": "groundburst:bunk_bed"
+  }
+}

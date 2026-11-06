@@ -211,6 +211,8 @@
     "groundburst:command_desk",
     "groundburst:filing_cabinet",
     "groundburst:tape_computer",
-    "groundburst:situation_map_table"
+    "groundburst:situation_map_table",
+    "groundburst:steel_locker",
+    "groundburst:bunk_bed"
   ]
 }

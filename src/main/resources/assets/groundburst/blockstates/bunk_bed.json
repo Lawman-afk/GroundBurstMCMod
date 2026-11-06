@@ -1,0 +1,124 @@
+{
+  "variants": {
+    "facing=north,half=lower,occupied=false,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_bottom"
+    },
+    "facing=north,half=lower,occupied=true,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_bottom"
+    },
+    "facing=north,half=upper,occupied=false,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_top"
+    },
+    "facing=north,half=upper,occupied=true,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_top"
+    },
+    "facing=north,half=lower,occupied=false,part=head": {
+      "model": "groundburst:block/bunk_bed_head_bottom"
+    },
+    "facing=north,half=lower,occupied=true,part=head": {
+      "model": "groundburst:block/bunk_bed_head_bottom"
+    },
+    "facing=north,half=upper,occupied=false,part=head": {
+      "model": "groundburst:block/bunk_bed_head_top"
+    },
+    "facing=north,half=upper,occupied=true,part=head": {
+      "model": "groundburst:block/bunk_bed_head_top"
+    },
+    "facing=east,half=lower,occupied=false,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_bottom",
+      "y": 90
+    },
+    "facing=east,half=lower,occupied=true,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_bottom",
+      "y": 90
+    },
+    "facing=east,half=upper,occupied=false,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_top",
+      "y": 90
+    },
+    "facing=east,half=upper,occupied=true,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_top",
+      "y": 90
+    },
+    "facing=east,half=lower,occupied=false,part=head": {
+      "model": "groundburst:block/bunk_bed_head_bottom",
+      "y": 90
+    },
+    "facing=east,half=lower,occupied=true,part=head": {
+      "model": "groundburst:block/bunk_bed_head_bottom",
+      "y": 90
+    },
+    "facing=east,half=upper,occupied=false,part=head": {
+      "model": "groundburst:block/bunk_bed_head_top",
+      "y": 90
+    },
+    "facing=east,half=upper,occupied=true,part=head": {
+      "model": "groundburst:block/bunk_bed_head_top",
+      "y": 90
+    },
+    "facing=south,half=lower,occupied=false,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_bottom",
+      "y": 180
+    },
+    "facing=south,half=lower,occupied=true,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_bottom",
+      "y": 180
+    },
+    "facing=south,half=upper,occupied=false,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_top",
+      "y": 180
+    },
+    "facing=south,half=upper,occupied=true,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_top",
+      "y": 180
+    },
+    "facing=south,half=lower,occupied=false,part=head": {
+      "model": "groundburst:block/bunk_bed_head_bottom",
+      "y": 180
+    },
+    "facing=south,half=lower,occupied=true,part=head": {
+      "model": "groundburst:block/bunk_bed_head_bottom",
+      "y": 180
+    },
+    "facing=south,half=upper,occupied=false,part=head": {
+      "model": "groundburst:block/bunk_bed_head_top",
+      "y": 180
+    },
+    "facing=south,half=upper,occupied=true,part=head": {
+      "model": "groundburst:block/bunk_bed_head_top",
+      "y": 180
+    },
+    "facing=west,half=lower,occupied=false,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_bottom",
+      "y": 270
+    },
+    "facing=west,half=lower,occupied=true,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_bottom",
+      "y": 270
+    },
+    "facing=west,half=upper,occupied=false,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_top",
+      "y": 270
+    },
+    "facing=west,half=upper,occupied=true,part=foot": {
+      "model": "groundburst:block/bunk_bed_foot_top",
+      "y": 270
+    },
+    "facing=west,half=lower,occupied=false,part=head": {
+      "model": "groundburst:block/bunk_bed_head_bottom",
+      "y": 270
+    },
+    "facing=west,half=lower,occupied=true,part=head": {
+      "model": "groundburst:block/bunk_bed_head_bottom",
+      "y": 270
+    },
+    "facing=west,half=upper,occupied=false,part=head": {
+      "model": "groundburst:block/bunk_bed_head_top",
+      "y": 270
+    },
+    "facing=west,half=upper,occupied=true,part=head": {
+      "model": "groundburst:block/bunk_bed_head_top",
+      "y": 270
+    }
+  }
+}
