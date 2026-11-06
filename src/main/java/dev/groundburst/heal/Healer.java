@@ -342,6 +342,9 @@ public final class Healer {
      * Whether a fire burns in the chunk or one beside it, near the chunk's damage (in a section with damage, or the one
      * above or below), that will go out by itself (not one on netherrack or the like, which burns for good, nor a soul
      * fire, which never spreads): what heals there now could burn again. With {@code putOut}, each such fire goes out.
+     * A fire that cannot burn out where it is (nobody near enough for fire to burn, or its chunk not ticking:
+     * {@link Snapshots#burnsOut}) would stand there for good and hold the healing off for ever: it goes out now, and is
+     * no reason to wait (this is asked only of a chunk that is due).
      */
     public boolean fireNear(LevelChunk chunk, boolean putOut) {
         ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
@@ -382,16 +385,19 @@ public final class Healer {
                         if (this.level.getBlockState(below).isFireSource(this.level, below, net.minecraft.core.Direction.UP)) {
                             continue;                      // it burns for good there: a hearth, the Nether's netherrack
                         }
-                        if (!putOut) {
+                        if (!putOut && Snapshots.burnsOut(this.level, p)) {
                             return true;
                         }
                         found = true;
-                        this.level.removeBlock(p, false);
+                        // Quietly: nothing's shape hangs on a fire, and told, what the damage left hanging by it (a crop
+                        // over a blown-out field) would fall and drop now, where it stands until its ground heals.
+                        this.level.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),
+                                Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
                     }
                 }
             }
         }
-        return found;
+        return putOut && found;
     }
 
     /** A chunk's last block is back: its decorations hang again and its record goes. */

@@ -1,6 +1,7 @@
 package dev.groundburst.heal;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,13 +29,22 @@ import net.minecraft.world.phys.Vec3;
  * damage is remembered whatever the config says, and heal it themselves.
  */
 public record HealSettings(boolean enabled, HealSchedule schedule, int waitTicks, int randomTicks, int blocksPerSecond,
-        int longestTicks, HealOrder order, boolean effects, boolean conventional, boolean nuclear, boolean special,
-        boolean chemical, boolean aftermath, boolean decorations, boolean biomes, boolean clearRadiation,
+        int longestTicks, HealOrder order, boolean effects, Set<Kind> kinds, boolean aftermath, boolean decorations,
+        boolean biomes, boolean clearRadiation,
         List<Pattern> excludedWeapons, Set<Block> excludedBlocks, List<TagKey<Block>> excludedTags, Set<String> excludedDimensions,
         HealPlayerBlocks playerBlocks, int keepRadius, boolean drops, int maxBlocksPerTick, int msPerTick) {
 
-    /** What kind of weapon did the damage: each kind can be left out of healing. */
-    public enum Kind { CONVENTIONAL, NUCLEAR, SPECIAL, CHEMICAL }
+    /**
+     * What did the damage: a kind of this mod's weapons, or what set off one of the game's own explosions (or another
+     * mod's that goes through the game's explosion code, {@link Explosions}). Each can be left out of healing.
+     */
+    public enum Kind {
+        CONVENTIONAL, NUCLEAR, SPECIAL, CHEMICAL,
+        /** The game's explosions, by what set them off. */
+        CREEPER, TNT, END_CRYSTAL, FIREBALL, WITHER, BED,
+        /** Any other explosion through the game's explosion code: another mod's. */
+        OTHER_MOD
+    }
 
     private static volatile @Nullable HealSettings cached;
     private static volatile long cachedAt;
@@ -60,8 +70,7 @@ public record HealSettings(boolean enabled, HealSchedule schedule, int waitTicks
 
     /** Healing off (before the server's config has loaded). */
     private static final HealSettings OFF = new HealSettings(false, HealSchedule.AFTER_WAIT, 6000, 0, 20, 6000, HealOrder.BOTTOM_UP, false,
-            false, false, false, false, false, false, false, false, List.of(), Set.of(), List.of(), Set.of(), HealPlayerBlocks.KEEP, 3, false,
-            2000, 5);
+            Set.of(), false, false, false, false, List.of(), Set.of(), List.of(), Set.of(), HealPlayerBlocks.KEEP, 3, false, 2000, 5);
 
     /** The settings for damage at {@code at}: a GameTest's own where it has marked an area out, else the config's. */
     public static HealSettings at(ServerLevel level, Vec3 at) {
@@ -109,24 +118,31 @@ public record HealSettings(boolean enabled, HealSchedule schedule, int waitTicks
     public static HealSettings forTests(HealPlayerBlocks players, int keepRadius) {
         // (Radiation left alone: another test's source may lie in the same chunk.)
         return new HealSettings(true, HealSchedule.AFTER_WAIT, 0, 0, 100_000, 0, HealOrder.BOTTOM_UP, false,
-                true, true, true, true, true, true, true, false, List.of(), Set.of(), List.of(), Set.of(), players, keepRadius,
-                false, 100_000, 1_000);
+                Set.copyOf(EnumSet.allOf(Kind.class)), true, true, true, false, List.of(), Set.of(), List.of(), Set.of(), players,
+                keepRadius, false, 100_000, 1_000);
     }
 
     /** A copy with another schedule (GameTests). */
     public HealSettings withSchedule(boolean on, HealSchedule schedule, int waitTicks, int randomTicks) {
         return new HealSettings(on, schedule, waitTicks, randomTicks, this.blocksPerSecond, this.longestTicks, this.order, this.effects,
-                this.conventional, this.nuclear, this.special, this.chemical, this.aftermath, this.decorations, this.biomes,
-                this.clearRadiation, this.excludedWeapons, this.excludedBlocks, this.excludedTags, this.excludedDimensions,
-                this.playerBlocks, this.keepRadius, this.drops, this.maxBlocksPerTick, this.msPerTick);
+                this.kinds, this.aftermath, this.decorations, this.biomes, this.clearRadiation, this.excludedWeapons, this.excludedBlocks,
+                this.excludedTags, this.excludedDimensions, this.playerBlocks, this.keepRadius, this.drops, this.maxBlocksPerTick, this.msPerTick);
     }
 
     /** A copy that leaves these blocks and tags out, and these weapons (GameTests). */
     public HealSettings withExcluded(Set<Block> blocks, List<TagKey<Block>> tags, List<String> weapons) {
         return new HealSettings(this.enabled, this.schedule, this.waitTicks, this.randomTicks, this.blocksPerSecond, this.longestTicks,
-                this.order, this.effects, this.conventional, this.nuclear, this.special, this.chemical, this.aftermath, this.decorations,
-                this.biomes, this.clearRadiation, weapons.stream().map(HealSettings::glob).toList(), Set.copyOf(blocks), List.copyOf(tags),
-                this.excludedDimensions, this.playerBlocks, this.keepRadius, this.drops, this.maxBlocksPerTick, this.msPerTick);
+                this.order, this.effects, this.kinds, this.aftermath, this.decorations, this.biomes, this.clearRadiation,
+                weapons.stream().map(HealSettings::glob).toList(), Set.copyOf(blocks), List.copyOf(tags), this.excludedDimensions,
+                this.playerBlocks, this.keepRadius, this.drops, this.maxBlocksPerTick, this.msPerTick);
+    }
+
+    /** A copy in which only these kinds heal (GameTests). */
+    public HealSettings withKinds(Set<Kind> kinds) {
+        return new HealSettings(this.enabled, this.schedule, this.waitTicks, this.randomTicks, this.blocksPerSecond, this.longestTicks,
+                this.order, this.effects, Set.copyOf(kinds), this.aftermath, this.decorations, this.biomes, this.clearRadiation,
+                this.excludedWeapons, this.excludedBlocks, this.excludedTags, this.excludedDimensions, this.playerBlocks, this.keepRadius,
+                this.drops, this.maxBlocksPerTick, this.msPerTick);
     }
 
     private static HealSettings read() {
@@ -149,16 +165,33 @@ public record HealSettings(boolean enabled, HealSchedule schedule, int waitTicks
                 }
             }
         }
+        EnumSet<Kind> kinds = EnumSet.noneOf(Kind.class);
+        kind(kinds, Kind.CONVENTIONAL, GBServerConfig.HEAL_CONVENTIONAL.get());
+        kind(kinds, Kind.NUCLEAR, GBServerConfig.HEAL_NUCLEAR.get());
+        kind(kinds, Kind.SPECIAL, GBServerConfig.HEAL_SPECIAL.get());
+        kind(kinds, Kind.CHEMICAL, GBServerConfig.HEAL_CHEMICAL.get());
+        kind(kinds, Kind.CREEPER, GBServerConfig.HEAL_CREEPERS.get());
+        kind(kinds, Kind.TNT, GBServerConfig.HEAL_TNT.get());
+        kind(kinds, Kind.END_CRYSTAL, GBServerConfig.HEAL_END_CRYSTALS.get());
+        kind(kinds, Kind.FIREBALL, GBServerConfig.HEAL_FIREBALLS.get());
+        kind(kinds, Kind.WITHER, GBServerConfig.HEAL_WITHER.get());
+        kind(kinds, Kind.BED, GBServerConfig.HEAL_BEDS.get());
+        kind(kinds, Kind.OTHER_MOD, GBServerConfig.HEAL_OTHER_MODS.get());
         return new HealSettings(GBServerConfig.HEAL_ENABLED.get(), GBServerConfig.HEAL_SCHEDULE.get(),
                 GBServerConfig.HEAL_WAIT_SECONDS.get() * 20, GBServerConfig.HEAL_RANDOM_SECONDS.get() * 20,
                 GBServerConfig.HEAL_BLOCKS_PER_SECOND.get(), GBServerConfig.HEAL_LONGEST_SECONDS.get() * 20,
                 GBServerConfig.HEAL_ORDER.get(), GBServerConfig.HEAL_EFFECTS.get(),
-                GBServerConfig.HEAL_CONVENTIONAL.get(), GBServerConfig.HEAL_NUCLEAR.get(), GBServerConfig.HEAL_SPECIAL.get(),
-                GBServerConfig.HEAL_CHEMICAL.get(), GBServerConfig.HEAL_AFTERMATH.get(), GBServerConfig.HEAL_DECORATIONS.get(),
+                Set.copyOf(kinds), GBServerConfig.HEAL_AFTERMATH.get(), GBServerConfig.HEAL_DECORATIONS.get(),
                 GBServerConfig.HEAL_BIOMES.get(), GBServerConfig.HEAL_CLEAR_RADIATION.get(), List.copyOf(weapons), Set.copyOf(blocks),
                 List.copyOf(tags), Set.copyOf(GBServerConfig.HEAL_EXCLUDED_DIMENSIONS.get()), GBServerConfig.HEAL_PLAYER_BLOCKS.get(),
                 GBServerConfig.HEAL_KEEP_RADIUS.get(), GBServerConfig.HEAL_DROPS.get(), GBServerConfig.HEAL_MAX_BLOCKS_PER_TICK.get(),
                 GBServerConfig.HEAL_MS_PER_TICK.get());
+    }
+
+    private static void kind(Set<Kind> kinds, Kind kind, boolean on) {
+        if (on) {
+            kinds.add(kind);
+        }
     }
 
     /** {@code groundburst:tsar*} as a pattern: a {@code *} matches anything, the rest only itself. */
@@ -176,18 +209,15 @@ public record HealSettings(boolean enabled, HealSchedule schedule, int waitTicks
         return Pattern.compile(b.toString());
     }
 
-    /** Whether damage of this kind, by this weapon, in this level heals. */
+    /**
+     * Whether damage of this kind, by this weapon, in this level heals. (For the game's explosions and other mods', the
+     * weapon is what set the explosion off: {@link Explosions#source}.)
+     */
     public boolean heals(Kind kind, ResourceLocation weapon, ServerLevel level) {
         if (!this.enabled) {
             return false;
         }
-        boolean on = switch (kind) {
-            case CONVENTIONAL -> this.conventional;
-            case NUCLEAR -> this.nuclear;
-            case SPECIAL -> this.special;
-            case CHEMICAL -> this.chemical;
-        };
-        if (!on || this.excludedDimensions.contains(level.dimension().location().toString())) {
+        if (!this.kinds.contains(kind) || this.excludedDimensions.contains(level.dimension().location().toString())) {
             return false;
         }
         String id = weapon.toString();

@@ -51,6 +51,23 @@ final class Snapshots {
         level.neighborChanged(neighbour, at, changed, from, false);
     }
 
+    /**
+     * The id of an explosion's damage type (1.21.1's explosion gives its damage source out through
+     * {@code mixin/ServerExplosionMixin}, {@link dev.groundburst.port.ExplosionDamage}), else null.
+     */
+    static net.minecraft.resources.@Nullable ResourceLocation damageType(net.minecraft.world.level.Explosion explosion) {
+        return explosion instanceof dev.groundburst.port.ExplosionDamage d
+                ? d.groundburst$damageSource().typeHolder().unwrapKey().map(net.minecraft.resources.ResourceKey::location).orElse(null) : null;
+    }
+
+    /**
+     * Whether a fire at {@code pos} burns on, to go out by itself: its chunk ticks, and fire ticks at all (1.21.1's
+     * {@code doFireTick}; 26.x has a reach round players instead, beyond which a fire neither spreads nor goes out).
+     */
+    static boolean burnsOut(ServerLevel level, BlockPos pos) {
+        return level.shouldTickBlocksAt(pos) && level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOFIRETICK);
+    }
+
     /** The level's time of day in ticks (0 at sunrise, 24 000 a day), or -1 where there is no day and night. */
     static long dayTime(ServerLevel level) {
         return level.dimensionType().hasFixedTime() ? -1 : level.getDayTime();

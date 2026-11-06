@@ -4,7 +4,9 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `aa759d21` (2026-11-06: the Depth Charge Rack, main's DESIGN.md §14.6, a stern rack
+- **Last brought up to:** `main` at `c2acaac1` (2026-11-06, for 0.9.0: healing the game's own explosions and other
+  mods', main's DESIGN.md §21.9, here through this branch's own two mixins, below; before it, at `aa759d21`, the Depth
+  Charge Rack, main's DESIGN.md §14.6, a stern rack
   that rolls depth charges off into the sea, loaded through its Item Port by hoppers, pipes and Create's funnels; a
   charge rolled off keeps its axis in its own synced data, since 1.21.1's client turns a new projectile's rotation to its
   motion (`Projectile.lerpMotion`); before it, at `e2e3df4f`, the blast effects drawn last under shader packs and with
@@ -59,7 +61,8 @@ code is not ported by hand file by file. `tools/backport/port.py` turns main's s
 `tools/backport/compile.ps1` (run with PowerShell 7) compiles and sorts the errors; `errs.py <words>` prints a file's
 errors with their lines. `gradlew runGameTestServer` loads everything on a server and runs this branch's own tests
 (`dev.groundburst.port.SmokeTest`: it loads; a particle beam carves its trench; transactions are each thread's own; the
-Wrench splits and joins pipes and cables; healing puts a blast's damage back block for block, a chest with its diamonds); `gradlew runPortCheck` opens a world, sets the mod's blocks out (a Warning
+Wrench splits and joins pipes and cables; healing puts a blast's damage back block for block, a chest with its diamonds,
+and a creeper's explosion too, its item frame hung again, a block of TNT it lit not put back); `gradlew runPortCheck` opens a world, sets the mod's blocks out (a Warning
 Beacon lit by redstone, buckets in the hotbar), opens the Field Manual, sets a blast off, brings a particle beam down and
 looks into its pit, lays sea mines in a walled sea (seen from under the water and from above) and sets a depth charge
 off under them (its column), builds a Depth Charge Rack on a quay in that sea (four charges put on, two from a hopper over
@@ -89,7 +92,11 @@ machines, the Field Manual, a blast and a particle beam drawing as they should. 
 (`manual.txt`): `heal/Snapshots` (a block entity's and an entity's save and load through tags, the day's time from
 `getDayTime`), and three of its mixins: `FireBlockMixin` (1.21.1's fire sets its block with `setBlock(pos, state, 3)`),
 `SpreadingSnowyBlockMixin` (grass is `SpreadingSnowyDirtBlock`) and `FarmlandBlockMixin` (`FarmBlock` and its static
-`turnToDirt`). The other mixins (`BlockMixin`, `FlowingFluidMixin`, `LeavesBlockMixin`) are the same on both, and the
+`turnToDirt`), and the two for the game's own explosions: `BlockStateBaseMixin` (1.21.1's explosion hit takes any
+level, as the client runs an explosion's blocks too, ahead of the server's word: only the server's is remembered) and
+`ServerExplosionMixin` (1.21.1's explosion is the one class `Explosion`, which hurts what it reaches in `explode`; it
+also gives out its damage source, `port/ExplosionDamage`, which main's has a getter for, so a bed's explosion is known).
+The other mixins (`BlockMixin`, `FlowingFluidMixin`, `LeavesBlockMixin`) are the same on both, and the
 mixins are declared in this branch's own `neoforge.mods.toml`. 1.21.1 has no flags to skip a block entity's side effects
 or a block's on-place hook (the port takes them out): a block that will heal has its block entity taken out first, so
 nothing spills, and a healed block runs its on-place hook (a healed water source flows, as it should). The heal check

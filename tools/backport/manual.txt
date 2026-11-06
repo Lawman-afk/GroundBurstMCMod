@@ -23,3 +23,5 @@ src/main/java/dev/groundburst/mixin/FarmlandBlockMixin.java
 src/main/java/dev/groundburst/client/fx/PlayBenchClient.java
 src/main/java/dev/groundburst/client/fx/IrisFx.java
 src/main/java/dev/groundburst/client/fx/DrawnLast.java
+src/main/java/dev/groundburst/mixin/BlockStateBaseMixin.java
+src/main/java/dev/groundburst/mixin/ServerExplosionMixin.java

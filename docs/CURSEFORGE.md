@@ -39,7 +39,8 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
   measure, hazmat suits, and a wasteland biome over the scorched ground.
 - **Healing, if you want it** (off by default): turn it on in the server config and the damage grows back over time,
   block for block as it was: chests with their contents, machines with their settings, cables and pipes that carry
-  again, other mods' blocks too, at a speed and on a schedule you choose. For forever worlds that still want their wars.
+  again, other mods' blocks too, at a speed and on a schedule you choose. Creepers' and TNT's holes and other mods'
+  explosions heal too, if you like. For forever worlds that still want their wars.
 - **Industry and power:** new ores, processing machines on FE power with upgrade chips for speed and efficiency, and
   multiblock fission, fusion and singularity reactors.
 - **Chips made the hard way:** silicon purified and grown into crystals in a Crystal Puller, sapphire for
@@ -176,7 +177,9 @@ default an area starts to grow back 5 minutes after the last blast near it and t
 everything just as it was: chests and their contents, machines and their settings, cables and pipes working again, other
 mods' blocks too. You can change when it heals (after a wait, every morning, or
 only when an operator says), how fast and in what order, which weapons, blocks and dimensions heal, and what happens to
-blocks players have built in a crater. Operators also have `/groundburst heal now`, `/groundburst heal forget` and
+blocks players have built in a crater. The game's own explosions heal too (creepers, TNT, end crystals, ghasts'
+fireballs, the Wither, beds and respawn anchors), and other mods' explosions that use the game's explosion code, each
+with a switch under **Other explosions**. Operators also have `/groundburst heal now`, `/groundburst heal forget` and
 `/groundburst heal status`. Only damage done while healing is on comes back, so turn it on before the war starts.
 
 ## Requirements

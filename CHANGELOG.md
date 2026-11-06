@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.9.0 — 2026-11-06
+
+Sea mines and depth charges with a stern rack to roll them off, healing for creepers, TNT and other mods' explosions,
+and, on 26.3 and 1.21.1, blast effects that look the same under every shader pack. For Minecraft 26.3, 26.1.2 and
+1.21.1; the 26.1.2 build catches up from 0.8.0, with 0.8.1's healed cables, pipes and machines.
 
 ### Sea mines and depth charges
 - **Moored Sea Mine**: the classic horned mine on its chain. Use it on water and it sinks to the bottom with its
@@ -24,6 +28,19 @@
   throws up a tall column of spray that falls back as rain and mist; what the blast breaks under water fills with
   water. Their own sounds: a deep thud, the column's roar and its water falling back.
 - Every blast now breaks the boats and minecarts it hits.
+
+### Healing
+- **The game's own explosions heal too**: creepers, TNT and TNT minecarts, end crystals, ghasts' fireballs, the Wither,
+  and beds and respawn anchors that blow up, each with its own switch under Healing, Other explosions (all on). They
+  come back as the mod's blasts do: chests with their contents, nothing dropped meanwhile, item frames, paintings and
+  armour stands hung and stood again. TNT an explosion lights goes off, so it does not come back.
+- **Other mods' explosions** heal too when they go through the game's own explosion code, as most do (one switch;
+  leave one mod out by its id under Weapons that never heal, such as "somemod:*"). An explosion that digs its own
+  crater, as this mod's weapons do, is not seen.
+- With healing off nothing changes: explosions drop and spill as they always have.
+- **Damage that was burning heals even when nobody stays to watch.** Healing waits for the fires by the damage to go
+  out, but a fire far from every player neither spreads nor goes out (on Minecraft 26.x, beyond 128 blocks), so a
+  crater left burning when its players went away never healed. Now such a fire goes out once the wait is over.
 
 ### Shader packs and Distant Horizons
 - With a shader pack on (Iris), blast effects are now drawn over the pack's finished picture with the mod's own

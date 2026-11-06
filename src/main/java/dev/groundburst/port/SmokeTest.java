@@ -103,6 +103,67 @@ public final class SmokeTest {
         helper.succeed();
     }
 
+    /**
+     * Main's heal_puts_a_creeper_hole_back and heal_leaves_tnt_an_explosion_lit, in short (DESIGN.md §21.9): a creeper's
+     * explosion (the game's own) over dirt, grass, a chest of diamonds and a wall with an item frame on it, healed back
+     * block for block, nothing dropped meanwhile, the chest with its diamonds and the frame hung again with its emerald;
+     * a block of TNT the explosion lit goes off and is not put back.
+     */
+    @GameTest(template = "gametest/floor_16")
+    public static void healsTheGamesExplosions(GameTestHelper helper) {
+        net.minecraft.server.level.ServerLevel level = helper.getLevel();
+        for (BlockPos p : BlockPos.betweenClosed(1, 1, 1, 15, 3, 15)) {
+            helper.setBlock(p, p.getY() == 3 ? Blocks.GRASS_BLOCK : Blocks.DIRT);
+        }
+        BlockPos middle = new BlockPos(8, 4, 8), chest = middle.east(), tnt = middle.offset(-2, 0, 0);
+        helper.setBlock(chest, Blocks.CHEST);
+        ((net.minecraft.world.Container) helper.getBlockEntity(chest)).setItem(4, new ItemStack(net.minecraft.world.item.Items.DIAMOND, 37));
+        for (BlockPos p : BlockPos.betweenClosed(6, 4, 11, 10, 6, 11)) {
+            helper.setBlock(p, Blocks.STONE_BRICKS);
+        }
+        var frame = new net.minecraft.world.entity.decoration.ItemFrame(level, helper.absolutePos(new BlockPos(8, 5, 10)), Direction.NORTH);
+        frame.setItem(new ItemStack(net.minecraft.world.item.Items.EMERALD));
+        helper.assertTrue(frame.survives() && level.addFreshEntity(frame), "the frame hangs on its wall");
+        net.minecraft.world.phys.AABB bounds = helper.getBounds(), area = bounds.inflate(2);
+        java.util.Map<BlockPos, BlockState> before = new java.util.HashMap<>();
+        for (BlockPos p : BlockPos.betweenClosed(BlockPos.containing(bounds.minX, bounds.minY, bounds.minZ),
+                BlockPos.containing(bounds.maxX - 1, bounds.maxY - 1, bounds.maxZ - 1))) {
+            before.put(p.immutable(), level.getBlockState(p));
+        }
+        helper.setBlock(tnt, Blocks.TNT);                  // (after the picture of the plot: lit, it is not put back)
+        dev.groundburst.heal.HealSettings s = dev.groundburst.heal.HealSettings.forTests(
+                dev.groundburst.config.GBServerConfig.HealPlayerBlocks.KEEP, 0);
+        dev.groundburst.heal.HealSettings.testArea(level, area, s);
+        try {
+            Vec3 at = helper.absoluteVec(Vec3.atCenterOf(middle));
+            var creeper = new net.minecraft.world.entity.monster.Creeper(net.minecraft.world.entity.EntityType.CREEPER, level);
+            creeper.setPos(at);
+            level.explode(creeper, at.x, at.y, at.z, 3.0F, net.minecraft.world.level.Level.ExplosionInteraction.MOB);
+            helper.assertTrue(level.getBlockState(helper.absolutePos(chest)).isAir(), "the creeper took the chest");
+            helper.assertTrue(frame.isRemoved(), "and the frame off its wall");
+            var lit = level.getEntitiesOfClass(net.minecraft.world.entity.item.PrimedTnt.class, area);
+            lit.forEach(net.minecraft.world.entity.Entity::discard);
+            helper.assertTrue(lit.size() == 1 && !dev.groundburst.heal.Scars.remembered(level, helper.absolutePos(tnt)),
+                    "the TNT beside it was lit, and is not remembered (" + lit.size() + ")");
+            helper.assertTrue(level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, area).isEmpty()
+                    && level.getEntitiesOfClass(net.minecraft.world.entity.ExperienceOrb.class, area).isEmpty(), "nothing dropped: it will all come back");
+            dev.groundburst.heal.Healer.of(level).healNow(net.minecraft.world.level.levelgen.structure.BoundingBox.fromCorners(
+                    BlockPos.containing(area.minX, area.minY, area.minZ), BlockPos.containing(area.maxX - 1e-3, area.maxY - 1e-3, area.maxZ - 1e-3)), s);
+        } finally {
+            dev.groundburst.heal.HealSettings.endTestArea(level, area);
+        }
+        for (java.util.Map.Entry<BlockPos, BlockState> e : before.entrySet()) {
+            BlockState now = level.getBlockState(e.getKey());
+            helper.assertTrue(now == e.getValue(), "back as it was at " + helper.relativePos(e.getKey()) + ": " + now + ", was " + e.getValue());
+        }
+        ItemStack held = ((net.minecraft.world.Container) helper.getBlockEntity(chest)).getItem(4);
+        helper.assertTrue(held.is(net.minecraft.world.item.Items.DIAMOND) && held.getCount() == 37, "the chest has its diamonds again: " + held);
+        var frames = level.getEntitiesOfClass(net.minecraft.world.entity.decoration.ItemFrame.class, area);
+        helper.assertTrue(frames.size() == 1 && frames.getFirst().getItem().is(net.minecraft.world.item.Items.EMERALD),
+                "the frame hangs again with its emerald: " + frames);
+        helper.succeed();
+    }
+
     /** Transactions are each thread's own (the client's and the server's run side by side in one game). */
     @GameTest(template = "gametest/floor_16")
     public static void transactionsPerThread(GameTestHelper helper) throws InterruptedException {
