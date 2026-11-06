@@ -69,8 +69,9 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 - **Construction blocks** for building your own: chain-link fencing, barbed wire, corrugated steel, steel panels,
   grating, I-beams, lattice frames, radome panels, floodlights, sandbags and warning signs. Plus two showpieces: a
   Large Silo Door whose leaves slide apart on a redstone signal, and a Search Radar that turns.
-- **Shader packs:** fireballs, smoke and mushroom clouds draw right with Iris shader packs (tried with Complementary
-  Reimagined and BSL), on Minecraft 26.3 and 1.21.1.
+- **Shader packs:** fireballs, smoke and mushroom clouds draw right with Iris shader packs and look the same in every
+  pack (tried with Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas and MakeUp Ultra Fast), and stand
+  in front of Distant Horizons' far terrain, on Minecraft 26.3 and 1.21.1.
 - **The Field Manual**, an in-game guide to all of it.
 
 What changed in each version is in the [changelog](CHANGELOG.md).
@@ -158,6 +159,8 @@ Ground Burst comes in three files, one for each version of Minecraft; take the o
   particles are not tinted.
 - [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) (optional) on any
 - [Iris](https://www.curseforge.com/minecraft/mc-mods/irisshaders) (optional) on 26.3 and 1.21.1, for shader packs
+- [Distant Horizons](https://www.curseforge.com/minecraft/mc-mods/distant-horizons) (optional) on 26.3 and 1.21.1:
+  blast effects stand in front of its far terrain
 
 Install it on the server and on every player's game: it adds blocks and items, so both sides need it.
 
