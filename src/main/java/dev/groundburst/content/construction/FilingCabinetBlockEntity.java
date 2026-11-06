@@ -36,13 +36,13 @@ public class FilingCabinetBlockEntity extends RandomizableContainerBlockEntity {
     private final ContainerOpenersCounter openers = new ContainerOpenersCounter() {
         @Override
         protected void onOpen(Level level, BlockPos pos, BlockState state) {
-            sound(state, GBSounds.FILING_CABINET_OPEN.get());
+            sound(state, openSound());
             setOpen(state, true);
         }
 
         @Override
         protected void onClose(Level level, BlockPos pos, BlockState state) {
-            sound(state, GBSounds.FILING_CABINET_CLOSE.get());
+            sound(state, closeSound());
             setOpen(state, false);
         }
 
@@ -129,6 +129,15 @@ public class FilingCabinetBlockEntity extends RandomizableContainerBlockEntity {
         if (!this.remove) {
             this.openers.recheckOpeners(getLevel(), getBlockPos(), getBlockState());
         }
+    }
+
+    /** Its drawer rolled out (a locker: its door swung open). */
+    protected SoundEvent openSound() {
+        return GBSounds.FILING_CABINET_OPEN.get();
+    }
+
+    protected SoundEvent closeSound() {
+        return GBSounds.FILING_CABINET_CLOSE.get();
     }
 
     private void setOpen(BlockState state, boolean open) {

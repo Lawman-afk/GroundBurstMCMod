@@ -4959,6 +4959,51 @@ The second of the four sets (§22.3): a Cold War command post's furniture, each 
   its upper half; the map table breaks whole for one item); in game (`runSiteShots -Psite=room`, `CommandRoomBoard`: a
   concrete room with all five).
 
+### 22.5 The bunker fittings (2026-11-07)
+
+The third of the four sets (§22.3): what a bunker's walls, ceilings and rooms are fitted with, each model made by a script
+(`tools/assets/bunker_fittings.py`) and painted with the material library; their sounds cut from recordings already
+credited (`tools/sound/fittings.py`).
+
+- **Wall Pipes** (`WallPipesBlock`): three pipes (big, middle, small) along a wall on a bracket plate with clamps, running
+  on into wall pipes and pipe valves beside them that face the same way (a multipart model: the run, and a cap on each end
+  where nothing joins it). Their round sections are true prisms of planks along the run, their ends left open where they
+  meet the next block's.
+- **Pipe Valve** (`PipeValveBlock`): the run's big pipe through a gate valve (body, flanges, bonnet and stem), a red
+  handwheel out in front of it. A click turns the wheel: open, its stem stands out and its spokes are a quarter round on,
+  and it gives a signal as a lever does (strong into the wall it hangs on); another shuts it. Its gland squeals.
+- **Vent Grille** (`VentGrilleBlock`): a louvred plate on any face, its slats tilted, a dark duct behind them.
+- **Ventilation Duct** (`VentilationDuctBlock`): square galvanised duct that joins duct on all six sides and a grille whose
+  back is to it (a multipart model: a core, an arm with a flange toward each it joins).
+- **Bunker Lamp** (`BunkerLampBlock`): a vapour-proof lamp out of any face, its glass jar in a cage of four bars under a
+  ring, on a cast base; lit as it is put up (light 14, the jar's elements lit), a click turns it off and on.
+- **Fuse Box** (`FuseBoxBlock`): a steel box on a wall, its labelled door latched, its conduit up into the ceiling, a
+  breaker's handle at its side. A click throws the breaker: its lamp green, a signal as a lever gives; thrown back, red.
+- **Fire Extinguisher** (`FireExtinguisherBlock`): a red cylinder on the floor, its hose and horn, a gauge and a label. A
+  click gives a burst toward its front: a white cloud, its hiss, and the fire within a block of the block before it put out
+  (and anything burning there), so a bunker can be kept from burning down.
+- **Steel Locker** (`SteelLockerBlock`, `SteelLockerBlockEntity`): a grey locker two blocks high, louvred vents in its door,
+  a card holder, a padlock on its handle. It holds 27 stacks in its lower block (the Filing Cabinet's block entity, its own
+  name and sounds); while anyone has it open its door stands open past square on its hinges, both blocks (the upper follows
+  the lower), showing a mirror inside the door, a helmet on the shelf, a coat on its rail and boots. Built whole and cut
+  into its blocks' models; the open model's door is painted with the shut one's texels (another texture of its own), so
+  the door does not change as it swings. Its halves stand or fall together; the lower drops it and what it holds.
+- **Bunk Bed** (`BunkBedBlock`): an olive steel bunk two beds high and two blocks long (four blocks, a bed's head and foot,
+  lower and upper), mattresses with grey-blue blankets folded back, pillows, a ladder at its foot and a guard rail on the
+  upper bunk. Each bunk is a bed: two can sleep in it, each sets a spawn point (vanilla stands the upper sleeper up beside
+  it or below, as with beds stacked); a sleeper lies on the mattress (the bed's sleep height, 9.6 pixels up, not its
+  shape's top), and only in a bunk whose four blocks all stand. Breaking any block takes the four (its lower head drops the
+  item; in creative, nothing); where beds blow up, it blows up as a bed does.
+- Recipes: six wall pipes from plates and rods; the valve from wall pipes and a lever; four grilles from plates and iron
+  bars; eight ducts from plates round nothing; two lamps from a lantern caged in iron bars under a plate; the fuse box
+  from plates round a lever and copper wire; the extinguisher from two plates, red dye and a water bucket; the locker from
+  plates and a chest; the bunk from two beds on steel rods.
+- Checked: GameTests (the lamp clicks off and on; ducts join ducts and a grille's back, not a grille facing another way;
+  pipes run on into a valve and are capped where nothing joins them; the valve and the fuse box light a lamp and power the
+  wall they hang on; the extinguisher puts out a fire; the locker stands two high, holds 27 stacks, its upper door opens
+  with its lower, and gives back one locker and what it held; the bunk sleeps two at their mattresses' height and breaks
+  whole for one item); in game (`runSiteShots -Psite=fittings`, `FittingsBoard`: a concrete room with all nine).
+
 ---
 
 ## 23. Multiblock framework and layouts
@@ -5463,6 +5508,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-07 | **The bunker fittings** (§22.5; the cosmetics' third set, the user: "Yes, carry on" after the command room's previews): Wall Pipes that run on into their neighbours (capped where nothing joins them), a Pipe Valve whose handwheel opens it and gives a signal, a Vent Grille, Ventilation Duct joining on all six sides, a caged Bunker Lamp clicked off and on, a Fuse Box whose breaker gives a signal, a Fire Extinguisher whose burst puts out fire before it, a Steel Locker two blocks high holding 27 stacks (its door open while it is, a helmet, a coat and boots inside), a Bunk Bed two beds high (each bunk a bed of its own: two sleep in it). |
 | 2026-11-07 | **The command room** (§22.4; the cosmetics' second set, the user: "Yes, carry on" after the bunker doors' previews): a Control Console that runs on into its neighbours (its lamps blinking, an animated texture), a Command Desk with a scrolling CRT and a red telephone, a Filing Cabinet that holds 27 stacks (its top drawer out while open), a Tape Computer two blocks high whose reels read, stop and rewind (three takes, so a row never runs in step; a click stops it), a Situation Map Table two by two with a coast at war on it. |
 | 2026-11-07 | **The bunker doors** (§22.3; the cosmetic blocks, the plan's second item after 0.9.0, in the four sets the user chose in order: blast doors and hatches, the command room, bunker fittings, outdoor defences and the yard, "showing you previews as each set is done"): a two-by-three Blast Door whose handwheel draws three bolts before its leaf swings out on two heavy hinges (a block entity's model, both hands, its leaf's blocks laid in front of its hinges while it stands open, so it will not swing into a wall and the open leaf is solid); a round Bunker Hatch whose lid lifts up out of the floor (a trapdoor's behaviour, its own open shape and models); a Pressure Door with a see-through porthole (vanilla's door). Opened by hand and by redstone, each with its own sounds made from recordings already credited. |
 | 2026-11-07 | **The plan after 0.9.0** (the user, choosing from what was left on the plan and a list of new ideas: "Start with the high priority stuff, then the cosmetics, then the 3 you picked, then naval, then we decide on everything else"): first, top priority, the loose ends (healing's containers coming back full after spilling with Healing blocks drop items too on; main's GameTests on the 1.21.1 build; a test instance for 26.1.2) and the performance pass (effects, fallout, saving; §11); then more cosmetic blocks with 3D models, such as blast doors ("people love that kind of decoration"); then the war room displays, seismographs and the Dead Hand, each with an easy way to test it in game ("they rely on being fired upon"); then more naval weapons; then the rest is decided, contamination and the protective gear (§21.8's 12c) among it, and Jade and WTHIT tooltips ("a great idea", placed with the rest: the user restated the order without them when they had been put before the cosmetics). **Pinned for later:** nuclear winter; the server tools (claimed land spared by blasts, a log of launches and blasts, weapon permissions). **Undecided**, beside the special warheads' handheld weapons: remote cameras ("it doesn't exactly fit with the mod") and irradiated mobs. The fireball lighting the world at night is liked, with care for the frame rate. |

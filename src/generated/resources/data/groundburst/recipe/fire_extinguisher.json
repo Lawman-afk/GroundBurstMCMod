@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundburst:steel_plate",
+    "groundburst:steel_plate",
+    "#c:dyes/red",
+    "minecraft:water_bucket"
+  ],
+  "result": {
+    "id": "groundburst:fire_extinguisher"
+  }
+}

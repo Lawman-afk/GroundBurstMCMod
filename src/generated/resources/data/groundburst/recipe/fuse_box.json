@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "groundburst:copper_wire",
+    "L": "minecraft:lever",
+    "P": "groundburst:steel_plate"
+  },
+  "pattern": [
+    "PCP",
+    "PLP"
+  ],
+  "result": {
+    "id": "groundburst:fuse_box"
+  }
+}

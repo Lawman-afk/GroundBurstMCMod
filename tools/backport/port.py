@@ -385,6 +385,28 @@ def drop_method(signature: str):
 SKY = "dev.groundburst.port.SkyColors"
 
 FILE_FIXES: dict[str, list] = {
+    # --- the Bunk Bed (main's DESIGN.md §22.5): this version's bed has a block entity and puts its sleeper at a height of
+    # its own (no sleep height, no "destroy on use" of a bed rule): drawn by its blockstate's model, no block entity, the
+    # bed's own way of blowing up where beds do.
+    "src/main/java/dev/groundburst/content/construction/BunkBedBlock.java": [
+        swap("    /** A sleeper lies on the mattress (not on the posts' tops), and only in a bunk whose four blocks all stand. */\n"
+             "    @Override\n", ""),
+        drop_method("public OptionalDouble getSleepHeight("),
+        swap("    /** Where it may not be slept in (the Nether, the End), it blows up as a bed does, all four blocks gone first. */\n"
+             "    @Override\n", ""),
+        drop_method("protected InteractionResult destroyOnUse("),
+        lambda text: re.sub(r"\n{3,}(    @Override\n    protected VoxelShape getShape)", r"\n\n\1", text),
+        swap("import java.util.OptionalDouble;\n", ""),
+        swap("import net.minecraft.world.InteractionResult;\n", ""),
+        swap("import net.minecraft.world.phys.Vec3;\n", ""),
+        swap("import net.minecraft.world.level.block.BedBlock;\n",
+             "import net.minecraft.world.level.block.BedBlock;\nimport net.minecraft.world.level.block.RenderShape;\n"
+             "import net.minecraft.world.level.block.entity.BlockEntity;\n"),
+        after("        builder.add(HALF);\n    }\n",
+              "\n    @Override\n    protected RenderShape getRenderShape(BlockState state) {\n"
+              "        return RenderShape.MODEL;                            // its own model, not a bed's block entity\n    }\n"
+              "\n    @Override\n    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {\n        return null;\n    }\n"),
+    ],
     # The way under a shader pack (main's DESIGN.md §12.3) has no place here (no IrisFx, no DrawnLast): its option goes.
     "src/main/java/dev/groundburst/config/GBClientConfig.java": [
         resub(r'\n    public static final ModConfigSpec\.EnumValue<PackFx> SHADER_PACK_FX = B\n(?:.*\n)*?            \.defineEnum\("shaderPackFx", PackFx\.OVER\);\n',

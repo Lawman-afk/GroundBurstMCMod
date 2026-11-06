@@ -60,6 +60,9 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
   three open by hand or by redstone, each with its own sounds.
 - **A command room:** consoles with blinking lamps, a desk with a scrolling CRT and a red telephone, a filing cabinet
   that stores items, tape computers whose reels spin, and a situation map table.
+- **Bunker fittings:** wall pipes and a valve that gives a redstone signal, vent grilles and ducts that join up, caged
+  lamps, a fuse box whose breaker is a switch, a fire extinguisher that puts out fires, a steel locker that stores items,
+  and a bunk bed two players can sleep in.
 - **Create and Create Aeronautics** (Minecraft 1.21.1, optional): missile launchers on trains, bearings and airships,
   every machine working on Create's moving contraptions and Create Aeronautics' ships, and weapons that hit them (more
   below).
