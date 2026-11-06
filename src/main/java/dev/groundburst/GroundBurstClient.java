@@ -67,6 +67,7 @@ public class GroundBurstClient {
         event.register(GBMenus.LAUNCH_SILO.get(), MachineScreen::new);
         event.register(GBMenus.MISSILE_SILO.get(), MachineScreen::new);
         event.register(GBMenus.CRUISE_LAUNCHER.get(), MachineScreen::new);
+        event.register(GBMenus.DEPTH_CHARGE_RACK.get(), MachineScreen::new);
         event.register(GBMenus.VERTICAL_LAUNCH_BATTERY.get(), MachineScreen::new);
         event.register(GBMenus.ASSEMBLY_BENCH.get(), dev.groundburst.client.screen.AssemblyBenchScreen::new);
         event.register(GBMenus.STRATEGIC_ASSEMBLY.get(), dev.groundburst.client.screen.StrategicAssemblyScreen::new);
@@ -153,6 +154,9 @@ public class GroundBurstClient {
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.MISSILE_SILO_ENTITY.get(), 2, 4, 14));
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.SILO_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.SILO_ENTITY.get(), 9, 2));
+        // The Depth Charge Rack (DESIGN.md §14.6): four blocks back from its release end, a block high.
+        event.registerBlockEntityRenderer(dev.groundburst.content.naval.GBNaval.RACK_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.naval.GBNaval.RACK_ENTITY.get(), 1, 4));
         // The Cruise Missile Launcher (DESIGN.md §17.11): its deck 6 blocks back, its raised boxes 6 up.
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.CRUISE_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.CRUISE_ENTITY.get(), 7, 6));

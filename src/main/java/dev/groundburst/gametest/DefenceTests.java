@@ -135,6 +135,8 @@ final class DefenceTests {
     /** A storm over the plot: a strike three blocks from a battery knocks it out (an EMP pulse), so it fires at nothing. */
     private static void stormPulse(GameTestHelper helper) {
         InterceptorBatteryBlockEntity battery = battery(helper);
+        // Nothing flies at it here; once its pulse wears off it must not shoot down the missiles of the tests round it.
+        battery.engageOnlyForTest(f -> false);
         var level = helper.getLevel();
         BlockPos eye = new BlockPos(8, 1, 8);
         dev.groundburst.blast.Storms.lifeOverride = 200;

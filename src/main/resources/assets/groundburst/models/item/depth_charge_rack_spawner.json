@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "groundburst:item/depth_charge_rack_spawner"
+  }
+}

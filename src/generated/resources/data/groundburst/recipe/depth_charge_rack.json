@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:rods/steel",
+    "#c:rods/steel",
+    "minecraft:lever",
+    "minecraft:redstone"
+  ],
+  "result": {
+    "id": "groundburst:depth_charge_rack"
+  }
+}

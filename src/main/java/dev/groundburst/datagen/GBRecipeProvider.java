@@ -381,6 +381,17 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBTags.commonItem("plates/steel")).requires(GBTags.commonItem("plates/steel")).requires(GBTags.commonItem("plates/steel"))
                 .requires(Items.TNT).requires(Items.TNT).requires(Items.COPPER_INGOT)
                 .unlockedBy(getHasName(GBParts.STEEL_PLATE), has(GBParts.STEEL_PLATE)).save(output);
+        // The Depth Charge Rack (DESIGN.md §14.6): its release end (the trap, its lever and the redstone that trips it) and its rails.
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.naval.GBNaval.RACK.item(), 1)
+                .requires(GBTags.commonItem("plates/steel")).requires(GBTags.commonItem("plates/steel")).requires(GBTags.commonItem("plates/steel"))
+                .requires(GBTags.commonItem("rods/steel")).requires(GBTags.commonItem("rods/steel")).requires(Items.LEVER).requires(Items.REDSTONE)
+                .unlockedBy(getHasName(dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE), has(dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE))
+                .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.naval.GBNaval.RAIL.item(), 2)
+                .requires(GBTags.commonItem("rods/steel")).requires(GBTags.commonItem("rods/steel")).requires(GBTags.commonItem("rods/steel"))
+                .requires(GBTags.commonItem("rods/steel")).requires(GBTags.commonItem("plates/steel")).requires(GBTags.commonItem("plates/steel"))
+                .unlockedBy(getHasName(dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE), has(dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE))
+                .save(output);
         // Warheads are assembled at the Ordnance Assembly Bench (Phase 7): payload cores, casings and fuzes.
         shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.HE_CHARGE, 1)
                 .requires(GBChemicals.RDX_CRYSTALS).requires(GBChemicals.RDX_CRYSTALS)

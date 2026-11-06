@@ -229,6 +229,24 @@ LAYOUTS = {
                      ("wider", 176, 68, 22, 18, -1, 0, 1, "groundburst.gui.vls_wider")],
         "inventory": (22, 114),
     },
+    # The Depth Charge Rack (DESIGN.md §14.6): its six charges in a row, the front one (against the trap) first; the CRT with
+    # its state, load, depth and interval; its buttons (release one, a pattern of all, the depth, the interval). It has no
+    # power and no redstone mode (redstone is what releases a charge).
+    "depth_charge_rack": {
+        "title": (8, 6),
+        "slots": [("charge", 8 + 18 * i, 20) for i in range(6)],
+        "energy": None,
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": None,
+        "readout": (8, 42, 114, 36),
+        "controls": [("release", 126, 19, 42, 18, -1, 0, 0, "groundburst.gui.rack_release"),
+                     ("salvo", 126, 40, 42, 18, -1, 0, 1, "groundburst.gui.rack_pattern"),
+                     ("depth", 126, 61, 20, 18, -1, 0, 2, "groundburst.gui.rack_depth"),
+                     ("interval", 148, 61, 20, 18, -1, 0, 3, "groundburst.gui.rack_interval")],
+        "inventory": (8, 84),
+    },
     # The superweapons (DESIGN.md §19.5): their ammunition (a SCUD Storm's nine Toxin SCUDs, a Nuclear Missile Silo's one
     # missile), the energy they charge from, and the CRT with the state (the charge's clock), ammunition and target.
     "superweapon": {
@@ -750,6 +768,11 @@ MISSILE_GHOST = [".......##.......", "......#..#......", "......#..#......", "..
                  ".......##......."]
 
 
+CHARGE_GHOST = ["................", "....########....", "...#........#...", "...##########...", "...#........#...", "...##########...",
+                "...#........#...", "...#........#...", "...#........#...", "...#........#...", "...##########...", "...#........#...",
+                "...##########...", "...#........#...", "....########....", "................"]
+
+
 def ghost_slot(rows: list[str]):
     def draw(t: Tex, x: int, y: int) -> None:
         slot(t, x, y)
@@ -953,6 +976,9 @@ def control(t: Tex, kind: str, x: int, y: int, w: int, h: int, top: int = 1000, 
         for dx, dy in ((-5, -4), (4, -4), (-5, 3), (4, 3), (0, 0)):
             t.rect(cx + dx, cy + dy, 2, 2, P.WHITE_CERAMIC[5])
         return
+    if kind in ("release", "salvo", "depth", "interval"):
+        rack_icon(t, kind, x, y, w, h)
+        return
     if kind in ("wider", "closer"):
         # Two arrowheads on a bar: pointing out from the middle (wider) or in toward it (closer).
         cx, cy = x + w // 2, y + h // 2
@@ -969,6 +995,45 @@ def control(t: Tex, kind: str, x: int, y: int, w: int, h: int, top: int = 1000, 
         for xx, c in enumerate(row):
             if c == "#":
                 t.px(gx + xx, gy + yy, P.WHITE_CERAMIC[5])
+
+
+def _ring(t: Tex, cx: int, cy: int, r0: float, r1: float, c) -> None:
+    for yy in range(-int(r1) - 1, int(r1) + 2):
+        for xx in range(-int(r1) - 1, int(r1) + 2):
+            if r0 <= (xx * xx + yy * yy) ** 0.5 <= r1:
+                t.px(cx + xx, cy + yy, c)
+
+
+def rack_icon(t: Tex, kind: str, x: int, y: int, w: int, h: int) -> None:
+    """The Depth Charge Rack's buttons: a charge rolling off over the edge (release one), three going one after another (a
+    pattern of all), a wave over an arrow down to a mark (the depth), a stopwatch (the interval)."""
+    white, dim = P.WHITE_CERAMIC[5], P.WHITE_CERAMIC[3]
+    cx, cy = x + w // 2, y + h // 2
+    if kind == "release":
+        _ring(t, cx - 6, cy - 2, 2.2, 3.4, white)
+        t.px(cx - 6, cy - 2, dim)
+        t.hline(cx - 2, cy - 2, 6, white)                          # off along the rack, then down over its end
+        t.vline(cx + 3, cy - 2, 5, white)
+        t.hline(cx + 1, cy + 2, 5, white)
+        t.hline(cx + 2, cy + 3, 3, white)
+        t.px(cx + 3, cy + 4, white)
+    elif kind == "salvo":
+        for k, (dx, dy) in enumerate(((-10, -3), (-2, 0), (6, 3))):
+            _ring(t, cx + dx, cy + dy, 1.4, 2.6, white if k == 0 else dim)
+    elif kind == "depth":
+        for xx in range(x + 4, x + w - 4):                         # the surface: a wave
+            t.px(xx, y + 4 + (1 if (xx // 2) % 2 else 0), white)
+        t.vline(cx, y + 7, 5, white)                               # the arrow down
+        t.hline(cx - 2, y + 11, 5, white)
+        t.hline(cx - 1, y + 12, 3, white)
+        t.px(cx, y + 13, white)
+        t.hline(cx - 4, y + 14, 9, dim)                            # its mark
+    else:                                                          # interval: a stopwatch
+        _ring(t, cx, cy + 1, 3.6, 4.6, white)
+        t.hline(cx - 1, y + 2, 3, white)                           # its crown
+        t.vline(cx, cy - 2, 3, white)                              # its hand, at twelve then round to two
+        t.px(cx + 1, cy, white)
+        t.px(cx + 2, cy - 1, white)
 
 
 def redstone_icons(t: Tex, dx: int = 0) -> None:
@@ -1099,7 +1164,7 @@ def build(name: str, spec: dict) -> Path:
          "seed": ghost_slot(SEED_GHOST), "matter": ghost_slot(MATTER_GHOST),
          "core": ghost_slot(CORE_GHOST), "casing": ghost_slot(CASING_GHOST), "fuze": ghost_slot(FUZE_GHOST),
          "warhead": ghost_slot(WARHEAD_GHOST), "body": ghost_slot(BODY_GHOST), "motor": ghost_slot(MOTOR_GHOST),
-         "guidance": ghost_slot(GUIDANCE_GHOST), "module": ghost_slot(MODULE_GHOST), "missile": ghost_slot(MISSILE_GHOST),
+         "guidance": ghost_slot(GUIDANCE_GHOST), "module": ghost_slot(MODULE_GHOST), "missile": ghost_slot(MISSILE_GHOST), "charge": ghost_slot(CHARGE_GHOST),
          "secondary": ghost_slot(SECONDARY_GHOST), "jacket": ghost_slot(JACKET_GHOST), "booster": ghost_slot(BOOSTER_GHOST),
          "core_cell": core_cell, "spent": ghost_slot(SPENT_GHOST), "crucible": ghost_slot(CRUCIBLE_GHOST), "wafer": ghost_slot(WAFER_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
     fills = [(x, y) for kind, x, y in spec["slots"] if kind in ("fill_in", "fill_out")]
@@ -1111,9 +1176,10 @@ def build(name: str, spec: dict) -> Path:
             fill_chevron(t, ax + 6, (ay + 17 + by - 1) // 2 - 2, False)
     for cx, cy, horizontal in spec.get("chevrons", []):
         fill_chevron(t, cx, cy, horizontal)
-    ex, ey, ew, eh = spec["energy"]
-    gauge_frame(t, ex, ey, ew, eh)
-    t.text(ex + 3, ey + eh + 3, "FE", PANEL.highlight)
+    if spec["energy"]:
+        ex, ey, ew, eh = spec["energy"]
+        gauge_frame(t, ex, ey, ew, eh)
+        t.text(ex + 3, ey + eh + 3, "FE", PANEL.highlight)
     for tx, ty, tw, th, label, dumpable in spec.get("tanks", []):
         tank_frame(t, tx, ty, tw, th)
         if label:
@@ -1126,7 +1192,8 @@ def build(name: str, spec: dict) -> Path:
         fx, fy, _, _ = spec["flame"]
         flame_track(t, fx, fy)
     lamp_bezel(t, *spec["status"])
-    button(t, *spec["redstone"])
+    if spec["redstone"]:
+        button(t, *spec["redstone"])
     if spec["readout"]:
         readout_panel(t, *spec["readout"])
     for kind, cx, cy, cw, ch, data, top, *_ in spec.get("controls", []):
@@ -1148,6 +1215,10 @@ def build(name: str, spec: dict) -> Path:
 
 def dump_rect(tx: int, ty: int, tw: int, th: int) -> tuple[int, int, int, int]:
     return tx, ty + th + 2, tw, 10
+
+
+#: Where a layout has no energy gauge or redstone button: an empty rectangle, never drawn, filled or hovered.
+NONE = (0, 0, 0, 0)
 
 
 def java_rect(r) -> str:
@@ -1173,10 +1244,10 @@ def write_java() -> Path:
         w, h = s.get("size", (W, H))
         lines.append(f"            GroundBurst.id(\"textures/gui/machine/{name}.png\"), {w}, {h}, List.of({slots}), {s['inventory'][0]}, {s['inventory'][1]},")
         dx = fill_dx(s)
-        lines.append(f"            {java_rect(s['energy'])}, {ENERGY_FILL[0] + dx}, {ENERGY_FILL[1]},")
+        lines.append(f"            {java_rect(s['energy'] or NONE)}, {ENERGY_FILL[0] + dx}, {ENERGY_FILL[1]},")
         lines.append(f"            {java_rect(p)}, {PROGRESS_FILL[0] + dx}, {PROGRESS_FILL[1]},")
         lines.append(f"            {java_rect(f)}, {FLAME_FILL[0] + dx}, {FLAME_FILL[1]},")
-        lines.append(f"            {java_rect(s['status'])}, {java_rect(s['redstone'])}, {REDSTONE_ICONS[0] + dx}, {REDSTONE_ICONS[1]},")
+        lines.append(f"            {java_rect(s['status'])}, {java_rect(s['redstone'] or NONE)}, {REDSTONE_ICONS[0] + dx}, {REDSTONE_ICONS[1]},")
         gauges = ", ".join(f"new MachineLayout.Gauge({java_rect(tk[:4])}, {java_rect(dump_rect(*tk[:4]) if tk[5] else None)})"
                            for tk in s.get("tanks", []))
         controls = ", ".join(f"new MachineLayout.Control(\"{c[0]}\", {java_rect(c[1:5])}, {c[5]}, {c[6]}, {c[7]}, \"{c[8]}\")"

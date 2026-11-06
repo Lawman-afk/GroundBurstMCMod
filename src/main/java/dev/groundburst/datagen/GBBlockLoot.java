@@ -75,6 +75,9 @@ public class GBBlockLoot extends BlockLootSubProvider {
         dropSelf(dev.groundburst.content.launch.GBLaunch.STRIKE_CELL.block().get());
         dropSelf(dev.groundburst.content.launch.GBLaunch.MISSILE_CANISTER.block().get());
         dropSelf(dev.groundburst.content.launch.GBLaunch.LAUNCH_BOX.block().get());
+        // The Depth Charge Rack's (DESIGN.md §14.6).
+        dropSelf(dev.groundburst.content.naval.GBNaval.RACK.block().get());
+        dropSelf(dev.groundburst.content.naval.GBNaval.RAIL.block().get());
         dropSelf(dev.groundburst.content.launch.GBLaunch.REINFORCED_CONCRETE.block().get());
         dropSelf(dev.groundburst.content.launch.GBLaunch.HAZARD_CONCRETE.block().get());
         // The Silo Hatch, like the Large Radar Dish, drops itself from its middle only.

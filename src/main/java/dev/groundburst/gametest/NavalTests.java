@@ -1,10 +1,14 @@
 package dev.groundburst.gametest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import dev.groundburst.blast.BlastProfile;
 import dev.groundburst.blast.Blasts;
+import dev.groundburst.content.machine.MachineBlock;
+import dev.groundburst.content.multiblock.MultiblockDefinition;
 import dev.groundburst.content.naval.DepthCharge;
+import dev.groundburst.content.naval.DepthChargeRackBlockEntity;
 import dev.groundburst.content.naval.GBNaval;
 import dev.groundburst.content.naval.SeaMine;
 import dev.groundburst.registry.GBDataComponents;
@@ -20,11 +24,16 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-/** DESIGN.md §14.6: sea mines (laying, riding their chains, what sets them off, chains parted) and depth charges. */
+/**
+ * DESIGN.md §14.6: sea mines (laying, riding their chains, what sets them off, chains parted), depth charges and the Depth
+ * Charge Rack (loaded by hopper, rolling a charge off on a pulse and a pattern while powered, setting its depth).
+ */
 final class NavalTests {
     private NavalTests() {}
 
@@ -40,6 +49,11 @@ final class NavalTests {
         GBGameTests.test("dispenser_lays_a_mine", GBGameTests.FLOOR_16, 60, NavalTests::minelayer);
         GBGameTests.test("dispenser_rolls_out_a_depth_charge", GBGameTests.FLOOR_16, 60, NavalTests::rack);
         GBGameTests.test("blasts_break_boats", GBGameTests.FLOOR_16, 40, NavalTests::boats);
+        GBGameTests.test("depth_charge_rack_loads_by_hopper", GBGameTests.FLOOR_16, 120, NavalTests::rackHopper);
+        GBGameTests.test("depth_charge_rack_rolls_one_off_on_a_pulse", GBGameTests.FLOOR_16, 60, NavalTests::rackPulse);
+        GBGameTests.test("depth_charge_rack_pattern_while_powered", GBGameTests.FLOOR_16, 200, NavalTests::rackPattern);
+        GBGameTests.test("depth_charge_rack_sets_its_depth", GBGameTests.FLOOR_16, 60, NavalTests::rackDepth);
+        GBGameTests.test("depth_charge_rack_unformed_does_nothing", GBGameTests.FLOOR_16, 60, NavalTests::rackUnformed);
     }
 
     private static void fill(GameTestHelper helper, int x0, int y0, int z0, int x1, int y1, int z1, Block block) {
@@ -226,6 +240,116 @@ final class NavalTests {
             List<Entity> charges = around(helper, DepthCharge.class);
             helper.assertTrue(charges.size() == 1, "one depth charge let go (" + charges.size() + ")");
             charges.forEach(Entity::discard);
+        });
+    }
+
+    /**
+     * A Depth Charge Rack on a stone shelf at the basin's edge, built facing north: its release end at (8, 14, 5) over the
+     * water, its rails behind it and its Item Port at (8, 14, 8); {@code charges} put on it.
+     */
+    private static DepthChargeRackBlockEntity sternRack(GameTestHelper helper, int charges) {
+        basin(helper);
+        fill(helper, 7, 13, 5, 9, 13, 9, Blocks.STONE);
+        BlockPos at = new BlockPos(8, 14, 5);
+        helper.setBlock(at, GBNaval.RACK.block().get().defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
+        for (MultiblockDefinition.Cell cell : GBNaval.RACK_STRUCTURE.cells(helper.absolutePos(at), Direction.NORTH)) {
+            if (cell.key() != MultiblockDefinition.CONTROLLER) {
+                helper.getLevel().setBlockAndUpdate(cell.pos(), GBNaval.RACK_STRUCTURE.legend().get(cell.key()).preview().get());
+            }
+        }
+        DepthChargeRackBlockEntity rack = helper.getBlockEntity(at, DepthChargeRackBlockEntity.class);
+        rack.revalidate();
+        helper.assertTrue(rack.isFormed(), "the rack formed");
+        for (int i = 0; i < charges; i++) {
+            rack.inventory().setItem(i, new ItemStack(GBNaval.DEPTH_CHARGE.get()));
+        }
+        return rack;
+    }
+
+    /** A hopper over the rack's Item Port loads it: the charges roll down to the trap; a comparator reads how many. */
+    private static void rackHopper(GameTestHelper helper) {
+        DepthChargeRackBlockEntity rack = sternRack(helper, 0);
+        BlockPos hopper = new BlockPos(8, 15, 8);
+        helper.setBlock(hopper, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
+        if (helper.getLevel().getBlockEntity(helper.absolutePos(hopper)) instanceof HopperBlockEntity h) {
+            h.setItem(0, new ItemStack(GBNaval.DEPTH_CHARGE.get(), 4));
+        }
+        helper.succeedWhen(() -> {
+            helper.assertTrue(rack.loaded() == 4, "four loaded (" + rack.loaded() + ")");
+            for (int i = 0; i < 4; i++) {
+                helper.assertTrue(!rack.inventory().getItem(i).isEmpty(), "rolled down to the trap (place " + i + ")");
+            }
+            helper.assertTrue(rack.comparatorSignal() == 10, "a comparator reads 10 (" + rack.comparatorSignal() + ")");
+        });
+    }
+
+    /** A redstone pulse beside a rail rolls the front charge off over the trap, into the sea ahead; the rest roll down. */
+    private static void rackPulse(GameTestHelper helper) {
+        DepthChargeRackBlockEntity rack = sternRack(helper, 3);
+        BlockPos side = new BlockPos(9, 14, 6);
+        helper.runAfterDelay(4, () -> helper.setBlock(side, Blocks.REDSTONE_BLOCK));
+        helper.runAfterDelay(6, () -> helper.setBlock(side, Blocks.AIR));
+        double front = helper.absolutePos(new BlockPos(8, 14, 5)).getZ();
+        helper.runAfterDelay(24, () -> {
+            List<Entity> charges = around(helper, DepthCharge.class);
+            helper.assertTrue(charges.size() == 1, "one charge rolled off (" + charges.size() + ")");
+            helper.assertTrue(charges.getFirst().getZ() < front, "it went off the front, toward the sea");
+            helper.assertTrue(rack.loaded() == 2, "two left on the rack (" + rack.loaded() + ")");
+            helper.assertTrue(!rack.inventory().getItem(0).isEmpty() && !rack.inventory().getItem(1).isEmpty(), "they rolled down to the trap");
+            charges.forEach(Entity::discard);
+            helper.succeed();
+        });
+    }
+
+    /** Held powered, the rack rolls off one charge each interval, a pattern, until it is empty. */
+    private static void rackPattern(GameTestHelper helper) {
+        DepthChargeRackBlockEntity rack = sternRack(helper, 3);
+        helper.setBlock(new BlockPos(9, 14, 5), Blocks.REDSTONE_BLOCK);
+        int[] last = {3};
+        List<Long> released = new ArrayList<>();
+        helper.onEachTick(() -> {
+            int n = rack.loaded();
+            if (n < last[0]) {
+                released.add(helper.getLevel().getGameTime());
+                last[0] = n;
+            }
+            around(helper, DepthCharge.class).forEach(Entity::discard);   // (none goes off: the other tests share the blasts' time)
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(released.size() == 3, "three rolled off (" + released.size() + ")");
+            int interval = rack.interval();
+            helper.assertTrue(released.get(1) - released.get(0) >= interval && released.get(2) - released.get(1) >= interval,
+                    "one each interval (" + interval + " ticks): " + released);
+            helper.assertTrue(released.get(2) - released.get(0) <= 2 * interval + 4, "not slower than its interval: " + released);
+            around(helper, DepthCharge.class).forEach(Entity::discard);
+        });
+    }
+
+    /** Set to one depth, the rack sets every charge it rolls off to it, whatever the charge's own. */
+    private static void rackDepth(GameTestHelper helper) {
+        DepthChargeRackBlockEntity rack = sternRack(helper, 1);
+        rack.handleButton(2);
+        helper.assertTrue(rack.depthSetting() == 3, "set to 3 blocks (" + rack.depthSetting() + ")");
+        rack.releaseOne();
+        helper.succeedWhen(() -> {
+            List<Entity> charges = around(helper, DepthCharge.class);
+            helper.assertTrue(charges.size() == 1, "one charge rolled off (" + charges.size() + ")");
+            int depth = ((DepthCharge) charges.getFirst()).depth();
+            helper.assertTrue(depth == 3, "its pistol set to 3 blocks (" + depth + ")");
+            charges.forEach(Entity::discard);
+        });
+    }
+
+    /** With a rail taken out the rack is no rack: a signal rolls nothing off. */
+    private static void rackUnformed(GameTestHelper helper) {
+        DepthChargeRackBlockEntity rack = sternRack(helper, 2);
+        helper.setBlock(new BlockPos(8, 14, 7), Blocks.AIR);
+        rack.revalidate();
+        helper.setBlock(new BlockPos(9, 14, 5), Blocks.REDSTONE_BLOCK);
+        helper.runAfterDelay(40, () -> {
+            helper.assertTrue(!rack.isFormed(), "not formed");
+            helper.assertTrue(rack.loaded() == 2 && around(helper, DepthCharge.class).isEmpty(), "nothing rolled off");
+            helper.succeed();
         });
     }
 

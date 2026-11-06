@@ -47,6 +47,8 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
     public static final int DEFAULT_DEPTH = 5;
     /** Its middle over its position (its box is 0.6 a side). */
     public static final double MIDDLE = 0.3;
+    /** The pitch that marks a charge rolled off a rack, lying on its side; how fast it rolls on in the air (degrees a tick). */
+    public static final float LYING = 90, ROLLING = 30;
 
     /** The surface where it went into the water (NaN until it does). */
     private double surface = Double.NaN;
@@ -65,15 +67,32 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
         setItem(stack.copyWithCount(1));
     }
 
-    /** A depth charge let go at {@code at} moving at {@code velocity} (rolled off a rack, dropped from a dispenser). */
+    /** A depth charge let go at {@code at} moving at {@code velocity} (dropped from a dispenser): it tumbles as it goes. */
     public static DepthCharge release(ServerLevel level, Vec3 at, Vec3 velocity, ItemStack stack, @Nullable Entity owner) {
+        return release(level, at, velocity, stack, owner, Float.NaN);
+    }
+
+    /**
+     * The same rolled off a rack: lying on its side, its axis {@code axisYaw} degrees round (its dial that way), rolling on
+     * as it rolled off (NaN: tumbling). Its pitch says it lies, its yaw where its axis points: set once, sent with it.
+     */
+    public static DepthCharge release(ServerLevel level, Vec3 at, Vec3 velocity, ItemStack stack, @Nullable Entity owner, float axisYaw) {
         DepthCharge d = new DepthCharge(GBNaval.DEPTH_CHARGE_ENTITY.get(), level);
         d.setOwner(owner);
         d.setItem(stack.copyWithCount(1));
         d.setPos(at.x, at.y - MIDDLE, at.z);
         d.setDeltaMovement(velocity);
+        if (!Float.isNaN(axisYaw)) {
+            d.setYRot(axisYaw);
+            d.setXRot(LYING);
+        }
         level.addFreshEntity(d);
         return d;
+    }
+
+    /** Rolled off a rack: lying on its side, rolling about its own axis (its yaw that axis), not tumbling. */
+    public boolean lying() {
+        return getXRot() > LYING - 1;
     }
 
     @Override
@@ -142,7 +161,7 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
             setPos(position().add(v));
         }
         if (level().isClientSide()) {
-            this.spin += (float) (wet ? 4 : getDeltaMovement().length() * 30);
+            this.spin += (float) (wet ? 4 : lying() ? ROLLING : getDeltaMovement().length() * 30);
             if (wet && this.random.nextInt(3) == 0) {
                 Vec3 p = position().add(0, MIDDLE, 0);
                 level().addParticle(net.minecraft.core.particles.ParticleTypes.BUBBLE, p.x, p.y, p.z, 0, 0.05, 0);

@@ -360,6 +360,13 @@ public final class FxPhotographer {
                 new Scene("naval_column_mine", "naval_column_mine", 45, -6, List.of(2, 6, 12, 20, 30, 45, 65, 90, 140)),
                 new Scene("naval_column_charge", "naval_column_charge", 38, -6, List.of(2, 8, 16, 26, 40, 60, 90)),
                 new Scene("naval_column_deep", "naval_column_deep", 38, -6, List.of(10, 20, 30, 50, 80)),
+                // The Depth Charge Rack on a quay's end two blocks over the sea, side on (its release end to the camera's
+                // left), six charges on it set to 8 blocks, set rolling at clock 20: the trap dropping and the front charge
+                // rolling over it and off into the sea, the rest rolling down, the next off 30 ticks later, the first one's
+                // column; and close up, a tick apart.
+                new Scene("naval_rack", "naval_rack", 6, 24, List.of(15, 24, 28, 31, 36, 40, 58, 78, 96)),
+                new Scene("naval_rack_close", "naval_rack", 3, 20, List.of(15, 21, 22, 23, 24, 25, 26, 27, 28, 30, 34, 40)),
+                new Scene("naval_rack_ui", "naval_rack", 3, 20, List.of(18, 30)),             // its screen, before and releasing
                 // A mushroom cloud in frames a tick apart (a player saw it flicker under a shader pack): what changes from
                 // one to the next is flicker, not the cloud's own slow motion.
                 new Scene("flicker_nuke", "tactical_nuclear_warhead", 200, -10, List.of(400, 401, 402, 403, 404, 405)),
@@ -444,8 +451,39 @@ public final class FxPhotographer {
             case "naval_column_mine" -> Blasts.detonate(level, new Vec3(x + 0.5, surface - 2.0, 0.5), Blasts.profile("sea_mine"), null);
             case "naval_column_charge" -> Blasts.detonate(level, new Vec3(x + 0.5, surface - 5.5, 0.5), Blasts.profile("depth_charge"), null);
             case "naval_column_deep" -> Blasts.detonate(level, new Vec3(x + 0.5, surface - 11, 0.5), Blasts.profile("depth_charge"), null);
+            case "naval_rack" -> rackAt = rack(level, x, surface);
             default -> { }
         }
+    }
+
+    private static net.minecraft.core.BlockPos rackAt;
+
+    /**
+     * The Depth Charge Rack on the end of a stone quay standing two blocks out of the sea: facing north (its release end
+     * to the camera's left, its rails running back to its Item Port), six depth charges on it, set to 8 blocks.
+     */
+    private static net.minecraft.core.BlockPos rack(ServerLevel level, int x, int surface) {
+        var stone = net.minecraft.world.level.block.Blocks.STONE_BRICKS.defaultBlockState();
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int z = -1; z <= 9; z++) {
+                for (int y = surface - SEA; y <= surface + 1; y++) {
+                    level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + dx, y, z), stone);
+                }
+            }
+        }
+        var at = new net.minecraft.core.BlockPos(x, surface + 2, -1);
+        formed(level, at, dev.groundburst.content.naval.GBNaval.RACK.block().get(), dev.groundburst.content.naval.GBNaval.RACK_STRUCTURE,
+                net.minecraft.core.Direction.NORTH);
+        if (level.getBlockEntity(at) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity be) {
+            be.revalidate();
+            for (int i = 0; i < dev.groundburst.content.naval.DepthChargeRackBlockEntity.SLOTS; i++) {
+                be.inventory().setItem(i, new net.minecraft.world.item.ItemStack(dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE.get()));
+            }
+            for (int i = 0; i < 3; i++) {
+                be.handleButton(2);                    // its own depth, then 3, 5, 8
+            }
+        }
+        return at;
     }
 
     /** Two armour stands wearing the hazmat suits, side by side, facing the camera (or turned away). */
@@ -2538,6 +2576,24 @@ public final class FxPhotographer {
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(computerAt) instanceof dev.groundburst.content.launch.LaunchComputerBlockEntity be) {
                     be.launchArmed(server.overworld(), null);              // LAUNCH: every armed silo
+                }
+            });
+        }
+        if (scene.name().equals("naval_rack_ui") && step >= 0 && clock == 10 && rackAt != null) {
+            var at = rackAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
+                    player.openMenu(be, at);
+                }
+            });
+        }
+        if (scene.profile().equals("naval_rack") && step >= 0 && clock == 20 && rackAt != null) {
+            var at = rackAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity be) {
+                    be.releaseAll();                       // a pattern: one off now, the next each 30 ticks
                 }
             });
         }

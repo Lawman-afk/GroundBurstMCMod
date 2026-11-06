@@ -17,6 +17,7 @@ import dev.groundburst.content.multiblock.MultiblockController;
 import dev.groundburst.content.multiblock.MultiblockDefinition;
 import dev.groundburst.content.multiblock.MultiblockPartBlock;
 import dev.groundburst.content.ordnance.charge.BombBlock;
+import dev.groundburst.content.ordnance.charge.Charges;
 import dev.groundburst.registry.GBLang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -74,6 +75,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     private @Nullable BlockPos target;
     private boolean armed;
     private @Nullable UUID launchedBy;
+    /** The bomb scale its launch was ordered at (GameTests' shrunken blasts; 1 in play, and after a reload). */
+    private float launchScale = 1f;
 
     public LaunchSiloBlockEntity(BlockPos pos, BlockState state) {
         this(GBLaunch.SILO_ENTITY.get(), pos, state, ENERGY_CAPACITY);
@@ -260,6 +263,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         this.target = target.immutable();
         this.armed = false;
         this.launchedBy = by == null ? null : by.getUUID();
+        this.launchScale = Charges.bombScale;
         this.countdown = countdownTicks();
         playSound(level, padCentre(), GBLaunch.SIREN.get(), SoundSource.BLOCKS, 4f, 1f);
         setChanged();
@@ -397,7 +401,15 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         // (a ship or a contraption may carry it, DESIGN.md §17.16).
         Vec3 from = inWorld(launchPoint(pad));
         Vec3 aim = spec.guidance().aim(from, Vec3.atBottomCenterOf(this.target), level.getRandom());
-        Flights.Flight flight = MissileEntity.launch(level, from, aim, spec, by, shaftHeight());
+        // It flies at the bomb scale its launch was ordered at: a GameTest started since may have set its own.
+        float scale = Charges.bombScale;
+        Charges.bombScale = this.launchScale;
+        Flights.Flight flight;
+        try {
+            flight = MissileEntity.launch(level, from, aim, spec, by, shaftHeight());
+        } finally {
+            Charges.bombScale = scale;
+        }
         LaunchNetwork.launched(level, this.worldPosition, flight);
         onLiftOff(level, pad);
         setChanged();
