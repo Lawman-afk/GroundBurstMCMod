@@ -577,10 +577,13 @@ public final class Healer {
                 return;                                    // as it was already (the damage did not change it after all)
             }
             ServerLevel level = Healer.this.level;
-            if (current.hasBlockEntity()) {
+            Block block = original.getBlock();
+            // The block itself outlived the damage, changed (the half of a double chest left standing alone): it keeps its
+            // block entity and what it holds now, which may have changed since; only its state goes back.
+            boolean outlived = !claimed && current.getBlock() == block && current.hasBlockEntity() && level.getBlockEntity(p) != null;
+            if (current.hasBlockEntity() && !outlived) {
                 level.removeBlockEntity(p);                // what stands there gives way quietly
             }
-            Block block = original.getBlock();
             boolean modded = modded(block);
             boolean set;
             restoring = true;
@@ -592,10 +595,13 @@ public final class Healer {
             if (!set) {
                 return;
             }
-            if (be != null) {
+            if (be != null && !outlived) {
                 BlockEntity now = level.getBlockEntity(p);
                 if (now != null) {
                     Snapshots.load(now, be, level);
+                    if (be.getBooleanOr(ChunkScars.SPILLED, false)) {
+                        Snapshots.empty(now, level);       // what it held spilled as it broke: not had twice
+                    }
                     now.setChanged();
                 }
             }

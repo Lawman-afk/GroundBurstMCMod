@@ -77,6 +77,8 @@ final class HealTests {
         GBGameTests.test("heal_explosions_by_what_set_them_off", GBGameTests.FLOOR_16, 20, HealTests::explosionSwitches);
         GBGameTests.test("heal_other_mods_explosions", GBGameTests.FLOOR_16, 20, HealTests::otherMods);
         GBGameTests.test("heal_off_leaves_explosions_alone", GBGameTests.FLOOR_16, 20, HealTests::explosionsOff);
+        GBGameTests.test("heal_spilt_contents_do_not_come_back", GBGameTests.FLOOR_16, 20, HealTests::spilt);
+        GBGameTests.test("heal_a_chest_half_left_standing_keeps_its_contents", GBGameTests.FLOOR_16, 20, HealTests::chestHalf);
     }
 
     private static final BlockPos C = new BlockPos(8, 4, 8);
@@ -599,6 +601,77 @@ final class HealTests {
         helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, area(helper)).stream().anyMatch(i -> i.getItem().is(Items.DIAMOND)),
                 "the chest's diamonds spilt, as ever");
         clearDrops(helper);
+        helper.succeed();
+    }
+
+    /**
+     * With Healing blocks drop items too on, a chest a creeper blows spills its diamonds, as the game's explosions do, and
+     * comes back empty: nothing is had twice.
+     */
+    private static void spilt(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        fill(helper, 2, 1, 2, 14, 3, 14, Blocks.STONE);
+        BlockPos chest = C.offset(1, -1, 0);
+        helper.setBlock(chest, Blocks.CHEST);
+        ((Container) helper.getBlockEntity(chest, BlockEntity.class)).setItem(0, new ItemStack(Items.DIAMOND, 3));
+        HealSettings s = HealSettings.forTests(HealPlayerBlocks.KEEP, 0).withDrops(true);
+        HealSettings.testArea(level, area(helper), s);
+        creeperAt(helper, helper.absoluteVec(Vec3.atCenterOf(C)));
+        helper.assertTrue(level.getBlockState(helper.absolutePos(chest)).isAir() && remembered(helper, chest), "the creeper took the chest: remembered");
+        int spilt = level.getEntitiesOfClass(ItemEntity.class, area(helper)).stream()
+                .filter(i -> i.getItem().is(Items.DIAMOND)).mapToInt(i -> i.getItem().getCount()).sum();
+        helper.assertTrue(spilt == 3, "its diamonds spilt, drops being on (" + spilt + ")");
+        clearDrops(helper);
+        Healer.of(level).healNow(box(helper), s);
+        HealSettings.endTestArea(level, area(helper));
+        helper.assertTrue(level.getBlockState(helper.absolutePos(chest)).is(Blocks.CHEST), "the chest is back");
+        Container back = (Container) helper.getBlockEntity(chest, BlockEntity.class);
+        helper.assertTrue(back.isEmpty(), "empty, what spilt not had twice: " + back.getItem(0));
+        helper.succeed();
+    }
+
+    /**
+     * A double chest whose one half a breaching charge takes: the half left standing (single now) keeps what it holds
+     * when the damage heals, even what was taken out of it or put in since; and when more damage takes it too, it comes
+     * back with what it held then, not what it held the first time.
+     */
+    private static void chestHalf(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        fill(helper, 2, 1, 2, 14, 3, 14, Blocks.STONE);
+        BlockPos left = C.offset(0, -1, 0), right = left.east();   // (facing north, a left half's other half is east of it)
+        BlockState chest = Blocks.CHEST.defaultBlockState().setValue(net.minecraft.world.level.block.ChestBlock.FACING, Direction.NORTH);
+        helper.setBlock(left, chest.setValue(net.minecraft.world.level.block.ChestBlock.TYPE, net.minecraft.world.level.block.state.properties.ChestType.LEFT));
+        helper.setBlock(right, chest.setValue(net.minecraft.world.level.block.ChestBlock.TYPE, net.minecraft.world.level.block.state.properties.ChestType.RIGHT));
+        ((Container) helper.getBlockEntity(left, BlockEntity.class)).setItem(0, new ItemStack(Items.DIAMOND, 5));
+        ((Container) helper.getBlockEntity(right, BlockEntity.class)).setItem(0, new ItemStack(Items.EMERALD, 7));
+        BlockState leftWas = level.getBlockState(helper.absolutePos(left)), rightWas = level.getBlockState(helper.absolutePos(right));
+        HealSettings s = HealSettings.forTests(HealPlayerBlocks.KEEP, 0);
+        HealSettings.testArea(level, area(helper), s);
+        Scars.Recorder charge = Scars.recorder(level, helper.absoluteVec(Vec3.atCenterOf(left)), Scars.BREACH, Kind.CONVENTIONAL);
+        charge.remove(helper.absolutePos(left));
+        helper.assertTrue(level.getBlockState(helper.absolutePos(right)).getValue(net.minecraft.world.level.block.ChestBlock.TYPE)
+                == net.minecraft.world.level.block.state.properties.ChestType.SINGLE && remembered(helper, right), "the half left is single now: remembered");
+        Container standing = (Container) helper.getBlockEntity(right, BlockEntity.class);
+        standing.setItem(0, ItemStack.EMPTY);              // (a player takes the emeralds out, and puts gold in)
+        standing.setItem(3, new ItemStack(Items.GOLD_INGOT, 2));
+        Healer.of(level).healNow(box(helper), s);
+        helper.assertTrue(level.getBlockState(helper.absolutePos(left)) == leftWas && level.getBlockState(helper.absolutePos(right)) == rightWas,
+                "a double chest again");
+        ItemStack diamonds = ((Container) helper.getBlockEntity(left, BlockEntity.class)).getItem(0);
+        helper.assertTrue(diamonds.is(Items.DIAMOND) && diamonds.getCount() == 5, "the half taken has its diamonds: " + diamonds);
+        Container kept = (Container) helper.getBlockEntity(right, BlockEntity.class);
+        helper.assertTrue(kept.getItem(0).isEmpty() && kept.getItem(3).is(Items.GOLD_INGOT) && kept.getItem(3).getCount() == 2,
+                "the half left keeps what it holds now, no emeralds had twice and the gold not lost: " + kept.getItem(0) + ", " + kept.getItem(3));
+        Scars.Recorder again = Scars.recorder(level, helper.absoluteVec(Vec3.atCenterOf(left)), Scars.BREACH, Kind.CONVENTIONAL);
+        again.remove(helper.absolutePos(left));
+        ((Container) helper.getBlockEntity(right, BlockEntity.class)).setItem(3, new ItemStack(Items.IRON_INGOT, 4));
+        again.remove(helper.absolutePos(right));           // (more damage takes the half left standing too)
+        helper.assertTrue(level.getBlockState(helper.absolutePos(right)).isAir(), "then the other half goes too");
+        Healer.of(level).healNow(box(helper), s);
+        HealSettings.endTestArea(level, area(helper));
+        ItemStack iron = ((Container) helper.getBlockEntity(right, BlockEntity.class)).getItem(3);
+        helper.assertTrue(iron.is(Items.IRON_INGOT) && iron.getCount() == 4, "it comes back with what it held when it went: " + iron);
+        helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, area(helper)).isEmpty(), "and nothing dropped");
         helper.succeed();
     }
 

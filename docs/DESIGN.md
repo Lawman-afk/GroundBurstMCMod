@@ -4354,8 +4354,16 @@ toxin residue and poisoned soil, fallout ash, plants killed by radiation, a melt
 and the wasteland's biome. With healing on for its kind, the recorder remembers the block as it was before (its state,
 and its block entity saved whole: a chest's contents, a sign's words, a machine's settings), unless it is remembered
 already: a block hit twice comes back as it was before the first hit. A block that will heal drops nothing, and its
-block entity is taken out quietly before the write, so a chest's contents do not spill (they come back with it); the
-server's `dropItems` lets them drop and spill (and come back empty). A weapon set with shape updates may change the
+block entity is taken out quietly before the write, so a chest's contents do not spill (they come back with it). The
+server's `dropItems` lets them drop, and nothing is had twice (2026-11-07; a chest a creeper spilled had come back
+full): what spills out of one as it breaks (the game's explosions spill a chest, as does any write that runs a block
+entity's removal) does not come back with it, its saved block entity marked spilled and emptied as it heals (by the
+game's own clearing, or through the inventory it shows other mods); what would go with its drop (a shulker box's
+contents) stays behind for its healing instead; the blast engine's write spills nothing, so what it breaks comes back
+full. A block that outlives the damage, changed (the half of a double chest left standing alone), keeps its block
+entity and what it holds when it heals, which may have changed since (it had gone back to what it held at the blast,
+deleting or doubling what a player moved meanwhile); damage that comes back for it saves it again first, so it returns
+with what it held then. A weapon set with shape updates may change the
 blocks round its own (grass under new snow, a fence's arms, a torch or a door that loses its wall): the recorder notes
 its six neighbours first (with the other half of a door or tall plant), remembers those that changed, and holds back
 what they drop as they come off. The mod's explosives (`ChargeBlock`: charges, mines, bombs) never heal, since one caught
@@ -4501,7 +4509,7 @@ damage; what falls over ticks later (a column of sugar cane or cactus, scaffoldi
 trunk afresh once the trunk is back (a number nobody sees; a tree grown by world generation counts it one higher here
 and there).
 
-**Checked.** GameTests `HealTests` (19): a blast over ground, grass, a chest of diamonds, stairs, glass and a fence put
+**Checked.** GameTests `HealTests` (21): a blast over ground, grass, a chest of diamonds, stairs, glass and a fence put
 back block for block, the chest with its diamonds, nothing dropped; KEEP keeping a player's block and the hole round it
 and over it; DROP dropping it; the record reading back from its saved form; the schedule (the wait, its random share,
 the morning, command only, off); explosives, excluded blocks and tags, excluded weapons; a freeze over a pond thawed
@@ -4513,7 +4521,9 @@ again; with healing off nothing remembered; the game's own explosions: a creeper
 diamonds, stairs and a wall with a torch behind it and an item frame on it, put back block for block, nothing dropped,
 the frame hung again; TNT an explosion lit not put back; each switch, an id left out, a bed's explosion by its damage;
 another mod's explosion class (nothing behind it) with a barrel of emeralds; with healing off a creeper's explosion
-spilling a chest as ever. `runHealShots` (`HealPhotographer`): a farmstead under a thermobaric warhead, a little town
+spilling a chest as ever; with `dropItems` on, a creeper's spilling a chest of diamonds and the chest back empty; a
+double chest whose one half a breaching charge took, the half left standing keeping what was taken out of it and put in
+since, then taken too and back with what it held then. `runHealShots` (`HealPhotographer`): a farmstead under a thermobaric warhead, a little town
 under a tactical nuke and a cottage under the game's own explosions (lit TNT in the house and a block of TNT it lights,
 TNT by a tree, a creeper by the fence, all set going as in play), with healing on and short waits, photographed before,
 after, healing and healed (run/screenshots/heal_*.png), then every block compared with what it was

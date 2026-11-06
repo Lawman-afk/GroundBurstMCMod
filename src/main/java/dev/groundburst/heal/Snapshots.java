@@ -33,6 +33,34 @@ final class Snapshots {
         be.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag));
     }
 
+    /**
+     * Empties what a block entity holds (a chest's items, a lectern's book, a campfire's food, a machine's slots), keeping
+     * the rest of it (its name, its lock, a sign's words): by the game's own clearing where the block has it, else through
+     * the inventory it shows other mods, as far as that lets things be taken out.
+     */
+    static void empty(BlockEntity be, ServerLevel level) {
+        if (be instanceof net.minecraft.world.Clearable clearable) {
+            clearable.clearContent();
+        } else {
+            net.neoforged.neoforge.transfer.ResourceHandler<net.neoforged.neoforge.transfer.item.ItemResource> items = level.getCapability(
+                    net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK, be.getBlockPos(), be.getBlockState(), be, null);
+            if (items == null) {
+                return;
+            }
+            try (net.neoforged.neoforge.transfer.transaction.Transaction tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                for (int i = 0; i < items.size(); i++) {
+                    net.neoforged.neoforge.transfer.item.ItemResource held = items.getResource(i);
+                    long n = items.getAmountAsLong(i);
+                    if (!held.isEmpty() && n > 0) {
+                        items.extract(i, held, (int) Math.min(n, Integer.MAX_VALUE), tx);
+                    }
+                }
+                tx.commit();
+            }
+        }
+        be.setChanged();
+    }
+
     /** An entity as it is (even one just taken out of the world), with its type; null if it is not one that is saved. */
     static @Nullable CompoundTag save(Entity entity, ServerLevel level) {
         String id = entity.getEncodeId();

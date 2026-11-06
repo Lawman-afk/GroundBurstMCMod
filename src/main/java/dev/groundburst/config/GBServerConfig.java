@@ -374,8 +374,9 @@ public final class GBServerConfig {
             .defineInRange("keepRadius", 3, 0, 16);
 
     public static final ModConfigSpec.BooleanValue HEAL_DROPS = B
-            .comment("Whether blocks that will heal still drop items and spill their contents when destroyed. Off (the default)",
-                    "nothing is duplicated: they come back with what they held. On, they drop and come back empty-handed.")
+            .comment("Whether blocks that will heal still drop items when destroyed. Off (the default) nothing is duplicated: they",
+                    "drop nothing and come back with what they held. On, they drop too, and what spills out of one (the game's",
+                    "explosions spill a chest) does not come back with it. This mod's explosions spill nothing: what they break comes back full.")
             .translation(GBLang.config("healing.players.dropItems", "Healing blocks drop items too"))
             .define("dropItems", false);
 
