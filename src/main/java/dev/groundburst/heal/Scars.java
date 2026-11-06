@@ -310,6 +310,12 @@ public final class Scars {
             this.holdOff = holdOff;
         }
 
+        /** An explosion's own hit on a block ({@link Recorder#hit}), told whether to swallow the block's drops. */
+        @FunctionalInterface
+        public interface Hit {
+            void run(boolean swallowDrops);
+        }
+
         /** A recorder that remembers nothing (for the GameTests' own paint and flood, and for weapons that do not heal). */
         public static Recorder none(ServerLevel level) {
             return new Recorder(level, null, false);
@@ -371,6 +377,46 @@ public final class Scars {
             return done;
         }
 
+        /**
+         * The game's or another mod's explosion hits the block at {@code pos} ({@link Explosions}): it is remembered first,
+         * then {@code hit} runs the explosion's own hit, told to swallow the block's drops if it will heal (unless the
+         * server lets them drop), its contents kept (its block entity goes quietly first), its experience held back. What
+         * its going takes with it round it (a torch on it, the other half of a door) is remembered as with {@link #set}.
+         * True if it will heal.
+         */
+        public boolean hit(BlockPos pos, Hit hit) {
+            if (this.settings == null) {
+                hit.run(false);
+                return false;
+            }
+            boolean heals = record(pos);
+            this.lastPos = Long.MIN_VALUE;
+            boolean hush = !this.settings.drops();
+            if (heals && hush) {
+                quiet(pos);
+            }
+            Around around = Around.of(this.level, pos);
+            Healer healer = Healer.of(this.level);
+            if (hush) {
+                List<Vec3> held = new java.util.ArrayList<>(around.centres);
+                if (heals) {
+                    held.add(Vec3.atCenterOf(pos));            // its own experience (an ore a player's TNT blew)
+                }
+                healer.hushWhile(held);
+            }
+            beginCascade();
+            try {
+                hit.run(heals && hush);
+            } finally {
+                endCascade();
+                if (hush) {
+                    healer.hushWhile(null);
+                }
+            }
+            around.remember(this.level, this.settings, this.holdOff);
+            return heals;
+        }
+
         /** {@link #set} with the usual flags (neighbours told, clients told). */
         public boolean setAndUpdate(BlockPos pos, BlockState state) {
             return set(pos, state, Block.UPDATE_ALL);
@@ -398,6 +444,17 @@ public final class Scars {
                 return false;
             }
             return Scars.takeDown(this.level, e, this.holdOff);
+        }
+
+        /** Whether decorations (paintings, item frames, armour stands) the damage breaks are kept, to be put back. */
+        public boolean keepsDecorations() {
+            return this.settings != null && this.settings.decorations();
+        }
+
+        /** {@code e}, broken by the damage just now, is kept as {@code saved} (it as it was before) to be put back. */
+        void keep(Entity e, CompoundTag saved) {
+            Healer.of(this.level).taken(e);
+            Scars.keep(this.level, e.blockPosition(), saved, this.holdOff);
         }
 
         /** The wasteland is about to paint a biome cell (quarter coordinates) of {@code chunk} over {@code before}. */
@@ -502,10 +559,13 @@ public final class Scars {
 
     /** Saves {@code e} into the damage of its chunk, to be put back when the chunk heals; true if it did. */
     private static boolean keep(ServerLevel level, Entity e, boolean holdOff) {
-        BlockPos pos = e.blockPosition();
+        return keep(level, e.blockPosition(), Snapshots.save(e, level), holdOff);
+    }
+
+    /** Puts a saved entity ({@code tag}, null if it is not one that is saved) into the damage of the chunk at {@code pos}. */
+    private static boolean keep(ServerLevel level, BlockPos pos, @Nullable CompoundTag tag, boolean holdOff) {
         LevelChunk chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-        CompoundTag tag = chunk == null ? null : Snapshots.save(e, level);
-        if (tag == null) {
+        if (chunk == null || tag == null) {
             return false;
         }
         ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());

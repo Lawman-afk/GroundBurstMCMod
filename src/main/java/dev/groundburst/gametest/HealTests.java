@@ -1,5 +1,6 @@
 package dev.groundburst.gametest;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,25 +10,38 @@ import dev.groundburst.blast.Blasts;
 import dev.groundburst.config.GBServerConfig.HealPlayerBlocks;
 import dev.groundburst.config.GBServerConfig.HealSchedule;
 import dev.groundburst.heal.ChunkScars;
+import dev.groundburst.heal.Explosions;
 import dev.groundburst.heal.HealSettings;
+import dev.groundburst.heal.HealSettings.Kind;
 import dev.groundburst.heal.Healer;
 import dev.groundburst.heal.Scars;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -37,7 +51,8 @@ import net.minecraft.world.phys.Vec3;
  * they faced, the grass the scorch took), drops nothing meanwhile, keeps or drops what players built over it, survives
  * saving, waits as the server says, never brings back an explosive, thaws a freeze, turns the wasteland's biome back,
  * hangs a knocked-down item frame again and remembers sand that falls next to it; with healing off nothing is
- * remembered. Each test marks its own plot out ({@link HealSettings#testArea}) and heals it itself.
+ * remembered. The game's own explosions (a creeper's, TNT's, a bed's) and other mods' heal the same, by the switch for
+ * what set them off; TNT an explosion lights is never put back. Each test marks its own plot out ({@link HealSettings#testArea}) and heals it itself.
  */
 final class HealTests {
     private HealTests() {}
@@ -57,6 +72,11 @@ final class HealTests {
         GBGameTests.test("heal_never_brings_fire_back", GBGameTests.FLOOR_16, 20, HealTests::fire);
         GBGameTests.test("heal_wakes_cables_and_machines", GBGameTests.FLOOR_16, 600, HealTests::cables);
         GBGameTests.test("heal_wakes_pipes", GBGameTests.FLOOR_16, 200, HealTests::pipes);
+        GBGameTests.test("heal_puts_a_creeper_hole_back", GBGameTests.FLOOR_16, 20, HealTests::creeper);
+        GBGameTests.test("heal_leaves_tnt_an_explosion_lit", GBGameTests.FLOOR_16, 20, HealTests::tntLit);
+        GBGameTests.test("heal_explosions_by_what_set_them_off", GBGameTests.FLOOR_16, 20, HealTests::explosionSwitches);
+        GBGameTests.test("heal_other_mods_explosions", GBGameTests.FLOOR_16, 20, HealTests::otherMods);
+        GBGameTests.test("heal_off_leaves_explosions_alone", GBGameTests.FLOOR_16, 20, HealTests::explosionsOff);
     }
 
     private static final BlockPos C = new BlockPos(8, 4, 8);
@@ -304,7 +324,7 @@ final class HealTests {
     /**
      * A fire is never put back: a cell remembered while it burns comes back as the air it burnt in. A chunk waits while a
      * fire that will go out burns by its damage (what heals would burn again), but not for one on netherrack, which burns
-     * for good.
+     * for good, nor for one nobody is near enough to see burn out (it goes out).
      */
     private static void fire(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -316,7 +336,18 @@ final class HealTests {
         Scars.Recorder recorder = Scars.recorder(level, helper.absoluteVec(Vec3.atCenterOf(burning)), Scars.INCENDIARY, HealSettings.Kind.CONVENTIONAL);
         helper.assertTrue(recorder.record(helper.absolutePos(burning)), "the burning cell is remembered");
         var chunk = level.getChunkAt(helper.absolutePos(burning));
-        helper.assertTrue(Healer.of(level).fireNear(chunk, false), "a fire burns by the damage: the chunk waits");
+        // Fire burns only within the game rule's reach of a player (none here): as if there were one, then as it is.
+        int reach = level.getGameRules().get(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER);
+        boolean waits;
+        level.getGameRules().set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, -1, level.getServer());
+        try {
+            waits = Healer.of(level).fireNear(chunk, false);
+        } finally {
+            level.getGameRules().set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, reach, level.getServer());
+        }
+        helper.assertTrue(waits, "a fire burns by the damage: the chunk waits");
+        helper.assertTrue(!Healer.of(level).fireNear(chunk, false) && level.getBlockState(helper.absolutePos(burning)).isAir(),
+                "a fire nobody is near enough to see burn out is no reason to wait: it goes out");
         BlockPos hearth = new BlockPos(11, 1, 8);
         helper.setBlock(hearth, Blocks.NETHERRACK);
         helper.setBlock(hearth.above(), Blocks.FIRE);
@@ -406,6 +437,169 @@ final class HealTests {
                 helper.assertTrue(n == 16, "the healed pipes carry everything to the far chest: " + n);
             });
         });
+    }
+
+    /** A creeper's explosion at the plot's middle (the creeper is not in the world: only its explosion is). */
+    private static void creeperAt(GameTestHelper helper, Vec3 at) {
+        Creeper creeper = new Creeper(EntityTypes.CREEPER, helper.getLevel());
+        creeper.setPos(at);
+        helper.getLevel().explode(creeper, at.x, at.y, at.z, 3.0F, Level.ExplosionInteraction.MOB);
+    }
+
+    private static void clearDrops(GameTestHelper helper) {
+        helper.getLevel().getEntitiesOfClass(ItemEntity.class, area(helper)).forEach(Entity::discard);
+    }
+
+    /**
+     * A creeper's explosion (the game's own): dirt, grass, a chest of diamonds, stairs, a wall with a torch behind it and
+     * an item frame on it, blown up and put back exactly; nothing dropped, the chest with its diamonds, the frame hung again.
+     */
+    private static void creeper(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        fill(helper, 1, 1, 1, 15, 2, 15, Blocks.DIRT);
+        fill(helper, 1, 3, 1, 15, 3, 15, Blocks.GRASS_BLOCK);
+        BlockPos chest = C.offset(1, 0, 0);
+        helper.setBlock(chest, Blocks.CHEST);
+        ((Container) helper.getBlockEntity(chest, BlockEntity.class)).setItem(4, new ItemStack(Items.DIAMOND, 37));
+        helper.setBlock(C.offset(-1, 0, 0), Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST));
+        fill(helper, 6, 4, 11, 10, 6, 11, Blocks.STONE_BRICKS);
+        helper.setBlock(new BlockPos(8, 5, 12), Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.SOUTH));
+        ItemFrame frame = new ItemFrame(level, helper.absolutePos(new BlockPos(8, 5, 10)), Direction.NORTH);
+        frame.setItem(new ItemStack(Items.EMERALD));
+        helper.assertTrue(frame.survives() && level.addFreshEntity(frame), "the frame hangs on the wall");
+        Map<BlockPos, BlockState> before = snapshot(helper);
+        HealSettings s = HealSettings.forTests(HealPlayerBlocks.KEEP, 0);
+        HealSettings.testArea(level, area(helper), s);
+        creeperAt(helper, helper.absoluteVec(Vec3.atCenterOf(C)));
+        helper.assertTrue(level.getBlockState(helper.absolutePos(chest)).isAir() && remembered(helper, chest), "the creeper took the chest: remembered");
+        helper.assertTrue(frame.isRemoved(), "and the frame off its wall");
+        helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, area(helper)).isEmpty()
+                && level.getEntitiesOfClass(ExperienceOrb.class, area(helper)).isEmpty(), "nothing dropped: it will all come back");
+        Healer.of(level).healNow(box(helper), s);
+        HealSettings.endTestArea(level, area(helper));
+        String wrong = differs(helper, before);
+        helper.assertTrue(wrong == null, "every block back as it was: " + wrong);
+        ItemStack held = ((Container) helper.getBlockEntity(chest, BlockEntity.class)).getItem(4);
+        helper.assertTrue(held.is(Items.DIAMOND) && held.getCount() == 37, "the chest has its diamonds again: " + held);
+        List<ItemFrame> frames = level.getEntitiesOfClass(ItemFrame.class, area(helper));
+        helper.assertTrue(frames.size() == 1 && frames.getFirst().getItem().is(Items.EMERALD), "the frame hangs again with its emerald: " + frames);
+        helper.succeed();
+    }
+
+    /** TNT an explosion lights goes off, so it is not put back (it would be had twice); the stone round it is. */
+    private static void tntLit(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        fill(helper, 2, 1, 2, 14, 3, 14, Blocks.STONE);
+        BlockPos tnt = C.offset(2, -1, 0), below = C.below();
+        helper.setBlock(tnt, Blocks.TNT);
+        HealSettings s = HealSettings.forTests(HealPlayerBlocks.KEEP, 0);
+        HealSettings.testArea(level, area(helper), s);
+        Vec3 at = helper.absoluteVec(Vec3.atCenterOf(C));
+        PrimedTnt primed = new PrimedTnt(level, at.x, at.y, at.z, null);
+        level.explode(primed, Explosion.getDefaultDamageSource(level, primed), null, at.x, at.y, at.z, 4.0F, false, Level.ExplosionInteraction.TNT);
+        List<PrimedTnt> lit = level.getEntitiesOfClass(PrimedTnt.class, area(helper));
+        lit.forEach(Entity::discard);                      // (before it goes off in its turn)
+        helper.assertTrue(lit.size() == 1, "the TNT beside it was lit (" + lit.size() + ")");
+        helper.assertTrue(level.getBlockState(helper.absolutePos(tnt)).isAir() && !remembered(helper, tnt), "and is not remembered");
+        helper.assertTrue(remembered(helper, below), "the stone it blew is");
+        Healer.of(level).healNow(box(helper), s);
+        HealSettings.endTestArea(level, area(helper));
+        helper.assertTrue(level.getBlockState(helper.absolutePos(below)).is(Blocks.STONE), "the stone is back");
+        helper.assertTrue(level.getBlockState(helper.absolutePos(tnt)).isAir(), "the TNT is not");
+        helper.succeed();
+    }
+
+    /**
+     * Which switch an explosion heals under, by what set it off; one switched off, or left out by its id, remembers
+     * nothing; a bed's (no entity, the bad respawn point's damage) heals as a bed's.
+     */
+    private static void explosionSwitches(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Map<String, Kind> kinds = new java.util.LinkedHashMap<>();
+        kinds.put("minecraft:creeper", Kind.CREEPER);
+        kinds.put("minecraft:tnt", Kind.TNT);
+        kinds.put("minecraft:tnt_minecart", Kind.TNT);
+        kinds.put("minecraft:end_crystal", Kind.END_CRYSTAL);
+        kinds.put("minecraft:fireball", Kind.FIREBALL);
+        kinds.put("minecraft:wither", Kind.WITHER);
+        kinds.put("minecraft:wither_skull", Kind.WITHER);
+        kinds.put("minecraft:bad_respawn_point", Kind.BED);
+        kinds.put("minecraft:explosion", Kind.OTHER_MOD);
+        kinds.put("minecraft:player", Kind.OTHER_MOD);
+        kinds.put("somemod:rocket", Kind.OTHER_MOD);
+        for (Map.Entry<String, Kind> e : kinds.entrySet()) {
+            Kind k = Explosions.kind(Identifier.parse(e.getKey()));
+            helper.assertTrue(k == e.getValue(), e.getKey() + " heals as " + e.getValue() + ", not " + k);
+        }
+        HealSettings all = HealSettings.forTests(HealPlayerBlocks.KEEP, 0);
+        Vec3 at = helper.absoluteVec(Vec3.atCenterOf(C));
+        BlockPos below = C.below();
+        fill(helper, 2, 1, 2, 14, 3, 14, Blocks.STONE);
+        HealSettings.testArea(level, area(helper), all.withKinds(EnumSet.complementOf(EnumSet.of(Kind.CREEPER))));
+        creeperAt(helper, at);
+        helper.assertTrue(level.getBlockState(helper.absolutePos(below)).isAir() && !remembered(helper, below), "creepers off: not remembered");
+        clearDrops(helper);
+        fill(helper, 2, 1, 2, 14, 3, 14, Blocks.STONE);
+        HealSettings.testArea(level, area(helper), all.withExcluded(Set.of(), List.of(), List.of("minecraft:creep*")));
+        creeperAt(helper, at);
+        helper.assertTrue(level.getBlockState(helper.absolutePos(below)).isAir() && !remembered(helper, below), "left out by its id: not remembered");
+        clearDrops(helper);
+        fill(helper, 2, 1, 2, 14, 3, 14, Blocks.STONE);
+        HealSettings beds = all.withKinds(EnumSet.of(Kind.BED));
+        HealSettings.testArea(level, area(helper), beds);
+        level.explode(null, level.damageSources().badRespawnPointExplosion(at), null, at.x, at.y, at.z, 3.0F, false, Level.ExplosionInteraction.BLOCK);
+        helper.assertTrue(level.getBlockState(helper.absolutePos(below)).isAir() && remembered(helper, below), "a bed's explosion is remembered");
+        Healer.of(level).healNow(box(helper), beds);
+        HealSettings.endTestArea(level, area(helper));
+        helper.assertTrue(level.getBlockState(helper.absolutePos(below)).is(Blocks.STONE), "and heals");
+        helper.succeed();
+    }
+
+    /**
+     * Another mod's explosion (its own explosion class, nothing behind it) heals under Other mods' explosions: a barrel of
+     * emeralds back with them, nothing spilt; and with that switch off it is not remembered.
+     */
+    private static void otherMods(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        fill(helper, 2, 1, 2, 14, 3, 14, Blocks.STONE);
+        BlockPos barrel = C.offset(1, -1, 0), below = C.below();
+        helper.setBlock(barrel, Blocks.BARREL);
+        ((Container) helper.getBlockEntity(barrel, BlockEntity.class)).setItem(0, new ItemStack(Items.EMERALD, 5));
+        Map<BlockPos, BlockState> before = snapshot(helper);
+        HealSettings mods = HealSettings.forTests(HealPlayerBlocks.KEEP, 0).withKinds(EnumSet.of(Kind.OTHER_MOD));
+        HealSettings.testArea(level, area(helper), mods);
+        Vec3 at = helper.absoluteVec(Vec3.atCenterOf(C));
+        ServerExplosion theirs = new ServerExplosion(level, null, null, null, at, 3.0F, false, Explosion.BlockInteraction.DESTROY) {};
+        helper.assertTrue(Explosions.source(theirs).equals(Identifier.withDefaultNamespace("explosion")), "known by its damage: " + Explosions.source(theirs));
+        theirs.explode();
+        helper.assertTrue(level.getBlockState(helper.absolutePos(barrel)).isAir() && remembered(helper, barrel), "the barrel went: remembered");
+        helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, area(helper)).isEmpty(), "nothing dropped or spilt");
+        Healer.of(level).healNow(box(helper), mods);
+        String wrong = differs(helper, before);
+        helper.assertTrue(wrong == null, "every block back as it was: " + wrong);
+        ItemStack held = ((Container) helper.getBlockEntity(barrel, BlockEntity.class)).getItem(0);
+        helper.assertTrue(held.is(Items.EMERALD) && held.getCount() == 5, "the barrel has its emeralds again: " + held);
+        HealSettings.testArea(level, area(helper), HealSettings.forTests(HealPlayerBlocks.KEEP, 0).withKinds(EnumSet.complementOf(EnumSet.of(Kind.OTHER_MOD))));
+        level.explode(null, at.x, at.y, at.z, 3.0F, Level.ExplosionInteraction.BLOCK);
+        HealSettings.endTestArea(level, area(helper));
+        helper.assertTrue(level.getBlockState(helper.absolutePos(below)).isAir() && !remembered(helper, below), "other mods' off: not remembered");
+        clearDrops(helper);
+        helper.succeed();
+    }
+
+    /** With healing off (the default) the game's explosions are as they always were: nothing remembered, a chest's contents spilt. */
+    private static void explosionsOff(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        fill(helper, 2, 1, 2, 14, 3, 14, Blocks.STONE);
+        BlockPos chest = C.offset(1, -1, 0);
+        helper.setBlock(chest, Blocks.CHEST);
+        ((Container) helper.getBlockEntity(chest, BlockEntity.class)).setItem(0, new ItemStack(Items.DIAMOND, 3));
+        creeperAt(helper, helper.absoluteVec(Vec3.atCenterOf(C)));
+        helper.assertTrue(level.getBlockState(helper.absolutePos(chest)).isAir() && !remembered(helper, chest), "nothing remembered");
+        helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, area(helper)).stream().anyMatch(i -> i.getItem().is(Items.DIAMOND)),
+                "the chest's diamonds spilt, as ever");
+        clearDrops(helper);
+        helper.succeed();
     }
 
     /** With healing off (the default) a blast remembers nothing, and a chest it takes is gone with its contents as before. */

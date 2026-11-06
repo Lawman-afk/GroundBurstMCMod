@@ -14,6 +14,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -84,6 +85,7 @@ public final class GBHeal {
         NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
             if (e.getLevel() instanceof ServerLevel level) {
                 Healer.of(level).tick();
+                Explosions.forget();
             }
         });
         NeoForge.EVENT_BUS.addListener((LevelEvent.Unload e) -> {
@@ -110,8 +112,8 @@ public final class GBHeal {
                 return;
             }
             Entity entity = e.getEntity();
-            if (entity instanceof ItemEntity && Healer.of(level).hushed(entity.position())) {
-                e.setCanceled(true);                       // a decoration taken down to hang again: no drop
+            if ((entity instanceof ItemEntity || entity instanceof ExperienceOrb) && Healer.of(level).hushed(entity.position())) {
+                e.setCanceled(true);                       // a decoration taken down to hang again, a block that will heal: no drop
             } else if (entity instanceof FallingBlockEntity falling && !e.loadedFromDisk()) {
                 Scars.aftermath(level, falling.blockPosition(), falling.getBlockState(), falling.blockData, false);
             }

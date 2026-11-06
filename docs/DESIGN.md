@@ -4382,8 +4382,11 @@ this heals as air. And a chunk does not begin to heal while a fire that will go 
 it, near its damage (in its damaged sections or the ones above and below: the palette tells at once a section that
 never held fire; `Healer.fireNear`): it waits again, looking every 5 s, so the trees come back once the forest is out
 and nothing is left to set them alight. A fire on netherrack or another block that keeps a fire burning (a hearth, the
-Nether) burns for good and is no reason to wait. Told to heal now (the heal command), a chunk puts the fires by it out
-first.
+Nether) burns for good and is no reason to wait. Nor is a fire that cannot burn out where it is (2026-11-06, found by
+the heal check's third scene): on 26.x a fire neither spreads nor goes out beyond `fire_spread_radius_around_player`
+(128 blocks) of every player, nor anywhere in a chunk that is not ticking, so it would stand there for good and hold the
+healing off for ever (a crater burning when its players went away never healed). Once its chunk is due, such a fire goes
+out (`Snapshots.burnsOut`). Told to heal now (the heal command), a chunk puts the fires by it out first.
 
 **Kept with the chunk.** What a chunk remembers is a data attachment on it (`ChunkScars`), saved and loaded with it:
 per section, a bit for each remembered cell and its old state as the game keeps sections (a palette and an index a
@@ -4432,6 +4435,38 @@ healing sets them back (`Healer.restoring()`): a healed structure part had made 
 half-built, taking it apart until its last part was back, and a healed pipe could lose a pull side whose chest was not
 back yet.
 
+**The game's own explosions and other mods'** (2026-11-06; the user: "please add a heal config to heal the vanilla
+explosions and if possible the explosions of other mods"). An explosion that goes through the game's explosion code
+heals as this mod's weapons do (`heal.Explosions`): the game's own (creepers, TNT and TNT minecarts, end crystals, ghasts'
+fireballs, the Wither as it is made and its skulls, beds and respawn anchors that blow up where they do not work) and
+any other mod's that uses that code, as most do, its own explosion class too. What set it off is its weapon: the entity
+that blew up (`minecraft:creeper`, `minecraft:tnt`, another mod's rocket) or, with none, its damage type
+(`minecraft:bad_respawn_point`, plain `minecraft:explosion`). The game's own, by name, have a switch each under
+`healing.explosions`; anything else is another mod's, under one switch; `what.excludedWeapons` takes these ids too
+(`"somemod:*"`), and the dimensions, blocks and players' rules are the same as for the mod's weapons.
+- The hook is the block state's `onExplosionHit` (`mixin/BlockStateBaseMixin`, wrapping it): the one call through
+  which the game's explosion, and another mod's explosion class, hit each block, after every other mod has had its say
+  over which blocks it takes (a claim's protection takes its blocks out of the explosion's list first). Each explosion
+  has its recorder (the first block it hits makes it). A block is remembered before the hit; one that will heal has its
+  block entity taken out quietly first (nothing spilt: it comes back with its contents), and the game's own hit runs
+  with its drops swallowed and its experience held back, inside a remembered course, so what its going takes with it
+  round it (a torch on the far side of a wall, a door's other half) is remembered too and drops nothing. So the
+  explosion still does to each block what it does in the game (a beehive angers its bees, a creaking heart loses its
+  creaking).
+- A block the explosion sets off rather than breaks is never put back: it went off. TNT (which an explosion lights, and
+  which drops nothing in one), any block that drops nothing in an explosion (`canDropFromExplosion` false: other mods'
+  explosives), and this mod's charges.
+- A painting, item frame or armour stand the explosion breaks (`mixin/ServerExplosionMixin`, round its `hurtServer`)
+  is saved as it was before the hit and put back with the ground, what it drops held back; a fixed frame or a marker
+  stand, which the explosion leaves be, is left as it is.
+- Fire an explosion starts (a ghast's, a bed's) is the aftermath's, as a blast's fire is: what it burns near the damage
+  heals once it is out.
+- A wind charge's explosion only works doors and buttons, and is left alone. With healing off nothing changes: the
+  game's explosions drop and spill as they always did.
+- Not seen: an explosion that works out its own crater and sets its blocks itself, as this mod's weapons do, never
+  meets the hook, so another mod's of that kind does not heal. Its changes are any block changes; telling them from a
+  player's building would take a list of that mod's entities to watch while they tick (considered, left for later).
+
 **Players.** Where a player puts a block over remembered damage, `playerBlocks` says what healing does: `KEEP` (the
 default) leaves it, and leaves the ground within `keepRadius` of it, and the air over that up to the sky, as they are,
 so a base built in a crater is not filled in round it or buried; `DROP` pops it off as an item and heals the ground;
@@ -4449,7 +4484,9 @@ so a base built in a crater is not filled in round it or buried; `DROP` pops it 
 | `effects` | true | sparkles and sounds |
 | `what.conventional`, `what.nuclear`, `what.special`, `what.chemical` | true | which kinds of weapon heal |
 | `what.aftermath`, `what.decorations`, `what.biomes`, `what.clearRadiation` | true | the fire and what falls and decays; paintings, frames, stands; the wasteland; radiation |
-| `what.excludedWeapons`, `what.excludedBlocks`, `what.excludedDimensions` | [] | blast profiles and the other weapons' ids (a * matches anything); blocks and #tags; dimensions |
+| `what.excludedWeapons`, `what.excludedBlocks`, `what.excludedDimensions` | [] | blast profiles, the other weapons' ids and what set off an explosion (its entity's or damage type's id; a * matches anything); blocks and #tags; dimensions |
+| `explosions.creepers`, `explosions.tnt`, `explosions.endCrystals`, `explosions.ghastFireballs`, `explosions.wither`, `explosions.bedsAndAnchors` | true | the game's own explosions, by what set them off |
+| `explosions.otherMods` | true | other mods' explosions through the game's explosion code |
 | `players.playerBlocks`, `players.keepRadius`, `players.dropItems` | KEEP, 3, false | see Players |
 | `performance.maxBlocksPerTick`, `performance.msPerTick` | 2 000, 5 | the server's budget for it |
 
@@ -4457,8 +4494,8 @@ The weapons that are not blast profiles, by id: `particle_beam`, `cryo_freeze`, 
 `storm`, `fallout`, `radiation`, `meltdown`, `toxin`, `breach`, `incendiary`. A profile's kind is nuclear by its terrain
 table (and the meltdown, the fizzle, the dirty bomb), special and chemical by name, conventional otherwise.
 
-**Not healed:** damage done while healing was off; vanilla's own explosions (creepers, TNT: Explosion't and its kind do
-those); ships and contraptions; creatures, and items blown away; a fire that has spread more than a chunk past any
+**Not healed:** damage done while healing was off; other mods' explosions that set their crater's blocks themselves;
+TNT an explosion lights (it went off); ships and contraptions; creatures, and items blown away; a fire that has spread more than a chunk past any
 damage; what falls over ticks later (a column of sugar cane or cactus, scaffolding). A leaf counts its distance to its
 trunk afresh once the trunk is back (a number nobody sees; a tree grown by world generation counts it one higher here
 and there).
@@ -5267,6 +5304,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-06 | **Healing the game's own explosions and other mods'** (§21.9; the user: "please add a heal config to heal the vanilla explosions and if possible the explosions of other mods"): one hook, the block state's `onExplosionHit`, through which the game's explosion and other mods' explosion classes hit every block, so it covers vanilla and most mods; a switch each for creepers, TNT, end crystals, ghast fireballs, the Wither, and beds and respawn anchors, one for other mods' (and their ids in `excludedWeapons`), all on (healing itself stays off by default). An explosion is named by what set it off: its entity, else its damage type. TNT an explosion lights is never put back; decorations are saved before the hit and kept only if it broke them. Not covered: mods that set their crater's blocks themselves (no general way to tell their changes from any other; a list of such mods' entities to watch while they tick was considered and left for later). |
 | 2026-11-06 | **Depth Charge Rack** (§14.6; the user: "instead of having the dropped out of a dropper, can we add a small multiblock that rolls them off? And can be piped into it with charges please? This should also work with create stuff."): a stern rack one block wide and four long (its controller the release end, two Depth Charge Rails, an Item Port at the top end), six charges rolling down its rails to a hinged trap; loaded through the Item Port (hoppers, pipes, Create's funnels), released by redstone (a pulse one, a held signal a pattern at its interval) or its screen (the way aboard a contraption), every charge set to one depth or left at its own, a comparator reading how full it is. A machine like the others, so the 1.21.1 Create compat carries it on contraptions and ships. Two GameTests that had passed by luck of the grid fixed with it: the storm test's interceptor battery engages nothing (once its EMP wore off it shot down a neighbouring test's missile), and a silo's missile flies at the bomb scale its launch was ordered at, not the one a test started since has set. |
 | 2026-11-06 | **Effects drawn last under shader packs and with Distant Horizons** (a player's comment the user passed on: under Bliss "mushroom clouds appear to flicker much more frequently than without shading, while also drastically changing color", and Distant Horizons' far water drawn through the cloud; then the user: more tests with other packs): §12.3. Bliss reproduced it (the cloud a hole of sky colour, the smoke black); its programs fade half-clear particles out by 100 blocks, light entities in a pass of their own and scale glows by its auto-exposure, so no pack program suits the effects. Under a pack they are now drawn after the level, over the pack's finished picture, by their own pipelines against the depth the pack left (`client/fx/DrawnLast`), and with Distant Horizons too (its fade laid its far sea over the cloud's foot). Checked under seven packs (Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas, MakeUp Ultra Fast) and with Distant Horizons, without a pack and under Bliss, on 26.3 and 1.21.1. The 0.8.1 way stays as a client option ("Effects with shader packs: Lit by the pack"). Tried first and dropped: the fire and clouds on the pack's particle program (Bliss's fade lost the cloud whole). |
 | 2026-11-06 | **Sea mines and depth charges** (§14.6; the user: "Let's do the naval mines and depth charges please. for the 2 main versions", and "the classic sea mines with the chains that stick them to the bottom"; paused for the 0.8.1 release, then taken up again): entities, not blocks (a mine rides a current, swings on its chain and floats free); a moored and a drifting mine (one model: the moored one's item is the mine on its sinker), a depth charge on a hydrostatic pistol; the naval terrain table (set off in water, a blast's rays pass through the sea as through air and what it breaks under the surface fills with water; set off out of water, an ordinary blast of its size); every blast now breaks the boats and minecarts it hurts; `ShockReceiver` (a blast sets off the mines and charges close by and parts mines' chains further off); the water column (`WaterColumn`) and the naval sound set, made from recordings already credited. |
