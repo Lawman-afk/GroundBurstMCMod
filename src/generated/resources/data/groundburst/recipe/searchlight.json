@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "G": "minecraft:glass",
+    "L": "minecraft:redstone_lamp",
+    "P": "groundburst:steel_plate",
+    "S": "groundburst:steel_rod"
+  },
+  "pattern": [
+    "PGP",
+    "PLP",
+    " S "
+  ],
+  "result": {
+    "id": "groundburst:searchlight"
+  }
+}

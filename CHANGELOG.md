@@ -36,6 +36,15 @@
 - **Bunk Bed**: two beds in one, two blocks high and two long. Two players can sleep in it, and each bunk sets a spawn
   point.
 
+### The yard
+- **Jersey Barrier** and **Dragon's Teeth**: concrete obstacles as hard to break and to blast as Reinforced Concrete.
+  Barriers set in a row make a wall; teeth go in rows.
+- **Czech Hedgehog**: three rusty steel beams crossed, standing on three of their ends.
+- **Searchlight**: a big searchlight on a stand, two blocks high. Click it to switch it on: it sweeps the sky with its
+  beam, brightest at night.
+- **Ammo Crates**: olive ammo boxes on a pallet that hold 27 stacks; a box's lid lifts while they are open.
+- **Oil Drum**, **Fuel Drum**, **Rusty Drum**: up to four drums stand in one block, like candles.
+
 ### Performance
 - **Blast effects cost less to draw.** Under a mushroom cloud the mod's share of each frame's work is down by about a
   third: every effect vertex is written in one go, the fallout clouds no longer work out their layout every frame, and

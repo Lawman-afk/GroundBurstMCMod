@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "R": "groundburst:reinforced_concrete"
+  },
+  "pattern": [
+    " R ",
+    "RRR"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundburst:dragons_teeth"
+  }
+}

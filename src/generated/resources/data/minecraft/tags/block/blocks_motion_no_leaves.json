@@ -213,6 +213,11 @@
     "groundburst:tape_computer",
     "groundburst:situation_map_table",
     "groundburst:steel_locker",
-    "groundburst:bunk_bed"
+    "groundburst:bunk_bed",
+    "groundburst:jersey_barrier",
+    "groundburst:dragons_teeth",
+    "groundburst:czech_hedgehog",
+    "groundburst:searchlight",
+    "groundburst:ammo_crates"
   ]
 }
