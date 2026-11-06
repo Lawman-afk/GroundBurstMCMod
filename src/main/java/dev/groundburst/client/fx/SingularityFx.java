@@ -469,8 +469,7 @@ public final class SingularityFx {
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, float[] p, int color) {
-        b.addVertex(pose, p[0], p[1], p[2]).setColor(color).setUv(p[3], p[4]).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
-                .setNormal(pose, 0, 1, 0);
+        FxVertex.put(b, pose, p[0], p[1], p[2], p[3], p[4], color);
     }
 
     /** The singularity's drone: a deep loop that swells and climbs in pitch as it grows, and dies with it. */

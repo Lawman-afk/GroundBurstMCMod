@@ -276,6 +276,16 @@ public final class Scars {
             }
             scars.put(pos, original, be);
             Healer.of(level).track(chunk);
+        } else if (known == null) {
+            // Remembered already, and maybe still standing as it was (the half of a double chest the first blast left):
+            // what it holds now is what this damage takes, so it is saved again.
+            BlockState live = chunk.getBlockState(pos), was = scars.original(pos);
+            if (was != null && live.hasBlockEntity() && live.getBlock() == was.getBlock()) {
+                BlockEntity e = level.getBlockEntity(pos);
+                if (e != null) {
+                    scars.refresh(pos, Snapshots.save(e, level));
+                }
+            }
         }
         if (holdOff) {
             long dayTime = Snapshots.dayTime(level);
@@ -283,6 +293,28 @@ public final class Scars {
         }
         chunk.setUnsaved(true);
         return true;
+    }
+
+    /**
+     * The block at {@code pos}, remembered as {@code broke} was, spilled what it held as it broke (the server lets healing
+     * blocks drop): it comes back without it. One remembered as something else (it stood in for what the damage took
+     * first) keeps the first one's contents.
+     */
+    static void spilled(ServerLevel level, BlockPos pos, Block broke) {
+        LevelChunk chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+        ChunkScars scars = chunk == null ? null : chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+        BlockState was = scars == null ? null : scars.original(pos);
+        if (was != null && was.getBlock() == broke) {
+            scars.spilled(pos);
+            chunk.setUnsaved(true);
+        }
+    }
+
+    /** The block remembered at {@code pos}, or null if none is (or its chunk is not loaded). */
+    static @Nullable BlockState rememberedAs(ServerLevel level, BlockPos pos) {
+        LevelChunk chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+        ChunkScars scars = chunk == null ? null : chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+        return scars == null ? null : scars.original(pos);
     }
 
     /**
@@ -355,8 +387,17 @@ public final class Scars {
             if (heals && hush) {
                 quiet(pos);
             }
+            // Let drop, it spills what it holds as it goes (unless the write skips that, as the blast engine's does, or its
+            // contents were held back for its healing as it dropped whole).
+            boolean held = pos.asLong() == this.heldContents;
+            this.heldContents = Long.MIN_VALUE;
+            Spill spill = heals && !hush && !held && !Snapshots.skipsSideEffects(flags) ? Spill.of(this.level, pos) : null;
             if ((flags & Block.UPDATE_KNOWN_SHAPE) != 0) {
-                return this.level.setBlock(pos, state, flags);
+                boolean done = this.level.setBlock(pos, state, flags);
+                if (spill != null) {
+                    spill.check(this.level, pos);
+                }
+                return done;
             }
             Around around = Around.of(this.level, pos);
             Healer healer = Healer.of(this.level);
@@ -373,9 +414,32 @@ public final class Scars {
                     healer.hushWhile(null);
                 }
             }
+            if (spill != null) {
+                spill.check(this.level, pos);
+            }
             around.remember(this.level, this.settings, this.holdOff);
             return done;
         }
+
+        /**
+         * A block that will heal is about to drop whole as it breaks (the server lets it): what it holds stays behind for
+         * its healing and is left out of what it drops (a shulker box drops empty and comes back full), so nothing is
+         * had twice. Only for the block remembered there (not one that stands in for it).
+         */
+        public void holdContents(BlockPos pos) {
+            if (this.settings == null) {
+                return;
+            }
+            BlockState was = rememberedAs(this.level, pos);
+            BlockEntity e = this.level.getBlockEntity(pos);
+            if (was != null && e != null && was.getBlock() == this.level.getBlockState(pos).getBlock()) {
+                Snapshots.empty(e, this.level);
+                this.heldContents = pos.asLong();          // (its write next spills nothing, and is not to be told it did)
+            }
+        }
+
+        /** The block whose contents {@link #holdContents} held back, until it is set. */
+        private long heldContents = Long.MIN_VALUE;
 
         /**
          * The game's or another mod's explosion hits the block at {@code pos} ({@link Explosions}): it is remembered first,
@@ -395,6 +459,7 @@ public final class Scars {
             if (heals && hush) {
                 quiet(pos);
             }
+            Spill spill = heals && !hush ? Spill.of(this.level, pos) : null;   // (let drop, the game's explosions spill a chest)
             Around around = Around.of(this.level, pos);
             Healer healer = Healer.of(this.level);
             if (hush) {
@@ -413,8 +478,26 @@ public final class Scars {
                     healer.hushWhile(null);
                 }
             }
+            if (spill != null) {
+                spill.check(this.level, pos);
+            }
             around.remember(this.level, this.settings, this.holdOff);
             return heals;
+        }
+
+        /** A block entity about to go with its block, the server letting it spill: whether it did is told after. */
+        private record Spill(BlockEntity held, Block block) {
+            static @Nullable Spill of(ServerLevel level, BlockPos pos) {
+                BlockEntity e = level.getBlockEntity(pos);
+                return e == null ? null : new Spill(e, level.getBlockState(pos).getBlock());
+            }
+
+            /** Gone with its block (a chest broken spills what it held): it comes back without it. */
+            void check(ServerLevel level, BlockPos pos) {
+                if (level.getBlockEntity(pos) != this.held) {
+                    spilled(level, pos, this.block);
+                }
+            }
         }
 
         /** {@link #set} with the usual flags (neighbours told, clients told). */

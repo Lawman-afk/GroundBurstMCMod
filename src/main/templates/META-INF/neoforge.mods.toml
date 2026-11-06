@@ -16,6 +16,10 @@ ${mod_description}
 [[mixins]]
 config="${mod_id}.mixins.json"
 
+# This branch's own (docs/BACKPORT.md): the GameTest helper counting from its structure's corner, as 26.x's does.
+[[mixins]]
+config="${mod_id}.port.mixins.json"
+
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"

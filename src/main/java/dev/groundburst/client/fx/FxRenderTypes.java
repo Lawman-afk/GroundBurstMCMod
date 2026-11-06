@@ -3,6 +3,7 @@ package dev.groundburst.client.fx;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;

@@ -127,6 +127,11 @@ public final class BlastManager extends SavedData {
         return List.copyOf(this.running);
     }
 
+    /** The blast set off last that is still running, or null (the blast bench, after a warhead's own path set one off). */
+    @Nullable Blast newest() {
+        return this.running.isEmpty() ? null : this.running.getLast();
+    }
+
     void add(BlastJob job) {
         job.netId = NET_IDS.incrementAndGet();
         broadcast(BlastPayloads.start(job));

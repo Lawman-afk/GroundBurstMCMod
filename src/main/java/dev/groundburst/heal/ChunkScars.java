@@ -95,6 +95,40 @@ public final class ChunkScars {
         }
     }
 
+    /**
+     * A remembered block entity's mark: what it held spilled out as it broke (the server let it drop), so it comes back
+     * without it, and nothing is had twice (DESIGN.md §21.9).
+     */
+    static final String SPILLED = "groundburst:spilled";
+
+    /** The block remembered at {@code pos}, or null if none is. */
+    @Nullable BlockState original(BlockPos pos) {
+        Section s = this.sections.get(pos.getY() >> 4);
+        int i = cell(pos.getX(), pos.getY(), pos.getZ());
+        return s != null && s.has(i) ? s.original(i) : null;
+    }
+
+    /** The block remembered at {@code pos} spilled what it held as it broke: it comes back empty. */
+    void spilled(BlockPos pos) {
+        Section s = this.sections.get(pos.getY() >> 4);
+        CompoundTag be = s == null ? null : s.blockEntity(cell(pos.getX(), pos.getY(), pos.getZ()));
+        if (be != null) {
+            be.putBoolean(SPILLED, true);
+        }
+    }
+
+    /**
+     * The block remembered at {@code pos} still stands as it was remembered, and its block entity is saved again as it is
+     * now ({@code be}): damage coming back for it takes what it holds now, not what it held the first time.
+     */
+    void refresh(BlockPos pos, CompoundTag be) {
+        Section s = this.sections.get(pos.getY() >> 4);
+        int i = cell(pos.getX(), pos.getY(), pos.getZ());
+        if (s != null && s.has(i)) {
+            s.blockEntities.put(i, be);
+        }
+    }
+
     /** Forgets the block at (x, y, z): it will not heal. */
     void clear(int x, int y, int z) {
         Section s = this.sections.get(y >> 4);

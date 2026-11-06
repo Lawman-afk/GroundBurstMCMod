@@ -40,16 +40,50 @@ final class FalloutFx {
 
     private FalloutFx() {}
 
+    /**
+     * A zone's puffs as its seed lays them out (where each sits in the zone, as shares of its radius; its height in the
+     * layer, size, colour, cell, brightness, turn and phase), drawn from the seed once and kept rather than drawn again
+     * every frame (DESIGN.md §11.10): the same puffs as ever, the same numbers in the same order.
+     */
+    private record Layout(int count, double[] ox, double[] oz, double[] y, float[] scale, int[] albedo, int[] variant, float[] bright,
+            float[] cos, float[] sin, float[] phase) {
+        static Layout of(long seed, int n) {
+            RandomSource random = RandomSource.create(seed);
+            random.nextFloat();                                    // (it drew its own wind before slice 12b: the same puffs as then)
+            Layout l = new Layout(n, new double[n], new double[n], new double[n], new float[n], new int[n], new int[n], new float[n],
+                    new float[n], new float[n], new float[n]);
+            for (int i = 0; i < n; i++) {
+                l.ox[i] = random.nextDouble() * 2 - 1;
+                l.oz[i] = random.nextDouble() * 2 - 1;
+                l.y[i] = random.nextDouble() * DEPTH;
+                l.scale[i] = 0.7f + 0.6f * random.nextFloat();
+                l.albedo[i] = COLOURS[random.nextInt(COLOURS.length)];
+                l.variant[i] = random.nextInt(8);                  // the smoke cells: lumpy, shaded
+                l.bright[i] = 0.88f + 0.24f * random.nextFloat();
+                float rot = (random.nextFloat() - 0.5f) * 0.3f;        // nearly level: the stretch stays a layer
+                l.cos[i] = (float) Math.cos(rot);
+                l.sin[i] = (float) Math.sin(rot);
+                l.phase[i] = random.nextFloat() * 6.283f;
+            }
+            return l;
+        }
+    }
+
+    /** Each zone's layout by its seed (made again when the server sends the sources, or a quality setting asks for more). */
+    private static final java.util.Map<Long, Layout> LAYOUTS = new java.util.HashMap<>();
+
     static void register() {
         RadiationSources.Sync.hook = z -> {
             zones = z.sources();
             zonesLevel = Minecraft.getInstance().level;
+            LAYOUTS.clear();
         };
     }
 
     static void clear() {
         zones = List.of();
         zonesLevel = null;
+        LAYOUTS.clear();
     }
 
     private static List<RadiationSource> current(ClientLevel level) {
@@ -87,7 +121,10 @@ final class FalloutFx {
         double time = now + partial;
         float quality = Math.max(0.5f, Math.min(1.2f, Spectacle.quality()));
         double driftX = dev.groundburst.client.fallout.FalloutClient.driftX(partial), driftZ = dev.groundburst.client.fallout.FalloutClient.driftZ(partial);
-        List<float[]> quads = new ArrayList<>();
+        if (LAYOUTS.size() > 256) {
+            LAYOUTS.clear();                                       // (a great many zones come and gone: start again)
+        }
+        Puffs.QuadBuffer quads = new Puffs.QuadBuffer(list.size() * 96);
         for (RadiationSource z : list) {
             float life = (float) Math.sqrt(z.strength(now));
             if (life < 0.02f) {
@@ -98,19 +135,22 @@ final class FalloutFx {
             // is fairly opaque: the cloud shader cuts away a puff's faint fringe (so it can write depth), and the fainter
             // the puff, the more of its edge that cut takes, leaving hard outlines.
             int n = (int) (Math.max(24, Math.min(300, r * r / 170)) * quality);
-            RandomSource random = RandomSource.create(Double.doubleToLongBits(z.center().x) * 31 + Double.doubleToLongBits(z.center().z) ^ z.start());
-            random.nextFloat();                                    // (it drew its own wind before slice 12b: the same puffs as then)
+            long seed = Double.doubleToLongBits(z.center().x) * 31 + Double.doubleToLongBits(z.center().z) ^ z.start();
+            Layout lay = LAYOUTS.get(seed);
+            if (lay == null || lay.count() < n) {
+                lay = Layout.of(seed, n);                          // (the first n of a longer layout are the same puffs)
+                LAYOUTS.put(seed, lay);
+            }
             float size0 = (float) (22 + Math.min(14, r / 12));
             for (int i = 0; i < n; i++) {
-                // Every puff draws the same numbers each frame (its place is its seed's), whether it is drawn or not.
-                double ox = (random.nextDouble() * 2 - 1) * r, oz = (random.nextDouble() * 2 - 1) * r;
-                double y = z.center().y + BASE + random.nextDouble() * DEPTH;
-                float scale = 0.7f + 0.6f * random.nextFloat();
-                int albedo = COLOURS[random.nextInt(COLOURS.length)];
-                int variant = random.nextInt(8);                   // the smoke cells: lumpy, shaded
-                float bright = 0.88f + 0.24f * random.nextFloat();
-                float rot = (random.nextFloat() - 0.5f) * 0.3f;         // nearly level: the stretch stays a layer
-                float phase = random.nextFloat() * 6.283f;
+                // Every puff keeps the place its seed gave it, whether it is drawn or not.
+                double ox = lay.ox()[i] * r, oz = lay.oz()[i] * r;
+                double y = z.center().y + BASE + lay.y()[i];
+                float scale = lay.scale()[i];
+                int albedo = lay.albedo()[i];
+                int variant = lay.variant()[i];
+                float bright = lay.bright()[i];
+                float phase = lay.phase()[i];
                 // Drifting with the wind (slice 12b: the level's own, as this client has felt it), wrapping round inside the
                 // square round the zone; it fades out toward the zone's edge, so a puff leaving one side and coming back in
                 // on the other is never seen to jump.
@@ -131,17 +171,17 @@ final class FalloutFx {
                 float side = 1 - Math.abs(ny);
                 light.shade((float) (hx / h) * side, ny, (float) (hz / h) * side, 0.8f + 0.15f * Math.max(0, ny), shade);
                 int color = Puffs.multiply(albedo, shade.mul(bright));
-                float half = size / 2, cs = (float) Math.cos(rot) * half, sn = (float) Math.sin(rot) * half;
-                quads.add(new float[] {(float) (x - camera.x), (float) (y - camera.y), (float) (zz - camera.z),
+                float half = size / 2, cs = lay.cos()[i] * half, sn = lay.sin()[i] * half;
+                quads.add((float) (x - camera.x), (float) (y - camera.y), (float) (zz - camera.z),
                         (right.x * cs + up.x * sn) * WIDE, (right.y * cs + up.y * sn) * WIDE, (right.z * cs + up.z * sn) * WIDE,
                         (up.x * cs - right.x * sn) * TALL, (up.y * cs - right.y * sn) * TALL, (up.z * cs - right.z * sn) * TALL,
-                        Float.intBitsToFloat((int) (Math.min(1, alpha) * 255) << 24 | color), Puffs.Kind.SMOKE.first + variant});
+                        (int) (Math.min(1, alpha) * 255) << 24 | color, Puffs.Kind.SMOKE.first + variant);
             }
         }
         if (quads.isEmpty()) {
             return;
         }
-        quads.sort((a, b) -> Float.compare(b[0] * b[0] + b[1] * b[1] + b[2] * b[2], a[0] * a[0] + a[1] * a[1] + a[2] * a[2]));
+        // (No sorting here: the cloud render type has the game sort every quad drawn with it, far to near, these and others'.)
         FxRenderTypes.submit(collector, poseStack, FxRenderTypes.cloud(Puffs.SHEET), (pose, buffer) -> Puffs.quads(buffer, pose, quads));
     }
 

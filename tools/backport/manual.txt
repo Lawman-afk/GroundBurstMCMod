@@ -25,3 +25,5 @@ src/main/java/dev/groundburst/client/fx/IrisFx.java
 src/main/java/dev/groundburst/client/fx/DrawnLast.java
 src/main/java/dev/groundburst/mixin/BlockStateBaseMixin.java
 src/main/java/dev/groundburst/mixin/ServerExplosionMixin.java
+src/main/java/dev/groundburst/gametest/GameTestRegistration.java
+src/main/java/dev/groundburst/client/fx/FxSort.java

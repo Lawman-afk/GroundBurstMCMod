@@ -49,7 +49,8 @@ final class MushroomCloud {
         int life;
         /** Azimuth (collar, shell, base ring) and elevation (shell); the base ring's roll round its minor circle. */
         float phi, elev, jitter, roll;
-        float rot;
+        /** Its turn on screen, and that turn's cosine and sine (worked out once: it never changes). */
+        float rot, cosRot = 1, sinRot;
     }
 
     private final Vec3 center;
@@ -336,6 +337,8 @@ final class MushroomCloud {
         c.life = life;
         c.variant = this.random.nextInt(4);
         c.rot = (this.random.nextFloat() - 0.5f) * 0.6f;
+        c.cosRot = (float) Math.cos(c.rot);
+        c.sinRot = (float) Math.sin(c.rot);
         return c;
     }
 
@@ -409,7 +412,8 @@ final class MushroomCloud {
         double heat = this.dusty ? heat(t) * 0.15 : heat(t);
         double underside = capY - small * 0.6;
         int stemAlbedo = Puffs.lerpRgb(this.earth, 0x8E8680, 0.55f);
-        List<float[]> quads = new ArrayList<>(this.cloudlets.size());
+        Puffs.QuadBuffer quads = new Puffs.QuadBuffer(this.cloudlets.size());
+        double coreReach = 0.8 * small;
         for (Cloudlet c : this.cloudlets) {
             double age = t - c.birth;
             double x = c.px + (c.x - c.px) * partial, y = c.py + (c.y - c.py) * partial, z = c.pz + (c.z - c.pz) * partial;
@@ -431,7 +435,8 @@ final class MushroomCloud {
                     albedo = this.dusty ? Puffs.lerpRgb(this.earth, DUST_ALBEDO, 0.6f)
                             : Puffs.lerpRgb(CAP_BROWN, CAP_ALBEDO, (float) Math.max(0, Math.min(1, (t - 200) / 800)));
                     // The core glows, hottest at first; for the first seconds the whole cap is the fireball.
-                    glow = heat * (Math.exp(-Math.pow(dist / (0.8 * small), 2)) + Math.max(0, 1 - t / 90) * 0.8);
+                    double core = dist / coreReach;
+                    glow = heat * (Math.exp(-core * core) + Math.max(0, 1 - t / 90) * 0.8);
                 }
                 case STEM -> {
                     double h = Math.max(0, Math.min(1, (y - this.floor) / Math.max(1, underside - this.floor)));
@@ -485,11 +490,11 @@ final class MushroomCloud {
                 float g = (float) Math.min(1.4, glow * 1.3);
                 color = add(color, hot, g);
             }
-            float half = size / 2, cs = (float) Math.cos(c.rot) * half, sn = (float) Math.sin(c.rot) * half;
-            quads.add(new float[] {(float) (x - camera.x), (float) (y - camera.y), (float) (z - camera.z),
+            float half = size / 2, cs = c.cosRot * half, sn = c.sinRot * half;
+            quads.add((float) (x - camera.x), (float) (y - camera.y), (float) (z - camera.z),
                     right.x * cs + up.x * sn, right.y * cs + up.y * sn, right.z * cs + up.z * sn,
                     up.x * cs - right.x * sn, up.y * cs - right.y * sn, up.z * cs - right.z * sn,
-                    Float.intBitsToFloat((int) (Math.min(1, alpha) * 255) << 24 | color), Puffs.CLOUDLET + c.variant});
+                    (int) (Math.min(1, alpha) * 255) << 24 | color, Puffs.CLOUDLET + c.variant);
         }
         if (quads.isEmpty()) {
             return;
@@ -497,12 +502,26 @@ final class MushroomCloud {
         FxRenderTypes.submit(collector, poseStack, FxRenderTypes.cloud(Puffs.SHEET), (pose, buffer) -> Puffs.quads(buffer, pose, quads));
     }
 
+    /** Fire's colours, white-hot to dull red. */
+    private static final int[] HEAT_RAMP = {0xFFF0C0, 0xFFC050, 0xFF7A20, 0xC03A10, 0x5A1808};
+    /** The ramp looked up in 1,024 steps (each under a shade of a colour level apart): asked for by every cloudlet each frame. */
+    private static final int[] HEAT_TABLE = new int[1024];
+
+    static {
+        for (int k = 0; k < HEAT_TABLE.length; k++) {
+            HEAT_TABLE[k] = heatRamp(k / (float) (HEAT_TABLE.length - 1));
+        }
+    }
+
     /** The colour of fire at {@code u} = 0 (white-hot) to 1 (dull red). */
     static int heatColor(float u) {
-        int[] ramp = {0xFFF0C0, 0xFFC050, 0xFF7A20, 0xC03A10, 0x5A1808};
-        float x = Math.max(0, Math.min(0.999f, u)) * (ramp.length - 1);
+        return HEAT_TABLE[(int) (Math.max(0, Math.min(1, u)) * (HEAT_TABLE.length - 1) + 0.5f)];
+    }
+
+    private static int heatRamp(float u) {
+        float x = Math.max(0, Math.min(0.999f, u)) * (HEAT_RAMP.length - 1);
         int i = (int) x;
-        return Puffs.lerpRgb(ramp[i], ramp[i + 1], x - i);
+        return Puffs.lerpRgb(HEAT_RAMP[i], HEAT_RAMP[i + 1], x - i);
     }
 
     /** {@code base} plus {@code glow} times {@code amount}, clamped. */

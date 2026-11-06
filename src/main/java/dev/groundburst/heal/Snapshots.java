@@ -29,6 +29,39 @@ final class Snapshots {
         be.loadWithComponents(tag, level.registryAccess());
     }
 
+    /**
+     * Whether a block set with these flags skips its block entity's removal (a chest broken so spills nothing): never on
+     * 1.21.1, which has no such flag (main's blast engine skips it; here a chest it breaks spills, unless healing took
+     * its block entity out quietly first).
+     */
+    static boolean skipsSideEffects(int flags) {
+        return false;
+    }
+
+    /**
+     * Empties what a block entity holds (a chest's items, a lectern's book, a campfire's food, a machine's slots), keeping
+     * the rest of it (its name, its lock, a sign's words): by the game's own clearing where the block has it, else through
+     * the item handler it shows other mods, as far as that lets things be taken out. (1.21.1's item handler; main's is
+     * 26.x's resource handler.)
+     */
+    static void empty(BlockEntity be, ServerLevel level) {
+        if (be instanceof net.minecraft.world.Clearable clearable) {
+            clearable.clearContent();
+        } else {
+            net.neoforged.neoforge.items.IItemHandler items = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
+                    be.getBlockPos(), be.getBlockState(), be, null);
+            if (items != null) {
+                for (int i = 0; i < items.getSlots(); i++) {
+                    net.minecraft.world.item.ItemStack held = items.getStackInSlot(i);
+                    if (!held.isEmpty()) {
+                        items.extractItem(i, held.getCount(), false);
+                    }
+                }
+            }
+        }
+        be.setChanged();
+    }
+
     /** An entity as it is (even one just taken out of the world), with its type; null if it is not one that is saved. */
     static @Nullable CompoundTag save(Entity entity, ServerLevel level) {
         String id = entity.getEncodeId();

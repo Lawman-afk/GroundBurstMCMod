@@ -666,6 +666,9 @@ final class BlastJob implements Blast {
         }
         boolean heals = this.scars.record(this.pos);       // (a block that will heal drops nothing)
         if (this.profile.drops() > 0 && this.random.nextFloat() < this.profile.drops() && this.scars.mayDrop(heals)) {
+            if (heals) {
+                this.scars.holdContents(this.pos);         // (what it holds comes back with it, so its drop goes without)
+            }
             Block.dropResources(state, this.level, this.pos, this.level.getBlockEntity(this.pos));
         }
         write(this.pos, hollow(this.pos));

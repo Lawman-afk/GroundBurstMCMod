@@ -185,7 +185,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         if (this.cached != null && this.cached.value().matches(input, level)) {
             return Optional.of(this.cached);
         }
-        Optional<RecipeHolder<ProcessingRecipe>> found = level.getRecipeManager().getRecipeFor(GBRecipes.type(this.kind), input, level);
+        Optional<RecipeHolder<ProcessingRecipe>> found = ProcessingRecipe.pick(level, this.kind, input);
         this.cached = found.orElse(null);
         return found;
     }

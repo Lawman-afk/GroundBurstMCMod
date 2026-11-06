@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.groundburst.port.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "GameTestHelperMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

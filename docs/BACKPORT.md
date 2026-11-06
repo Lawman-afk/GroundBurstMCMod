@@ -59,7 +59,25 @@ code is not ported by hand file by file. `tools/backport/port.py` turns main's s
    `shaders/core/rendertype_fx_cloud.*`) are never touched by `port.py`, which only writes what main has.
 
 `tools/backport/compile.ps1` (run with PowerShell 7) compiles and sorts the errors; `errs.py <words>` prints a file's
-errors with their lines. `gradlew runGameTestServer` loads everything on a server and runs this branch's own tests
+errors with their lines. `gradlew runGameTestServer` loads everything on a server and runs **all of main's GameTests**
+(417 at main ca16336b, every one: `PortSkips` is empty) beside this branch's own seven (424). Main's are ported like the
+rest of its code (the gametest package; `port.py`'s rules for 26.x's test helper: `getBlockEntity(pos, Type.class)`,
+`makeMockServerPlayer` as `port/Tests.mockServerPlayer`, a missile's look by number, and a few per-file fixes); how they
+reach the game is this branch's own `gametest/GameTestRegistration` (`manual.txt`): a generator of 1.21.1's test
+functions from main's list (`GBGameTests.specs()`), all in one batch, logging how many. Two things 1.21.1's test
+framework does otherwise, both made as main's: its helper counted a test's blocks from the structure block, which it
+sets a block under the structure, so every test stood a block low (`port/mixin/GameTestHelperMixin`, in the branch's
+own `groundburst.port.mixins.json`, declared in its `neoforge.mods.toml`: from the structure's corner, as 26.x's does);
+and its mock server player joins the server's player list on a connection that cannot take the mod's packets (the
+first one sent to every player crashed the run), where 26.x's is in no list (`port/Tests`: the same). Running them
+found four of this branch's own faults, fixed: the mod's liquid buckets had no fluid handler here (main named only the
+gas buckets; NeoForge 21.1 gives the plain ones only its older kind), so they poured into nothing of the mod's; the
+machines took the game's first matching recipe, which 1.21.1 lists in another order (RDX made of photoresist's
+makings; main's `ProcessingRecipe.pick` now takes the matching recipe that takes the most); frosted and dead grass were
+not dirt here, so a cryo burst shed the plants on them instead of freezing them (`port.py`'s `grass_into_dirt`: 1.21.1's
+plants stand on `#dirt`, 26.x's on `#supports_vegetation`, which takes in main's `#grass_blocks`); and the meltdown
+test now looks under the plot's floor for its corium (main's too). One test runs otherwise here: 1.21.1 feels what a
+mob stands in only as it moves, so the napalm test's pig keeps its AI. The branch's own tests
 (`dev.groundburst.port.SmokeTest`: it loads; a particle beam carves its trench; transactions are each thread's own; the
 Wrench splits and joins pipes and cables; healing puts a blast's damage back block for block, a chest with its diamonds,
 and a creeper's explosion too, its item frame hung again, a block of TNT it lit not put back); `gradlew runPortCheck` opens a world, sets the mod's blocks out (a Warning
@@ -102,12 +120,16 @@ or a block's on-place hook (the port takes them out): a block that will heal has
 nothing spills, and a healed block runs its on-place hook (a healed water source flows, as it should). The heal check
 (`HealPhotographer`) is main's alone.
 
+**Effects' cost** (main's DESIGN.md §11.10): the one-call vertices, the fallout layer laid out once and the mushroom
+cloud's quicker sums come over with main's code; main's sorting of the effects' blended quads itself (`FxSort`) does
+not: this branch's `FxRenderTypes` is its own (kept by hand) and keeps the game's sorting, its `FxSort` holding nothing
+back.
+
 Still to do:
 
 1. **Kept simpler than main**: consumables (Rad-Away, potassium iodide, the injector) are eaten as food with no
    nourishment; mouse cursors stay the arrow; flash particles are not tinted.
-2. **GameTests**: main's 394 are not ported yet (this branch has its own six).
-3. Play it through in the 1.21.1 instance.
+2. Play it through in the 1.21.1 instance.
 
 ## Shader packs (Iris) and Distant Horizons
 

@@ -575,8 +575,7 @@ public final class ParticleBeamFx {
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
-        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
-                .setNormal(pose, 0, 1, 0);
+        FxVertex.put(b, pose, x, y, z, u, v, color);
     }
 
     /** The beam's roar, following where it touches: swelling in as it comes down, dying with it. */

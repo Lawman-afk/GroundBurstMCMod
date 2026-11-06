@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Performance
+- **Blast effects cost less to draw.** Under a mushroom cloud the mod's share of each frame's work is down by about a
+  third: every effect vertex is written in one go, the fallout clouds no longer work out their layout every frame, and
+  the effects' smoke and fire are sorted once a frame by the mod instead of by the game (the glow needs no sorting at
+  all). The picture is the same.
+- **The ground after a nuke is painted a few milliseconds a tick**, so the seconds after a big blast hitch less.
+
+### Fixes
+- **Healing with "Healing blocks drop items too" on** no longer gives you a chest's contents twice: what a creeper or
+  TNT spills out of a chest stays spilled, and the chest comes back empty. This mod's own blasts spill nothing, so what
+  they break still comes back full.
+- **A double chest half destroyed:** the half left standing keeps what you put in or took out of it before the damage
+  healed, instead of going back to what it held when the blast hit.
+
 ## 0.9.0 — 2026-11-06
 
 Sea mines and depth charges with a stern rack to roll them off, healing for creepers, TNT and other mods' explosions,

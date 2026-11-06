@@ -23,11 +23,11 @@ BASE = (HERE / "base.txt").read_text(encoding="utf-8").split()[0]
 MANUAL = {line.strip() for line in (HERE / "manual.txt").read_text(encoding="utf-8").splitlines()
           if line.strip() and not line.startswith("#")} if (HERE / "manual.txt").exists() else set()
 
-# Main's files with no place here: its development tools (photographers, the blast bench, the world survey), its data
-# generators (their output is ported instead, below) and its GameTests (to come).
+# Main's files with no place here: its development tools (photographers, the blast bench, the world survey) and its data
+# generators (their output is ported instead, below). Its GameTests are ported (gametest/GameTestRegistration.java,
+# how they reach the game, is this branch's own: manual.txt).
 DROP = [re.compile(p) for p in (
     r"src/main/java/dev/groundburst/datagen/.*",
-    r"src/main/java/dev/groundburst/gametest/.*",
     r"src/main/java/dev/groundburst/client/fx/(FxPhotographer|SitePhotographer|HealPhotographer|BlastBenchClient|WorldSurveyClient|DevWorlds)\.java",
     r"src/main/java/dev/groundburst/client/manual/ManualPhotographer\.java",
     r"src/main/java/dev/groundburst/blast/BlastBench\.java",
@@ -77,8 +77,7 @@ DROP_LINES = [re.compile(p) for p in (
     r"^\s*BlastBench\.register\(\);\s*$",
     r"^\s*WorldSurvey\.register\(\);\s*$",
     r"^\s*GBDataGen\.register\(modBus\);\s*$",
-    r"^\s*GBGameTests\.register\(modBus\);\s*$",
-    r"^import dev\.groundburst\.(datagen|gametest)\.\w+;\s*$",
+    r"^import dev\.groundburst\.datagen\.\w+;\s*$",
     r"^\s*\w+\.registerCategory\(\w+\);\s*$",                         # 1.21.1's key categories are names, not registered
 )]
 # Whole statements removed (they may run over several lines): hooks into the dropped tools, and 26.x's
@@ -171,6 +170,18 @@ IMPORTS = {
 }
 
 RULES = [
+    # --- the GameTests' helper (26.x's names and overloads) ----------------------------------------------------------------
+    sub(r"\bhelper\.getBlockEntity\(((?:[^(),]|\((?:[^()]|\([^()]*\))*\))+),\s*([\w.]+)\.class\)", r"((\2) helper.getBlockEntity(\1))"),
+    sub(r"\bhelper\.makeMockServerPlayer\(((?:[^()]|\([^()]*\))*)\)", r"dev.groundburst.port.Tests.mockServerPlayer(helper, \1)"),
+    sub(r"\bhelper\.getBlockEntity\(((?:[^(),]|\((?:[^()]|\([^()]*\))*\))+),\s*([a-z]\w*)\)", r"\2.cast(helper.getBlockEntity(\1))"),
+    # 26.x names a missile's look in its custom model data; 1.21.1's is a number (port/Looks).
+    sub(r"(\b\w+)\.strings\(\)\.getFirst\(\)\.equals\((\"[^\"]*\")\)", r"\1.value() == dev.groundburst.port.Looks.id(\2)"),
+    sub(r"\.getVisibilityPercent\((?:[^(),]|\([^()]*\))+,\s*", ".getVisibilityPercent("),
+    sub(r"\bEntityTypes?\.OAK_BOAT\b", "EntityType.BOAT"),
+    sub(r"\bnet\.minecraft\.world\.inventory\.ContainerInput\b", "net.minecraft.world.inventory.ClickType"),
+    sub(r"\bBlocks\.LIGHTNING_ROD\.asList\(\)\.getFirst\(\)", "Blocks.LIGHTNING_ROD"),
+    sub(r"\.getAnalogOutputSignal\(((?:[^(),]|\((?:[^()]|\([^()]*\))*\))+),\s*((?:[^(),]|\((?:[^()]|\([^()]*\))*\))+),\s*"
+        r"(?:net\.minecraft\.core\.)?Direction\.\w+\)", r".getAnalogOutputSignal(\1, \2)"),
     # --- names ------------------------------------------------------------------------------------------------------------
     sub(r"\bIdentifier\b", "ResourceLocation"),
     sub(r"\bcom\.geckolib\.", "software.bernie.geckolib."),
@@ -829,6 +840,75 @@ def drop_method(signature: str):
 
 
 FILE_FIXES: dict[str, list] = {
+    # --- main's GameTests, ported (what only one test file does) -------------------------------------------------------
+    "src/main/java/dev/groundburst/gametest/CarryTests.java": [
+        swap("import net.minecraft.world.level.storage.TagValueInput;\n", ""),
+        swap("there.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), saved));",
+             "there.loadWithComponents(saved, level.registryAccess());"),
+    ],
+    "src/main/java/dev/groundburst/gametest/HealTests.java": [
+        # 1.21.1's explosion is the one class Explosion, which breaks its blocks in finalizeExplosion after explode.
+        swap("import net.minecraft.world.level.ServerExplosion;\n", ""),
+        swap("ServerExplosion theirs = new ServerExplosion(level, null, null, null, at, 3.0F, false, Explosion.BlockInteraction.DESTROY) {};",
+             "Explosion theirs = new Explosion(level, null, null, null, at.x, at.y, at.z, 3.0F, false, Explosion.BlockInteraction.DESTROY,\n"
+             "                net.minecraft.core.particles.ParticleTypes.EXPLOSION, net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER,\n"
+             "                net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE) {};"),
+        swap("        theirs.explode();\n", "        theirs.explode();\n        theirs.finalizeExplosion(false);\n"),
+        # 26.x's fire burns out only within a reach of players (a game rule, -1 everywhere); 1.21.1's wherever doFireTick
+        # is on: on, then off, for 26.x's everywhere and then its none here.
+        swap("import net.minecraft.world.level.gamerules.GameRules;", "import net.minecraft.world.level.GameRules;"),
+        swap("        int reach = level.getGameRules().get(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER);\n"
+             "        boolean waits;\n"
+             "        level.getGameRules().set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, -1, level.getServer());\n"
+             "        try {\n"
+             "            waits = Healer.of(level).fireNear(chunk, false);\n"
+             "        } finally {\n"
+             "            level.getGameRules().set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, reach, level.getServer());\n"
+             "        }\n"
+             "        helper.assertTrue(waits, \"a fire burns by the damage: the chunk waits\");\n"
+             "        helper.assertTrue(!Healer.of(level).fireNear(chunk, false) && level.getBlockState(helper.absolutePos(burning)).isAir(),\n"
+             "                \"a fire nobody is near enough to see burn out is no reason to wait: it goes out\");\n",
+             "        boolean ticks = level.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK);\n"
+             "        boolean waits, out;\n"
+             "        try {\n"
+             "            level.getGameRules().getRule(GameRules.RULE_DOFIRETICK).set(true, level.getServer());\n"
+             "            waits = Healer.of(level).fireNear(chunk, false);\n"
+             "            level.getGameRules().getRule(GameRules.RULE_DOFIRETICK).set(false, level.getServer());\n"
+             "            out = !Healer.of(level).fireNear(chunk, false) && level.getBlockState(helper.absolutePos(burning)).isAir();\n"
+             "        } finally {\n"
+             "            level.getGameRules().getRule(GameRules.RULE_DOFIRETICK).set(ticks, level.getServer());\n"
+             "        }\n"
+             "        helper.assertTrue(waits, \"a fire burns by the damage: the chunk waits\");\n"
+             "        helper.assertTrue(out, \"a fire nobody is near enough to see burn out is no reason to wait: it goes out\");\n"),
+    ],
+    "src/main/java/dev/groundburst/gametest/ArtilleryTests.java": [
+        # 1.21.1's ServerPlayer has no gameMode() to answer nor a client-authoritative flag: survival, by being neither.
+        swap("            @Override\n            public GameType gameMode() {\n                return GameType.SURVIVAL;\n            }\n",
+             "            @Override\n            public boolean isCreative() {\n                return false;\n            }\n"),
+        swap("            @Override\n            public boolean isClientAuthoritative() {\n                return false;\n            }\n",
+             "            @Override\n            public boolean isSpectator() {\n                return false;\n            }\n"),
+    ],
+    "src/main/java/dev/groundburst/gametest/ManualContentTests.java": [
+        swap("r.value().display().stream()", "dev.groundburst.port.recipe.Displays.of(r.value(), level.registryAccess()).stream()"),
+    ],
+    "src/main/java/dev/groundburst/gametest/ResourceTests.java": [
+        # 26.3's FEATURE registry is 1.21.1's CONFIGURED_FEATURE.
+        swap("import net.minecraft.world.level.levelgen.feature.Feature;", "import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;"),
+        swap("lookupOrThrow(Registries.FEATURE)", "lookupOrThrow(Registries.CONFIGURED_FEATURE)"),
+        swap("Feature feature = features.getOrThrow(ResourceKey.create(Registries.FEATURE,",
+             "ConfiguredFeature<?, ?> feature = features.getOrThrow(ResourceKey.create(Registries.CONFIGURED_FEATURE,"),
+    ],
+    "src/main/java/dev/groundburst/gametest/SemiconductorTests.java": [
+        swap("h.id().location().toString()", "h.id().toString()"),            # (1.21.1's recipe id is the location itself)
+    ],
+    "src/main/java/dev/groundburst/gametest/BombTests.java": [
+        # 1.21.1 checks the blocks a mob stands in only as it moves, which a mob with no AI never does here.
+        swap("var pig = helper.spawn(EntityType.PIG, at);\n        pig.setNoAi(true);\n",
+             "var pig = helper.spawn(EntityType.PIG, at);   // (with its AI: on 1.21.1 a mob only feels the fire it stands in as it moves)\n"),
+    ],
+    "src/main/java/dev/groundburst/gametest/NavalTests.java": [
+        swap("m.interact(player, InteractionHand.MAIN_HAND, m.centre());", "m.interact(player, InteractionHand.MAIN_HAND);"),
+    ],
     "src/main/java/dev/groundburst/GroundBurstClient.java": [
         after("container.registerConfig(ModConfig.Type.CLIENT, GBClientConfig.SPEC);",
               "\n        dev.groundburst.port.render.RenderBridge.register();   // 26.x's render events, posted from 1.21.1's"
@@ -979,6 +1059,8 @@ def port_resource(path: str, data: bytes) -> tuple[str, bytes] | None:
         data = port_biome(data)
     if re.match(r"^src/(main|generated)/resources/data/\w+/worldgen/configured_feature/.*\.json$", path):
         data = port_feature(data)
+    if re.match(r"^src/(main|generated)/resources/data/minecraft/tags/block/dirt\.json$", path):
+        data = grass_into_dirt(path, data)
     if re.match(r"^src/(main|generated)/resources/data/\w+/tags/.*\.json$", path):
         data = port_tag(data)
     if re.match(r"^src/(main|generated)/resources/data/\w+/structure/.*\.nbt$", path):
@@ -1308,6 +1390,22 @@ def port_feature(data: bytes) -> bytes:
         if "state" in target:
             target["state"] = block_state(target["state"])
     return (json.dumps({"type": f["type"], "config": config}, indent=2) + "\n").encode("utf-8")
+
+
+def grass_into_dirt(path: str, data: bytes) -> bytes:
+    """The mod's grass blocks (dead grass, frosted grass) as dirt too: 26.x's plants stand on #supports_vegetation, which
+    takes in #grass_blocks, where main puts them; 1.21.1's plants stand on #dirt (a cryo burst's frosted grass shed its
+    plants instead of freezing them)."""
+    try:
+        grass = json.loads(read_main(path.replace("/dirt.json", "/grass_blocks.json")))
+    except FileNotFoundError:
+        return data
+    t = json.loads(data)
+    values = t.setdefault("values", [])
+    for v in grass.get("values", []):
+        if isinstance(v, str) and v.startswith("groundburst:") and v not in values:
+            values.append(v)
+    return (json.dumps(t, indent=2) + "\n").encode("utf-8")
 
 
 def port_tag(data: bytes) -> bytes:

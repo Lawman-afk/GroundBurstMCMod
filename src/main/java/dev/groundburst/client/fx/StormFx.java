@@ -459,8 +459,7 @@ public final class StormFx {
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
-        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
-                .setNormal(pose, 0, 1, 0);
+        FxVertex.put(b, pose, x, y, z, u, v, color);
     }
 
     /** A storm's wind: a looping howl heard all round (not from a point), rising and dying with it and with how deep in it the camera is. */
