@@ -14,6 +14,15 @@
   does, by hand or by redstone.
 - Each with its own sounds; in the Construction tab.
 
+### The command room
+- **Control Console**: a steel console with switches, buttons, dials and blinking lamps; place several side by side for
+  one long console.
+- **Command Desk**: a steel desk with a CRT monitor whose green screen scrolls, and a red telephone.
+- **Filing Cabinet**: holds 27 stacks like a barrel; its top drawer slides out while it is open.
+- **Tape Computer**: a tape drive two blocks high whose reels read, stop and rewind while its lamps blink. Click it to
+  stop or start it; a row of them makes a wall of computers that never runs in step.
+- **Situation Map Table**: a table two blocks by two with a map of a coast at war on it, its unit counters and pins.
+
 ### Performance
 - **Blast effects cost less to draw.** Under a mushroom cloud the mod's share of each frame's work is down by about a
   third: every effect vertex is written in one go, the fallout clouds no longer work out their layout every frame, and

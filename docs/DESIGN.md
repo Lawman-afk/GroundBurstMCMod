@@ -4922,6 +4922,43 @@ as a door: by hand and by redstone.
   behind, hatches in the ground and in a ceiling). `tools/preview/state_view.py` draws a block's states as its blockstate
   puts them together (the hatch's frame and lid, the door's halves).
 
+### 22.4 The command room (2026-11-07)
+
+The second of the four sets (§22.3): a Cold War command post's furniture, each model made by scripts
+(`tools/assets/command_room.py`, `tools/assets/tape_computer.py`) and painted with the material library.
+
+- **Control Console** (`DecorBlock`): a steel console a block wide that runs on into its neighbours (its base, ledge and
+  riser span the block; its tilted control panel sits a quarter pixel in from each side, so a row shows its panels as
+  modules with a seam between, and the panel's sides never lie in the base's planes where it runs down into it): a
+  writing ledge, a control panel tilted 30 degrees up toward its operator (six toggle switches, push buttons, a red
+  button in a hazard ring, two dial gauges, four lamps), a riser with a meter strip and two more lamps. The lamps are
+  lit elements and blink: an animated texture of four frames, each lamp on or off in its own pattern. A little light (4).
+- **Command Desk** (`DecorBlock`): a steel desk with a linoleum top in an aluminium band (desks in a row make one top),
+  a drawer pedestal, a panel leg, a modesty panel; a beige CRT monitor whose green screen scrolls (an animated texture,
+  lines of characters moving up a row a frame, a cursor blinking; the screen lit), a red telephone on its cradle, papers
+  and a pen. Light 3.
+- **Filing Cabinet** (`FilingCabinetBlock`, `FilingCabinetBlockEntity`): four olive drab drawers with brass card holders,
+  holding 27 stacks as a barrel does (dropped when it is broken; a comparator reads it); while anyone has it open its top
+  drawer stands pulled out, its hanging folders showing, with a drawer's roll and thump (`tools/sound/rooms.py`).
+- **Tape Computer** (`TapeComputerBlock`, `TapeComputerBlockEntity`; GeckoLib): a tape drive cabinet two blocks high, two
+  reels behind its upper front (their flanges' windows showing the tape wound on), the vacuum columns and the head between
+  them, a strip of lamps and buttons, panel doors and a louvred grille, a blue cap with vents. Its halves stand or fall
+  together as a door's do (the lower drops the item). It runs from when it is placed: its reels read forward, stop,
+  rewind, stop and read on in a twelve-second loop, its lamps blink (lit bones in the glowmask, scaled to nothing when
+  dark), its motors whirr now and then; a click stops it (lamps dark, reels still) and starts it again. Three takes of the
+  loop, begun four and eight seconds apart, are chosen by where each stands, so a row never runs in step.
+- **Situation Map Table** (`MapTableBlock`): a table two blocks by two (one item lays its four blocks, to the placer's
+  right and ahead; breaking any takes the whole, one item back), a wooden rim and apron, steel legs, and a map: a coast at
+  war (sea and land, the low ground green, the coast a texel wide, a grid every seven pixels, a front in red along the
+  higher ground, a blue landing from the sea and a red push across the front, towns), with both sides' unit counters,
+  pins and a pointer on it. Built and painted whole, cut into its four blocks' models.
+- Recipes: two consoles from plates, redstone and a basic circuit; the desk from plates round a CRT Display; the cabinet
+  from plates round a chest; the tape drive from plates, two basic circuits and an electric motor; the map table from a
+  map, wooden slabs and steel rods.
+- Checked: GameTests (the cabinet holds 27 stacks and a comparator reads it; the tape drive stands two high and goes with
+  its upper half; the map table breaks whole for one item); in game (`runSiteShots -Psite=room`, `CommandRoomBoard`: a
+  concrete room with all five).
+
 ---
 
 ## 23. Multiblock framework and layouts
@@ -5426,6 +5463,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-07 | **The command room** (§22.4; the cosmetics' second set, the user: "Yes, carry on" after the bunker doors' previews): a Control Console that runs on into its neighbours (its lamps blinking, an animated texture), a Command Desk with a scrolling CRT and a red telephone, a Filing Cabinet that holds 27 stacks (its top drawer out while open), a Tape Computer two blocks high whose reels read, stop and rewind (three takes, so a row never runs in step; a click stops it), a Situation Map Table two by two with a coast at war on it. |
 | 2026-11-07 | **The bunker doors** (§22.3; the cosmetic blocks, the plan's second item after 0.9.0, in the four sets the user chose in order: blast doors and hatches, the command room, bunker fittings, outdoor defences and the yard, "showing you previews as each set is done"): a two-by-three Blast Door whose handwheel draws three bolts before its leaf swings out on two heavy hinges (a block entity's model, both hands, its leaf's blocks laid in front of its hinges while it stands open, so it will not swing into a wall and the open leaf is solid); a round Bunker Hatch whose lid lifts up out of the floor (a trapdoor's behaviour, its own open shape and models); a Pressure Door with a see-through porthole (vanilla's door). Opened by hand and by redstone, each with its own sounds made from recordings already credited. |
 | 2026-11-07 | **The plan after 0.9.0** (the user, choosing from what was left on the plan and a list of new ideas: "Start with the high priority stuff, then the cosmetics, then the 3 you picked, then naval, then we decide on everything else"): first, top priority, the loose ends (healing's containers coming back full after spilling with Healing blocks drop items too on; main's GameTests on the 1.21.1 build; a test instance for 26.1.2) and the performance pass (effects, fallout, saving; §11); then more cosmetic blocks with 3D models, such as blast doors ("people love that kind of decoration"); then the war room displays, seismographs and the Dead Hand, each with an easy way to test it in game ("they rely on being fired upon"); then more naval weapons; then the rest is decided, contamination and the protective gear (§21.8's 12c) among it, and Jade and WTHIT tooltips ("a great idea", placed with the rest: the user restated the order without them when they had been put before the cosmetics). **Pinned for later:** nuclear winter; the server tools (claimed land spared by blasts, a log of launches and blasts, weapon permissions). **Undecided**, beside the special warheads' handheld weapons: remote cameras ("it doesn't exactly fit with the mod") and irradiated mobs. The fireball lighting the world at night is liked, with care for the frame rate. |
 | 2026-11-06 | Version **0.9.0** for Minecraft 26.3, 26.1.2 and 1.21.1 (the user: "create a release file for all 3 versions and change logs and update github"): sea mines, depth charges and the Depth Charge Rack (§14.6), the effects drawn last under shader packs and with Distant Horizons (§12.3, on 26.3 and 1.21.1), healing the game's own explosions and other mods' (§21.9). The 26.1.2 build brought up to main from 0.8.0, its port leaving the shader-pack drawing out (built on 26.3's renderer and Iris's API for it). A changelog for each upload; the branches pushed (no release made on GitHub's page: its command-line tool is not installed here). |

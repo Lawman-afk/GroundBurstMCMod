@@ -39,6 +39,68 @@ final class ConstructionTests {
         GBGameTests.test("blast_door_breaks_whole_for_one_item", GBGameTests.FLOOR_16, 40, ConstructionTests::blastDoorBreaks);
         GBGameTests.test("bunker_hatch_opens_up_out_of_the_floor", GBGameTests.FLOOR_16, 20, ConstructionTests::hatchOpens);
         GBGameTests.test("pressure_door_opens_on_a_signal", GBGameTests.FLOOR_16, 20, ConstructionTests::pressureDoorOpens);
+        GBGameTests.test("filing_cabinet_holds_27_stacks", GBGameTests.FLOOR_16, 20, ConstructionTests::cabinetHolds);
+        GBGameTests.test("tape_computer_stands_two_high", GBGameTests.FLOOR_16, 20, ConstructionTests::tapeTwoHigh);
+        GBGameTests.test("map_table_breaks_whole_for_one_item", GBGameTests.FLOOR_16, 40, ConstructionTests::mapTableBreaks);
+    }
+
+    // --- the command room -------------------------------------------------------------------------------------------------------
+    private static void cabinetHolds(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = new BlockPos(8, 1, 8);
+        helper.setBlock(at, GBConstruction.FILING_CABINET.block().get().defaultBlockState());
+        BlockPos abs = helper.absolutePos(at);
+        var cabinet = level.getBlockEntity(abs) instanceof dev.groundburst.content.construction.FilingCabinetBlockEntity c ? c : null;
+        helper.assertTrue(cabinet != null && cabinet.getContainerSize() == 27, "27 slots");
+        cabinet.setItem(5, new ItemStack(net.minecraft.world.item.Items.PAPER, 64));
+        helper.assertTrue(cabinet.getItem(5).getCount() == 64, "it keeps what is put in it");
+        helper.assertTrue(level.getBlockState(abs).getAnalogOutputSignal(level, abs, Direction.NORTH) > 0, "a comparator reads it");
+        helper.succeed();
+    }
+
+    private static void tapeTwoHigh(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = new BlockPos(8, 1, 8);
+        var block = GBConstruction.TAPE_COMPUTER.block().get();
+        BlockState state = block.defaultBlockState();
+        helper.setBlock(at, state);
+        BlockPos abs = helper.absolutePos(at);
+        block.setPlacedBy(level, abs, state, null, ItemStack.EMPTY);
+        BlockState upper = level.getBlockState(abs.above());
+        helper.assertTrue(upper.is(block) && upper.getValue(dev.groundburst.content.construction.TapeComputerBlock.HALF) == DoubleBlockHalf.UPPER,
+                "its upper half laid over it");
+        helper.assertTrue(level.getBlockEntity(abs) instanceof dev.groundburst.content.construction.TapeComputerBlockEntity, "its lower half draws it");
+        helper.assertTrue(state.getValue(dev.groundburst.content.construction.TapeComputerBlock.ACTIVE), "running as it is placed");
+        level.destroyBlock(abs.above(), false);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(level.getBlockState(abs).isAir(), "the lower half goes with the upper");
+            helper.succeed();
+        });
+    }
+
+    private static void mapTableBreaks(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = new BlockPos(6, 1, 8);
+        var table = GBConstruction.SITUATION_MAP_TABLE.block().get();
+        BlockState state = table.defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH);
+        helper.setBlock(at, state);
+        BlockPos base = helper.absolutePos(at);
+        table.setPlacedBy(level, base, state, null, ItemStack.EMPTY);
+        BlockPos far = dev.groundburst.content.construction.MapTableBlock.cell(base, Direction.NORTH, 1, 1);
+        helper.assertTrue(level.getBlockState(far).is(table), "laid two by two");
+        level.destroyBlock(far, true);
+        helper.runAfterDelay(6, () -> {
+            for (int u = 0; u < 2; u++) {
+                for (int w = 0; w < 2; w++) {
+                    helper.assertTrue(level.getBlockState(dev.groundburst.content.construction.MapTableBlock.cell(base, Direction.NORTH, u, w)).isAir(),
+                            "all gone");
+                }
+            }
+            long items = level.getEntitiesOfClass(ItemEntity.class, new AABB(base).inflate(4)).stream()
+                    .filter(e -> e.getItem().is(GBConstruction.SITUATION_MAP_TABLE.item())).mapToInt(e -> e.getItem().getCount()).sum();
+            helper.assertTrue(items == 1, "one table back: " + items);
+            helper.succeed();
+        });
     }
 
     // --- the Bunker Hatch and the Pressure Door -------------------------------------------------------------------------------

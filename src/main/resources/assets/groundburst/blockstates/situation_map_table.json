@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north,u=0,w=0": {
+      "model": "groundburst:block/situation_map_table_0_0"
+    },
+    "facing=north,u=0,w=1": {
+      "model": "groundburst:block/situation_map_table_0_1"
+    },
+    "facing=north,u=1,w=0": {
+      "model": "groundburst:block/situation_map_table_1_0"
+    },
+    "facing=north,u=1,w=1": {
+      "model": "groundburst:block/situation_map_table_1_1"
+    },
+    "facing=east,u=0,w=0": {
+      "model": "groundburst:block/situation_map_table_0_0",
+      "y": 90
+    },
+    "facing=east,u=0,w=1": {
+      "model": "groundburst:block/situation_map_table_0_1",
+      "y": 90
+    },
+    "facing=east,u=1,w=0": {
+      "model": "groundburst:block/situation_map_table_1_0",
+      "y": 90
+    },
+    "facing=east,u=1,w=1": {
+      "model": "groundburst:block/situation_map_table_1_1",
+      "y": 90
+    },
+    "facing=south,u=0,w=0": {
+      "model": "groundburst:block/situation_map_table_0_0",
+      "y": 180
+    },
+    "facing=south,u=0,w=1": {
+      "model": "groundburst:block/situation_map_table_0_1",
+      "y": 180
+    },
+    "facing=south,u=1,w=0": {
+      "model": "groundburst:block/situation_map_table_1_0",
+      "y": 180
+    },
+    "facing=south,u=1,w=1": {
+      "model": "groundburst:block/situation_map_table_1_1",
+      "y": 180
+    },
+    "facing=west,u=0,w=0": {
+      "model": "groundburst:block/situation_map_table_0_0",
+      "y": 270
+    },
+    "facing=west,u=0,w=1": {
+      "model": "groundburst:block/situation_map_table_0_1",
+      "y": 270
+    },
+    "facing=west,u=1,w=0": {
+      "model": "groundburst:block/situation_map_table_1_0",
+      "y": 270
+    },
+    "facing=west,u=1,w=1": {
+      "model": "groundburst:block/situation_map_table_1_1",
+      "y": 270
+    }
+  }
+}

@@ -56,8 +56,8 @@ their lines).
 
 ## Checks
 
-- `gradlew runGameTestServer`: main's GameTests (424 at `6087fe9f`).
+- `gradlew runGameTestServer`: main's GameTests (427 at `27ad9525`).
 - `gradlew runPlayBench [-Pjfr=<name>]`, `runBlastBench`, `runFxShots`, `runManualShots`, `runSiteShots`,
-  `runHealShots`: main's benches and photographers (`runSiteShots -Psite=doors`: the bunker doors).
+  `runHealShots`: main's benches and photographers (`runSiteShots -Psite=doors`: the bunker doors; `room`: the command room).
 - The build deploys to the folder in `deploy_instance_dir_26_1_2` (in `%USERPROFILE%\.gradle\gradle.properties`), if set.
 - Releases: `groundburst-mc26.1.2-<version>.jar` (its own `mod_version`), kept with main's in main's `build/release`.
