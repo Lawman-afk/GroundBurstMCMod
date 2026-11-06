@@ -55,6 +55,9 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
   End's islands.
 - **Construction blocks** for building your own: chain-link fencing, barbed wire, corrugated steel, I-beams, radome
   panels, floodlights, sandbags, warning signs, a Large Silo Door whose leaves slide apart, and a Search Radar that turns.
+- **Bunker doors:** a two-by-three Blast Door whose handwheel turns and draws its bolts before the heavy leaf swings out,
+  a round Bunker Hatch whose lid lifts up out of the floor, and a Pressure Door with a porthole you can see through; all
+  three open by hand or by redstone, each with its own sounds.
 - **Create and Create Aeronautics** (Minecraft 1.21.1, optional): missile launchers on trains, bearings and airships,
   every machine working on Create's moving contraptions and Create Aeronautics' ships, and weapons that hit them (more
   below).
