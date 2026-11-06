@@ -170,6 +170,15 @@ public final class GBSounds {
             register("door.pressure_door_open", "Pressure door opens", List.of("door/pressure_door_open"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> PRESSURE_DOOR_CLOSE =
             register("door.pressure_door_close", "Pressure door shuts", List.of("door/pressure_door_close"), false, 16);
+    /** The command room (DESIGN.md §22.4): the Filing Cabinet's drawer, the Tape Computer's motors and its switch. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> FILING_CABINET_OPEN =
+            register("door.filing_cabinet_open", "Drawer opens", List.of("door/filing_cabinet_open"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> FILING_CABINET_CLOSE =
+            register("door.filing_cabinet_close", "Drawer shuts", List.of("door/filing_cabinet_close"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> TAPE_WHIRR =
+            register("machine.tape_whirr", "Tape reels whirr", List.of("machine/tape_whirr"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> TAPE_SWITCH =
+            register("machine.tape_switch", "Switch clicks", List.of("machine/tape_switch"), false, 12);
     public static final DeferredHolder<SoundEvent, SoundEvent> MINE_CLICK =
             register("mine.click", "Mine clicks", List.of("ordnance/mine_click"), false, 12);
     public static final DeferredHolder<SoundEvent, SoundEvent> MINE_POP =

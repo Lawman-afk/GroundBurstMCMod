@@ -58,6 +58,8 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 - **Bunker doors:** a two-by-three Blast Door whose handwheel turns and draws its bolts before the heavy leaf swings out,
   a round Bunker Hatch whose lid lifts up out of the floor, and a Pressure Door with a porthole you can see through; all
   three open by hand or by redstone, each with its own sounds.
+- **A command room:** consoles with blinking lamps, a desk with a scrolling CRT and a red telephone, a filing cabinet
+  that stores items, tape computers whose reels spin, and a situation map table.
 - **Create and Create Aeronautics** (Minecraft 1.21.1, optional): missile launchers on trains, bearings and airships,
   every machine working on Create's moving contraptions and Create Aeronautics' ships, and weapons that hit them (more
   below).

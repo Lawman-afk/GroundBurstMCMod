@@ -587,6 +587,18 @@
     ],
     "subtitle": "subtitles.groundburst.door.bunker_hatch_open"
   },
+  "door.filing_cabinet_close": {
+    "sounds": [
+      "groundburst:door/filing_cabinet_close"
+    ],
+    "subtitle": "subtitles.groundburst.door.filing_cabinet_close"
+  },
+  "door.filing_cabinet_open": {
+    "sounds": [
+      "groundburst:door/filing_cabinet_open"
+    ],
+    "subtitle": "subtitles.groundburst.door.filing_cabinet_open"
+  },
   "door.pressure_door_close": {
     "sounds": [
       "groundburst:door/pressure_door_close"
@@ -853,6 +865,21 @@
       }
     ],
     "subtitle": "subtitles.groundburst.machine.singularity_reactor"
+  },
+  "machine.tape_switch": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundburst:machine/tape_switch"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.tape_switch"
+  },
+  "machine.tape_whirr": {
+    "sounds": [
+      "groundburst:machine/tape_whirr"
+    ],
+    "subtitle": "subtitles.groundburst.machine.tape_whirr"
   },
   "machine.water_pump": {
     "sounds": [

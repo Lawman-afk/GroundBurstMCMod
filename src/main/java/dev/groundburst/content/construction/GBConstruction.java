@@ -160,6 +160,39 @@ public final class GBConstruction {
             p -> metal(p, MapColor.METAL).strength(6f, 300f).noOcclusion()
                     .pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
 
+    // --- the command room (DESIGN.md §22.4) -------------------------------------------------------------------------------
+    /** A steel console that runs on into its neighbours: switches, buttons, dials, lamps that blink. */
+    public static final WithItem<DecorBlock> CONTROL_CONSOLE = GBBlocks.register("control_console", "Control Console", TAB,
+            p -> new DecorBlock(p, List.of(new double[] {0, 0, 2, 16, 9.5, 16}, new double[] {0, 9.5, 0.5, 16, 10.5, 6},
+                    new double[] {0, 10.5, 6, 16, 13, 12}, new double[] {0, 9.5, 12, 16, 16, 16})),
+            p -> metal(p, MapColor.COLOR_LIGHT_GRAY).strength(3f, 6f).noOcclusion().lightLevel(s -> 4));
+    /** A steel desk with a CRT whose green screen scrolls and a red telephone. */
+    public static final WithItem<DecorBlock> COMMAND_DESK = GBBlocks.register("command_desk", "Command Desk", TAB,
+            p -> new DecorBlock(p, List.of(new double[] {0, 11, 0.5, 16, 12, 15.5}, new double[] {10.5, 0, 1, 15.5, 11, 15},
+                    new double[] {0.5, 0, 1, 1.8, 11, 15}, new double[] {5.5, 12, 6.6, 12.5, 18.5, 15.2}, new double[] {1.2, 12, 2.5, 5.5, 14.5, 6.3})),
+            p -> metal(p, MapColor.COLOR_LIGHT_GRAY).strength(3f, 6f).noOcclusion().lightLevel(s -> 3));
+    /** Four steel drawers holding 27 stacks, the top one pulled out while it is open. */
+    public static final WithItem<FilingCabinetBlock> FILING_CABINET = GBBlocks.register("filing_cabinet", "Filing Cabinet", TAB,
+            p -> new FilingCabinetBlock(p, () -> GBConstruction.FILING_CABINET_ENTITY.get()),
+            p -> metal(p, MapColor.COLOR_GREEN).strength(3f, 6f).noOcclusion());
+    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+            net.minecraft.world.level.block.entity.BlockEntityType<FilingCabinetBlockEntity>> FILING_CABINET_ENTITY =
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("filing_cabinet", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
+                    (pos, state) -> new FilingCabinetBlockEntity(GBConstruction.FILING_CABINET_ENTITY.get(), pos, state), FILING_CABINET.block().get()));
+    /** A tape drive two blocks high whose reels read, stop and rewind while it runs. */
+    public static final WithItem<TapeComputerBlock> TAPE_COMPUTER = GBBlocks.register("tape_computer", "Tape Computer", TAB,
+            p -> new TapeComputerBlock(p, () -> GBConstruction.TAPE_COMPUTER_ENTITY.get()),
+            p -> metal(p, MapColor.COLOR_LIGHT_GRAY).strength(3f, 6f).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.IMMOVEABLE)
+                    .lightLevel(s -> s.getValue(TapeComputerBlock.ACTIVE) ? 3 : 0));
+    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+            net.minecraft.world.level.block.entity.BlockEntityType<TapeComputerBlockEntity>> TAPE_COMPUTER_ENTITY =
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("tape_computer", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
+                    (pos, state) -> new TapeComputerBlockEntity(GBConstruction.TAPE_COMPUTER_ENTITY.get(), pos, state), TAPE_COMPUTER.block().get()));
+    /** A table two blocks by two with a map of a coast at war on it, its units and pins. */
+    public static final WithItem<MapTableBlock> SITUATION_MAP_TABLE = GBBlocks.register("situation_map_table", "Situation Map Table", TAB,
+            MapTableBlock::new, p -> p.mapColor(MapColor.WOOD).strength(2.5f, 3f).sound(SoundType.WOOD).noOcclusion()
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.IMMOVEABLE));
+
     /** The doors (their loot is the middle's alone). */
     public static final List<WithItem<SiloDoorBlock>> DOORS = List.of(LARGE_SILO_DOOR, RUSTED_LARGE_SILO_DOOR);
 
@@ -168,7 +201,7 @@ public final class GBConstruction {
             CORRUGATED_STEEL_STAIRS, CORRUGATED_STEEL_SLAB, RUSTED_CORRUGATED_STEEL, RUSTED_CORRUGATED_STEEL_STAIRS,
             RUSTED_CORRUGATED_STEEL_SLAB, STEEL_PANEL, RUSTED_STEEL_PANEL, STEEL_GRATING, STEEL_GRATING_SLAB, I_BEAM, LATTICE_FRAME,
             RADOME_PANEL, RADOME_PANEL_STAIRS, RADOME_PANEL_SLAB, FLOODLIGHT, SANDBAGS, SANDBAG_SLAB, RADIATION_SIGN, HIGH_VOLTAGE_SIGN,
-            KEEP_OUT_SIGN, TOXIC_SIGN, SEARCH_RADAR, SEARCH_RADAR_WRECK, MISSILE_WRECK);
+            KEEP_OUT_SIGN, TOXIC_SIGN, SEARCH_RADAR, SEARCH_RADAR_WRECK, MISSILE_WRECK, CONTROL_CONSOLE, COMMAND_DESK, FILING_CABINET);
     /** The slabs (they drop two when doubled). */
     public static final List<WithItem<SlabBlock>> SLABS = List.of(CORRUGATED_STEEL_SLAB, RUSTED_CORRUGATED_STEEL_SLAB, STEEL_GRATING_SLAB,
             RADOME_PANEL_SLAB, SANDBAG_SLAB);

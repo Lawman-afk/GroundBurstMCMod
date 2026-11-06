@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "M": "minecraft:map",
+    "S": "groundburst:steel_rod",
+    "W": "#minecraft:wooden_slabs"
+  },
+  "pattern": [
+    "WMW",
+    "S S"
+  ],
+  "result": {
+    "id": "groundburst:situation_map_table"
+  }
+}

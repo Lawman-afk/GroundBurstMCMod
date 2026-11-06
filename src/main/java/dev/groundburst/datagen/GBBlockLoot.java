@@ -194,6 +194,19 @@ public class GBBlockLoot extends BlockLootSubProvider {
         dropSelf(dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH.block().get());
         add(dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().get(),
                 createDoorTable(dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().get()));
+        // The Tape Computer: its lower block drops it, as a door's; the map table: its placer's block alone.
+        add(dev.groundburst.content.construction.GBConstruction.TAPE_COMPUTER.block().get(), createSinglePropConditionTable(
+                dev.groundburst.content.construction.GBConstruction.TAPE_COMPUTER.block().get(), dev.groundburst.content.construction.TapeComputerBlock.HALF,
+                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER));
+        var mapTable = dev.groundburst.content.construction.GBConstruction.SITUATION_MAP_TABLE.block().get();
+        add(mapTable, net.minecraft.world.level.storage.loot.LootTable.lootTable().withPool(applyExplosionCondition(mapTable,
+                net.minecraft.world.level.storage.loot.LootPool.lootPool()
+                        .setRolls(net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders.exactly(1))
+                        .add(net.minecraft.world.level.storage.loot.entries.LootItem.lootTableItem(mapTable).when(
+                                net.minecraft.world.level.storage.loot.predicates.MatchBlock.blockMatches(this.blocks, mapTable,
+                                        net.minecraft.advancements.predicates.StatePropertiesPredicate.Builder.properties()
+                                                .hasProperty(dev.groundburst.content.construction.MapTableBlock.U, 0)
+                                                .hasProperty(dev.groundburst.content.construction.MapTableBlock.W, 0)))))));
         // The Construction set: each drops itself (a doubled slab two).
         for (var b : dev.groundburst.content.construction.GBConstruction.ALL) {
             if (b.block().get() instanceof net.minecraft.world.level.block.SlabBlock slab) {

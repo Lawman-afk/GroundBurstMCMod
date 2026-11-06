@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "D": "groundburst:crt_display",
+    "P": "groundburst:steel_plate"
+  },
+  "pattern": [
+    " D ",
+    "PPP",
+    "P P"
+  ],
+  "result": {
+    "id": "groundburst:command_desk"
+  }
+}

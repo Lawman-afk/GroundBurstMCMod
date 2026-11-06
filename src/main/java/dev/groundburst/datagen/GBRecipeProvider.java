@@ -1134,6 +1134,28 @@ public class GBRecipeProvider extends RecipeProvider {
                 .define('P', plate).define('G', Items.GLASS_PANE).define('S', rod)
                 .pattern("PG").pattern("PS").pattern("PP")
                 .unlockedBy(getHasName(plate), has(plate)).save(output);
+        // The command room: consoles of plates round a circuit, a desk round a CRT, a cabinet round a chest, a tape drive of
+        // plates, circuits and a motor, a map table of a map on wooden slabs and steel legs.
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.CONTROL_CONSOLE.item(), 2)
+                .define('P', plate).define('R', Items.REDSTONE).define('C', GBParts.BASIC_CIRCUIT)
+                .pattern("RCR").pattern("PPP")
+                .unlockedBy(getHasName(GBParts.BASIC_CIRCUIT), has(GBParts.BASIC_CIRCUIT)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.COMMAND_DESK.item(), 1)
+                .define('P', plate).define('D', GBParts.CRT_DISPLAY)
+                .pattern(" D ").pattern("PPP").pattern("P P")
+                .unlockedBy(getHasName(GBParts.CRT_DISPLAY), has(GBParts.CRT_DISPLAY)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.FILING_CABINET.item(), 1)
+                .define('P', plate).define('C', Items.CHEST)
+                .pattern("PPP").pattern("PCP").pattern("PPP")
+                .unlockedBy(getHasName(plate), has(plate)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.TAPE_COMPUTER.item(), 1)
+                .define('P', plate).define('C', GBParts.BASIC_CIRCUIT).define('M', GBParts.ELECTRIC_MOTOR)
+                .pattern("PCP").pattern("PMP").pattern("PCP")
+                .unlockedBy(getHasName(GBParts.ELECTRIC_MOTOR), has(GBParts.ELECTRIC_MOTOR)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.SITUATION_MAP_TABLE.item(), 1)
+                .define('M', Items.MAP).define('W', net.minecraft.tags.ItemTags.WOODEN_SLABS).define('S', rod)
+                .pattern("WMW").pattern("S S")
+                .unlockedBy("has_map", has(Items.MAP)).save(output);
         sign(dev.groundburst.content.construction.GBConstruction.RADIATION_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.DYE.black()));
         sign(dev.groundburst.content.construction.GBConstruction.HIGH_VOLTAGE_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.REDSTONE));
         sign(dev.groundburst.content.construction.GBConstruction.KEEP_OUT_SIGN.item(), Tags.Items.DYES_RED, Ingredient.of(Items.DYE.white()));

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "groundburst:block/command_desk"
+    },
+    "facing=east": {
+      "model": "groundburst:block/command_desk",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "groundburst:block/command_desk",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "groundburst:block/command_desk",
+      "y": 270
+    }
+  }
+}

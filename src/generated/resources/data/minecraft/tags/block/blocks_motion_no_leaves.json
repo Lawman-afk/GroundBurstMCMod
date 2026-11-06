@@ -206,6 +206,11 @@
     "groundburst:rusted_large_silo_door",
     "groundburst:blast_door",
     "groundburst:bunker_hatch",
-    "groundburst:pressure_door"
+    "groundburst:pressure_door",
+    "groundburst:control_console",
+    "groundburst:command_desk",
+    "groundburst:filing_cabinet",
+    "groundburst:tape_computer",
+    "groundburst:situation_map_table"
   ]
 }
