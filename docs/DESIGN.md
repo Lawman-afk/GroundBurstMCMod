@@ -5004,6 +5004,53 @@ credited (`tools/sound/fittings.py`).
   with its lower, and gives back one locker and what it held; the bunk sleeps two at their mattresses' height and breaks
   whole for one item); in game (`runSiteShots -Psite=fittings`, `FittingsBoard`: a concrete room with all nine).
 
+### 22.6 The outdoor defences and the yard (2026-11-07)
+
+The last of the four sets (§22.3): what stands outside a Cold War site, each model made by a script
+(`tools/assets/yard.py`, `tools/assets/searchlight.py`) and painted with the material library.
+
+- **Jersey Barrier** (`DecorBlock`): a concrete road barrier a block long in the New Jersey profile (a short upright
+  foot, a shallow slope, a steep face to a narrow top, both sides), a drain slot through its foot; a row of them shows a
+  joint at each block. Its slopes are plates turned about its length over a stepped core; each part's end stands a hair
+  inside the last's, so a barrier's end shows its profile whole and no two ends lie in one plane.
+- **Dragon's Teeth** (`DragonsTeethBlock`): a concrete truncated pyramid, set out in rows. A box cannot taper and a
+  pyramid's faces are trapezoids, so each face is four plates in its plane: two turned in that plane as well (an element
+  turned about all three axes, which 26.x reads) so that each runs exactly along one corner edge, a band across the face's
+  top and a block across its foot between them, each a hundredth of a pixel behind the one in front of it; the face is
+  whole and flat, its corners true, and nothing flickers. The faces are painted as one surface: the material's own edges
+  and dirt are off (the plates' borders lie across the face) and put back by where each texel stands on the tooth
+  (`tooth_weather`: its corners and its top's edge catching the light, grime at its foot, streaks from its top).
+- Both are as hard to break and to blast as Reinforced Concrete (the blasts read a block's explosion resistance).
+- **Czech Hedgehog** (`DecorBlock`): three steel angle irons crossed at their middles, each square to the other two and
+  the three's sum straight up, so it stands on three of their ends (each beam turned about all three axes, its flanges
+  onto the other two's lines), rusted brown with patches of its grey paint; it reaches out past its block.
+- **Searchlight** (`SearchlightBlock`, `SearchlightBlockEntity`; GeckoLib): a big searchlight on a stand two blocks high
+  (a round foot and a column, a yoke on a turntable, the lamp drum on its trunnions: a polished bezel round the lens, a
+  vent stack on top). A click switches it on (light 15): its lens lights, and it sweeps the sky, its yoke turning to and
+  fro about its facing (62 degrees each way, with a slower wander) while its drum rises and falls (40 degrees up, 14 either
+  way), each light by its own phase (from where it stands), eased out of its rest and back into it over a second and a
+  half as it is switched; its bones are turned from Java each frame. Its beam (`SearchlightFx`, the effects' additive
+  glow): from the lens along where it points, a cone of light drawn as ribbons facing the eye, wider and fainter as it
+  goes, gone at 56 blocks; its light scaled by how dark the sky is (all but gone by day, whole by night), fading where it
+  is seen end on (looking down it or up into it) as the lens's soft glare takes over.
+- **Ammo Crates** (`AmmoCratesBlock`, `AmmoCratesBlockEntity`): eight olive wooden ammo boxes in three crossed layers on a
+  wooden pallet (rope handles, cleats, a yellow band and stencilling), holding 27 stacks as the Filing Cabinet does
+  (a barrel's sounds); while anyone has them open, the top front box's lid stands up on its hinges, its cartridges
+  showing (the open lid painted with the shut model's texels, as the Steel Locker's door).
+- **Oil Drum**, **Fuel Drum**, **Rusty Drum** (`DrumBlock`): steel drums, olive drab, red, and left to rust; up to four
+  stand in a block, as candles do (another put on it adds one), each a 16-sided prism, its rolling hoops and chime painted
+  on and two bungs in its lid; a block of them drops each.
+- Recipes: four barriers from six Reinforced Concrete, four teeth from four in a pyramid; a hedgehog from five steel rods
+  crossed; the searchlight from plates, glass, a redstone lamp and a rod; the crates from wooden slabs round a chest; four
+  drums from seven plates round a green, red or brown dye.
+- Checked: GameTests (the barriers and teeth blast as Reinforced Concrete, the hedgehog is hard to; drums stand four to a
+  block, a fifth goes beside them, and a block of four drops four; the crates hold 27 stacks; the searchlight stands two
+  high, a click lights it and it sweeps up into the sky, and it goes with its upper half); in game (`runSiteShots
+  -Psite=yard`, `YardBoard`: all of them on the grass; a picture whose name ends "_night" is taken at midnight, for the
+  beam).
+- 1.21.1: its model loader (`FreeRotationModels`) bakes a part turned about three axes as unturned and turns its faces'
+  corners (about the part's origin, then by the block state's turn), their facing and normals worked out again.
+
 ---
 
 ## 23. Multiblock framework and layouts
@@ -5508,6 +5555,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-07 | **The outdoor defences and the yard** (§22.6; the cosmetics' last set, the user: "Yes, carry on" after the bunker fittings' previews): a Jersey Barrier and Dragon's Teeth as hard as Reinforced Concrete (the teeth true truncated pyramids: each face four plates, two turned about three axes to follow its corners), a Czech Hedgehog of three angle irons standing on three ends, a Searchlight two blocks high that sweeps the sky with its beam when switched on (the beam scaled by the sky's darkness), Ammo Crates on a pallet holding 27 stacks (a lid up while open), and steel drums four to a block (oil, fuel, rusty). |
 | 2026-11-07 | **The bunker fittings** (§22.5; the cosmetics' third set, the user: "Yes, carry on" after the command room's previews): Wall Pipes that run on into their neighbours (capped where nothing joins them), a Pipe Valve whose handwheel opens it and gives a signal, a Vent Grille, Ventilation Duct joining on all six sides, a caged Bunker Lamp clicked off and on, a Fuse Box whose breaker gives a signal, a Fire Extinguisher whose burst puts out fire before it, a Steel Locker two blocks high holding 27 stacks (its door open while it is, a helmet, a coat and boots inside), a Bunk Bed two beds high (each bunk a bed of its own: two sleep in it). |
 | 2026-11-07 | **The command room** (§22.4; the cosmetics' second set, the user: "Yes, carry on" after the bunker doors' previews): a Control Console that runs on into its neighbours (its lamps blinking, an animated texture), a Command Desk with a scrolling CRT and a red telephone, a Filing Cabinet that holds 27 stacks (its top drawer out while open), a Tape Computer two blocks high whose reels read, stop and rewind (three takes, so a row never runs in step; a click stops it), a Situation Map Table two by two with a coast at war on it. |
 | 2026-11-07 | **The bunker doors** (§22.3; the cosmetic blocks, the plan's second item after 0.9.0, in the four sets the user chose in order: blast doors and hatches, the command room, bunker fittings, outdoor defences and the yard, "showing you previews as each set is done"): a two-by-three Blast Door whose handwheel draws three bolts before its leaf swings out on two heavy hinges (a block entity's model, both hands, its leaf's blocks laid in front of its hinges while it stands open, so it will not swing into a wall and the open leaf is solid); a round Bunker Hatch whose lid lifts up out of the floor (a trapdoor's behaviour, its own open shape and models); a Pressure Door with a see-through porthole (vanilla's door). Opened by hand and by redstone, each with its own sounds made from recordings already credited. |

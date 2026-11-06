@@ -261,7 +261,7 @@ class Surfacer:
             X, Y, Z = x0 + ii * sx / w, np.full_like(ii, y0), z1 - jj * sz / h
             du, dv = (sx / w, 0, 0), (0, 0, -sz / h)
         normal = _NORMALS[d]
-        if self.turned and b.rotation and "axis" in b.rotation:
+        if self.turned and b.rotation and ("axis" in b.rotation or any(k in b.rotation for k in ("x", "y", "z"))):
             X, Y, Z, normal, du, dv = _turn(b.rotation, X, Y, Z, normal, du, dv)
         f = Face(b, d, rect, X.astype(np.float32), Y.astype(np.float32), Z.astype(np.float32), normal, du, dv)
         f.period = self.period
@@ -379,13 +379,24 @@ class Surfacer:
         return material.render(f, self._seed(f))
 
 
-def _turn(rot: dict, X, Y, Z, normal, du, dv):
-    """A box's texel points, normal and steps turned as the game turns the element (by its angle about the axis through
-    its origin, right-handed, as JOML's rotation does)."""
-    a = np.radians(float(rot.get("angle", 0.0)))
+def _axis_matrix(axis: str, degrees: float) -> np.ndarray:
+    a = np.radians(float(degrees))
     c, s = float(np.cos(a)), float(np.sin(a))
-    m = {"x": np.array([[1, 0, 0], [0, c, -s], [0, s, c]]), "y": np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]]),
-         "z": np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])}[rot["axis"]]
+    return {"x": np.array([[1, 0, 0], [0, c, -s], [0, s, c]]), "y": np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]]),
+            "z": np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])}[axis]
+
+
+def element_matrix(rot: dict) -> np.ndarray:
+    """An element's turn as the game makes it: by its angle about one axis, or (26.x's "x", "y", "z") about x, then y,
+    then z, as JOML's rotationZYX does (Rz * Ry * Rx); right-handed."""
+    if "axis" in rot:
+        return _axis_matrix(rot["axis"], rot.get("angle", 0.0))
+    return _axis_matrix("z", rot.get("z", 0.0)) @ _axis_matrix("y", rot.get("y", 0.0)) @ _axis_matrix("x", rot.get("x", 0.0))
+
+
+def _turn(rot: dict, X, Y, Z, normal, du, dv):
+    """A box's texel points, normal and steps turned as the game turns the element (element_matrix) about its origin."""
+    m = element_matrix(rot)
     o = np.array(rot.get("origin", (8, 8, 8)), dtype=np.float32)
     P = np.stack([X - o[0], Y - o[1], Z - o[2]], axis=-1) @ m.T + o
     turn = lambda v: tuple(float(q) for q in (m @ np.array(v, dtype=float)))  # noqa: E731

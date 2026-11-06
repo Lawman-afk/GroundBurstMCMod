@@ -1194,6 +1194,28 @@ public class GBRecipeProvider extends RecipeProvider {
                 .define('S', rod).define('B', net.minecraft.tags.ItemTags.BEDS)
                 .pattern("SBS").pattern("SBS")
                 .unlockedBy("has_bed", has(net.minecraft.tags.ItemTags.BEDS)).save(output);
+        // The yard: barriers and teeth cast of reinforced concrete, a hedgehog of five steel rods crossed, a searchlight of a
+        // redstone lamp behind glass in plates on a rod, ammo crates of wooden slabs round a chest, drums of plates round a dye.
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.JERSEY_BARRIER.item(), 4)
+                .define('R', concrete).pattern("RRR").pattern("RRR")
+                .unlockedBy("has_reinforced_concrete", has(concrete)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.DRAGONS_TEETH.item(), 4)
+                .define('R', concrete).pattern(" R ").pattern("RRR")
+                .unlockedBy("has_reinforced_concrete", has(concrete)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.CZECH_HEDGEHOG.item(), 1)
+                .define('S', rod).pattern("S S").pattern(" S ").pattern("S S")
+                .unlockedBy(getHasName(rod), has(rod)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.SEARCHLIGHT.item(), 1)
+                .define('P', plate).define('G', Items.GLASS).define('L', Items.REDSTONE_LAMP).define('S', rod)
+                .pattern("PGP").pattern("PLP").pattern(" S ")
+                .unlockedBy("has_redstone_lamp", has(Items.REDSTONE_LAMP)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.AMMO_CRATES.item(), 1)
+                .define('W', net.minecraft.tags.ItemTags.WOODEN_SLABS).define('C', Items.CHEST)
+                .pattern("WWW").pattern("WCW")
+                .unlockedBy("has_chest", has(Items.CHEST)).save(output);
+        drum(dev.groundburst.content.construction.GBConstruction.OIL_DRUM.item(), Tags.Items.DYES_GREEN);
+        drum(dev.groundburst.content.construction.GBConstruction.FUEL_DRUM.item(), Tags.Items.DYES_RED);
+        drum(dev.groundburst.content.construction.GBConstruction.RUSTY_DRUM.item(), Tags.Items.DYES_BROWN);
         sign(dev.groundburst.content.construction.GBConstruction.RADIATION_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.DYE.black()));
         sign(dev.groundburst.content.construction.GBConstruction.HIGH_VOLTAGE_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.REDSTONE));
         sign(dev.groundburst.content.construction.GBConstruction.KEEP_OUT_SIGN.item(), Tags.Items.DYES_RED, Ingredient.of(Items.DYE.white()));
@@ -1225,6 +1247,13 @@ public class GBRecipeProvider extends RecipeProvider {
     }
 
     /** A warning sign: a steel plate painted with a dye and the sign's mark, three to a plate. */
+    /** Four drums of steel plates round a dye, the dye their paint. */
+    private void drum(net.minecraft.world.level.ItemLike drum, TagKey<net.minecraft.world.item.Item> paint) {
+        shaped(RecipeCategory.DECORATIONS, drum, 4).define('P', GBParts.STEEL_PLATE).define('D', paint)
+                .pattern("P P").pattern("PDP").pattern("PPP")
+                .unlockedBy(getHasName(GBParts.STEEL_PLATE), has(GBParts.STEEL_PLATE)).save(output);
+    }
+
     private void sign(net.minecraft.world.level.ItemLike sign, TagKey<net.minecraft.world.item.Item> paint, Ingredient mark) {
         shapeless(RecipeCategory.DECORATIONS, sign, 3).requires(GBParts.STEEL_PLATE).requires(paint).requires(mark)
                 .unlockedBy(getHasName(GBParts.STEEL_PLATE), has(GBParts.STEEL_PLATE)).save(output);

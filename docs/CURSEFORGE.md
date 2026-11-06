@@ -63,6 +63,8 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 - **Bunker fittings:** wall pipes and a valve that gives a redstone signal, vent grilles and ducts that join up, caged
   lamps, a fuse box whose breaker is a switch, a fire extinguisher that puts out fires, a steel locker that stores items,
   and a bunk bed two players can sleep in.
+- **The yard:** Jersey barriers and dragon's teeth as tough as reinforced concrete, Czech hedgehogs, a searchlight that
+  sweeps the night sky with its beam, ammo crates on a pallet that store items, and oil, fuel and rusty drums.
 - **Create and Create Aeronautics** (Minecraft 1.21.1, optional): missile launchers on trains, bearings and airships,
   every machine working on Create's moving contraptions and Create Aeronautics' ships, and weapons that hit them (more
   below).

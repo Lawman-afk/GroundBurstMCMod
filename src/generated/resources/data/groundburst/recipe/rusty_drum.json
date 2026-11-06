@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "D": "#c:dyes/brown",
+    "P": "groundburst:steel_plate"
+  },
+  "pattern": [
+    "P P",
+    "PDP",
+    "PPP"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundburst:rusty_drum"
+  }
+}

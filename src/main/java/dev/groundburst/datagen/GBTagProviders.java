@@ -78,6 +78,9 @@ public final class GBTagProviders {
             tag(BlockTags.MINEABLE_WITH_AXE).add(dev.groundburst.content.construction.GBConstruction.SITUATION_MAP_TABLE.block().key());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.construction.GBConstruction.STEEL_LOCKER.block().key(),
                     dev.groundburst.content.construction.GBConstruction.BUNK_BED.block().key());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.construction.GBConstruction.SEARCHLIGHT.block().key());
+            dev.groundburst.content.construction.GBConstruction.DRUMS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
+            tag(BlockTags.MINEABLE_WITH_AXE).add(dev.groundburst.content.construction.GBConstruction.AMMO_CRATES.block().key());
             tag(BlockTags.DOORS).add(dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().key());
             dev.groundburst.content.construction.GBConstruction.STAIRS.forEach(b -> tag(BlockTags.STAIRS).add(b.block().key()));
             dev.groundburst.content.construction.GBConstruction.SLABS.forEach(b -> tag(BlockTags.SLABS).add(b.block().key()));

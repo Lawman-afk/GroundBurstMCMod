@@ -44,6 +44,7 @@ public class GroundBurstClient {
         dev.groundburst.client.blast.ClientBlasts.register(modBus);
         dev.groundburst.client.fx.Spectacle.register(modBus);
         dev.groundburst.client.fx.LaserFx.register();
+        dev.groundburst.client.fx.SearchlightFx.register();
         dev.groundburst.client.fx.DesignatorScope.register(modBus);
         dev.groundburst.client.fx.ArtilleryClient.register(modBus);
         dev.groundburst.client.fx.FxPhotographer.register();
@@ -186,6 +187,8 @@ public class GroundBurstClient {
         event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get(), 1, 8));
         // The Tape Computer (DESIGN.md §22.4): drawn whole, two blocks high, by its lower block.
+        event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.SEARCHLIGHT_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.SEARCHLIGHT_ENTITY.get(), 2));
         event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.TAPE_COMPUTER_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.TAPE_COMPUTER_ENTITY.get(), 2));
         // The Blast Door (DESIGN.md §22.3): drawn whole by its hinges' lowest block, the mirrored door from its own model.

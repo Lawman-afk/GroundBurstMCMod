@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "groundburst:block/jersey_barrier"
+    },
+    "facing=east": {
+      "model": "groundburst:block/jersey_barrier",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "groundburst:block/jersey_barrier",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "groundburst:block/jersey_barrier",
+      "y": 270
+    }
+  }
+}

@@ -223,6 +223,23 @@ public class GBBlockLoot extends BlockLootSubProvider {
                                                         net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER)
                                                 .hasProperty(dev.groundburst.content.construction.BunkBedBlock.PART,
                                                         net.minecraft.world.level.block.state.properties.BedPart.HEAD)))))));
+        // The Searchlight: its lower block drops it; the Ammo Crates themselves (and what they hold); a drum block one a drum.
+        add(dev.groundburst.content.construction.GBConstruction.SEARCHLIGHT.block().get(), createSinglePropConditionTable(
+                dev.groundburst.content.construction.GBConstruction.SEARCHLIGHT.block().get(), dev.groundburst.content.construction.SearchlightBlock.HALF,
+                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER));
+        dropSelf(dev.groundburst.content.construction.GBConstruction.AMMO_CRATES.block().get());
+        for (var d : dev.groundburst.content.construction.GBConstruction.DRUMS) {
+            var drum = d.block().get();
+            add(drum, net.minecraft.world.level.storage.loot.LootTable.lootTable().withPool(net.minecraft.world.level.storage.loot.LootPool.lootPool()
+                    .setRolls(net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders.exactly(1))
+                    .add((net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer.Builder<?>) applyExplosionDecay(drum,
+                            net.minecraft.world.level.storage.loot.entries.LootItem.lootTableItem(drum).apply(java.util.List.of(2, 3, 4),
+                                    count -> net.minecraft.world.level.storage.loot.functions.SetItemCountFunction.setCount(
+                                            net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders.exactly(count)).when(
+                                            net.minecraft.world.level.storage.loot.predicates.MatchBlock.blockMatches(this.blocks, drum,
+                                                    net.minecraft.advancements.predicates.StatePropertiesPredicate.Builder.properties()
+                                                            .hasProperty(dev.groundburst.content.construction.DrumBlock.DRUMS, count.intValue()))))))));
+        }
         // The Construction set: each drops itself (a doubled slab two).
         for (var b : dev.groundburst.content.construction.GBConstruction.ALL) {
             if (b.block().get() instanceof net.minecraft.world.level.block.SlabBlock slab) {

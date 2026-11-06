@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": "minecraft:chest",
+    "W": "#minecraft:wooden_slabs"
+  },
+  "pattern": [
+    "WWW",
+    "WCW"
+  ],
+  "result": {
+    "id": "groundburst:ammo_crates"
+  }
+}
