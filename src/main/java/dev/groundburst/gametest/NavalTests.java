@@ -11,10 +11,13 @@ import dev.groundburst.content.naval.DepthCharge;
 import dev.groundburst.content.naval.DepthChargeRackBlockEntity;
 import dev.groundburst.content.naval.GBNaval;
 import dev.groundburst.content.naval.SeaMine;
+import dev.groundburst.content.pipe.GBPipes;
+import dev.groundburst.content.pipe.PipeBlock;
 import dev.groundburst.registry.GBDataComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
@@ -26,7 +29,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -50,6 +55,7 @@ final class NavalTests {
         GBGameTests.test("dispenser_rolls_out_a_depth_charge", GBGameTests.FLOOR_16, 60, NavalTests::rack);
         GBGameTests.test("blasts_break_boats", GBGameTests.FLOOR_16, 40, NavalTests::boats);
         GBGameTests.test("depth_charge_rack_loads_by_hopper", GBGameTests.FLOOR_16, 120, NavalTests::rackHopper);
+        GBGameTests.test("depth_charge_rack_loads_by_pipe", GBGameTests.FLOOR_16, 200, NavalTests::rackPipe);
         GBGameTests.test("depth_charge_rack_rolls_one_off_on_a_pulse", GBGameTests.FLOOR_16, 60, NavalTests::rackPulse);
         GBGameTests.test("depth_charge_rack_pattern_while_powered", GBGameTests.FLOOR_16, 200, NavalTests::rackPattern);
         GBGameTests.test("depth_charge_rack_sets_its_depth", GBGameTests.FLOOR_16, 60, NavalTests::rackDepth);
@@ -280,6 +286,28 @@ final class NavalTests {
                 helper.assertTrue(!rack.inventory().getItem(i).isEmpty(), "rolled down to the trap (place " + i + ")");
             }
             helper.assertTrue(rack.comparatorSignal() == 10, "a comparator reads 10 (" + rack.comparatorSignal() + ")");
+        });
+    }
+
+    /** An item pipe from a chest over the rack's Item Port loads it: five charges piped in, rolled down to the trap. */
+    private static void rackPipe(GameTestHelper helper) {
+        DepthChargeRackBlockEntity rack = sternRack(helper, 0);
+        BlockPos pipe = new BlockPos(8, 15, 8), chest = new BlockPos(8, 16, 8);
+        helper.setBlock(chest, Blocks.CHEST);
+        helper.setBlock(pipe, GBPipes.ITEM_PIPE.block().get());
+        BlockPos at = helper.absolutePos(pipe);
+        BlockState state = helper.getLevel().getBlockState(at);
+        helper.assertTrue(PipeBlock.mode(state, Direction.UP) == PipeBlock.Mode.NORMAL && PipeBlock.mode(state, Direction.DOWN) == PipeBlock.Mode.NORMAL,
+                "the pipe joins the chest over it and the Item Port under it");
+        BlockState pulling = state.setValue(PipeBlock.SIDES.get(Direction.UP), PipeBlock.Mode.PULL);
+        helper.getLevel().setBlock(at, pulling, Block.UPDATE_ALL);
+        PipeBlock.changed(helper.getLevel(), at, pulling);
+        if (helper.getBlockEntity(chest, BlockEntity.class) instanceof Container c) {
+            c.setItem(0, new ItemStack(GBNaval.DEPTH_CHARGE.get(), 5));
+        }
+        helper.succeedWhen(() -> {
+            helper.assertTrue(rack.loaded() == 5, "five piped in (" + rack.loaded() + ")");
+            helper.assertTrue(!rack.inventory().getItem(0).isEmpty(), "rolled down to the trap");
         });
     }
 
