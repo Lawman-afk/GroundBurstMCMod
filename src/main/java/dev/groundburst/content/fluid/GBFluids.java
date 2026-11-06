@@ -159,12 +159,12 @@ public final class GBFluids {
         }
         event.registerItem(net.neoforged.neoforge.capabilities.Capabilities.Fluid.ITEM, (stack, access) -> new CanisterFluidHandler(access),
                 canisters.toArray(Item[]::new));
-        // Gas buckets are BucketItem subclasses, which NeoForge only gives the bucket capability for the exact class.
+        // Every bucket of the mod's, named: gas buckets are BucketItem subclasses, which NeoForge gives the bucket
+        // capability only for the exact class, and the 1.21.1 build's NeoForge gives even the plain ones only its own
+        // older kind (the mod's liquid buckets had no fluid there: they poured into nothing of the mod's).
         for (ChemFluid f : ALL) {
-            if (f.isGas()) {
-                event.registerItem(net.neoforged.neoforge.capabilities.Capabilities.Fluid.ITEM,
-                        (stack, access) -> new net.neoforged.neoforge.transfer.fluid.BucketResourceHandler(access), f.bucket().get());
-            }
+            event.registerItem(net.neoforged.neoforge.capabilities.Capabilities.Fluid.ITEM,
+                    (stack, access) -> new net.neoforged.neoforge.transfer.fluid.BucketResourceHandler(access), f.bucket().get());
         }
         event.registerBlock(net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK,
                 (level, pos, state, be, side) -> side != null && FluidPipeBlock.mode(state, side) == FluidPipeBlock.Mode.DISABLED

@@ -137,6 +137,14 @@ public record HealSettings(boolean enabled, HealSchedule schedule, int waitTicks
                 this.playerBlocks, this.keepRadius, this.drops, this.maxBlocksPerTick, this.msPerTick);
     }
 
+    /** A copy in which blocks that heal drop as they break, or not (GameTests). */
+    public HealSettings withDrops(boolean drops) {
+        return new HealSettings(this.enabled, this.schedule, this.waitTicks, this.randomTicks, this.blocksPerSecond, this.longestTicks,
+                this.order, this.effects, this.kinds, this.aftermath, this.decorations, this.biomes, this.clearRadiation,
+                this.excludedWeapons, this.excludedBlocks, this.excludedTags, this.excludedDimensions, this.playerBlocks, this.keepRadius,
+                drops, this.maxBlocksPerTick, this.msPerTick);
+    }
+
     /** A copy in which only these kinds heal (GameTests). */
     public HealSettings withKinds(Set<Kind> kinds) {
         return new HealSettings(this.enabled, this.schedule, this.waitTicks, this.randomTicks, this.blocksPerSecond, this.longestTicks,

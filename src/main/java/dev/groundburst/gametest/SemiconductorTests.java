@@ -258,7 +258,7 @@ final class SemiconductorTests {
     private static void pick(GameTestHelper helper, ProcessingKind kind, List<ItemStack> items, ItemStack catalyst, List<FluidStack> fluids,
             String expected) {
         MachineRecipeInput input = new MachineRecipeInput(items, catalyst, fluids);
-        Optional<RecipeHolder<ProcessingRecipe>> found = helper.getLevel().recipeAccess().getRecipeFor(GBRecipes.type(kind), input, helper.getLevel());
+        Optional<RecipeHolder<ProcessingRecipe>> found = ProcessingRecipe.pick(helper.getLevel(), kind, input);   // (as the machine picks)
         String got = found.map(h -> h.id().identifier().toString()).orElse("nothing");
         String want = expected.equals("nothing") ? "nothing" : GroundBurst.id(expected).toString();
         helper.assertTrue(got.equals(want), items + " with " + fluids + " should make " + expected + ", made " + got);

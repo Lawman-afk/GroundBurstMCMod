@@ -32,7 +32,9 @@ main at the commit in `tools\backport\base.txt` straight from git and writes its
   handed to a shader pack and drawn after the level (`client/fx/IrisFx`, `DrawnLast`; main's DESIGN.md §12.3: built on
   26.3's renderer and Iris's API), with their client option (`fx.shaderPackFx`, a `FILE_FIXES` entry).
 - **Kept by hand** (`tools\backport\manual.txt`): `client/fx/FxRenderTypes` (26.1.2 has no order-independent
-  transparency: the effects are drawn after the translucent terrain, as main's are), its cloud shader
+  transparency: the effects are drawn after the translucent terrain, as main's are; it keeps the game's sorting of the
+  effects' blended quads, which main does itself since 2026-11-07, and its `client/fx/FxSort` holds nothing back; the
+  glow, which adds its light, is not sorted, as on main), its cloud shader
   (`shaders/core/fx_cloud.fsh`), and the worldgen toggle (`world/ConfigToggleFilter`, `GBWorldgen`: 26.1.2's placement
   filters are classes with types). A sync merges main's changes into them (a three-way merge), conflicts marked.
 - **This branch's own** (never main's): `dev.groundburst.port` (`BlockItemTagId`, `Mock`, `SkyColors`), this file, the
@@ -54,7 +56,7 @@ their lines).
 
 ## Checks
 
-- `gradlew runGameTestServer`: main's GameTests (416 at `c2acaac1`).
+- `gradlew runGameTestServer`: main's GameTests (418 at `097a89a7`).
 - `gradlew runPlayBench [-Pjfr=<name>]`, `runBlastBench`, `runFxShots`, `runManualShots`, `runSiteShots`,
   `runHealShots`: main's benches and photographers.
 - The build deploys to the folder in `deploy_instance_dir_26_1_2` (in `%USERPROFILE%\.gradle\gradle.properties`), if set.

@@ -432,8 +432,8 @@ FILE_FIXES: dict[str, list] = {
     "src/main/java/dev/groundburst/registry/GBCreativeTabs.java": [
         swap("previous = holder.key();", "previous = holder.getKey();"),
     ],
-    "src/main/java/dev/groundburst/gametest/GBGameTests.java": [
-        swap("new FunctionGameTestInstance(spec.function().key(), data)", "new FunctionGameTestInstance(spec.function().getKey(), data)"),
+    "src/main/java/dev/groundburst/gametest/GameTestRegistration.java": [
+        swap("new FunctionGameTestInstance(r.function().key(), data)", "new FunctionGameTestInstance(r.function().getKey(), data)"),
     ],
 }
 

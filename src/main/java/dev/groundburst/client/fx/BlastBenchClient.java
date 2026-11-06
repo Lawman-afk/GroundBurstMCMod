@@ -28,6 +28,25 @@ public final class BlastBenchClient {
             return;
         }
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> tick());
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.RenderFrameEvent.Pre e) -> frame());
+    }
+
+    private static long lastFrame;
+
+    /** Every frame's length, by the bench's phase, once the world is being watched (from the ground's settling on). */
+    private static void frame() {
+        long now = System.nanoTime();
+        BlastBench.Stage stage = BlastBench.stage;
+        if (lastFrame != 0 && (stage == BlastBench.Stage.SETTLING || stage == BlastBench.Stage.RUNNING) && Minecraft.getInstance().level != null) {
+            long dt = now - lastFrame;
+            synchronized (BlastBench.FRAMES) {
+                BlastBench.FRAMES.computeIfAbsent(BlastBench.phase(), k -> new it.unimi.dsi.fastutil.longs.LongArrayList()).add(dt);
+            }
+            if (dt > BlastBench.worstFrame) {
+                BlastBench.worstFrame = dt;
+            }
+        }
+        lastFrame = now;
     }
 
     private static void tick() {

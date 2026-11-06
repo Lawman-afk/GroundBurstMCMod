@@ -76,8 +76,9 @@ final class FxRenderTypes {
             RenderSetup.builder(CLOUD_PIPELINE).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
     private static final Function<Identifier, RenderType> FIRE = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_fire",
             RenderSetup.builder(FIRE_PIPELINE).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
+    // The glow adds its light and writes no depth, so it comes out the same in any order: not sorted (main's DESIGN.md §11.10).
     private static final Function<Identifier, RenderType> GLOW = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_glow",
-            RenderSetup.builder(GLOW_PIPELINE).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
+            RenderSetup.builder(GLOW_PIPELINE).withTexture("Sampler0", texture).createRenderSetup()));
 
     /** This frame's effect geometry, drawn after the translucent terrain. */
     private record Queued(PoseStack.Pose pose, RenderType type, SubmitNodeCollector.CustomGeometryRenderer renderer) {}

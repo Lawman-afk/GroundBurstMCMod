@@ -49,6 +49,32 @@ public final class BlastBench {
     static final int SAVE_AT = 600;
     private static final UUID OWNER = UUID.nameUUIDFromBytes("groundburst:blast_bench".getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
+    /**
+     * A warhead set off by its own path instead of a bare blast profile ({@code -Dgroundburst.blastBench.kind=<ChargeKind>}):
+     * its fallout and radiation, and the special weapons (antimatter, singularity, storm, cryo), which are not blasts.
+     */
+    private static final String KIND = System.getProperty("groundburst.blastBench.kind", "");
+    /** How far east of the burst the player watches from ({@code .view}, blocks). */
+    private static final int VIEW_DISTANCE = Integer.getInteger("groundburst.blastBench.view", VIEW);
+    /**
+     * Ticks the record runs on after the blast has finished ({@code .tail}, seconds): its fires, its fallout, its clouds.
+     * A weapon that is not a blast is recorded that long after the burst.
+     */
+    private static final int TAIL_TICKS = Math.max(1, Integer.getInteger("groundburst.blastBench.tail", TAIL / 20)) * 20;
+
+    /** The part of the run a frame falls in. */
+    public enum Phase { BEFORE, BLAST, AFTER }
+
+    /** The client's frame times by phase (nanoseconds): the client half adds them, the summary reads them. */
+    public static final java.util.Map<Phase, LongArrayList> FRAMES = new java.util.EnumMap<>(Phase.class);
+    /** The longest frame since the last tick's row (the client half raises it; each row takes it and starts it again). */
+    public static volatile long worstFrame;
+
+    /** The phase a frame now falls in: before the burst, while the blast runs (a weapon that is not one: throughout), after. */
+    public static Phase phase() {
+        return fired < 0 ? Phase.BEFORE : doneAt < 0 ? Phase.BLAST : Phase.AFTER;
+    }
+
     public static volatile Stage stage = Stage.WAITING;
     /** The client's frames a second (the client half keeps it current). */
     public static volatile int fps;
@@ -72,8 +98,11 @@ public final class BlastBench {
     private static int settled;
     private static Vec3 burst = Vec3.ZERO;
     private static Blast job;
-    private static int doneAt = -1;
-    private static long saveNanos = -1;
+    private static volatile int doneAt = -1;
+    private static long saveNanos = -1, endSaveNanos = -1;
+    private static int rememberedAtSave = -1, rememberedAtDone = -1;
+    private static long doneSaveNanos = -1, regionsAtDone = -1;
+    private static Path worldRoot;
     private static boolean timedOut;
     private static final StringBuilder csv = new StringBuilder();
     private static final LongArrayList tickNanos = new LongArrayList(), blastNanos = new LongArrayList();
@@ -133,13 +162,15 @@ public final class BlastBench {
         burst = new Vec3(spawn.getX() + 0.5, 0, spawn.getZ() + 0.5);
         var key = Blasts.profile(profile);
         var found = level.registryAccess().lookupOrThrow(BlastProfile.REGISTRY).getOptional(key);
-        if (found.isEmpty()) {
+        if (found.isEmpty() && KIND.isEmpty()) {
             GroundBurst.LOGGER.error("Blast bench: no blast profile {}", key.identifier());
             finish(level, "no such profile");
             return;
         }
-        BlastProfile p = found.get().scaled(GBServerConfig.RADIUS_MULTIPLIER.get().floatValue(), GBServerConfig.MAX_RADIUS.get());
-        int r = radius > 0 ? radius : (int) Math.ceil(p.outerRadius()) + 32;
+        // (A special weapon has no blast profile of its own: the ground out to 200 blocks, or as far as asked.)
+        float outer = found.map(f -> f.scaled(GBServerConfig.RADIUS_MULTIPLIER.get().floatValue(), GBServerConfig.MAX_RADIUS.get()).outerRadius())
+                .orElse(168f);
+        int r = radius > 0 ? radius : (int) Math.ceil(outer) + 32;
         int cx = spawn.getX() >> 4, cz = spawn.getZ() >> 4, cr = (r >> 4) + 1;
         List<ChunkPos> all = new ArrayList<>();
         for (int x = cx - cr; x <= cx + cr; x++) {
@@ -154,9 +185,9 @@ public final class BlastBench {
         todo = all;
         next = 0;
         radius = r;
-        GroundBurst.LOGGER.info("Blast bench: {} (outer radius {}), generating {} chunks out to {} round {}", profile, p.outerRadius(),
-                all.size(), r, spawn.toShortString());
-        player.teleportTo(level, burst.x + VIEW, 260, burst.z, java.util.Set.of(), 90, 10, true);
+        GroundBurst.LOGGER.info("Blast bench: {}{} (outer radius {}), generating {} chunks out to {} round {}", profile,
+                KIND.isEmpty() ? "" : " set off as " + KIND, outer, all.size(), r, spawn.toShortString());
+        player.teleportTo(level, burst.x + VIEW_DISTANCE, 260, burst.z, java.util.Set.of(), 90, 10, true);
         genStart = System.nanoTime();
         stage = Stage.GENERATING;
     }
@@ -193,7 +224,7 @@ public final class BlastBench {
     private static void settle(ServerLevel level, ServerPlayer player) {
         settled++;
         if (settled == 1 && player != null) {
-            int vx = (int) Math.floor(burst.x) + VIEW, vz = (int) Math.floor(burst.z);
+            int vx = (int) Math.floor(burst.x) + VIEW_DISTANCE, vz = (int) Math.floor(burst.z);
             level.getChunk(vx >> 4, vz >> 4);
             int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, vx, vz);
             player.teleportTo(level, vx + 0.5, ground + VIEW_HEIGHT, vz + 0.5, java.util.Set.of(), 90, 9, true);
@@ -204,12 +235,20 @@ public final class BlastBench {
         int bx = (int) Math.floor(burst.x), bz = (int) Math.floor(burst.z);
         level.getChunk(bx >> 4, bz >> 4);
         burst = new Vec3(burst.x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz) + 0.5, burst.z);
-        job = Blasts.detonate(level, burst, Blasts.profile(profile), null);
-        if (job == null) {
-            finish(level, "the blast did not start");
-            return;
+        if (!KIND.isEmpty()) {
+            // The warhead's own path, as a missile's impact sets it off: its blast (if it has one), fallout, effects.
+            dev.groundburst.content.ordnance.charge.Charges.impact(level, dev.groundburst.content.ordnance.charge.ChargeKind.valueOf(KIND),
+                    BlockPos.containing(burst), null);
+            job = BlastManager.of(level).newest();
+        } else {
+            job = Blasts.detonate(level, burst, Blasts.profile(profile), null);
+            if (job == null) {
+                finish(level, "the blast did not start");
+                return;
+            }
         }
-        csv.append("tick,tick_ms,blast_ms,shock,terrain,blocks,phase,rays,ray_room,chunks_held,chunks_loaded,sections,rim,deferred,heap_mb,fps,note\n");
+        csv.append("tick,tick_ms,blast_ms,shock,terrain,blocks,phase,rays,ray_room,chunks_held,chunks_loaded,sections,rim,deferred,heap_mb,fps,"
+                + "frame_worst_ms,note\n");
         fired = level.getGameTime();
         stage = Stage.RUNNING;
         GroundBurst.LOGGER.info("Blast bench: {} set off at {}", profile, BlockPos.containing(burst).toShortString());
@@ -217,19 +256,30 @@ public final class BlastBench {
 
     private static void record(MinecraftServer server, ServerLevel level, long nanos) {
         int t = (int) (level.getGameTime() - fired);
-        Blast.Stats s = job.stats();
+        Blast.Stats s = job == null ? null : job.stats();
         long heap = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         int loaded = level.getChunkSource().getLoadedChunksCount();
         int f = fps;
+        long frame = worstFrame;
+        worstFrame = 0;
         tickNanos.add(nanos);
         fpsTicks.add(fps);
         blastNanos.add(BlastManager.nanosUsed);
-        peakRays = Math.max(peakRays, s.rays());
-        peakRoom = Math.max(peakRoom, s.rayRoom());
-        peakChunks = Math.max(peakChunks, s.chunks());
-        peakSections = Math.max(peakSections, s.sections());
-        peakRim = Math.max(peakRim, s.rim());
-        peakDeferred = Math.max(peakDeferred, s.deferred());
+        if (s != null) {
+            peakRays = Math.max(peakRays, s.rays());
+            peakRoom = Math.max(peakRoom, s.rayRoom());
+            peakChunks = Math.max(peakChunks, s.chunks());
+            peakSections = Math.max(peakSections, s.sections());
+            peakRim = Math.max(peakRim, s.rim());
+            peakDeferred = Math.max(peakDeferred, s.deferred());
+            BlastProfile p = ((BlastJob) job).profile;
+            if (terrainAt < 0 && s.terrain() > p.terrainRadius()) {
+                terrainAt = t;
+            }
+            if (frontAt < 0 && !s.phase().equals("FRONT")) {
+                frontAt = t;
+            }
+        }
         peakLoaded = Math.max(peakLoaded, loaded);
         peakHeap = Math.max(peakHeap, heap);
         if (f > 0) {
@@ -237,28 +287,39 @@ public final class BlastBench {
             fpsSum += f;
             fpsCount++;
         }
-        BlastProfile p = ((BlastJob) job).profile;
-        if (terrainAt < 0 && s.terrain() > p.terrainRadius()) {
-            terrainAt = t;
-        }
-        if (frontAt < 0 && !s.phase().equals("FRONT")) {
-            frontAt = t;
-        }
         String note = "";
         if (t == SAVE_AT) {
+            if (HEAL) {
+                rememberedAtSave = dev.groundburst.heal.Healer.of(level).status(burst).blocks();
+            }
             long s0 = System.nanoTime();
             server.saveEverything(true, false, false);    // as the autosave does
             saveNanos = System.nanoTime() - s0;
             note = "save " + String.format(Locale.ROOT, "%.1f", saveNanos / 1e6) + " ms";
         }
-        csv.append(t).append(',').append(ms(nanos)).append(',').append(ms(BlastManager.nanosUsed)).append(',').append(job.radius()).append(',')
-                .append(s.terrain()).append(',')
-                .append(job.blocksChanged()).append(',').append(s.phase()).append(',').append(s.rays()).append(',').append(s.rayRoom()).append(',')
-                .append(s.chunks()).append(',').append(loaded).append(',').append(s.sections()).append(',').append(s.rim()).append(',')
-                .append(s.deferred()).append(',').append(heap >> 20).append(',').append(f).append(',').append(note).append('\n');
+        csv.append(t).append(',').append(ms(nanos)).append(',').append(ms(BlastManager.nanosUsed)).append(',')
+                .append(job == null ? 0 : job.radius()).append(',').append(s == null ? 0 : s.terrain()).append(',')
+                .append(job == null ? 0 : job.blocksChanged()).append(',').append(s == null ? "-" : s.phase()).append(',')
+                .append(s == null ? 0 : s.rays()).append(',').append(s == null ? 0 : s.rayRoom()).append(',')
+                .append(s == null ? 0 : s.chunks()).append(',').append(loaded).append(',').append(s == null ? 0 : s.sections()).append(',')
+                .append(s == null ? 0 : s.rim()).append(',').append(s == null ? 0 : s.deferred()).append(',').append(heap >> 20).append(',')
+                .append(f).append(',').append(ms(frame)).append(',').append(note).append('\n');
+        if (job == null) {
+            if (t >= TAIL_TICKS) {
+                finish(level, "");                         // (a weapon that is not a blast: recorded for the tail from its burst)
+            }
+            return;
+        }
         if (job.isDone() && doneAt < 0) {
             doneAt = t;
             if (HEAL) {
+                // The save as the blast finishes, every block it changed remembered for healing: the most a save has to write.
+                rememberedAtDone = dev.groundburst.heal.Healer.of(level).status(burst).blocks();
+                long s0 = System.nanoTime();
+                server.saveEverything(true, false, false);
+                doneSaveNanos = System.nanoTime() - s0;
+                server.saveEverything(true, true, false);          // (written out, for the size on disk)
+                regionsAtDone = regionBytes(server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).normalize());
                 // The firestorm put out (healing waits for fires near the damage, and forests burn for many minutes),
                 // so what follows is the healing itself.
                 GroundBurst.LOGGER.info("Blast bench: blast finished; {} fires put out", putOutFires(level, BlockPos.containing(burst), (radius >> 4) + 2));
@@ -279,7 +340,7 @@ public final class BlastBench {
             }
             return;
         }
-        if (doneAt >= 0 && t >= doneAt + TAIL || t >= TIMEOUT) {
+        if (doneAt >= 0 && t >= doneAt + TAIL_TICKS || t >= TIMEOUT) {
             timedOut = doneAt < 0;
             finish(level, timedOut ? "timed out" : "");
         }
@@ -319,6 +380,13 @@ public final class BlastBench {
     }
 
     private static void finish(ServerLevel level, String problem) {
+        if (fired >= 0) {
+            long s0 = System.nanoTime();
+            level.getServer().saveEverything(true, false, false);   // as the autosave does, now with all the aftermath's records
+            endSaveNanos = System.nanoTime() - s0;
+            level.getServer().saveEverything(true, true, false);    // (and written out, for the sizes on disk)
+        }
+        worldRoot = level.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).normalize();
         stage = Stage.FINISHED;
         String stamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         Path dir = level.getServer().getServerDirectory().resolve("bench");
@@ -336,19 +404,26 @@ public final class BlastBench {
 
     private static String summary(String problem) {
         StringBuilder b = new StringBuilder();
-        b.append("Blast bench: ").append(profile).append(problem.isEmpty() ? "" : " (" + problem + ")").append('\n');
-        b.append(String.format(Locale.ROOT, "Generated %d chunks out to %d blocks in %.1f s%n", todo.size(), radius, genNanos / 1e9));
-        if (job == null) {
+        b.append("Blast bench: ").append(profile).append(KIND.isEmpty() ? "" : ", set off as " + KIND)
+                .append(problem.isEmpty() ? "" : " (" + problem + ")").append('\n');
+        b.append(String.format(Locale.ROOT, "Generated %d chunks out to %d blocks in %.1f s; watched from %d blocks east, %d up; recorded %d s "
+                + "after %s%n", todo.size(), radius, genNanos / 1e9, VIEW_DISTANCE, VIEW_HEIGHT, TAIL_TICKS / 20,
+                job == null ? "the burst (no blast of its own)" : "the blast finished"));
+        if (fired < 0) {
             return b.toString();
         }
-        BlastProfile p = ((BlastJob) job).profile;
-        b.append(String.format(Locale.ROOT, "Profile (after the config): core %.0f, crater %.0f, structural %.0f, scorch %.0f, fire %.0f, lethal %.0f, "
-                + "damage %.0f; terrain radius %.0f, outer radius %.0f; max radius setting %d%n", p.core(), p.crater(), p.structural(),
-                p.scorch(), p.fire(), p.lethal(), p.damage(), p.terrainRadius(), p.outerRadius(), GBServerConfig.MAX_RADIUS.get()));
         int n = tickNanos.size();
-        b.append(String.format(Locale.ROOT, "Ticks recorded %d; terrain front past the terrain radius at %d, fronts done at %d, "
-                + "blast finished at %d (%.1f s)%n", n, terrainAt, frontAt, doneAt, doneAt / 20.0));
-        b.append(String.format(Locale.ROOT, "Blocks changed %d%n", job.blocksChanged()));
+        if (job != null) {
+            BlastProfile p = ((BlastJob) job).profile;
+            b.append(String.format(Locale.ROOT, "Profile (after the config): core %.0f, crater %.0f, structural %.0f, scorch %.0f, fire %.0f, lethal %.0f, "
+                    + "damage %.0f; terrain radius %.0f, outer radius %.0f; max radius setting %d%n", p.core(), p.crater(), p.structural(),
+                    p.scorch(), p.fire(), p.lethal(), p.damage(), p.terrainRadius(), p.outerRadius(), GBServerConfig.MAX_RADIUS.get()));
+            b.append(String.format(Locale.ROOT, "Ticks recorded %d; terrain front past the terrain radius at %d, fronts done at %d, "
+                    + "blast finished at %d (%.1f s)%n", n, terrainAt, frontAt, doneAt, doneAt / 20.0));
+            b.append(String.format(Locale.ROOT, "Blocks changed %d%n", job.blocksChanged()));
+        } else {
+            b.append(String.format(Locale.ROOT, "Ticks recorded %d%n", n));
+        }
         if (HEAL) {
             b.append("Healing on (wait 20 s after the last damage; the fires put out once the blast had finished)\n");
             if (healStart >= 0) {
@@ -407,6 +482,84 @@ public final class BlastBench {
         b.append(String.format(Locale.ROOT, "Heap: peak used %d MB of %d MB%n", peakHeap >> 20, Runtime.getRuntime().maxMemory() >> 20));
         b.append(String.format(Locale.ROOT, "Client fps: mean %.0f, min %d%n", fpsCount == 0 ? 0 : (double) fpsSum / fpsCount,
                 minFps == Integer.MAX_VALUE ? 0 : minFps));
+        synchronized (FRAMES) {
+            for (Phase ph : Phase.values()) {
+                LongArrayList f = FRAMES.get(ph);
+                if (f == null || f.isEmpty()) {
+                    continue;
+                }
+                long[] v = f.toLongArray(), fs = v.clone();
+                java.util.Arrays.sort(fs);
+                long fsum = 0;
+                int o33 = 0, o50 = 0, o100 = 0;
+                for (long x : v) {
+                    fsum += x;
+                    o33 += x > 33_333_333L ? 1 : 0;
+                    o50 += x > 50_000_000L ? 1 : 0;
+                    o100 += x > 100_000_000L ? 1 : 0;
+                }
+                b.append(String.format(Locale.ROOT, "Frames %s: %d, ms mean %.2f, median %.2f, p95 %.2f, p99 %.2f, p99.9 %.1f, max %.1f; "
+                        + "over 33 ms %d, over 50 ms %d, over 100 ms %d%n", ph.name().toLowerCase(Locale.ROOT), v.length, fsum / 1e6 / v.length,
+                        pct(fs, 0.5), pct(fs, 0.95), pct(fs, 0.99), pct(fs, 0.999), fs[fs.length - 1] / 1e6, o33, o50, o100));
+            }
+        }
+        if (rememberedAtSave >= 0) {
+            b.append(String.format(Locale.ROOT, "Blocks remembered for healing at the save %d ticks in: %d%n", SAVE_AT, rememberedAtSave));
+        }
+        if (doneSaveNanos >= 0) {
+            b.append(String.format(Locale.ROOT, "Save as the blast finished, %d blocks remembered: %.1f ms; region files then %.1f MB%n",
+                    rememberedAtDone, doneSaveNanos / 1e6, regionsAtDone / 1048576.0));
+        }
+        b.append(String.format(Locale.ROOT, "Save at the end: %.1f ms%n", endSaveNanos / 1e6));
+        b.append(dataSizes());
+        return b.toString();
+    }
+
+    /** The size of every region file under {@code root} (bytes; -1 if it cannot be read). */
+    private static long regionBytes(Path root) {
+        try (var walk = Files.walk(root)) {
+            return walk.filter(p -> p.toString().endsWith(".mca")).mapToLong(p -> {
+                try {
+                    return Files.size(p);
+                } catch (IOException e) {
+                    return 0;
+                }
+            }).sum();
+        } catch (IOException e) {
+            return -1;
+        }
+    }
+
+    /** What the world takes on disk once saved: the mod's own saved data file by file, and the chunks' region files. */
+    private static String dataSizes() {
+        if (job == null && fired < 0) {
+            return "";
+        }
+        Path root = worldRoot;
+        if (root == null || !Files.isDirectory(root)) {
+            return "";
+        }
+        StringBuilder b = new StringBuilder();
+        long regions = 0;
+        List<String> ours = new ArrayList<>();
+        try (var walk = Files.walk(root)) {
+            for (Path p : (Iterable<Path>) walk::iterator) {
+                if (!Files.isRegularFile(p)) {
+                    continue;
+                }
+                long size = Files.size(p);
+                String rel = root.relativize(p).toString().replace('\\', '/');
+                if (rel.endsWith(".mca")) {
+                    regions += size;
+                } else if (rel.contains(GroundBurst.MODID)) {
+                    ours.add(String.format(Locale.ROOT, "%s %.1f KB", rel, size / 1024.0));
+                }
+            }
+        } catch (IOException e) {
+            return "Sizes on disk: could not be read (" + e.getMessage() + ")\n";
+        }
+        b.append(String.format(Locale.ROOT, "On disk: region files %.1f MB; the mod's saved data: %s%n", regions / 1048576.0,
+                ours.isEmpty() ? "none" : String.join(", ", ours)));
         return b.toString();
     }
 

@@ -356,7 +356,8 @@ final class ReactorTests {
                 var level = helper.getLevel();
                 helper.assertTrue(!(level.getBlockEntity(ctrl) instanceof FissionReactorBlockEntity), "the reactor is gone");
                 int corium = 0;
-                for (BlockPos pos : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(0, 0, 0)), helper.absolutePos(new BlockPos(15, 8, 15)))) {
+                // (down below the plot's floor too: the corium pours onto the crater's floor, which a meltdown sinks into the ground)
+                for (BlockPos pos : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(0, -10, 0)), helper.absolutePos(new BlockPos(15, 8, 15)))) {
                     if (level.getBlockState(pos).is(GBNuclear.CORIUM.block().get())) {
                         corium++;
                     }
