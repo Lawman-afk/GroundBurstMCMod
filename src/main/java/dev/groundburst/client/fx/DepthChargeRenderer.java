@@ -42,7 +42,7 @@ public class DepthChargeRenderer extends EntityRenderer<DepthCharge, DepthCharge
         super.extractRenderState(charge, state, partialTicks);
         this.items.updateForNonLiving(state.item, charge.getItem(), ItemDisplayContext.NONE, charge);
         state.lying = charge.lying();
-        state.yaw = state.lying ? charge.getYRot() : (charge.getId() * 47) % 360;
+        state.yaw = state.lying ? charge.axisYaw() : (charge.getId() * 47) % 360;
         state.spin = charge.prevSpin + (charge.spin - charge.prevSpin) * partialTicks;
     }
 

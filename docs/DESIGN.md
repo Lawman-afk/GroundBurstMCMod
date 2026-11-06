@@ -1998,7 +1998,8 @@ which a block cannot), and a way for a blast to go off under water (`content/nav
     0.16 blocks a tick out and 0.02 down (as fast as it rolled), with the way of whatever carries the rack; the rest roll
     down behind it at once, and the trap is back up 10 ticks after the trip, before the next charge reaches it. Next trip
     no sooner than 12 ticks after, with the next charge settled. The charge goes lying on its side across the rack's
-    front as it lay on the rails (its dial to the rack's left; its pitch marks it lying, its yaw its axis) and rolls on
+    front as it lay on the rails (its dial to the rack's left; its axis is the entity's own synced data: 1.21.1's client
+    turns a new projectile's rotation to its motion, so its pitch could not say it) and rolls on
     about its axis as it falls; a thrown or dispensed one tumbles end over end. Every charge is drawn at its item's size,
     as the rack's drums (it had been drawn at three quarters). (At first it left upright and smaller, a jump from the drum
     on the rails, and from where its drum lay: it had to start clear of the rack's own block.)
