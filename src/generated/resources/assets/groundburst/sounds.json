@@ -539,6 +539,66 @@
     ],
     "subtitle": "subtitles.groundburst.detonator.click"
   },
+  "door.blast_door_lock": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundburst:door/blast_door_lock"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.door.blast_door_lock"
+  },
+  "door.blast_door_seat": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundburst:door/blast_door_seat"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.door.blast_door_seat"
+  },
+  "door.blast_door_swing": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundburst:door/blast_door_swing"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.door.blast_door_swing"
+  },
+  "door.blast_door_unlock": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundburst:door/blast_door_unlock"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.door.blast_door_unlock"
+  },
+  "door.bunker_hatch_close": {
+    "sounds": [
+      "groundburst:door/bunker_hatch_close"
+    ],
+    "subtitle": "subtitles.groundburst.door.bunker_hatch_close"
+  },
+  "door.bunker_hatch_open": {
+    "sounds": [
+      "groundburst:door/bunker_hatch_open"
+    ],
+    "subtitle": "subtitles.groundburst.door.bunker_hatch_open"
+  },
+  "door.pressure_door_close": {
+    "sounds": [
+      "groundburst:door/pressure_door_close"
+    ],
+    "subtitle": "subtitles.groundburst.door.pressure_door_close"
+  },
+  "door.pressure_door_open": {
+    "sounds": [
+      "groundburst:door/pressure_door_open"
+    ],
+    "subtitle": "subtitles.groundburst.door.pressure_door_open"
+  },
   "dynamite.light": {
     "sounds": [
       "groundburst:ordnance/dynamite_light"

@@ -94,7 +94,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         pose.translate(0, -0.5, 0);
     }
 
-    /** With a model of its own (a {@link VariantGeoModel}: textures chosen by the block entity). */
+    /** With a model of its own (a {@link VariantGeoModel}: textures, or models, chosen by the block entity). */
     public MachineGeoRenderer(BlockEntityRendererProvider.Context context, com.geckolib.model.GeoModel<T> model, int height, int reach) {
         super(context, model);
         this.height = height;
@@ -210,6 +210,8 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     private static final DataTicket<List<ShownMissile>> MISSILE = DataTicket.create("groundburst_missile", new TypeToken<List<ShownMissile>>() {});
     /** The texture a model is drawn in this frame instead of its own ({@link AnimatedMachine#textureVariant}). */
     static final DataTicket<net.minecraft.resources.Identifier> TEXTURE = DataTicket.create("groundburst_texture", net.minecraft.resources.Identifier.class);
+    /** The model drawn this frame instead of its own, by name ({@link AnimatedMachine#modelVariant}). */
+    static final DataTicket<String> MODEL = DataTicket.create("groundburst_model", String.class);
 
     @Override
     public void addRenderData(T animatable, @Nullable Void relatedObject, BlockEntityRenderState renderState, float partialTick) {
@@ -222,6 +224,10 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             net.minecraft.resources.Identifier texture = machine.textureVariant();
             if (texture != null) {
                 ((GeoRenderState) renderState).addGeckolibData(TEXTURE, texture);
+            }
+            String model = machine.modelVariant();
+            if (model != null) {
+                ((GeoRenderState) renderState).addGeckolibData(MODEL, model);
             }
         }
         if (animatable instanceof MissileCarrier carrier && animatable.getLevel() != null) {

@@ -51,6 +51,14 @@ public interface AnimatedMachine extends GeoBlockEntity {
         return null;
     }
 
+    /**
+     * Another model of the same block to draw instead of its own (null: its own), by name, with its own texture: the
+     * mirrored Blast Door. Only for a renderer made with a {@code VariantGeoModel}.
+     */
+    default @org.jspecify.annotations.Nullable String modelVariant() {
+        return null;
+    }
+
     /** Model bones not to draw right now (e.g. the dies a press is not holding). Read on the client. */
     default java.util.Set<String> hiddenBones() {
         return java.util.Set.of();

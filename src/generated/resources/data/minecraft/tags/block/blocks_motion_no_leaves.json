@@ -203,6 +203,9 @@
     "groundburst:search_radar_wreck",
     "groundburst:missile_wreck",
     "groundburst:large_silo_door",
-    "groundburst:rusted_large_silo_door"
+    "groundburst:rusted_large_silo_door",
+    "groundburst:blast_door",
+    "groundburst:bunker_hatch",
+    "groundburst:pressure_door"
   ]
 }

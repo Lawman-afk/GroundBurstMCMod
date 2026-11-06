@@ -224,8 +224,14 @@ public final class SitePhotographer {
                 origin = origin.above(14);                 // it floats over an island in the End
             }
             BoundingBox box = name.equals("board") ? ConstructionBoard.build(level, origin)
+                    : name.equals("doors") ? BunkerDoorBoard.build(level, origin)
                     : GBStructures.preview(level, name, variant, origin, false, null);
             queue(name, box, top);
+            if (name.equals("doors")) {
+                for (BunkerDoorBoard.CloseUp c : BunkerDoorBoard.closeUps(origin)) {
+                    SHOTS.add(new Shot("site_doors_" + variant + "_" + c.name() + ".png", c.at(), c.yaw(), c.pitch(), origin));
+                }
+            }
         } catch (RuntimeException e) {
             GroundBurst.LOGGER.error("Site shots: could not place {}", name, e);
         } finally {
