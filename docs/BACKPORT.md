@@ -4,7 +4,7 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `2a2706ea` (2026-11-06: the Depth Charge Rack, main's DESIGN.md §14.6, a stern rack
+- **Last brought up to:** `main` at `aa759d21` (2026-11-06: the Depth Charge Rack, main's DESIGN.md §14.6, a stern rack
   that rolls depth charges off into the sea, loaded through its Item Port by hoppers, pipes and Create's funnels; a
   charge rolled off keeps its axis in its own synced data, since 1.21.1's client turns a new projectile's rotation to its
   motion (`Projectile.lerpMotion`); before it, at `e2e3df4f`, the blast effects drawn last under shader packs and with
