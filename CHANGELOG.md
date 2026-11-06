@@ -15,6 +15,11 @@
   they break still comes back full.
 - **A double chest half destroyed:** the half left standing keeps what you put in or took out of it before the damage
   healed, instead of going back to what it held when the blast hit.
+- **Machines always make the right product** when one recipe's ingredients sit inside another's: they take the recipe
+  that uses the most of what they hold (on Minecraft 1.21.1 a Chemical Plant could make RDX crystals from photoresist's
+  ingredients).
+- **Minecraft 1.21.1:** the mod's liquid buckets (napalm, the acids and the rest) pour into its tanks and machines, and a
+  cryo blast freezes the plants on frosted and dead grass instead of knocking them off.
 
 ## 0.9.0 — 2026-11-06
 
