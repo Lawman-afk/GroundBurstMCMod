@@ -60,7 +60,7 @@ code is not ported by hand file by file. `tools/backport/port.py` turns main's s
 
 `tools/backport/compile.ps1` (run with PowerShell 7) compiles and sorts the errors; `errs.py <words>` prints a file's
 errors with their lines. `gradlew runGameTestServer` loads everything on a server and runs **all of main's GameTests**
-(433 at main c7851148, every one: `PortSkips` is empty) beside this branch's own seven (440). Main's are ported like the
+(437 at main d403431a, every one: `PortSkips` is empty) beside this branch's own seven (444). Main's are ported like the
 rest of its code (the gametest package; `port.py`'s rules for 26.x's test helper: `getBlockEntity(pos, Type.class)`,
 `makeMockServerPlayer` as `port/Tests.mockServerPlayer`, a missile's look by number, and a few per-file fixes); how they
 reach the game is this branch's own `gametest/GameTestRegistration` (`manual.txt`): a generator of 1.21.1's test
@@ -91,7 +91,9 @@ it, one open; the log saying whether the blast door opened and laid its leaf's b
 the drives stand two high, the cabinet holds its 27 slots and the table is laid), sets the bunker fittings against a
 wall (wall pipes through an open valve, a fuse box on, a lamp, a duct over a grille, an open locker, a bunk bed, an
 extinguisher; the log saying whether the pipes joined, the bunk stands four blocks, the locker holds 27 with its door
-open and the lamp is lit), screenshots each into
+open and the lamp is lit), sets the yard out on grass (barriers, dragon's teeth and hedgehogs, whose parts turn about
+three axes, the searchlight on, crates, drums; the log saying whether the light stands two high and lit, the crates
+hold 27 and four drums stand in a block), screenshots each into
 `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it
 keeps the game from pausing when its window is behind another).
 
@@ -140,6 +142,11 @@ players); the Steel Locker's is main's, on top of it. The cabinet and the locker
 by a block entity and lays its sleeper at a height of its own, so `port.py` draws it by its blockstate's model, gives it
 no block entity and takes out main's sleep height (on the mattress, a pixel and a half lower than here) and its bed
 rule's blowing up (1.21.1's bed blows up in the Nether its own way).
+
+**Parts turned about three axes** (26.x's `"x"`, `"y"`, `"z"` in an element's turn: the yard's Dragon's Teeth and Czech
+Hedgehog): `port.py` sends such a model to this branch's loader (`port/render/FreeRotationModels`), which bakes the part
+unturned and turns its faces' corners (about the part's origin, then by the block state's turn), their facing and
+normals worked out again (1.21.1's baker turns a part about one axis only).
 
 Still to do:
 

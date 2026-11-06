@@ -419,7 +419,54 @@ public final class PortCheck {
                 GroundBurst.LOGGER.info("Port check: the pipes joined {}, the bunk four blocks {}, the locker's 27 slots and open door {}, the lamp lit {}: {}",
                         pipes, bunk, locker, lit, pipes && bunk && locker && lit ? "OK" : "WRONG");
             });
-            case 1350 -> {
+            // The yard (main's DESIGN.md §22.6) on the grass: barriers, teeth (each face's plates turned about three axes, which
+            // this branch's model loader bakes), hedgehogs (likewise), the searchlight on, crates (one open), the drums.
+            case 1350 -> command(mc, "fill -51 -61 -72 -38 -61 -63 minecraft:grass_block");
+            case 1352 -> onServer(mc, level -> {
+                var facing = net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
+                var north = net.minecraft.core.Direction.NORTH;
+                for (int i = 0; i < 4; i++) {
+                    level.setBlockAndUpdate(new BlockPos(-50 + i, -60, -64), dev.groundburst.content.construction.GBConstruction.JERSEY_BARRIER.block().get()
+                            .defaultBlockState().setValue(facing, north));
+                    level.setBlockAndUpdate(new BlockPos(-50 + i * 2, -60, -67), dev.groundburst.content.construction.GBConstruction.DRAGONS_TEETH.block().get()
+                            .defaultBlockState());
+                }
+                for (int i = 0; i < 2; i++) {
+                    level.setBlockAndUpdate(new BlockPos(-44 + i * 3, -60, -66), dev.groundburst.content.construction.GBConstruction.CZECH_HEDGEHOG.block().get()
+                            .defaultBlockState().setValue(facing, i == 0 ? north : net.minecraft.core.Direction.EAST));
+                }
+                var light = dev.groundburst.content.construction.GBConstruction.SEARCHLIGHT.block().get();
+                BlockPos at = new BlockPos(-39, -60, -69);
+                var ls = light.defaultBlockState().setValue(facing, north).setValue(dev.groundburst.content.construction.SearchlightBlock.ACTIVE, true);
+                level.setBlockAndUpdate(at, ls);
+                light.setPlacedBy(level, at, ls, null, net.minecraft.world.item.ItemStack.EMPTY);
+                for (int i = 0; i < 2; i++) {
+                    level.setBlockAndUpdate(new BlockPos(-50 + i, -60, -70), dev.groundburst.content.construction.GBConstruction.AMMO_CRATES.block().get()
+                            .defaultBlockState().setValue(facing, north).setValue(dev.groundburst.content.construction.AmmoCratesBlock.OPEN, i == 1));
+                }
+                var drums = java.util.List.of(dev.groundburst.content.construction.GBConstruction.OIL_DRUM, dev.groundburst.content.construction.GBConstruction.FUEL_DRUM,
+                        dev.groundburst.content.construction.GBConstruction.RUSTY_DRUM);
+                for (int i = 0; i < drums.size(); i++) {
+                    level.setBlockAndUpdate(new BlockPos(-47 + i, -60, -70), drums.get(i).block().get().defaultBlockState().setValue(facing, north)
+                            .setValue(dev.groundburst.content.construction.DrumBlock.DRUMS, 4 - i));
+                }
+            });
+            case 1356 -> command(mc, "tp @s -44.5 -57.4 -60.5 180 20");
+            case 1420 -> tidy(mc);
+            case 1425 -> shot(mc, "yard");
+            case 1430 -> command(mc, "tp @s -43.0 -58.6 -63.2 160 24");
+            case 1460 -> tidy(mc);
+            case 1465 -> shot(mc, "yard_close");
+            case 1470 -> onServer(mc, level -> {
+                boolean light = level.getBlockState(new BlockPos(-39, -59, -69)).is(dev.groundburst.content.construction.GBConstruction.SEARCHLIGHT.block().get())
+                        && level.getBlockState(new BlockPos(-39, -60, -69)).getLightEmission() == 15;
+                boolean crates = level.getBlockEntity(new BlockPos(-50, -60, -70)) instanceof dev.groundburst.content.construction.AmmoCratesBlockEntity c
+                        && c.getContainerSize() == 27;
+                boolean drums = level.getBlockState(new BlockPos(-47, -60, -70)).getValue(dev.groundburst.content.construction.DrumBlock.DRUMS) == 4;
+                GroundBurst.LOGGER.info("Port check: the searchlight two high and lit {}, the crates' 27 slots {}, four drums {}: {}", light, crates, drums,
+                        light && crates && drums ? "OK" : "WRONG");
+            });
+            case 1480 -> {
                 GroundBurst.LOGGER.info("Port check: done");
                 mc.stop();
             }

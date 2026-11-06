@@ -230,6 +230,43 @@ public final class GBConstruction {
                     .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK).isSuffocating((s, l, at) -> false)
                     .isViewBlocking((s, l, at) -> false));
 
+    // --- the yard (DESIGN.md §22.6) ---------------------------------------------------------------------------------------------
+    /** A concrete road barrier a block long, the New Jersey profile; as hard to break or blast as Reinforced Concrete. */
+    public static final WithItem<DecorBlock> JERSEY_BARRIER = GBBlocks.register("jersey_barrier", "Jersey Barrier", TAB,
+            p -> new DecorBlock(p, List.of(new double[] {0, 0, 2, 16, 1.2, 14}, new double[] {0, 1.2, 3.2, 16, 4.8, 12.8},
+                    new double[] {0, 4.8, 5.4, 16, 13.6, 10.6})),
+            GBConstruction::concreteObstacle);
+    /** A concrete truncated pyramid, set out in rows against tanks; as hard as Reinforced Concrete. */
+    public static final WithItem<DragonsTeethBlock> DRAGONS_TEETH = GBBlocks.register("dragons_teeth", "Dragon's Teeth", TAB,
+            DragonsTeethBlock::new, GBConstruction::concreteObstacle);
+    /** Three steel angle irons crossed at their middles, standing on three of their ends. */
+    public static final WithItem<DecorBlock> CZECH_HEDGEHOG = GBBlocks.register("czech_hedgehog", "Czech Hedgehog", TAB,
+            p -> new DecorBlock(p, List.of(new double[] {2, 0, 2, 14, 16, 14})),
+            p -> metal(p, MapColor.TERRACOTTA_BROWN).strength(6f, 300f).noOcclusion());
+    /** A big searchlight on a stand two blocks high: switched on, it sweeps the sky with its beam. */
+    public static final WithItem<SearchlightBlock> SEARCHLIGHT = GBBlocks.register("searchlight", "Searchlight", TAB,
+            p -> new SearchlightBlock(p, () -> GBConstruction.SEARCHLIGHT_ENTITY.get()),
+            p -> metal(p, MapColor.COLOR_GREEN).strength(3f, 6f).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)
+                    .lightLevel(s -> s.getValue(SearchlightBlock.ACTIVE) ? 15 : 0));
+    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+            net.minecraft.world.level.block.entity.BlockEntityType<SearchlightBlockEntity>> SEARCHLIGHT_ENTITY =
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("searchlight", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
+                    (pos, state) -> new SearchlightBlockEntity(GBConstruction.SEARCHLIGHT_ENTITY.get(), pos, state), SEARCHLIGHT.block().get()).build(null));
+    /** Eight olive ammo boxes on a wooden pallet, holding 27 stacks; a box's lid up while they are open. */
+    public static final WithItem<AmmoCratesBlock> AMMO_CRATES = GBBlocks.register("ammo_crates", "Ammo Crates", TAB,
+            p -> new AmmoCratesBlock(p, () -> GBConstruction.AMMO_CRATES_ENTITY.get()),
+            p -> p.mapColor(MapColor.COLOR_GREEN).strength(2.5f, 3f).sound(SoundType.WOOD).noOcclusion().ignitedByLava());
+    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+            net.minecraft.world.level.block.entity.BlockEntityType<AmmoCratesBlockEntity>> AMMO_CRATES_ENTITY =
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("ammo_crates", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
+                    (pos, state) -> new AmmoCratesBlockEntity(GBConstruction.AMMO_CRATES_ENTITY.get(), pos, state), AMMO_CRATES.block().get()).build(null));
+    /** Steel drums, up to four to a block: olive drab, red, and left to rust. */
+    public static final WithItem<DrumBlock> OIL_DRUM = drum("oil_drum", "Oil Drum", MapColor.COLOR_GREEN);
+    public static final WithItem<DrumBlock> FUEL_DRUM = drum("fuel_drum", "Fuel Drum", MapColor.COLOR_RED);
+    public static final WithItem<DrumBlock> RUSTY_DRUM = drum("rusty_drum", "Rusty Drum", MapColor.TERRACOTTA_ORANGE);
+    /** The drums (each drops one a drum). */
+    public static final List<WithItem<DrumBlock>> DRUMS = List.of(OIL_DRUM, FUEL_DRUM, RUSTY_DRUM);
+
     /** The doors (their loot is the middle's alone). */
     public static final List<WithItem<SiloDoorBlock>> DOORS = List.of(LARGE_SILO_DOOR, RUSTED_LARGE_SILO_DOOR);
 
@@ -239,7 +276,8 @@ public final class GBConstruction {
             RUSTED_CORRUGATED_STEEL_SLAB, STEEL_PANEL, RUSTED_STEEL_PANEL, STEEL_GRATING, STEEL_GRATING_SLAB, I_BEAM, LATTICE_FRAME,
             RADOME_PANEL, RADOME_PANEL_STAIRS, RADOME_PANEL_SLAB, FLOODLIGHT, SANDBAGS, SANDBAG_SLAB, RADIATION_SIGN, HIGH_VOLTAGE_SIGN,
             KEEP_OUT_SIGN, TOXIC_SIGN, SEARCH_RADAR, SEARCH_RADAR_WRECK, MISSILE_WRECK, CONTROL_CONSOLE, COMMAND_DESK, FILING_CABINET,
-            WALL_PIPES, PIPE_VALVE, VENT_GRILLE, VENTILATION_DUCT, BUNKER_LAMP, FUSE_BOX, FIRE_EXTINGUISHER);
+            WALL_PIPES, PIPE_VALVE, VENT_GRILLE, VENTILATION_DUCT, BUNKER_LAMP, FUSE_BOX, FIRE_EXTINGUISHER, JERSEY_BARRIER, DRAGONS_TEETH,
+            CZECH_HEDGEHOG);
     /** The slabs (they drop two when doubled). */
     public static final List<WithItem<SlabBlock>> SLABS = List.of(CORRUGATED_STEEL_SLAB, RUSTED_CORRUGATED_STEEL_SLAB, STEEL_GRATING_SLAB,
             RADOME_PANEL_SLAB, SANDBAG_SLAB);
@@ -262,6 +300,15 @@ public final class GBConstruction {
     private static Properties seeThrough(Properties p) {
         return p.noOcclusion().isValidSpawn(Blocks::never).isRedstoneConductor((s, l, at) -> false).isSuffocating((s, l, at) -> false)
                 .isViewBlocking((s, l, at) -> false);
+    }
+
+    /** Cast concrete as hard to break, and to blast, as Reinforced Concrete. */
+    private static Properties concreteObstacle(Properties p) {
+        return p.mapColor(MapColor.STONE).strength(15f, 1200f).requiresCorrectToolForDrops().sound(SoundType.STONE).noOcclusion();
+    }
+
+    private static WithItem<DrumBlock> drum(String name, String english, MapColor colour) {
+        return GBBlocks.register(name, english, TAB, DrumBlock::new, p -> metal(p, colour).strength(2f, 6f).noOcclusion());
     }
 
     private static Properties radome(Properties p) {

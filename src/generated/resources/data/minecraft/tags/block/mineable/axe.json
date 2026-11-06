@@ -1,6 +1,7 @@
 {
   "values": [
     "groundburst:situation_map_table",
+    "groundburst:ammo_crates",
     "groundburst:charred_log",
     "groundburst:charred_wood",
     "groundburst:charred_planks"

@@ -51,6 +51,81 @@ final class ConstructionTests {
         GBGameTests.test("fire_extinguisher_puts_out_fire", GBGameTests.FLOOR_16, 20, ConstructionTests::extinguisherPutsOut);
         GBGameTests.test("steel_locker_stands_two_high_and_holds_27", GBGameTests.FLOOR_16, 40, ConstructionTests::lockerHolds);
         GBGameTests.test("bunk_bed_sleeps_two_and_breaks_whole", GBGameTests.FLOOR_16, 40, ConstructionTests::bunkSleepsTwo);
+        GBGameTests.test("concrete_obstacles_stand_up_as_reinforced_concrete", GBGameTests.FLOOR_16, 20, ConstructionTests::obstaclesHard);
+        GBGameTests.test("drums_stand_four_to_a_block_and_drop_each", GBGameTests.FLOOR_16, 40, ConstructionTests::drumsStack);
+        GBGameTests.test("ammo_crates_hold_27_stacks", GBGameTests.FLOOR_16, 20, ConstructionTests::cratesHold);
+        GBGameTests.test("searchlight_switches_on_and_sweeps", GBGameTests.FLOOR_16, 80, ConstructionTests::searchlightSweeps);
+    }
+
+    // --- the yard ---------------------------------------------------------------------------------------------------------------
+    private static void obstaclesHard(GameTestHelper helper) {
+        float concrete = dev.groundburst.content.launch.GBLaunch.REINFORCED_CONCRETE.block().get().getExplosionResistance();
+        helper.assertTrue(GBConstruction.JERSEY_BARRIER.block().get().getExplosionResistance() == concrete
+                && GBConstruction.DRAGONS_TEETH.block().get().getExplosionResistance() == concrete, "barriers and teeth blast as reinforced concrete");
+        helper.assertTrue(GBConstruction.CZECH_HEDGEHOG.block().get().getExplosionResistance() >= 300, "a hedgehog's steel is hard to blast");
+        helper.succeed();
+    }
+
+    private static void drumsStack(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = new BlockPos(8, 1, 8);
+        var drum = GBConstruction.OIL_DRUM.block().get();
+        helper.setBlock(at, drum.defaultBlockState());
+        var player = dev.groundburst.port.Tests.mockServerPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(GBConstruction.OIL_DRUM.item().get(), 8));
+        for (int i = 0; i < 4; i++) {
+            helper.useBlock(at, player);
+        }
+        BlockPos abs = helper.absolutePos(at);
+        helper.assertTrue(level.getBlockState(abs).getValue(dev.groundburst.content.construction.DrumBlock.DRUMS) == 4, "four drums, no more");
+        helper.assertTrue(level.getBlockState(abs.north()).is(drum), "a fifth goes beside them, as a sea pickle does");
+        helper.assertTrue(player.getMainHandItem().getCount() == 4, "four put down (" + player.getMainHandItem().getCount() + " left)");
+        level.destroyBlock(abs, true);
+        helper.runAfterDelay(4, () -> {
+            long items = level.getEntitiesOfClass(ItemEntity.class, new AABB(abs).inflate(3)).stream()
+                    .filter(e -> e.getItem().is(GBConstruction.OIL_DRUM.item())).mapToInt(e -> e.getItem().getCount()).sum();
+            helper.assertTrue(items == 4, "all four back: " + items);
+            helper.succeed();
+        });
+    }
+
+    private static void cratesHold(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = new BlockPos(8, 1, 8);
+        helper.setBlock(at, GBConstruction.AMMO_CRATES.block().get().defaultBlockState());
+        BlockPos abs = helper.absolutePos(at);
+        var crates = level.getBlockEntity(abs) instanceof dev.groundburst.content.construction.AmmoCratesBlockEntity c ? c : null;
+        helper.assertTrue(crates != null && crates.getContainerSize() == 27, "27 slots");
+        crates.setItem(0, new ItemStack(net.minecraft.world.item.Items.ARROW, 64));
+        helper.assertTrue(level.getBlockState(abs).getAnalogOutputSignal(level, abs) > 0, "a comparator reads them");
+        helper.succeed();
+    }
+
+    private static void searchlightSweeps(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = new BlockPos(8, 1, 8);
+        var light = GBConstruction.SEARCHLIGHT.block().get();
+        BlockState state = light.defaultBlockState();
+        helper.setBlock(at, state);
+        BlockPos abs = helper.absolutePos(at);
+        light.setPlacedBy(level, abs, state, null, ItemStack.EMPTY);
+        helper.assertTrue(level.getBlockState(abs.above()).is(light), "two blocks high");
+        helper.useBlock(at);
+        helper.assertTrue(level.getBlockState(abs).getValue(dev.groundburst.content.construction.SearchlightBlock.ACTIVE)
+                && level.getBlockState(abs.above()).getValue(dev.groundburst.content.construction.SearchlightBlock.ACTIVE), "a click switches it on");
+        helper.assertTrue(level.getBlockState(abs).getLightEmission() == 15, "and it shines");
+        var entity = (dev.groundburst.content.construction.SearchlightBlockEntity) level.getBlockEntity(abs);
+        var first = entity.forward(0);
+        helper.runAfterDelay(60, () -> {
+            var later = entity.forward(0);
+            helper.assertTrue(first.distanceTo(later) > 0.05, "it sweeps the sky: " + first + " then " + later);
+            helper.assertTrue(later.y > 0.2, "pointing up into it");
+            level.destroyBlock(abs.above(), false);
+            helper.runAfterDelay(2, () -> {
+                helper.assertTrue(level.getBlockState(abs).isAir(), "the lower half goes with the upper");
+                helper.succeed();
+            });
+        });
     }
 
     // --- the bunker fittings ----------------------------------------------------------------------------------------------------

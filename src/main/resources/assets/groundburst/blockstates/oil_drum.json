@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "drums=1,facing=north": {
+      "model": "groundburst:block/oil_drum_1"
+    },
+    "drums=2,facing=north": {
+      "model": "groundburst:block/oil_drum_2"
+    },
+    "drums=3,facing=north": {
+      "model": "groundburst:block/oil_drum_3"
+    },
+    "drums=4,facing=north": {
+      "model": "groundburst:block/oil_drum_4"
+    },
+    "drums=1,facing=east": {
+      "model": "groundburst:block/oil_drum_1",
+      "y": 90
+    },
+    "drums=2,facing=east": {
+      "model": "groundburst:block/oil_drum_2",
+      "y": 90
+    },
+    "drums=3,facing=east": {
+      "model": "groundburst:block/oil_drum_3",
+      "y": 90
+    },
+    "drums=4,facing=east": {
+      "model": "groundburst:block/oil_drum_4",
+      "y": 90
+    },
+    "drums=1,facing=south": {
+      "model": "groundburst:block/oil_drum_1",
+      "y": 180
+    },
+    "drums=2,facing=south": {
+      "model": "groundburst:block/oil_drum_2",
+      "y": 180
+    },
+    "drums=3,facing=south": {
+      "model": "groundburst:block/oil_drum_3",
+      "y": 180
+    },
+    "drums=4,facing=south": {
+      "model": "groundburst:block/oil_drum_4",
+      "y": 180
+    },
+    "drums=1,facing=west": {
+      "model": "groundburst:block/oil_drum_1",
+      "y": 270
+    },
+    "drums=2,facing=west": {
+      "model": "groundburst:block/oil_drum_2",
+      "y": 270
+    },
+    "drums=3,facing=west": {
+      "model": "groundburst:block/oil_drum_3",
+      "y": 270
+    },
+    "drums=4,facing=west": {
+      "model": "groundburst:block/oil_drum_4",
+      "y": 270
+    }
+  }
+}

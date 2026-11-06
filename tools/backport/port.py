@@ -1240,9 +1240,9 @@ PARENT_LAYERS = {"minecraft:block/grass_block": "minecraft:cutout_mipped", "mine
 
 
 def port_model(data: bytes) -> bytes:
-    """A block or item model whose parts turn by angles 1.21.1 will not read (it takes multiples of 22.5 up to 45): its
-    parts moved where only this branch's loader reads them (dev.groundburst.port.render.FreeRotationModels). One on a
-    see-through vanilla parent (grass, leaves, a cross) names its layer (PARENT_LAYERS)."""
+    """A block or item model whose parts turn by angles 1.21.1 will not read (it takes multiples of 22.5 up to 45, about
+    one axis): its parts moved where only this branch's loader reads them (dev.groundburst.port.render.FreeRotationModels).
+    One on a see-through vanilla parent (grass, leaves, a cross) names its layer (PARENT_LAYERS)."""
     m = json.loads(data)
     if m.get("parent") in PARENT_LAYERS and "render_type" not in m:
         m["render_type"] = PARENT_LAYERS[m["parent"]]
@@ -1254,7 +1254,11 @@ def port_model(data: bytes) -> bytes:
     elements = m.get("elements")
     if not isinstance(elements, list) or "loader" in m:
         return data
-    if all(float(e.get("rotation", {}).get("angle", 0)) in VANILLA_ANGLES for e in elements):
+    def vanilla(e: dict) -> bool:
+        r = e.get("rotation")              # (26.x's turn about three axes, "x", "y", "z", is this branch's loader's too)
+        return not r or ("axis" in r and float(r.get("angle", 0)) in VANILLA_ANGLES)
+
+    if all(vanilla(e) for e in elements):
         return data
     m["loader"] = "groundburst:free_rotation"
     m["groundburst:elements"] = m.pop("elements")

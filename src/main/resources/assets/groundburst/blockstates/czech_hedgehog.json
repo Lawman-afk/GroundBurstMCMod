@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "groundburst:block/czech_hedgehog"
+    },
+    "facing=east": {
+      "model": "groundburst:block/czech_hedgehog",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "groundburst:block/czech_hedgehog",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "groundburst:block/czech_hedgehog",
+      "y": 270
+    }
+  }
+}
