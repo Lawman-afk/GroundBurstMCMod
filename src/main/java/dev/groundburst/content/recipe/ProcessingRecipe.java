@@ -40,6 +40,30 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
         this(kind, inputs, Optional.empty(), List.of(), outputs, List.of(), time, energyPerTick);
     }
 
+    /**
+     * The recipe a machine of {@code kind} makes from {@code input}: of those that match, the one that takes the most (its
+     * items, fluids and catalyst together), so one recipe inside another (RDX's nitric acid and coal inside photoresist's)
+     * never takes its place; then the first by name. The same whatever order the game lists the recipes in (it had been
+     * the game's first match, which the 1.21.1 build lists otherwise: it made RDX of photoresist's makings).
+     */
+    public static Optional<net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe>> pick(net.minecraft.server.level.ServerLevel level,
+            ProcessingKind kind, MachineRecipeInput input) {
+        net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe> best = null;
+        int most = -1;
+        for (net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe> holder : level.recipeAccess().recipeMap().byType(GBRecipes.type(kind))) {
+            ProcessingRecipe r = holder.value();
+            if (!r.matches(input, level)) {
+                continue;
+            }
+            int takes = r.inputs().size() + r.fluids().size() + (r.catalyst().isPresent() ? 1 : 0);
+            if (takes > most || takes == most && String.valueOf(holder.id()).compareTo(String.valueOf(best.id())) < 0) {
+                best = holder;
+                most = takes;
+            }
+        }
+        return Optional.ofNullable(best);
+    }
+
     public ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, Optional<Ingredient> catalyst, List<Output> outputs,
             int time, int energyPerTick) {
         this(kind, inputs, catalyst, List.of(), outputs, List.of(), time, energyPerTick);
