@@ -1975,11 +1975,50 @@ which a block cannot), and a way for a blast to go off under water (`content/nav
   taken up: its item, the sinker and chain with it, its depth kept. A dispenser facing into water lays a mine there (a
   minelayer); facing anything else it drops it as an item.
 - **Depth Charge** (`depth_charge`): the "ashcan" of the Second World War, a drum of explosive with a hydrostatic pistol
-  that fires at a set depth. Thrown (0.6 blocks a tick, a second's cooldown) or rolled out of a dispenser (a ship's
-  stern rack: a short shove out of its front), it sinks at 0.2 blocks a tick, tumbling, and goes off at its depth under
+  that fires at a set depth. Thrown (0.6 blocks a tick, a second's cooldown), rolled out of a dispenser (a short shove
+  out of its front) or off a Depth Charge Rack, it sinks at 0.2 blocks a tick, tumbling, and goes off at its depth under
   the surface where it went in, or on the bottom if that comes first. Depth on the item (sneak and use in the air): 3,
   5, 8, 12, 16 or 24 blocks. Out of water its pistol never fires: on dry ground it comes to rest as an item to pick up.
   Caught in another blast's lethal reach under water, it goes off too.
+- **Depth Charge Rack** (2026-11-06; the user: "instead of having the dropped out of a dropper, can we add a small
+  multiblock that rolls them off? And can be piped into it with charges please? This should also work with create
+  stuff."): the stern rack of the Second World War's destroyers and escorts (`DepthChargeRackBlockEntity`). A multiblock
+  one block wide and four long: the Depth Charge Rack (its controller, the release end with the trap, placed facing
+  where the player looks: out over the water), two Depth Charge Rails behind it and an Item Port at the top end; a
+  creative Structure Spawner builds it. It holds six charges, one to each place on the rails (its six slots, slot 0
+  against the trap), and takes nothing else.
+  - **Loading**: by hand in its screen, or by anything that puts items into its Item Port: a hopper, item pipes, other
+    mods' pipes, and on 1.21.1 Create's funnels, chutes and belts. A charge with an empty place in front of it rolls down
+    a place in 8 ticks (all those behind a gap together); the client rolls their drums down the rails on their hoops.
+  - **Releasing**: a redstone signal on any of its blocks. A pulse rolls the front charge off; a held signal rolls one off
+    each interval (1.5 s by default; 0.8, 1, 2 or 3 s, trip to trip: 0.8 is as fast as the rack cycles), a pattern, until
+    it stops or the rack is empty. Its screen's buttons release one, or all it holds as a pattern (the only way aboard a
+    Create contraption, where no redstone reaches it). Tripped, the trap drops (2 ticks) and the release lever is thrown;
+    the front charge rolls forward over the trap to the edge (4 ticks, 10 px along the rails) and leaves the front there,
+    0.16 blocks a tick out and 0.02 down (as fast as it rolled), with the way of whatever carries the rack; the rest roll
+    down behind it at once, and the trap is back up 10 ticks after the trip, before the next charge reaches it. Next trip
+    no sooner than 12 ticks after, with the next charge settled. The charge goes lying on its side across the rack's
+    front as it lay on the rails (its dial to the rack's left; its axis is the entity's own synced data: 1.21.1's client
+    turns a new projectile's rotation to its motion, so its pitch could not say it) and rolls on
+    about its axis as it falls; a thrown or dispensed one tumbles end over end. Every charge is drawn at its item's size,
+    as the rack's drums (it had been drawn at three quarters). (At first it left upright and smaller, a jump from the drum
+    on the rails, and from where its drum lay: it had to start clear of the rack's own block.)
+  - **Depth**: each charge its own, or every charge it rolls off set to 3, 5, 8, 12, 16 or 24 blocks (the screen).
+    A comparator reads how many it holds (15 full). Its screen shows the charges, the depth, the interval and its state
+    (READY, RELEASING, Load depth charges, Structure incomplete).
+  - **Create** (1.21.1): it works aboard a Create Aeronautics ship (redstone and all, its charges going off the stern
+    with the ship's way) and, carried by a contraption, from its screen; funnels load it as any machine.
+  - **Model** (`tools/assets/depth_charge_rack.py`, GeckoLib): two steel rails on short legs sloping 3 degrees down to the
+    front, the charges lying across them on their rolling hoops (each the depth charge's own drum), guard rails along
+    both sides over their ends, the hinged trap at the front on its shaft, the hand release lever on its quadrant on the
+    left, the loading end over the Item Port's housing. Navy haze grey, the rails' running tops worn bright, the trap and
+    the lever red. Bones: the incline, a slot per place (an empty place's charge hidden, a charge rolled down along the
+    rails and turned on its hoops), the trap, the lever. The Rail block and the controller have their own block models
+    for the unformed structure.
+  - **Sound** `naval.rack_release`: the trap's latch, the drum rolling off the rails and its thud going over, cut from the
+    metal parts, hoist chain and door slam recordings already credited.
+  - **Recipes**: Depth Charge Rack (3 steel plates, 2 steel rods, a lever, redstone); Depth Charge Rail x2 (4 steel rods,
+    2 steel plates). Field Manual: the sea mines entry, with its structure and the releasing.
 - **Blasts under water** (the `naval` terrain table): the sea is not blown away. Rays pass through water for little
   energy (0.08 a block: it carries a shock well) and leave it as it is; what they break below the surface fills with
   water (the sea rushes in), what they break above it is left open. Exposure lines already passed through water. A naval
@@ -5227,6 +5266,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-06 | **Depth Charge Rack** (§14.6; the user: "instead of having the dropped out of a dropper, can we add a small multiblock that rolls them off? And can be piped into it with charges please? This should also work with create stuff."): a stern rack one block wide and four long (its controller the release end, two Depth Charge Rails, an Item Port at the top end), six charges rolling down its rails to a hinged trap; loaded through the Item Port (hoppers, pipes, Create's funnels), released by redstone (a pulse one, a held signal a pattern at its interval) or its screen (the way aboard a contraption), every charge set to one depth or left at its own, a comparator reading how full it is. A machine like the others, so the 1.21.1 Create compat carries it on contraptions and ships. Two GameTests that had passed by luck of the grid fixed with it: the storm test's interceptor battery engages nothing (once its EMP wore off it shot down a neighbouring test's missile), and a silo's missile flies at the bomb scale its launch was ordered at, not the one a test started since has set. |
 | 2026-11-06 | **Effects drawn last under shader packs and with Distant Horizons** (a player's comment the user passed on: under Bliss "mushroom clouds appear to flicker much more frequently than without shading, while also drastically changing color", and Distant Horizons' far water drawn through the cloud; then the user: more tests with other packs): §12.3. Bliss reproduced it (the cloud a hole of sky colour, the smoke black); its programs fade half-clear particles out by 100 blocks, light entities in a pass of their own and scale glows by its auto-exposure, so no pack program suits the effects. Under a pack they are now drawn after the level, over the pack's finished picture, by their own pipelines against the depth the pack left (`client/fx/DrawnLast`), and with Distant Horizons too (its fade laid its far sea over the cloud's foot). Checked under seven packs (Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas, MakeUp Ultra Fast) and with Distant Horizons, without a pack and under Bliss, on 26.3 and 1.21.1. The 0.8.1 way stays as a client option ("Effects with shader packs: Lit by the pack"). Tried first and dropped: the fire and clouds on the pack's particle program (Bliss's fade lost the cloud whole). |
 | 2026-11-06 | **Sea mines and depth charges** (§14.6; the user: "Let's do the naval mines and depth charges please. for the 2 main versions", and "the classic sea mines with the chains that stick them to the bottom"; paused for the 0.8.1 release, then taken up again): entities, not blocks (a mine rides a current, swings on its chain and floats free); a moored and a drifting mine (one model: the moored one's item is the mine on its sinker), a depth charge on a hydrostatic pistol; the naval terrain table (set off in water, a blast's rays pass through the sea as through air and what it breaks under the surface fills with water; set off out of water, an ordinary blast of its size); every blast now breaks the boats and minecarts it hurts; `ShockReceiver` (a blast sets off the mines and charges close by and parts mines' chains further off); the water column (`WaterColumn`) and the naval sound set, made from recordings already credited. |
 | 2026-11-05 | Version **0.8.1** for Minecraft 26.3 and 1.21.1 (the user: a stable release of the two main versions; 26.1.2 stays at 0.8.0, the user's wish earlier the same day): the blast effects under shader packs (§12.3) and healing's cables, pipes and other mods' blocks (§21.9); the changelog, README and the CurseForge description (shader packs, Iris among the optional mods, healed machines, cables and pipes). |

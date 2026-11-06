@@ -149,6 +149,9 @@ public final class GBSounds {
             register("detonator.click", "Detonator clicks", List.of("ordnance/detonator_click"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> WIRE_SNIP =
             register("wire.snip", "Wire cut", List.of("ordnance/wire_snip"), false, 12);
+    /** The Depth Charge Rack's trap letting a charge go: its clack, the drum rumbling off over the edge (DESIGN.md §14.6). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> RACK_RELEASE =
+            register("naval.rack_release", "Depth charge rolls off", List.of("naval/rack_release"), false, 24);
     public static final DeferredHolder<SoundEvent, SoundEvent> MINE_CLICK =
             register("mine.click", "Mine clicks", List.of("ordnance/mine_click"), false, 12);
     public static final DeferredHolder<SoundEvent, SoundEvent> MINE_POP =

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "groundburst:block/depth_charge_rail_top",
+    "side": "groundburst:block/depth_charge_rail_side"
+  }
+}

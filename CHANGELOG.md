@@ -14,6 +14,12 @@
   punch it while safe to take it up. A dispenser facing into water lays its mines there.
 - **Depth Charge**: throw it, or roll it out of a dispenser. In water it sinks and fires at its depth (3 to 24 blocks:
   sneak and use it to set the depth), or on the bottom if that comes first. Out of water it never fires.
+- **Depth Charge Rack**: a ship's stern rack that rolls depth charges off into the sea. Build it one block wide and four
+  long: the Depth Charge Rack at the end over the water, two Depth Charge Rails behind it and an Item Port at the top
+  end. Load up to six charges by hand, or by hopper, pipe or Create's funnels into the Item Port, and they roll down the
+  rails to the trap. A redstone pulse rolls one off; a held signal rolls one off every 1.5 seconds (0.8 to 3, set in its
+  screen) until it is empty. Its screen releases one or all of them and can set every charge to one depth. A comparator
+  reads how many it holds. On 1.21.1 it works aboard Create ships and contraptions.
 - **Blasts under water** no longer blow holes in the sea: the water carries the shock, deadly to anything in it, and
   throws up a tall column of spray that falls back as rain and mist; what the blast breaks under water fills with
   water. Their own sounds: a deep thud, the column's roar and its water falling back.

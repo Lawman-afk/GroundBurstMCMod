@@ -29,6 +29,27 @@ CUTS = {
 }
 
 
+#: The Depth Charge Rack's release (rack_release): a small metal part dropping into place (the trap's latch), a trolley's
+#: wheels rattling along its track (the drum rolling down the rails), a heavy steel door's thud (the drum over the end).
+RACK = {
+    "latch": ("metal_parts", 6.45, 6.9, None, {"hp": 300}),
+    "roll": ("hoist_chains", 3.2, 4.7, None, {"lp": 3200}),
+    "thud": ("door_slam", 0.25, 1.6, None, {"lp": 1600}),
+}
+
+
+def rack_release() -> np.ndarray:
+    """The Depth Charge Rack letting a charge go (DESIGN.md §14.6): the trap's latch clacks, the drum rumbles off down the
+    rails on its hoops (the trolley slowed: a heavier thing on heavier wheels) and thumps over the end. The splash is the
+    charge's own, as it meets the water."""
+    total = 1.8
+    latch = R.match(R.take(RACK, "latch", aligned=True), -22)
+    roll = R.match(shaped(R.take(RACK, "roll", speed=0.72), [(0.0, 0.0), (0.08, 1.0), (0.65, 0.85), (1.0, 0.0)]), -27)
+    over = R.match(R.take(RACK, "thud", speed=0.82, aligned=True), -21)
+    x = S.mix((S.place(latch, 0.0, total), 1.0), (S.place(roll, 0.06, total), 1.0), (S.place(over, 0.7, total), 1.0))
+    return R.finish(x, -3.0, tail=0.3)
+
+
 def thud(speed: float, lp: float) -> np.ndarray:
     """The charge itself heard through the water: the TNT blast low-passed and slowed, a blast wave's pulse under it."""
     x = S.lowpass(R.take(CUTS, "tnt", speed=speed, aligned=True), lp, 4)
@@ -90,6 +111,6 @@ if __name__ == "__main__":
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from gb import paths  # noqa: E402
-    for rel, x in naval().items():
+    for rel, x in {**naval(), "naval/rack_release": rack_release()}.items():
         p = S.save_ogg(x, paths.SOUNDS / f"{rel}.ogg")
         print(f"{rel}: {len(x) / S.SR:.1f} s, peak {20 * np.log10(np.max(np.abs(x)) + 1e-12):.1f} dB, rms {R.rms_db(x):.1f} dB")

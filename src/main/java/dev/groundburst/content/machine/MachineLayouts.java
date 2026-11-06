@@ -150,6 +150,15 @@ public final class MachineLayouts {
             new MachineLayout.Rect(106, 18, 92, 46), 8, 6, List.of(),
             List.of(new MachineLayout.Control("pattern", new MachineLayout.Rect(106, 68, 40, 18), -1, 0, 0, "groundburst.gui.vls_pattern"), new MachineLayout.Control("closer", new MachineLayout.Rect(150, 68, 22, 18), -1, 0, 2, "groundburst.gui.vls_closer"), new MachineLayout.Control("wider", new MachineLayout.Rect(176, 68, 22, 18), -1, 0, 1, "groundburst.gui.vls_wider")), 512);
 
+    public static final MachineLayout DEPTH_CHARGE_RACK = new MachineLayout(
+            GroundBurst.id("textures/gui/machine/depth_charge_rack.png"), 176, 166, List.of(new MachineLayout.Pos(8, 20), new MachineLayout.Pos(26, 20), new MachineLayout.Pos(44, 20), new MachineLayout.Pos(62, 20), new MachineLayout.Pos(80, 20), new MachineLayout.Pos(98, 20)), 8, 84,
+            new MachineLayout.Rect(0, 0, 0, 0), 180, 0,
+            null, 196, 0,
+            null, 196, 20,
+            new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(0, 0, 0, 0), 180, 56,
+            new MachineLayout.Rect(8, 42, 114, 36), 8, 6, List.of(),
+            List.of(new MachineLayout.Control("release", new MachineLayout.Rect(126, 19, 42, 18), -1, 0, 0, "groundburst.gui.rack_release"), new MachineLayout.Control("salvo", new MachineLayout.Rect(126, 40, 42, 18), -1, 0, 1, "groundburst.gui.rack_pattern"), new MachineLayout.Control("depth", new MachineLayout.Rect(126, 61, 20, 18), -1, 0, 2, "groundburst.gui.rack_depth"), new MachineLayout.Control("interval", new MachineLayout.Rect(148, 61, 20, 18), -1, 0, 3, "groundburst.gui.rack_interval")), 256);
+
     public static final MachineLayout SUPERWEAPON = new MachineLayout(
             GroundBurst.id("textures/gui/machine/superweapon.png"), 176, 166, List.of(new MachineLayout.Pos(34, 37)), 8, 84,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,

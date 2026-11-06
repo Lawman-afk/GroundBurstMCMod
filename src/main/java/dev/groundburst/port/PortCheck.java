@@ -6,6 +6,7 @@ import java.util.List;
 import dev.groundburst.GroundBurst;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
@@ -72,6 +73,14 @@ public final class PortCheck {
 
     private static void shot(Minecraft mc, String name) {
         Screenshot.grab(mc.gameDirectory, "port_" + name + ".png", mc.getMainRenderTarget(), message -> GroundBurst.LOGGER.info("Port check: {}", message.getString()));
+    }
+
+    /** Runs {@code action} on the server's thread, in the overworld. */
+    private static void onServer(Minecraft mc, java.util.function.Consumer<net.minecraft.server.level.ServerLevel> action) {
+        var server = mc.getSingleplayerServer();
+        if (server != null) {
+            server.execute(() -> action.accept(server.overworld()));
+        }
     }
 
     /** Clears the chat and the toasts a moment before a picture. */
@@ -184,7 +193,63 @@ public final class PortCheck {
             case 708 -> tidy(mc);
             case 710 -> shot(mc, "naval_column");
             case 735 -> shot(mc, "naval_column_late");
-            case 760 -> {
+            // The Depth Charge Rack (main's DESIGN.md §14.6) on a quay two blocks out of the same sea, facing north: four
+            // charges put on it, two more from a hopper over its Item Port; then all of them as a pattern, set to 8 blocks.
+            case 740 -> command(mc, "fill 42 -60 12 44 -46 18 minecraft:stone_bricks");
+            case 742 -> onServer(mc, level -> {
+                BlockPos at = new BlockPos(43, -45, 12);
+                level.setBlockAndUpdate(at, dev.groundburst.content.naval.GBNaval.RACK.block().get().defaultBlockState()
+                        .setValue(dev.groundburst.content.machine.MachineBlock.FACING, net.minecraft.core.Direction.NORTH));
+                var def = dev.groundburst.content.naval.GBNaval.RACK_STRUCTURE;
+                for (var cell : def.cells(at, net.minecraft.core.Direction.NORTH)) {
+                    if (cell.key() != dev.groundburst.content.multiblock.MultiblockDefinition.CONTROLLER) {
+                        level.setBlockAndUpdate(cell.pos(), def.legend().get(cell.key()).preview().get());
+                    }
+                }
+                if (level.getBlockEntity(at) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity rack) {
+                    rack.revalidate();
+                    for (int i = 0; i < 4; i++) {
+                        rack.inventory().setItem(i, new net.minecraft.world.item.ItemStack(dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE.get()));
+                    }
+                    for (int i = 0; i < 3; i++) {
+                        rack.handleButton(2);                                        // its own depth, then 3, 5, 8
+                    }
+                }
+                BlockPos hopper = new BlockPos(43, -44, 15);
+                level.setBlockAndUpdate(hopper, net.minecraft.world.level.block.Blocks.HOPPER.defaultBlockState()
+                        .setValue(net.minecraft.world.level.block.HopperBlock.FACING, net.minecraft.core.Direction.DOWN));
+                if (level.getBlockEntity(hopper) instanceof net.minecraft.world.level.block.entity.HopperBlockEntity h) {
+                    h.setItem(0, new net.minecraft.world.item.ItemStack(dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE.get(), 2));
+                }
+            });
+            case 744 -> command(mc, "fill 40 -47 13 40 -45 13 minecraft:stone");      // a post on the sea's wall to look from
+            case 746 -> command(mc, "tp @s 40.5 -44 13.5 -90 30");                   // on it, side on to the rack
+            case 790 -> onServer(mc, level -> {
+                var rack = level.getBlockEntity(new BlockPos(43, -45, 12)) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity r ? r : null;
+                GroundBurst.LOGGER.info("Port check: the rack formed {}, {} charges on it (4 put on, 2 from the hopper over its Item Port), depth {}: {}",
+                        rack != null && rack.isFormed(), rack == null ? "-" : rack.loaded(), rack == null ? "-" : rack.depthSetting(),
+                        rack != null && rack.isFormed() && rack.loaded() == 6 && rack.depthSetting() == 8 ? "OK" : "WRONG");
+            });
+            case 795 -> tidy(mc);
+            case 800 -> shot(mc, "rack");
+            case 805 -> onServer(mc, level -> {
+                if (level.getBlockEntity(new BlockPos(43, -45, 12)) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity rack) {
+                    rack.releaseAll();
+                }
+            });
+            case 809 -> shot(mc, "rack_trip");
+            case 812 -> shot(mc, "rack_edge");
+            case 815 -> shot(mc, "rack_off");
+            case 822 -> shot(mc, "rack_down");
+            case 845 -> shot(mc, "rack_second");
+            case 900 -> onServer(mc, level -> {
+                var rack = level.getBlockEntity(new BlockPos(43, -45, 12)) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity r ? r : null;
+                int charges = level.getEntitiesOfClass(dev.groundburst.content.naval.DepthCharge.class, new net.minecraft.world.phys.AABB(30, -64, -10, 60, -40, 30)).size();
+                GroundBurst.LOGGER.info("Port check: the rack's pattern: {} left on it, {} charges in the sea: {}", rack == null ? "-" : rack.loaded(),
+                        charges, rack != null && rack.loaded() <= 3 && rack.loaded() >= 1 ? "OK" : "WRONG");
+            });
+            case 940 -> shot(mc, "rack_column");
+            case 960 -> {
                 GroundBurst.LOGGER.info("Port check: done");
                 mc.stop();
             }

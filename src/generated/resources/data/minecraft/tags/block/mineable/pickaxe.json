@@ -119,6 +119,8 @@
     "groundburst:strike_cell",
     "groundburst:missile_canister",
     "groundburst:launch_box",
+    "groundburst:depth_charge_rack",
+    "groundburst:depth_charge_rail",
     "groundburst:light_missile_assembler",
     "groundburst:medium_missile_assembler",
     "groundburst:heavy_missile_assembler",

@@ -4,7 +4,10 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `e2e3df4f` (2026-11-06: the blast effects drawn last under shader packs and with
+- **Last brought up to:** `main` at `2a2706ea` (2026-11-06: the Depth Charge Rack, main's DESIGN.md §14.6, a stern rack
+  that rolls depth charges off into the sea, loaded through its Item Port by hoppers, pipes and Create's funnels; a
+  charge rolled off keeps its axis in its own synced data, since 1.21.1's client turns a new projectile's rotation to its
+  motion (`Projectile.lerpMotion`); before it, at `e2e3df4f`, the blast effects drawn last under shader packs and with
   Distant Horizons, main's DESIGN.md §12.3, here by this branch's own `client/fx/DrawnLast`, below; before them, at
   `d4df3de0`, sea mines, moored on their chains and adrift, and depth
   charges, main's DESIGN.md §14.6, with blasts under water that keep the sea; the port tool taught that 1.21.1 tells an
@@ -59,7 +62,8 @@ errors with their lines. `gradlew runGameTestServer` loads everything on a serve
 Wrench splits and joins pipes and cables; healing puts a blast's damage back block for block, a chest with its diamonds); `gradlew runPortCheck` opens a world, sets the mod's blocks out (a Warning
 Beacon lit by redstone, buckets in the hotbar), opens the Field Manual, sets a blast off, brings a particle beam down and
 looks into its pit, lays sea mines in a walled sea (seen from under the water and from above) and sets a depth charge
-off under them (its column), screenshots each into `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it
+off under them (its column), builds a Depth Charge Rack on a quay in that sea (four charges put on, two from a hopper over
+its Item Port, the log saying how many it holds) and rolls them all off as a pattern, screenshots each into `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it
 keeps the game from pausing when its window is behind another).
 
 ## Where it stands (2026-11-03)
@@ -176,8 +180,11 @@ nothing touches either mod's classes unless it is installed.
   deep freeze rimes and snows on a stone ship; a small singularity draws a floating ship in; a nuclear blast eighty
   blocks off chars a wooden ship, sets it alight and throws it, no server tick stalling (the emptied ship before it,
   the crater's lake). Then `HealCheck`: a creative motor turns a row of shafts, a weapon takes three out of the middle
-  where healing is on (the far end stops), and healing puts them back turning at the speed they had. Pictures:
-  run/screenshots/create_*.png. 51 of 51.
+  where healing is on (the far end stops), and healing puts them back turning at the speed they had. Then `RackCheck`:
+  a Create funnel on a Depth Charge Rack's Item Port loads the charges dropped on it; a rack aboard an airship turned
+  30 degrees rolls a charge off from its screen's button, from where the ship has the rack, out the way the ship points
+  it, lying across with its axis turned with the ship, and a redstone block put beside it aboard rolls its last one off.
+  Pictures: run/screenshots/create_*.png. 57 of 57.
 - **Test world**: `gradlew runTestRange -PwithCreate` builds "Ground Burst Test Range" in the dev client and saves it to
   run/saves (copy that folder into the 1.21.1 instance's saves; it plays there as is): a flat world 64 layers deep (the
   ground at y 0) with a command post at the spawn (Launch Control Station, Launch Computer, Radar Array, an armory of

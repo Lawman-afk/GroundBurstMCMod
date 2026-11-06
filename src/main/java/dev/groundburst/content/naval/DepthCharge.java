@@ -37,6 +37,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiver {
     private static final EntityDataAccessor<ItemStack> ITEM = SynchedEntityData.defineId(DepthCharge.class, EntityDataSerializers.ITEM_STACK);
+    /** Rolled off a rack: where its axis points (degrees round, its dial that way); NaN, tumbling. */
+    private static final EntityDataAccessor<Float> AXIS = SynchedEntityData.defineId(DepthCharge.class, EntityDataSerializers.FLOAT);
 
     private static final double GRAVITY = 0.045;
     /** In water: its motion's decay a tick and what it gains sinking, so it settles to {@link #SINK} blocks a tick down. */
@@ -47,6 +49,8 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
     public static final int DEFAULT_DEPTH = 5;
     /** Its middle over its position (its box is 0.6 a side). */
     public static final double MIDDLE = 0.3;
+    /** How fast a charge rolled off a rack rolls on in the air (degrees a tick). */
+    public static final float ROLLING = 30;
 
     /** The surface where it went into the water (NaN until it does). */
     private double surface = Double.NaN;
@@ -65,20 +69,41 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
         setItem(stack.copyWithCount(1));
     }
 
-    /** A depth charge let go at {@code at} moving at {@code velocity} (rolled off a rack, dropped from a dispenser). */
+    /** A depth charge let go at {@code at} moving at {@code velocity} (dropped from a dispenser): it tumbles as it goes. */
     public static DepthCharge release(ServerLevel level, Vec3 at, Vec3 velocity, ItemStack stack, @Nullable Entity owner) {
+        return release(level, at, velocity, stack, owner, Float.NaN);
+    }
+
+    /**
+     * The same rolled off a rack: lying on its side, its axis {@code axisYaw} degrees round (its dial that way), rolling on
+     * as it rolled off (NaN: tumbling). (Its own data, not its rotation: 1.21.1's client turns a new projectile's rotation
+     * to its motion.)
+     */
+    public static DepthCharge release(ServerLevel level, Vec3 at, Vec3 velocity, ItemStack stack, @Nullable Entity owner, float axisYaw) {
         DepthCharge d = new DepthCharge(GBNaval.DEPTH_CHARGE_ENTITY.get(), level);
         d.setOwner(owner);
         d.setItem(stack.copyWithCount(1));
         d.setPos(at.x, at.y - MIDDLE, at.z);
         d.setDeltaMovement(velocity);
+        d.entityData.set(AXIS, axisYaw);
         level.addFreshEntity(d);
         return d;
+    }
+
+    /** Rolled off a rack: lying on its side, rolling about its own axis, not tumbling. */
+    public boolean lying() {
+        return !Float.isNaN(axisYaw());
+    }
+
+    /** A lying charge's axis, degrees round (its dial that way); NaN if it tumbles. */
+    public float axisYaw() {
+        return this.entityData.get(AXIS);
     }
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(ITEM, ItemStack.EMPTY);
+        builder.define(AXIS, Float.NaN);
     }
 
     public void setItem(ItemStack stack) {
@@ -142,7 +167,7 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
             setPos(position().add(v));
         }
         if (level().isClientSide()) {
-            this.spin += (float) (wet ? 4 : getDeltaMovement().length() * 30);
+            this.spin += (float) (wet ? 4 : lying() ? ROLLING : getDeltaMovement().length() * 30);
             if (wet && this.random.nextInt(3) == 0) {
                 Vec3 p = position().add(0, MIDDLE, 0);
                 level().addParticle(net.minecraft.core.particles.ParticleTypes.BUBBLE, p.x, p.y, p.z, 0, 0.05, 0);
@@ -205,6 +230,9 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
         output.store("item", ItemStack.CODEC, getItem());
         output.putDouble("surface", Double.isNaN(this.surface) ? -1e9 : this.surface);
         output.putInt("fuse", this.fuse);
+        if (lying()) {
+            output.putFloat("axis", axisYaw());
+        }
     }
 
     @Override
@@ -214,5 +242,6 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
         double s = input.getDoubleOr("surface", -1e9);
         this.surface = s < -1e8 ? Double.NaN : s;
         this.fuse = input.getIntOr("fuse", -1);
+        this.entityData.set(AXIS, input.getFloatOr("axis", Float.NaN));
     }
 }

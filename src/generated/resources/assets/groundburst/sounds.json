@@ -863,6 +863,15 @@
     ],
     "subtitle": "subtitles.groundburst.missile.staging"
   },
+  "naval.rack_release": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundburst:naval/rack_release"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.naval.rack_release"
+  },
   "nuclear_missile.erect": {
     "sounds": [
       {

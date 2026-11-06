@@ -57,8 +57,9 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
  * Create mechanical bearing turned by a creative motor (its deck held together and carried), and another made into a
  * Sable ship and turned 30 degrees; each fires, and the log says where its missile lit and which way it headed against
  * where its box's tail and its boxes' heading are in the world at that moment ("Create check: ... OK" or "... WRONG").
- * Then a factory, an assembler yard, a blasted platform and a blasted ship, and last the ships under the slower weapons
- * and aimed at ({@link ShipCheck}). Pictures in run/screenshots/create_*.png.
+ * Then a factory, an assembler yard, a blasted platform and a blasted ship, the ships under the slower weapons and aimed
+ * at ({@link ShipCheck}), Create's shafts healed ({@link HealCheck}), and last a Depth Charge Rack loaded by a Create
+ * funnel and rolling charges off an airship ({@link RackCheck}). Pictures in run/screenshots/create_*.png.
  */
 @EventBusSubscriber(modid = GroundBurst.MODID, value = Dist.CLIENT)
 public final class CreateCheck {
@@ -539,7 +540,7 @@ public final class CreateCheck {
                 check(ship2 != null && now < ship2Blocks, "a mortar shell fired at the ship burst on it (" + ship2Blocks + " -> " + now + " blocks)");
             });
             case 1206 -> shot(mc, "ship_shelled");
-            case HealCheck.END -> {
+            case RackCheck.END -> {
                 GroundBurst.LOGGER.info("Create check: done, {} of {} checks OK", passed, checks);
                 mc.stop();
             }
@@ -548,6 +549,8 @@ public final class CreateCheck {
                     ShipCheck.tick(mc, ticks);                   // ships under the slower weapons, and aimed at
                 } else if (ticks >= HealCheck.START && ticks < HealCheck.END) {
                     HealCheck.tick(mc, ticks);                   // Create's shafts healed back, turning again
+                } else if (ticks >= RackCheck.START && ticks < RackCheck.END) {
+                    RackCheck.tick(mc, ticks);                   // a Depth Charge Rack loaded by a funnel, and aboard an airship
                 }
                 // The bearing stops once its launcher has turned a quarter (its boxes pointing east): Create sets its blocks
                 // down turned a quarter, the launcher somewhere new.

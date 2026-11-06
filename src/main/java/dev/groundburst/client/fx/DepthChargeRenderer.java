@@ -14,11 +14,15 @@ import dev.groundburst.port.render.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.ItemDisplayContext;
 
-/** A depth charge in the air or the sea (DESIGN.md §14.6): its drum, tumbling end over end as it goes. */
+/**
+ * A depth charge in the air or the sea (DESIGN.md §14.6): its drum, tumbling end over end as it goes; rolled off a rack,
+ * lying on its side across the rack's front as it lay there and rolling on about its own axis.
+ */
 public class DepthChargeRenderer extends dev.groundburst.port.render.StateEntityRenderer<DepthCharge, DepthChargeRenderer.State> {
     public static class State extends EntityRenderState {
         public final ItemStackRenderState item = new ItemStackRenderState();
         public float yaw, spin;
+        public boolean lying;
     }
 
     private final ItemModelResolver items;
@@ -37,7 +41,8 @@ public class DepthChargeRenderer extends dev.groundburst.port.render.StateEntity
     public void extractRenderState(DepthCharge charge, State state, float partialTicks) {
         super.extractRenderState(charge, state, partialTicks);
         this.items.updateForNonLiving(state.item, charge.getItem(), ItemDisplayContext.NONE, charge);
-        state.yaw = (charge.getId() * 47) % 360;
+        state.lying = charge.lying();
+        state.yaw = state.lying ? charge.axisYaw() : (charge.getId() * 47) % 360;
         state.spin = charge.prevSpin + (charge.spin - charge.prevSpin) * partialTicks;
     }
 
@@ -46,8 +51,13 @@ public class DepthChargeRenderer extends dev.groundburst.port.render.StateEntity
         poseStack.pushPose();
         poseStack.translate(0, DepthCharge.MIDDLE, 0);
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-        poseStack.mulPose(Axis.XP.rotationDegrees(state.spin));
-        poseStack.scale(0.75f, 0.75f, 0.75f);
+        if (state.lying) {
+            poseStack.mulPose(Axis.XP.rotationDegrees(90));         // its axis (the drum stands on it) laid along its yaw
+            poseStack.mulPose(Axis.YP.rotationDegrees(state.spin)); // rolling forward about it
+        } else {
+            poseStack.mulPose(Axis.XP.rotationDegrees(state.spin));
+        }
+        // (at its item's size, as the rack's drums: a charge rolled off one goes as it lay there)
         state.item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
         poseStack.popPose();
         super.submit(state, poseStack, collector, camera);

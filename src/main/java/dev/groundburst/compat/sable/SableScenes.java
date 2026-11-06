@@ -44,6 +44,18 @@ public final class SableScenes {
         return n[0];
     }
 
+    /** A ship's block entities of a kind (in its plot, where its blocks are kept). */
+    public static <T> java.util.List<T> blockEntities(ServerLevel level, Object ship, Class<T> type) {
+        SableHulls.Ship hull = new SableHulls.Ship(level, (SubLevel) ship);
+        java.util.List<T> out = new java.util.ArrayList<>();
+        hull.blocks(hull.bounds(), (pos, state) -> {
+            if (state.hasBlockEntity() && type.isInstance(level.getBlockEntity(pos))) {
+                out.add(type.cast(level.getBlockEntity(pos)));
+            }
+        });
+        return out;
+    }
+
     /** Where a ship is (its pose's position). */
     public static Vec3 position(Object ship) {
         var p = ((SubLevel) ship).logicalPose().position();

@@ -168,6 +168,13 @@ PRESETS = {
             ("ports", 45, 30, (-8, 16, 64), 36, 0.0),
             ("detail: item port", 60, 20, (-16, 16, 64), 18, 0.0),
         ]),
+    # The Depth Charge Rack (DESIGN.md §14.6): the whole rack, its side (the slope), the trap end, the charges on the rails, the
+    # loading end over the Item Port's housing.
+    "depth_charge_rack": dict(
+        shots=[("iso front", 30, 225, None, None, None), ("iso back", 30, 45, None, None, None),
+               ("side (west)", 2, 270, None, None, None), ("from above", 80, 180, None, None, None),
+               ("trap and lever", 18, 210, (-2, 8, -4), 18, None), ("charges on the rails", 25, 120, (0, 9, 20), 22, None),
+               ("loading end", 22, 30, (0, 6, 48), 20, None), ("under the rails", -20, 240, (0, 4, 10), 22, None)]),
     "cruise_launcher": dict(
         shots=WHOLE + [
             ("ports", 30, 120, (18, 16, 6), 40, None),
