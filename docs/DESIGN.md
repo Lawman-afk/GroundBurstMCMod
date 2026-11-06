@@ -1988,7 +1988,7 @@ which a block cannot), and a way for a blast to go off under water (`content/nav
   creative Structure Spawner builds it. It holds six charges, one to each place on the rails (its six slots, slot 0
   against the trap), and takes nothing else.
   - **Loading**: by hand in its screen, or by anything that puts items into its Item Port: a hopper, item pipes, other
-    mods' pipes, and on 1.21.1 Create's funnels, chutes and belts. A charge with an empty place in front of it rolls down
+    mods' pipes, and on 1.21.1 Create's funnels (checked; anything of Create's that fills an inventory should too). A charge with an empty place in front of it rolls down
     a place in 8 ticks (all those behind a gap together); the client rolls their drums down the rails on their hoops.
   - **Releasing**: a redstone signal on any of its blocks. A pulse rolls the front charge off; a held signal rolls one off
     each interval (1.5 s by default; 0.8, 1, 2 or 3 s, trip to trip: 0.8 is as fast as the rack cycles), a pattern, until
@@ -2007,7 +2007,8 @@ which a block cannot), and a way for a blast to go off under water (`content/nav
     A comparator reads how many it holds (15 full). Its screen shows the charges, the depth, the interval and its state
     (READY, RELEASING, Load depth charges, Structure incomplete).
   - **Create** (1.21.1): it works aboard a Create Aeronautics ship (redstone and all, its charges going off the stern
-    with the ship's way) and, carried by a contraption, from its screen; funnels load it as any machine.
+    with the ship's way; checked) and, carried by a contraption, from its screen (as every machine is carried; not yet
+    checked); funnels load it as any machine.
   - **Model** (`tools/assets/depth_charge_rack.py`, GeckoLib): two steel rails on short legs sloping 3 degrees down to the
     front, the charges lying across them on their rolling hoops (each the depth charge's own drum), guard rails along
     both sides over their ends, the hinged trap at the front on its shaft, the hand release lever on its quadrant on the
