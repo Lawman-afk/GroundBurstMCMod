@@ -60,7 +60,7 @@ code is not ported by hand file by file. `tools/backport/port.py` turns main's s
 
 `tools/backport/compile.ps1` (run with PowerShell 7) compiles and sorts the errors; `errs.py <words>` prints a file's
 errors with their lines. `gradlew runGameTestServer` loads everything on a server and runs **all of main's GameTests**
-(417 at main ca16336b, every one: `PortSkips` is empty) beside this branch's own seven (424). Main's are ported like the
+(423 at main 6087fe9f, every one: `PortSkips` is empty) beside this branch's own seven (430). Main's are ported like the
 rest of its code (the gametest package; `port.py`'s rules for 26.x's test helper: `getBlockEntity(pos, Type.class)`,
 `makeMockServerPlayer` as `port/Tests.mockServerPlayer`, a missile's look by number, and a few per-file fixes); how they
 reach the game is this branch's own `gametest/GameTestRegistration` (`manual.txt`): a generator of 1.21.1's test
@@ -84,7 +84,10 @@ and a creeper's explosion too, its item frame hung again, a block of TNT it lit 
 Beacon lit by redstone, buckets in the hotbar), opens the Field Manual, sets a blast off, brings a particle beam down and
 looks into its pit, lays sea mines in a walled sea (seen from under the water and from above) and sets a depth charge
 off under them (its column), builds a Depth Charge Rack on a quay in that sea (four charges put on, two from a hopper over
-its Item Port, the log saying how many it holds) and rolls them all off as a pattern, screenshots each into `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it
+its Item Port, the log saying how many it holds) and rolls them all off as a pattern, puts the bunker doors in a concrete
+wall (a Blast Door opened, the mirrored model, and one shut; a Pressure Door shut and one open; two floor hatches before
+it, one open; the log saying whether the blast door opened and laid its leaf's blocks), screenshots each into
+`run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it
 keeps the game from pausing when its window is behind another).
 
 ## Where it stands (2026-11-03)

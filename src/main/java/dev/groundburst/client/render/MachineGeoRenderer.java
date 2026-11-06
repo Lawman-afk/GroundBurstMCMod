@@ -83,7 +83,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         addRenderLayer(new GlowLayer<>(this));
     }
 
-    /** With a model of its own (a {@link VariantGeoModel}: textures chosen by the block entity). */
+    /** With a model of its own (a {@link VariantGeoModel}: textures, or models, chosen by the block entity). */
     public MachineGeoRenderer(BlockEntityRendererProvider.Context context, GeoModel<T> model, int height, int reach) {
         super(model);
         this.height = height;

@@ -249,7 +249,70 @@ public final class PortCheck {
                         charges, rack != null && rack.loaded() <= 3 && rack.loaded() >= 1 ? "OK" : "WRONG");
             });
             case 940 -> shot(mc, "rack_column");
-            case 960 -> {
+            // The bunker doors (main's DESIGN.md §22.3) in a concrete wall facing north: a Blast Door opened (hinges on the
+            // left: the mirrored model), one shut (hinges on the right), a Pressure Door shut and one open, and before the
+            // wall two floor hatches in the ground, one open.
+            case 945 -> command(mc, "fill -51 -60 -30 -35 -57 -30 " + GroundBurst.MODID + ":reinforced_concrete");
+            case 947 -> {
+                onServer(mc, level -> {
+                    var blast = dev.groundburst.content.construction.GBConstruction.BLAST_DOOR.block().get();
+                    for (int i = 0; i < 2; i++) {
+                        var hinge = i == 0 ? net.minecraft.world.level.block.state.properties.DoorHingeSide.LEFT
+                                : net.minecraft.world.level.block.state.properties.DoorHingeSide.RIGHT;
+                        BlockPos at = new BlockPos(i == 0 ? -48 : -44, -60, -30);
+                        var state = blast.defaultBlockState().setValue(dev.groundburst.content.construction.BlastDoorBlock.FACING, net.minecraft.core.Direction.NORTH)
+                                .setValue(dev.groundburst.content.construction.BlastDoorBlock.HINGE, hinge);
+                        var across = dev.groundburst.content.construction.BlastDoorBlock.across(state);
+                        for (int u = 0; u < 2; u++) {
+                            for (int v = 0; v < 3; v++) {
+                                level.setBlockAndUpdate(at.relative(across, u).above(v), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                            }
+                        }
+                        level.setBlockAndUpdate(at, state);
+                        blast.setPlacedBy(level, at, state, null, net.minecraft.world.item.ItemStack.EMPTY);
+                        if (i == 0 && level.getBlockEntity(at) instanceof dev.groundburst.content.construction.BlastDoorBlockEntity door) {
+                            door.toggle(level, null);
+                        }
+                    }
+                    var pressure = (net.minecraft.world.level.block.DoorBlock) dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().get();
+                    for (int i = 0; i < 2; i++) {
+                        BlockPos at = new BlockPos(i == 0 ? -40 : -38, -60, -30);
+                        var lower = pressure.defaultBlockState().setValue(net.minecraft.world.level.block.DoorBlock.FACING, net.minecraft.core.Direction.SOUTH)
+                                .setValue(net.minecraft.world.level.block.DoorBlock.OPEN, i == 1);
+                        level.setBlockAndUpdate(at, lower);
+                        level.setBlockAndUpdate(at.above(), lower.setValue(net.minecraft.world.level.block.DoorBlock.HALF,
+                                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+                    }
+                    var hatch = dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH.block().get().defaultBlockState()
+                            .setValue(net.minecraft.world.level.block.TrapDoorBlock.FACING, net.minecraft.core.Direction.NORTH)
+                            .setValue(net.minecraft.world.level.block.TrapDoorBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP);
+                    for (int i = 0; i < 2; i++) {
+                        BlockPos at = new BlockPos(i == 0 ? -46 : -42, -61, -34);
+                        level.setBlockAndUpdate(at.below(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                        level.setBlockAndUpdate(at, hatch.setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, i == 0));
+                    }
+                });
+            }
+            case 950 -> command(mc, "tp @s -43.5 -58.4 -39.5 0 14");
+            case 1030 -> tidy(mc);
+            case 1035 -> shot(mc, "doors");
+            case 1040 -> command(mc, "tp @s -51.5 -58.2 -35.5 -50 16");
+            case 1070 -> tidy(mc);
+            case 1075 -> shot(mc, "doors_side");
+            case 1080 -> onServer(mc, level -> {
+                var door = level.getBlockEntity(new BlockPos(-48, -60, -30)) instanceof dev.groundburst.content.construction.BlastDoorBlockEntity d ? d : null;
+                int leaf = 0;
+                for (int v = 0; v < 3; v++) {
+                    for (int w = 1; w < 3; w++) {
+                        leaf += level.getBlockState(new BlockPos(-48, -60 + v, -30 - w)).is(dev.groundburst.content.construction.GBConstruction.BLAST_DOOR.block().get()) ? 1 : 0;
+                    }
+                }
+                boolean hatchOpen = level.getBlockState(new BlockPos(-46, -61, -34)).getValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN);
+                GroundBurst.LOGGER.info("Port check: the blast door at {} of {}, {} of its leaf's 6 blocks laid; the hatch open {}: {}",
+                        door == null ? "-" : door.position(), dev.groundburst.content.construction.BlastDoorBlockEntity.TRAVEL, leaf, hatchOpen,
+                        door != null && door.position() == dev.groundburst.content.construction.BlastDoorBlockEntity.TRAVEL && leaf == 6 && hatchOpen ? "OK" : "WRONG");
+            });
+            case 1090 -> {
                 GroundBurst.LOGGER.info("Port check: done");
                 mc.stop();
             }

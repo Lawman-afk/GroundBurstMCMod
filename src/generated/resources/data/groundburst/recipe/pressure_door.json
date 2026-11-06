@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "P": {
+      "item": "groundburst:steel_plate"
+    },
+    "S": {
+      "item": "groundburst:steel_rod"
+    }
+  },
+  "pattern": [
+    "PG",
+    "PS",
+    "PP"
+  ],
+  "result": {
+    "count": 2,
+    "id": "groundburst:pressure_door"
+  }
+}

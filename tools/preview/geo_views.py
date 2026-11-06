@@ -170,6 +170,19 @@ PRESETS = {
         ]),
     # The Depth Charge Rack (DESIGN.md §14.6): the whole rack, its side (the slope), the trap end, the charges on the rails, the
     # loading end over the Item Port's housing.
+    "blast_door": dict(
+        shots=[("front, shut", 6, 180, None, None, None), ("iso front, shut", 25, 215, None, None, None),
+               ("iso back, shut", 25, 35, None, None, None), ("iso front, open", 25, 215, None, None, 0.0),
+               ("iso front, hinge side, open", 25, 140, None, None, 0.0), ("from above, open", 80, 180, None, None, 0.0),
+               ("handwheel", 12, 200, (8, 24, -11), 18, None), ("hinges", 14, 235, (-6, 23, -11), 26, None),
+               ("leaf's back, open: bolts drawn", 12, 265, (3, 24, -26), 36, 0.0), ("stencil", 4, 180, (8, 41, -10), 14, None),
+               ("kick plate and sill", 10, 200, (8, 4, -9), 18, None)],
+        anim="open"),
+    "blast_door_mirrored": dict(
+        shots=[("front, shut", 6, 180, None, None, None), ("iso front, shut", 25, 145, None, None, None),
+               ("iso front, open", 25, 145, None, None, 0.0), ("iso back, open", 25, 325, None, None, 0.0),
+               ("stencil", 4, 180, (-8, 41, -10), 14, None)],
+        anim="open"),
     "depth_charge_rack": dict(
         shots=[("iso front", 30, 225, None, None, None), ("iso back", 30, 45, None, None, None),
                ("side (west)", 2, 270, None, None, None), ("from above", 80, 180, None, None, None),

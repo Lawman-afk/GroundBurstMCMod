@@ -182,6 +182,9 @@ public class GroundBurstClient {
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.LARGE_SILO_DOOR_ENTITY.get(), 1, 8));
         event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get(), 1, 8));
+        // The Blast Door (DESIGN.md §22.3): drawn whole by its hinges' lowest block, the mirrored door from its own model.
+        event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.BLAST_DOOR_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, new dev.groundburst.client.render.VariantGeoModel<>(dev.groundburst.GroundBurst.id("blast_door")), 3, 2));
         event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.SEARCH_RADAR_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.SEARCH_RADAR_ENTITY.get(), 6, 6));
         // The Missile Wreck: some eight blocks on from its block toward its facing, its nose buried a few blocks down.
