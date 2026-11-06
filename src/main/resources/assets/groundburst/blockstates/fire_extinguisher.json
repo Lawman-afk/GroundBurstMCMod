@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "groundburst:block/fire_extinguisher"
+    },
+    "facing=east": {
+      "model": "groundburst:block/fire_extinguisher",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "groundburst:block/fire_extinguisher",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "groundburst:block/fire_extinguisher",
+      "y": 270
+    }
+  }
+}

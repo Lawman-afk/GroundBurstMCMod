@@ -611,6 +611,18 @@
     ],
     "subtitle": "subtitles.groundburst.door.pressure_door_open"
   },
+  "door.steel_locker_close": {
+    "sounds": [
+      "groundburst:door/steel_locker_close"
+    ],
+    "subtitle": "subtitles.groundburst.door.steel_locker_close"
+  },
+  "door.steel_locker_open": {
+    "sounds": [
+      "groundburst:door/steel_locker_open"
+    ],
+    "subtitle": "subtitles.groundburst.door.steel_locker_open"
+  },
   "dynamite.light": {
     "sounds": [
       "groundburst:ordnance/dynamite_light"
@@ -625,6 +637,33 @@
       }
     ],
     "subtitle": "subtitles.groundburst.emp.zap"
+  },
+  "fitting.extinguisher_spray": {
+    "sounds": [
+      "groundburst:fitting/extinguisher_spray"
+    ],
+    "subtitle": "subtitles.groundburst.fitting.extinguisher_spray"
+  },
+  "fitting.fuse_box_switch": {
+    "sounds": [
+      "groundburst:fitting/fuse_box_switch"
+    ],
+    "subtitle": "subtitles.groundburst.fitting.fuse_box_switch"
+  },
+  "fitting.lamp_switch": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundburst:fitting/lamp_switch"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.fitting.lamp_switch"
+  },
+  "fitting.pipe_valve_turn": {
+    "sounds": [
+      "groundburst:fitting/pipe_valve_turn"
+    ],
+    "subtitle": "subtitles.groundburst.fitting.pipe_valve_turn"
   },
   "geiger.alarm": {
     "sounds": [

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:pipe_valve"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_wall_pipes": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:wall_pipes"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_wall_pipes"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:pipe_valve"
+    ]
+  }
+}

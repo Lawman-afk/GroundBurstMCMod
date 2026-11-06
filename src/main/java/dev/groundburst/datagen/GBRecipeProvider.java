@@ -1156,6 +1156,44 @@ public class GBRecipeProvider extends RecipeProvider {
                 .define('M', Items.MAP).define('W', net.minecraft.tags.ItemTags.WOODEN_SLABS).define('S', rod)
                 .pattern("WMW").pattern("S S")
                 .unlockedBy("has_map", has(Items.MAP)).save(output);
+        // The bunker fittings: pipes of rolled plate on rod brackets, a valve of pipes and a lever, grilles of plate and
+        // bars, duct of plate round nothing, a lamp of a lantern caged, a fuse box of plates round a lever and wire, an
+        // extinguisher of plate, red paint and water, a locker of plates round a chest, a bunk of two beds on rods.
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.WALL_PIPES.item(), 6)
+                .define('P', plate).define('S', rod)
+                .pattern("PPP").pattern("S S").pattern("PPP")
+                .unlockedBy(getHasName(plate), has(plate)).save(output);
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.construction.GBConstruction.PIPE_VALVE.item(), 1)
+                .define('L', Items.LEVER).define('W', dev.groundburst.content.construction.GBConstruction.WALL_PIPES.item())
+                .pattern("L").pattern("W")
+                .unlockedBy("has_wall_pipes", has(dev.groundburst.content.construction.GBConstruction.WALL_PIPES.item())).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.VENT_GRILLE.item(), 4)
+                .define('P', plate).define('B', Items.IRON_BARS)
+                .pattern("PBP")
+                .unlockedBy(getHasName(plate), has(plate)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.VENTILATION_DUCT.item(), 8)
+                .define('P', plate)
+                .pattern("PPP").pattern("P P").pattern("PPP")
+                .unlockedBy(getHasName(plate), has(plate)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.BUNKER_LAMP.item(), 2)
+                .define('P', plate).define('B', Items.IRON_BARS).define('L', Items.LANTERN)
+                .pattern(" P ").pattern("BLB")
+                .unlockedBy("has_lantern", has(Items.LANTERN)).save(output);
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.construction.GBConstruction.FUSE_BOX.item(), 1)
+                .define('P', plate).define('L', Items.LEVER).define('C', GBParts.COPPER_WIRE)
+                .pattern("PCP").pattern("PLP")
+                .unlockedBy(getHasName(plate), has(plate)).save(output);
+        shapeless(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.FIRE_EXTINGUISHER.item(), 1)
+                .requires(plate).requires(plate).requires(Tags.Items.DYES_RED).requires(Items.WATER_BUCKET)
+                .unlockedBy(getHasName(plate), has(plate)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.STEEL_LOCKER.item(), 1)
+                .define('P', plate).define('C', Items.CHEST)
+                .pattern("PP").pattern("PC").pattern("PP")
+                .unlockedBy(getHasName(plate), has(plate)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.BUNK_BED.item(), 1)
+                .define('S', rod).define('B', net.minecraft.tags.ItemTags.BEDS)
+                .pattern("SBS").pattern("SBS")
+                .unlockedBy("has_bed", has(net.minecraft.tags.ItemTags.BEDS)).save(output);
         sign(dev.groundburst.content.construction.GBConstruction.RADIATION_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.DYE.black()));
         sign(dev.groundburst.content.construction.GBConstruction.HIGH_VOLTAGE_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.REDSTONE));
         sign(dev.groundburst.content.construction.GBConstruction.KEEP_OUT_SIGN.item(), Tags.Items.DYES_RED, Ingredient.of(Items.DYE.white()));

@@ -1,5 +1,7 @@
 package dev.groundburst.gametest;
 
+import java.util.List;
+
 import dev.groundburst.content.construction.BlastDoorBlock;
 import dev.groundburst.content.construction.BlastDoorBlockEntity;
 import dev.groundburst.content.construction.GBConstruction;
@@ -42,6 +44,166 @@ final class ConstructionTests {
         GBGameTests.test("filing_cabinet_holds_27_stacks", GBGameTests.FLOOR_16, 20, ConstructionTests::cabinetHolds);
         GBGameTests.test("tape_computer_stands_two_high", GBGameTests.FLOOR_16, 20, ConstructionTests::tapeTwoHigh);
         GBGameTests.test("map_table_breaks_whole_for_one_item", GBGameTests.FLOOR_16, 40, ConstructionTests::mapTableBreaks);
+        GBGameTests.test("bunker_lamp_clicks_off_and_on", GBGameTests.FLOOR_16, 20, ConstructionTests::lampClicks);
+        GBGameTests.test("ducts_join_ducts_and_a_grilles_back", GBGameTests.FLOOR_16, 20, ConstructionTests::ductsJoin);
+        GBGameTests.test("wall_pipes_run_on_into_their_neighbours", GBGameTests.FLOOR_16, 20, ConstructionTests::pipesJoin);
+        GBGameTests.test("valve_and_fuse_box_give_a_signal", GBGameTests.FLOOR_16, 20, ConstructionTests::switchesSignal);
+        GBGameTests.test("fire_extinguisher_puts_out_fire", GBGameTests.FLOOR_16, 20, ConstructionTests::extinguisherPutsOut);
+        GBGameTests.test("steel_locker_stands_two_high_and_holds_27", GBGameTests.FLOOR_16, 40, ConstructionTests::lockerHolds);
+        GBGameTests.test("bunk_bed_sleeps_two_and_breaks_whole", GBGameTests.FLOOR_16, 40, ConstructionTests::bunkSleepsTwo);
+    }
+
+    // --- the bunker fittings ----------------------------------------------------------------------------------------------------
+    private static void lampClicks(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = new BlockPos(8, 1, 8);
+        helper.setBlock(at, GBConstruction.BUNKER_LAMP.block().get().defaultBlockState());
+        BlockPos abs = helper.absolutePos(at);
+        helper.assertTrue(level.getBlockState(abs).getLightEmission() == 14, "lit as it is put up");
+        helper.useBlock(at);
+        helper.assertTrue(level.getBlockState(abs).getLightEmission() == 0, "a click turns it off");
+        helper.useBlock(at);
+        helper.assertTrue(level.getBlockState(abs).getValue(dev.groundburst.content.construction.BunkerLampBlock.LIT), "another on again");
+        helper.succeed();
+    }
+
+    private static void ductsJoin(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var duct = GBConstruction.VENTILATION_DUCT.block().get();
+        BlockPos a = new BlockPos(6, 2, 8), b = a.east(), c = b.above();
+        for (BlockPos p : List.of(a, b, c)) {
+            helper.setBlock(p, duct.defaultBlockState());
+            BlockPos abs = helper.absolutePos(p);
+            level.setBlock(abs, duct.joined(level.getBlockState(abs), level, abs), 3);    // as placing joins it
+        }
+        helper.setBlock(a.west(), GBConstruction.VENT_GRILLE.block().get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.DirectionalBlock.FACING, Direction.WEST));
+        helper.setBlock(b.north(), GBConstruction.VENT_GRILLE.block().get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.DirectionalBlock.FACING, Direction.UP));
+        BlockState sa = level.getBlockState(helper.absolutePos(a)), sb = level.getBlockState(helper.absolutePos(b));
+        helper.assertTrue(sa.getValue(net.minecraft.world.level.block.PipeBlock.EAST) && sb.getValue(net.minecraft.world.level.block.PipeBlock.WEST),
+                "duct joins duct");
+        helper.assertTrue(sb.getValue(net.minecraft.world.level.block.PipeBlock.UP), "and the one over it");
+        helper.assertTrue(sa.getValue(net.minecraft.world.level.block.PipeBlock.WEST), "a grille facing away from it, its back to the duct: joined");
+        helper.assertTrue(!sb.getValue(net.minecraft.world.level.block.PipeBlock.NORTH), "a grille facing another way: not");
+        helper.assertTrue(!sa.getValue(net.minecraft.world.level.block.PipeBlock.DOWN), "nor the floor");
+        helper.succeed();
+    }
+
+    private static void pipesJoin(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var pipes = GBConstruction.WALL_PIPES.block().get();
+        BlockState north = pipes.defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH);
+        BlockPos west = new BlockPos(6, 2, 8), mid = west.east(), east = mid.east();
+        helper.setBlock(west, north);
+        helper.setBlock(mid, GBConstruction.PIPE_VALVE.block().get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH));
+        helper.setBlock(east, north.setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.EAST));
+        BlockPos m = helper.absolutePos(mid);
+        level.setBlock(m, GBConstruction.PIPE_VALVE.block().get().joined(level.getBlockState(m), level, m), 3);
+        BlockState sw = level.getBlockState(helper.absolutePos(west)), sm = level.getBlockState(m);
+        // Facing north, its left (as one looks at it) is east.
+        helper.assertTrue(sw.getValue(dev.groundburst.content.construction.WallPipesBlock.LEFT), "the pipes run on into the valve beside them");
+        helper.assertTrue(!sw.getValue(dev.groundburst.content.construction.WallPipesBlock.RIGHT), "and are capped where nothing joins them");
+        helper.assertTrue(sm.getValue(dev.groundburst.content.construction.WallPipesBlock.RIGHT), "the valve runs on into the pipes");
+        helper.assertTrue(!sm.getValue(dev.groundburst.content.construction.WallPipesBlock.LEFT), "but not into pipes facing another way");
+        helper.succeed();
+    }
+
+    private static void switchesSignal(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos valve = new BlockPos(5, 2, 8), fuse = new BlockPos(10, 2, 8);
+        for (BlockPos p : List.of(valve, fuse)) {
+            helper.setBlock(p.south(), Blocks.STONE);                        // the wall they hang on
+            helper.setBlock(p.west(), Blocks.REDSTONE_LAMP);
+        }
+        helper.setBlock(valve, GBConstruction.PIPE_VALVE.block().get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH));
+        helper.setBlock(fuse, GBConstruction.FUSE_BOX.block().get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH));
+        helper.assertTrue(!level.getBlockState(helper.absolutePos(valve.west())).getValue(net.minecraft.world.level.block.RedstoneLampBlock.LIT),
+                "shut, the valve gives no signal");
+        helper.useBlock(valve);
+        helper.useBlock(fuse);
+        helper.runAfterDelay(2, () -> {
+            for (BlockPos p : List.of(valve, fuse)) {
+                helper.assertTrue(level.getBlockState(helper.absolutePos(p.west())).getValue(net.minecraft.world.level.block.RedstoneLampBlock.LIT),
+                        "turned or thrown, it lights the lamp beside it");
+                helper.assertTrue(level.getDirectSignal(helper.absolutePos(p), Direction.NORTH) == 15, "and powers the wall it hangs on");
+            }
+            helper.succeed();
+        });
+    }
+
+    private static void extinguisherPutsOut(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = new BlockPos(8, 1, 8);
+        helper.setBlock(at, GBConstruction.FIRE_EXTINGUISHER.block().get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH));
+        BlockPos fire = at.north(2);
+        helper.setBlock(fire, Blocks.FIRE);
+        helper.assertTrue(level.getBlockState(helper.absolutePos(fire)).is(Blocks.FIRE), "a fire before it");
+        helper.useBlock(at);
+        helper.assertTrue(level.getBlockState(helper.absolutePos(fire)).isAir(), "a burst puts it out");
+        helper.succeed();
+    }
+
+    private static void lockerHolds(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = new BlockPos(8, 1, 8);
+        var block = GBConstruction.STEEL_LOCKER.block().get();
+        BlockState state = block.defaultBlockState();
+        helper.setBlock(at, state);
+        BlockPos abs = helper.absolutePos(at);
+        block.setPlacedBy(level, abs, state, null, ItemStack.EMPTY);
+        BlockState upper = level.getBlockState(abs.above());
+        helper.assertTrue(upper.is(block) && upper.getValue(dev.groundburst.content.construction.SteelLockerBlock.HALF) == DoubleBlockHalf.UPPER,
+                "its upper half laid over it");
+        var locker = level.getBlockEntity(abs) instanceof dev.groundburst.content.construction.SteelLockerBlockEntity l ? l : null;
+        helper.assertTrue(locker != null && locker.getContainerSize() == 27, "27 slots in its lower half");
+        locker.setItem(3, new ItemStack(net.minecraft.world.item.Items.IRON_HELMET));
+        level.setBlockAndUpdate(abs, level.getBlockState(abs).setValue(dev.groundburst.content.construction.SteelLockerBlock.OPEN, true));
+        helper.assertTrue(level.getBlockState(abs.above()).getValue(dev.groundburst.content.construction.SteelLockerBlock.OPEN),
+                "its upper half's door stands open with the lower's");
+        level.destroyBlock(abs.above(), true);
+        helper.runAfterDelay(4, () -> {
+            helper.assertTrue(level.getBlockState(abs).isAir(), "the lower half goes with the upper");
+            var items = level.getEntitiesOfClass(ItemEntity.class, new AABB(abs).inflate(3));
+            helper.assertTrue(items.stream().filter(e -> e.getItem().is(GBConstruction.STEEL_LOCKER.item())).count() == 1, "one locker back");
+            helper.assertTrue(items.stream().anyMatch(e -> e.getItem().is(net.minecraft.world.item.Items.IRON_HELMET)), "and what it held");
+            helper.succeed();
+        });
+    }
+
+    private static void bunkSleepsTwo(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var bunk = GBConstruction.BUNK_BED.block().get();
+        BlockPos at = new BlockPos(8, 1, 8);
+        BlockState state = bunk.defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH);
+        helper.setBlock(at, state);
+        BlockPos foot = helper.absolutePos(at);
+        bunk.setPlacedBy(level, foot, state, null, ItemStack.EMPTY);
+        BlockPos head = foot.north();
+        for (BlockPos p : List.of(head, foot.above(), head.above())) {
+            helper.assertTrue(level.getBlockState(p).is(bunk), "four blocks laid: " + p);
+        }
+        var low = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var high = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        helper.assertTrue(low.startSleeping(head) && high.startSleeping(head.above()), "a bed in each bunk");
+        helper.assertTrue(Math.abs(low.getY() - (head.getY() + 0.725)) < 1e-6, "the lower sleeper on its mattress: " + (low.getY() - head.getY()));
+        helper.assertTrue(Math.abs(high.getY() - (head.getY() + 1.725)) < 1e-6, "the upper on its own: " + (high.getY() - head.getY()));
+        helper.assertTrue(level.getBlockState(foot).getValue(net.minecraft.world.level.block.BedBlock.OCCUPIED)
+                && level.getBlockState(foot.above()).getValue(net.minecraft.world.level.block.BedBlock.OCCUPIED), "each bunk taken, foot and head");
+        level.destroyBlock(foot.above(), true);
+        helper.runAfterDelay(4, () -> {
+            for (BlockPos p : List.of(foot, head, foot.above(), head.above())) {
+                helper.assertTrue(level.getBlockState(p).isAir(), "all gone: " + p);
+            }
+            long items = level.getEntitiesOfClass(ItemEntity.class, new AABB(foot).inflate(4)).stream()
+                    .filter(e -> e.getItem().is(GBConstruction.BUNK_BED.item())).mapToInt(e -> e.getItem().getCount()).sum();
+            helper.assertTrue(items == 1, "one bunk back: " + items);
+            helper.succeed();
+        });
     }
 
     // --- the command room -------------------------------------------------------------------------------------------------------

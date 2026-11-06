@@ -179,6 +179,20 @@ public final class GBSounds {
             register("machine.tape_whirr", "Tape reels whirr", List.of("machine/tape_whirr"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> TAPE_SWITCH =
             register("machine.tape_switch", "Switch clicks", List.of("machine/tape_switch"), false, 12);
+    /** The bunker fittings (DESIGN.md §22.5): the Steel Locker's door, the Pipe Valve's wheel, the Fuse Box's breaker, the
+     *  Bunker Lamp's switch, the Fire Extinguisher's burst. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> STEEL_LOCKER_OPEN =
+            register("door.steel_locker_open", "Locker opens", List.of("door/steel_locker_open"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> STEEL_LOCKER_CLOSE =
+            register("door.steel_locker_close", "Locker shuts", List.of("door/steel_locker_close"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> PIPE_VALVE_TURN =
+            register("fitting.pipe_valve_turn", "Valve wheel turns", List.of("fitting/pipe_valve_turn"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> FUSE_BOX_SWITCH =
+            register("fitting.fuse_box_switch", "Breaker clunks", List.of("fitting/fuse_box_switch"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAMP_SWITCH =
+            register("fitting.lamp_switch", "Lamp switch clicks", List.of("fitting/lamp_switch"), false, 12);
+    public static final DeferredHolder<SoundEvent, SoundEvent> EXTINGUISHER_SPRAY =
+            register("fitting.extinguisher_spray", "Extinguisher sprays", List.of("fitting/extinguisher_spray"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> MINE_CLICK =
             register("mine.click", "Mine clicks", List.of("ordnance/mine_click"), false, 12);
     public static final DeferredHolder<SoundEvent, SoundEvent> MINE_POP =

@@ -27,7 +27,7 @@ import net.neoforged.neoforge.common.NeoForge;
  * {@code run/screenshots/site_<name>_<variant>_<view>.png}; then quits. Each picture waits for the ground round the site
  * to come in and the section builder to go quiet, as the world survey's do. {@code board} in place of a site shows the
  * Construction set in use ({@link ConstructionBoard}), {@code doors} the bunker doors in a wall ({@link BunkerDoorBoard}),
- * {@code room} the command room ({@link CommandRoomBoard}).
+ * {@code room} the command room ({@link CommandRoomBoard}), {@code fittings} the bunker fittings ({@link FittingsBoard}).
  */
 public final class SitePhotographer {
     /** Every site there is, in the order they are photographed with {@code all}. */
@@ -227,10 +227,12 @@ public final class SitePhotographer {
             BoundingBox box = name.equals("board") ? ConstructionBoard.build(level, origin)
                     : name.equals("doors") ? BunkerDoorBoard.build(level, origin)
                     : name.equals("room") ? CommandRoomBoard.build(level, origin)
+                    : name.equals("fittings") ? FittingsBoard.build(level, origin)
                     : GBStructures.preview(level, name, variant, origin, false, null);
             queue(name, box, top);
-            if (name.equals("doors") || name.equals("room")) {
-                for (BunkerDoorBoard.CloseUp c : name.equals("doors") ? BunkerDoorBoard.closeUps(origin) : CommandRoomBoard.closeUps(origin)) {
+            if (name.equals("doors") || name.equals("room") || name.equals("fittings")) {
+                for (BunkerDoorBoard.CloseUp c : name.equals("doors") ? BunkerDoorBoard.closeUps(origin)
+                        : name.equals("room") ? CommandRoomBoard.closeUps(origin) : FittingsBoard.closeUps(origin)) {
                     SHOTS.add(new Shot("site_" + name + "_" + variant + "_" + c.name() + ".png", c.at(), c.yaw(), c.pitch(), origin));
                 }
             }

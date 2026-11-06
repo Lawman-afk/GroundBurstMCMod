@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "P": "groundburst:steel_plate",
+    "S": "groundburst:steel_rod"
+  },
+  "pattern": [
+    "PPP",
+    "S S",
+    "PPP"
+  ],
+  "result": {
+    "count": 6,
+    "id": "groundburst:wall_pipes"
+  }
+}

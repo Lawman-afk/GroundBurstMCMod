@@ -207,6 +207,22 @@ public class GBBlockLoot extends BlockLootSubProvider {
                                         net.minecraft.advancements.predicates.StatePropertiesPredicate.Builder.properties()
                                                 .hasProperty(dev.groundburst.content.construction.MapTableBlock.U, 0)
                                                 .hasProperty(dev.groundburst.content.construction.MapTableBlock.W, 0)))))));
+        // The Steel Locker: its lower block drops it, as the Tape Computer's; the Bunk Bed: its lower head alone (any of its
+        // four blocks broken takes the rest with it).
+        add(dev.groundburst.content.construction.GBConstruction.STEEL_LOCKER.block().get(), createSinglePropConditionTable(
+                dev.groundburst.content.construction.GBConstruction.STEEL_LOCKER.block().get(), dev.groundburst.content.construction.SteelLockerBlock.HALF,
+                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER));
+        var bunk = dev.groundburst.content.construction.GBConstruction.BUNK_BED.block().get();
+        add(bunk, net.minecraft.world.level.storage.loot.LootTable.lootTable().withPool(applyExplosionCondition(bunk,
+                net.minecraft.world.level.storage.loot.LootPool.lootPool()
+                        .setRolls(net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders.exactly(1))
+                        .add(net.minecraft.world.level.storage.loot.entries.LootItem.lootTableItem(bunk).when(
+                                net.minecraft.world.level.storage.loot.predicates.MatchBlock.blockMatches(this.blocks, bunk,
+                                        net.minecraft.advancements.predicates.StatePropertiesPredicate.Builder.properties()
+                                                .hasProperty(dev.groundburst.content.construction.BunkBedBlock.HALF,
+                                                        net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER)
+                                                .hasProperty(dev.groundburst.content.construction.BunkBedBlock.PART,
+                                                        net.minecraft.world.level.block.state.properties.BedPart.HEAD)))))));
         // The Construction set: each drops itself (a doubled slab two).
         for (var b : dev.groundburst.content.construction.GBConstruction.ALL) {
             if (b.block().get() instanceof net.minecraft.world.level.block.SlabBlock slab) {

@@ -23,6 +23,19 @@
   stop or start it; a row of them makes a wall of computers that never runs in step.
 - **Situation Map Table**: a table two blocks by two with a map of a coast at war on it, its unit counters and pins.
 
+### Bunker fittings
+- **Wall Pipes**: three pipes along a wall that run on into the wall pipes beside them, capped where the run ends.
+- **Pipe Valve**: a gate valve in a run of wall pipes. Turn its red handwheel to open it: it gives a redstone signal
+  like a lever.
+- **Vent Grille** and **Ventilation Duct**: the duct joins up on all six sides, and to the back of a grille.
+- **Bunker Lamp**: a caged lamp for walls, ceilings and floors; click it to switch it off and on.
+- **Fuse Box**: throw its breaker for a redstone signal; its lamp shows green or red.
+- **Fire Extinguisher**: click it to spray, putting out fire in front of it.
+- **Steel Locker**: two blocks high, holds 27 stacks; its door swings open while it is in use, a helmet, a coat and boots
+  inside.
+- **Bunk Bed**: two beds in one, two blocks high and two long. Two players can sleep in it, and each bunk sets a spawn
+  point.
+
 ### Performance
 - **Blast effects cost less to draw.** Under a mushroom cloud the mod's share of each frame's work is down by about a
   third: every effect vertex is written in one go, the fallout clouds no longer work out their layout every frame, and
