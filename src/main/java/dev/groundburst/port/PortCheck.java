@@ -312,7 +312,51 @@ public final class PortCheck {
                         door == null ? "-" : door.position(), dev.groundburst.content.construction.BlastDoorBlockEntity.TRAVEL, leaf, hatchOpen,
                         door != null && door.position() == dev.groundburst.content.construction.BlastDoorBlockEntity.TRAVEL && leaf == 6 && hatchOpen ? "OK" : "WRONG");
             });
-            case 1090 -> {
+            // The command room (main's DESIGN.md §22.4) on a concrete floor: consoles in a row, a desk, two filing cabinets
+            // (one open), two tape computers running, the map table; the log saying whether the drives and the cabinet work.
+            case 1090 -> command(mc, "fill -51 -61 -52 -38 -61 -42 " + GroundBurst.MODID + ":reinforced_concrete");
+            case 1092 -> onServer(mc, level -> {
+                var console = dev.groundburst.content.construction.GBConstruction.CONTROL_CONSOLE.block().get().defaultBlockState()
+                        .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, net.minecraft.core.Direction.NORTH);
+                for (int i = 0; i < 3; i++) {
+                    level.setBlockAndUpdate(new BlockPos(-50 + i, -60, -44), console);
+                }
+                level.setBlockAndUpdate(new BlockPos(-46, -60, -44), dev.groundburst.content.construction.GBConstruction.COMMAND_DESK.block().get()
+                        .defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, net.minecraft.core.Direction.NORTH));
+                for (int i = 0; i < 2; i++) {
+                    level.setBlockAndUpdate(new BlockPos(-44 + i, -60, -44), dev.groundburst.content.construction.GBConstruction.FILING_CABINET.block().get()
+                            .defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, net.minecraft.core.Direction.NORTH)
+                            .setValue(dev.groundburst.content.construction.FilingCabinetBlock.OPEN, i == 0));
+                }
+                var tape = dev.groundburst.content.construction.GBConstruction.TAPE_COMPUTER.block().get();
+                for (int i = 0; i < 2; i++) {
+                    BlockPos at = new BlockPos(-41 + i, -60, -44);
+                    var ts = tape.defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, net.minecraft.core.Direction.NORTH);
+                    level.setBlockAndUpdate(at, ts);
+                    tape.setPlacedBy(level, at, ts, null, net.minecraft.world.item.ItemStack.EMPTY);
+                }
+                var table = dev.groundburst.content.construction.GBConstruction.SITUATION_MAP_TABLE.block().get();
+                BlockPos base = new BlockPos(-47, -60, -47);
+                var tsb = table.defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, net.minecraft.core.Direction.NORTH);
+                level.setBlockAndUpdate(base, tsb);
+                table.setPlacedBy(level, base, tsb, null, net.minecraft.world.item.ItemStack.EMPTY);
+            });
+            case 1095 -> command(mc, "tp @s -45.5 -57.6 -51.5 0 22");
+            case 1160 -> tidy(mc);
+            case 1165 -> shot(mc, "room");
+            case 1170 -> command(mc, "tp @s -41.0 -58.2 -47.2 0 12");
+            case 1200 -> tidy(mc);
+            case 1205 -> shot(mc, "room_tape");
+            case 1210 -> onServer(mc, level -> {
+                boolean tape = level.getBlockEntity(new BlockPos(-41, -60, -44)) instanceof dev.groundburst.content.construction.TapeComputerBlockEntity
+                        && level.getBlockState(new BlockPos(-41, -59, -44)).is(dev.groundburst.content.construction.GBConstruction.TAPE_COMPUTER.block().get());
+                boolean cabinet = level.getBlockEntity(new BlockPos(-43, -60, -44)) instanceof dev.groundburst.content.construction.FilingCabinetBlockEntity c
+                        && c.getContainerSize() == 27;
+                boolean table = level.getBlockState(new BlockPos(-46, -60, -48)).is(dev.groundburst.content.construction.GBConstruction.SITUATION_MAP_TABLE.block().get());
+                GroundBurst.LOGGER.info("Port check: the tape drive two high {}, the cabinet's 27 slots {}, the map table laid {}: {}", tape, cabinet, table,
+                        tape && cabinet && table ? "OK" : "WRONG");
+            });
+            case 1220 -> {
                 GroundBurst.LOGGER.info("Port check: done");
                 mc.stop();
             }

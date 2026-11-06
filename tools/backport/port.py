@@ -840,6 +840,13 @@ def drop_method(signature: str):
 
 
 FILE_FIXES: dict[str, list] = {
+    # --- the Filing Cabinet (main's DESIGN.md §22.4): 1.21.1's containers drop their contents as their block goes ----------
+    "src/main/java/dev/groundburst/content/construction/FilingCabinetBlock.java": [
+        swap("{ super.onRemove(state, level_l, pos, newState_, movedByPiston);",
+             "{ if (!state.is(newState_.getBlock())) { Containers.dropContentsOnDestroy(state, newState_, level_l, pos); } "
+             "super.onRemove(state, level_l, pos, newState_, movedByPiston);"),
+        swap("        Containers.updateNeighboursAfterDestroy(state, level, pos);\n", ""),
+    ],
     # --- main's GameTests, ported (what only one test file does) -------------------------------------------------------
     "src/main/java/dev/groundburst/gametest/CarryTests.java": [
         swap("import net.minecraft.world.level.storage.TagValueInput;\n", ""),

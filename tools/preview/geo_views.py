@@ -170,6 +170,11 @@ PRESETS = {
         ]),
     # The Depth Charge Rack (DESIGN.md §14.6): the whole rack, its side (the slope), the trap end, the charges on the rails, the
     # loading end over the Item Port's housing.
+    "tape_computer": dict(
+        shots=[("front", 4, 180, None, None, None), ("iso front, running", 22, 215, None, None, 2.0), ("iso back", 22, 35, None, None, None),
+               ("reels, running", 6, 190, (0, 23, -5), 14, 2.0), ("reels, rewinding", 6, 170, (0, 23, -5), 14, 5.2),
+               ("control strip", 8, 200, (-1, 15.5, -6), 10, 2.0), ("side", 6, 270, None, None, None)],
+        anim="working"),
     "blast_door": dict(
         shots=[("front, shut", 6, 180, None, None, None), ("iso front, shut", 25, 215, None, None, None),
                ("iso back, shut", 25, 35, None, None, None), ("iso front, open", 25, 215, None, None, 0.0),

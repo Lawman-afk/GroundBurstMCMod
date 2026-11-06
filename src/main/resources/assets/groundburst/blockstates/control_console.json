@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "groundburst:block/control_console"
+    },
+    "facing=east": {
+      "model": "groundburst:block/control_console",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "groundburst:block/control_console",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "groundburst:block/control_console",
+      "y": 270
+    }
+  }
+}

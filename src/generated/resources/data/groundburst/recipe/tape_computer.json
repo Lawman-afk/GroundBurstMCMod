@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": {
+      "item": "groundburst:basic_circuit"
+    },
+    "M": {
+      "item": "groundburst:electric_motor"
+    },
+    "P": {
+      "item": "groundburst:steel_plate"
+    }
+  },
+  "pattern": [
+    "PCP",
+    "PMP",
+    "PCP"
+  ],
+  "result": {
+    "id": "groundburst:tape_computer"
+  }
+}
