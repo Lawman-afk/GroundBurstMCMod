@@ -4386,7 +4386,8 @@ Nether) burns for good and is no reason to wait. Nor is a fire that cannot burn 
 the heal check's third scene): on 26.x a fire neither spreads nor goes out beyond `fire_spread_radius_around_player`
 (128 blocks) of every player, nor anywhere in a chunk that is not ticking, so it would stand there for good and hold the
 healing off for ever (a crater burning when its players went away never healed). Once its chunk is due, such a fire goes
-out (`Snapshots.burnsOut`). Told to heal now (the heal command), a chunk puts the fires by it out first.
+out (`Snapshots.burnsOut`), quietly, as every fire the healer puts out: nothing round it is told, or a crop the
+damage left hanging by it would fall now and drop its seeds (the heal check's town lost nine wheat so). Told to heal now (the heal command), a chunk puts the fires by it out first.
 
 **Kept with the chunk.** What a chunk remembers is a data attachment on it (`ChunkScars`), saved and loaded with it:
 per section, a bit for each remembered cell and its old state as the game keeps sections (a palette and an index a
@@ -4500,7 +4501,7 @@ damage; what falls over ticks later (a column of sugar cane or cactus, scaffoldi
 trunk afresh once the trunk is back (a number nobody sees; a tree grown by world generation counts it one higher here
 and there).
 
-**Checked.** GameTests `HealTests` (14): a blast over ground, grass, a chest of diamonds, stairs, glass and a fence put
+**Checked.** GameTests `HealTests` (19): a blast over ground, grass, a chest of diamonds, stairs, glass and a fence put
 back block for block, the chest with its diamonds, nothing dropped; KEEP keeping a player's block and the hole round it
 and over it; DROP dropping it; the record reading back from its saved form; the schedule (the wait, its random share,
 the morning, command only, off); explosives, excluded blocks and tags, excluded weapons; a freeze over a pond thawed
@@ -4508,10 +4509,16 @@ back; the wasteland's biome turned back; an item frame taken down and hung again
 remembered; fire never brought back; a generator's cable run and the ore crusher it powers cut by a weapon (the
 generator pushing into the broken run meanwhile) and healed, the crusher's top face still set to take nothing and the
 crusher powered again; a pipe run pulling from a chest cut (its pulling end with it) and healed, pulling and carrying
-again; with healing off nothing remembered. `runHealShots` (`HealPhotographer`): a farmstead under a thermobaric
-warhead and a little town under a tactical nuke, with healing on and short waits, photographed before, after, healing
-and healed (run/screenshots/heal_*.png), then every block compared with what it was (run/heal/heal_check.txt):
-the farmstead came back 122 719 of its 122 793 blocks exactly and the town 1 660 194 of its 1 660 437; every block that differs is a leaf's count of its distance to its trunk; the five chests had their goods, every item frame and armour stand hung or stood again, and no item lay about. Getting there found the grass dying under rubble, farmland drying and turning to earth, and the crater lake's water taking crops (each now remembered), and a test scene's own mistakes (sand laid on grass, farmland five blocks from its water).
+again; with healing off nothing remembered; the game's own explosions: a creeper's over dirt, grass, a chest of
+diamonds, stairs and a wall with a torch behind it and an item frame on it, put back block for block, nothing dropped,
+the frame hung again; TNT an explosion lit not put back; each switch, an id left out, a bed's explosion by its damage;
+another mod's explosion class (nothing behind it) with a barrel of emeralds; with healing off a creeper's explosion
+spilling a chest as ever. `runHealShots` (`HealPhotographer`): a farmstead under a thermobaric warhead, a little town
+under a tactical nuke and a cottage under the game's own explosions (lit TNT in the house and a block of TNT it lights,
+TNT by a tree, a creeper by the fence, all set going as in play), with healing on and short waits, photographed before,
+after, healing and healed (run/screenshots/heal_*.png), then every block compared with what it was
+(run/heal/heal_check.txt): the farmstead came back 122 719 of its 122 793 blocks exactly, the town 1 660 194 of its 1 660 437 and the cottage
+50 589 of its 50 625; every block that differs is a leaf's count of its distance to its trunk; the six chests had their goods, every item frame and armour stand hung or stood again, and no item lay about. Getting there found the grass dying under rubble, farmland drying and turning to earth, and the crater lake's water taking crops (each now remembered), and a test scene's own mistakes (sand laid on grass, farmland five blocks from its water); the cottage, the third scene, found the fires that never go out far from players (the camera now stays by the cottage: the farmstead and town waited for their fires until the check gave up), and then the wheat a put-out fire's neighbours were told to drop.
 ---
 
 ## 22. World structures and loot
@@ -5304,6 +5311,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-06 | Version **0.9.0** for Minecraft 26.3, 26.1.2 and 1.21.1 (the user: "create a release file for all 3 versions and change logs and update github"): sea mines, depth charges and the Depth Charge Rack (§14.6), the effects drawn last under shader packs and with Distant Horizons (§12.3, on 26.3 and 1.21.1), healing the game's own explosions and other mods' (§21.9). The 26.1.2 build brought up to main from 0.8.0, its port leaving the shader-pack drawing out (built on 26.3's renderer and Iris's API for it). A changelog for each upload; the branches pushed (no release made on GitHub's page: its command-line tool is not installed here). |
 | 2026-11-06 | **Healing the game's own explosions and other mods'** (§21.9; the user: "please add a heal config to heal the vanilla explosions and if possible the explosions of other mods"): one hook, the block state's `onExplosionHit`, through which the game's explosion and other mods' explosion classes hit every block, so it covers vanilla and most mods; a switch each for creepers, TNT, end crystals, ghast fireballs, the Wither, and beds and respawn anchors, one for other mods' (and their ids in `excludedWeapons`), all on (healing itself stays off by default). An explosion is named by what set it off: its entity, else its damage type. TNT an explosion lights is never put back; decorations are saved before the hit and kept only if it broke them. Not covered: mods that set their crater's blocks themselves (no general way to tell their changes from any other; a list of such mods' entities to watch while they tick was considered and left for later). |
 | 2026-11-06 | **Depth Charge Rack** (§14.6; the user: "instead of having the dropped out of a dropper, can we add a small multiblock that rolls them off? And can be piped into it with charges please? This should also work with create stuff."): a stern rack one block wide and four long (its controller the release end, two Depth Charge Rails, an Item Port at the top end), six charges rolling down its rails to a hinged trap; loaded through the Item Port (hoppers, pipes, Create's funnels), released by redstone (a pulse one, a held signal a pattern at its interval) or its screen (the way aboard a contraption), every charge set to one depth or left at its own, a comparator reading how full it is. A machine like the others, so the 1.21.1 Create compat carries it on contraptions and ships. Two GameTests that had passed by luck of the grid fixed with it: the storm test's interceptor battery engages nothing (once its EMP wore off it shot down a neighbouring test's missile), and a silo's missile flies at the bomb scale its launch was ordered at, not the one a test started since has set. |
 | 2026-11-06 | **Effects drawn last under shader packs and with Distant Horizons** (a player's comment the user passed on: under Bliss "mushroom clouds appear to flicker much more frequently than without shading, while also drastically changing color", and Distant Horizons' far water drawn through the cloud; then the user: more tests with other packs): §12.3. Bliss reproduced it (the cloud a hole of sky colour, the smoke black); its programs fade half-clear particles out by 100 blocks, light entities in a pass of their own and scale glows by its auto-exposure, so no pack program suits the effects. Under a pack they are now drawn after the level, over the pack's finished picture, by their own pipelines against the depth the pack left (`client/fx/DrawnLast`), and with Distant Horizons too (its fade laid its far sea over the cloud's foot). Checked under seven packs (Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas, MakeUp Ultra Fast) and with Distant Horizons, without a pack and under Bliss, on 26.3 and 1.21.1. The 0.8.1 way stays as a client option ("Effects with shader packs: Lit by the pack"). Tried first and dropped: the fire and clouds on the pack's particle program (Bliss's fade lost the cloud whole). |

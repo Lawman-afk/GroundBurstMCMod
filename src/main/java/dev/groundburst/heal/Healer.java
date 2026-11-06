@@ -391,7 +391,10 @@ public final class Healer {
                             return true;
                         }
                         found = true;
-                        this.level.removeBlock(p, false);
+                        // Quietly: nothing's shape hangs on a fire, and told, what the damage left hanging by it (a crop
+                        // over a blown-out field) would fall and drop now, where it stands until its ground heals.
+                        this.level.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),
+                                Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
                     }
                 }
             }
