@@ -14,7 +14,8 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 - **Explosives:** grenades, Molotov cocktails, placed charges with a remote detonator, landmines, bouncing mines and
   claymores.
 - **At sea:** the classic horned sea mine, moored on its chain to the bottom or set adrift, and depth charges set to
-  fire at a depth. Charges under water throw up towering columns of spray instead of blowing holes in the sea.
+  fire at a depth, thrown or rolled off a ship's stern by a Depth Charge Rack that you load by hand, hopper or pipe.
+  Charges under water throw up towering columns of spray instead of blowing holes in the sea.
 - **Artillery:** an 81 mm mortar and a towed 155 mm howitzer that reaches 600 blocks, both crewed and aimed from a
   strategic view over the battlefield, as artillery is aimed in *World of Tanks*: an aiming circle on the ground that
   blooms as the gun fires and turns and settles as you wait. HE, smoke, incendiary, chemical, cryo and EMP shells for the
@@ -146,6 +147,8 @@ them.
   them it reaches.
 - **Aim at a ship:** the Laser Designator's beam lands on a ship where you see it and missiles home on it there; a mortar
   or howitzer aims at the ship, at its height.
+- **Depth charges off a ship:** a Depth Charge Rack aboard a Create Aeronautics ship rolls its charges off into the sea,
+  and Create's funnels load it as hoppers do.
 - **Not yet:** reactors pause while carried, and pipes and cables on a contraption reach only what is on it, not the
   blocks round it.
 
