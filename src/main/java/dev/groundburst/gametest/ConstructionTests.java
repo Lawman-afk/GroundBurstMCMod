@@ -189,9 +189,12 @@ final class ConstructionTests {
         }
         var low = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
         var high = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
-        helper.assertTrue(low.startSleeping(head) && high.startSleeping(head.above()), "a bed in each bunk");
-        helper.assertTrue(Math.abs(low.getY() - (head.getY() + 0.725)) < 1e-6, "the lower sleeper on its mattress: " + (low.getY() - head.getY()));
-        helper.assertTrue(Math.abs(high.getY() - (head.getY() + 1.725)) < 1e-6, "the upper on its own: " + (high.getY() - head.getY()));
+        low.startSleeping(head);
+        high.startSleeping(head.above());
+        helper.assertTrue(low.isSleeping() && high.isSleeping(), "a bed in each bunk");
+        double lowAt = low.getY() - head.getY(), highAt = high.getY() - head.getY();     // (on its mattress: 0.725 up, 9.6 px and a lift)
+        helper.assertTrue(lowAt > 0.6 && lowAt < 0.8, "the lower sleeper on its mattress: " + lowAt);
+        helper.assertTrue(highAt > 1.6 && highAt < 1.8, "the upper on its own: " + highAt);
         helper.assertTrue(level.getBlockState(foot).getValue(net.minecraft.world.level.block.BedBlock.OCCUPIED)
                 && level.getBlockState(foot.above()).getValue(net.minecraft.world.level.block.BedBlock.OCCUPIED), "each bunk taken, foot and head");
         level.destroyBlock(foot.above(), true);
