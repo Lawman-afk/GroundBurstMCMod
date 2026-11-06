@@ -387,8 +387,11 @@ public final class Scars {
             if (heals && hush) {
                 quiet(pos);
             }
-            // Let drop, it spills what it holds as it goes (unless the write skips that, as the blast engine's does).
-            Spill spill = heals && !hush && (flags & Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS) == 0 ? Spill.of(this.level, pos) : null;
+            // Let drop, it spills what it holds as it goes (unless the write skips that, as the blast engine's does, or its
+            // contents were held back for its healing as it dropped whole).
+            boolean held = pos.asLong() == this.heldContents;
+            this.heldContents = Long.MIN_VALUE;
+            Spill spill = heals && !hush && !held && !Snapshots.skipsSideEffects(flags) ? Spill.of(this.level, pos) : null;
             if ((flags & Block.UPDATE_KNOWN_SHAPE) != 0) {
                 boolean done = this.level.setBlock(pos, state, flags);
                 if (spill != null) {
@@ -431,8 +434,12 @@ public final class Scars {
             BlockEntity e = this.level.getBlockEntity(pos);
             if (was != null && e != null && was.getBlock() == this.level.getBlockState(pos).getBlock()) {
                 Snapshots.empty(e, this.level);
+                this.heldContents = pos.asLong();          // (its write next spills nothing, and is not to be told it did)
             }
         }
+
+        /** The block whose contents {@link #holdContents} held back, until it is set. */
+        private long heldContents = Long.MIN_VALUE;
 
         /**
          * The game's or another mod's explosion hits the block at {@code pos} ({@link Explosions}): it is remembered first,

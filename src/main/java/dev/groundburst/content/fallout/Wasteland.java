@@ -65,6 +65,8 @@ public final class Wasteland {
     public static final ResourceKey<Biome> BIOME = ResourceKey.create(Registries.BIOME, GroundBurst.id("nuclear_wasteland"));
     /** Chunks painted a tick; chunks read a tick for a lake; lake water placed a tick (blocks). */
     static final int CHUNKS_PER_TICK = 48, READ_PER_TICK = 64, WATER_PER_TICK = 6000;
+    /** How long the painting may take in a tick (it goes on through its batch the next). */
+    static final long PAINT_NANOS = 3_000_000L;
     /** How far under a chunk's lowest ground the biome reaches (caves deeper down keep theirs). */
     static final int DEPTH = 24;
     /** The smallest crater that floods, its radius in blocks; the most water a lake may hold. */
@@ -284,22 +286,40 @@ public final class Wasteland {
             if (wasteland == null || this.chunks.done()) {
                 return true;
             }
-            List<LevelChunk> batch = this.chunks.current(level, CHUNKS_PER_TICK);
-            if (batch == null) {
-                return false;                              // still loading
+            if (this.batch == null) {
+                this.batch = this.chunks.current(level, CHUNKS_PER_TICK);
+                if (this.batch == null) {
+                    return false;                          // still loading
+                }
+                this.cursor = 0;
             }
+            // A batch painted a few milliseconds a tick (DESIGN.md §11.10: after the Tsar the painting had been a fifth of
+            // the server's work in the slow seconds as the blast's chunks were let go).
+            long until = System.nanoTime() + PAINT_NANOS;
             List<ChunkAccess> changed = new ArrayList<>();
-            for (LevelChunk chunk : batch) {
+            while (this.cursor < this.batch.size()) {
+                LevelChunk chunk = this.batch.get(this.cursor++);
                 if (paint(chunk, wasteland)) {
                     changed.add(chunk);
+                }
+                if (System.nanoTime() >= until) {
+                    break;                                 // (at least one chunk a tick: it always gets on)
                 }
             }
             if (!changed.isEmpty()) {
                 level.getChunkSource().chunkMap.resendBiomesForChunks(changed);
             }
+            if (this.cursor < this.batch.size()) {
+                return false;                              // the rest of the batch next tick
+            }
+            this.batch = null;
             this.chunks.advance(level);
             return this.chunks.done();
         }
+
+        /** The batch being painted, and how far through it; null between batches. */
+        private @Nullable List<LevelChunk> batch;
+        private int cursor;
 
         /** Paints one chunk's cells inside the disc, from a little under its lowest ground there up. True if any changed. */
         private boolean paint(LevelChunk chunk, Holder<Biome> wasteland) {

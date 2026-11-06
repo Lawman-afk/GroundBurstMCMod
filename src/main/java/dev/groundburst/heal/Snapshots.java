@@ -33,6 +33,11 @@ final class Snapshots {
         be.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag));
     }
 
+    /** Whether a block set with these flags skips its block entity's removal (a chest broken so spills nothing). */
+    static boolean skipsSideEffects(int flags) {
+        return (flags & net.minecraft.world.level.block.Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS) != 0;
+    }
+
     /**
      * Empties what a block entity holds (a chest's items, a lectern's book, a campfire's food, a machine's slots), keeping
      * the rest of it (its name, its lock, a sign's words): by the game's own clearing where the block has it, else through

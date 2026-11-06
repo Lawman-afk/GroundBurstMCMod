@@ -592,8 +592,7 @@ public final class FreezeFx {
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
-        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT)
-                .setNormal(pose, 0, 1, 0);
+        FxVertex.put(b, pose, x, y, z, u, v, color);
     }
 
     /** Its cold snap's wind: a thin whistling loop heard all round, rising and dying with the cold and how deep in it the camera is. */

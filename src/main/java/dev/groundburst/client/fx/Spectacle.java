@@ -1030,10 +1030,20 @@ public final class Spectacle {
                 && AnnihilationFx.isEmpty() && SingularityFx.isEmpty() && StormFx.isEmpty() && FreezeFx.isEmpty() && ParticleBeamFx.isEmpty())) {
             return;
         }
-        var camera = event.getLevelRenderState().cameraRenderState;
-        double now = now();
         SubmitNodeCollector collector = event.getSubmitNodeCollector();
         PoseStack poseStack = event.getPoseStack();
+        FxSort.begin();                                    // (their blended quads sorted together, once: DESIGN.md §11.10)
+        try {
+            submitAll(event, level, collector, poseStack);
+        } finally {
+            FxSort.end(collector, poseStack);
+        }
+    }
+
+    private static void submitAll(SubmitCustomGeometryEvent event, ClientLevel level, SubmitNodeCollector collector, PoseStack poseStack) {
+        Minecraft mc = Minecraft.getInstance();
+        var camera = event.getLevelRenderState().cameraRenderState;
+        double now = now();
         List<float[]> fire = new ArrayList<>(), cores = new ArrayList<>(), shells = new ArrayList<>();
         for (BlastFx fx : BLASTS.values()) {
             double t = fx.age(now);
@@ -1160,7 +1170,6 @@ public final class Spectacle {
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
-        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT)
-                .setNormal(pose, 0, 1, 0);
+        FxVertex.put(b, pose, x, y, z, u, v, color);
     }
 }

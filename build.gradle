@@ -113,6 +113,14 @@ neoForge {
             if (project.findProperty('benchSeed') != null) {
                 systemProperty 'groundburst.blastBench.seed', project.findProperty('benchSeed').toString()
             }
+            // -PbenchKind=<ChargeKind>: the warhead set off by its own path (its fallout and the special weapons too);
+            // -PbenchView=<blocks> watched from that far east (360); -PbenchTail=<seconds> recorded on that long after the
+            // blast has finished (2), or after the burst for a weapon that is not a blast; -PbenchRadius=<blocks> generated.
+            ['benchKind': 'kind', 'benchView': 'view', 'benchTail': 'tail', 'benchRadius': 'radius'].each { p, key ->
+                if (project.findProperty(p) != null) {
+                    systemProperty "groundburst.blastBench.${key}", project.findProperty(p).toString()
+                }
+            }
         }
 
         // Makes a normal world and checks the old sites and the wasteland on it: a census of every site within 10 km of

@@ -116,7 +116,8 @@ final class Puffs {
         FxLight light = FxLight.current;
         Vector3f shade = new Vector3f();
         // Snapshot this frame's quads (centre and two half-axes each); the collector draws them later in the frame.
-        List<float[]> smoke = new ArrayList<>(), blended = new ArrayList<>(), bright = new ArrayList<>();
+        int most = this.puffs.size();
+        QuadBuffer smoke = new QuadBuffer(most), blended = new QuadBuffer(most / 2), bright = new QuadBuffer(most / 2);
         double[] at = new double[3];
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (Puff p : this.puffs) {
@@ -174,8 +175,8 @@ final class Puffs {
                 }
             }
             int cell = p.kind.first + Math.floorMod(p.variant, p.kind.count);
-            float[] q = {x, y, z, ax, ay, az, bx, by, bz, Float.intBitsToFloat((int) (Math.min(1, alpha) * 255) << 24 | color), cell};
-            (p.kind.lit ? smoke : p.kind == Kind.GLOW || p.kind == Kind.SPARK ? bright : blended).add(q);
+            (p.kind.lit ? smoke : p.kind == Kind.GLOW || p.kind == Kind.SPARK ? bright : blended)
+                    .add(x, y, z, ax, ay, az, bx, by, bz, (int) (Math.min(1, alpha) * 255) << 24 | color, cell);
         }
         if (!smoke.isEmpty()) {
             // Smoke and dust write depth (with their faint fringe cut out), so vanilla's clouds stay behind them.
@@ -190,21 +191,70 @@ final class Puffs {
     }
 
     static void quads(VertexConsumer b, PoseStack.Pose pose, List<float[]> quads) {
+        FxVertex out = new FxVertex(b, pose);
         for (float[] q : quads) {
-            float x = q[0], y = q[1], z = q[2], ax = q[3], ay = q[4], az = q[5], bx = q[6], by = q[7], bz = q[8];
-            int color = Float.floatToRawIntBits(q[9]);
-            int cell = (int) q[10];
-            float u0 = (cell % 4) / 4f, v0 = (cell / 4) / (float) ROWS, u1 = u0 + 0.25f, v1 = v0 + 1f / ROWS;
-            vertex(b, pose, x - ax - bx, y - ay - by, z - az - bz, u0, v1, color);
-            vertex(b, pose, x + ax - bx, y + ay - by, z + az - bz, u1, v1, color);
-            vertex(b, pose, x + ax + bx, y + ay + by, z + az + bz, u1, v0, color);
-            vertex(b, pose, x - ax + bx, y - ay + by, z - az + bz, u0, v0, color);
+            quad(out, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], q[8], Float.floatToRawIntBits(q[9]), (int) q[10]);
         }
     }
 
+    static void quads(VertexConsumer b, PoseStack.Pose pose, QuadBuffer quads) {
+        FxVertex out = new FxVertex(b, pose);
+        float[] d = quads.data;
+        for (int i = 0, n = quads.size * QuadBuffer.STRIDE; i < n; i += QuadBuffer.STRIDE) {
+            quad(out, d[i], d[i + 1], d[i + 2], d[i + 3], d[i + 4], d[i + 5], d[i + 6], d[i + 7], d[i + 8], Float.floatToRawIntBits(d[i + 9]), (int) d[i + 10]);
+        }
+    }
+
+    /** One vertex of an effect's quad, an attribute at a time (for the few drawn without {@link FxVertex}). */
     static void vertex(VertexConsumer b, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
-        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT)
-                .setNormal(pose, 0, 1, 0);
+        FxVertex.put(b, pose, x, y, z, u, v, color);
+    }
+
+    /** A quad about (x, y, z) with half-axes a and b, the sheet's cell {@code cell} on it. */
+    private static void quad(FxVertex out, float x, float y, float z, float ax, float ay, float az, float bx, float by, float bz, int color, int cell) {
+        float u0 = (cell % 4) / 4f, v0 = (cell / 4) / (float) ROWS, u1 = u0 + 0.25f, v1 = v0 + 1f / ROWS;
+        out.put(x - ax - bx, y - ay - by, z - az - bz, u0, v1, color);
+        out.put(x + ax - bx, y + ay - by, z + az - bz, u1, v1, color);
+        out.put(x + ax + bx, y + ay + by, z + az + bz, u1, v0, color);
+        out.put(x - ax + bx, y - ay + by, z - az + bz, u0, v0, color);
+    }
+
+    /**
+     * A frame's quads, flat (centre, two half-axes, the colour's bits, the sheet's cell, eleven floats each): one array a
+     * frame for an effect's quads instead of one for each quad. Made afresh each frame (the game draws them later in it).
+     */
+    static final class QuadBuffer {
+        static final int STRIDE = 11;
+        float[] data;
+        int size;
+
+        QuadBuffer(int capacity) {
+            this.data = new float[Math.max(1, capacity) * STRIDE];
+        }
+
+        boolean isEmpty() {
+            return this.size == 0;
+        }
+
+        void add(float x, float y, float z, float ax, float ay, float az, float bx, float by, float bz, int argb, int cell) {
+            int i = this.size * STRIDE;
+            if (i + STRIDE > this.data.length) {
+                this.data = java.util.Arrays.copyOf(this.data, this.data.length * 2);
+            }
+            float[] d = this.data;
+            d[i] = x;
+            d[i + 1] = y;
+            d[i + 2] = z;
+            d[i + 3] = ax;
+            d[i + 4] = ay;
+            d[i + 5] = az;
+            d[i + 6] = bx;
+            d[i + 7] = by;
+            d[i + 8] = bz;
+            d[i + 9] = Float.intBitsToFloat(argb);
+            d[i + 10] = cell;
+            this.size++;
+        }
     }
 
     /** An RGB colour times a light multiplier (clamped). */

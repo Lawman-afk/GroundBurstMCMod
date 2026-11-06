@@ -1,6 +1,7 @@
 package dev.groundburst.client.fx;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.Function;
 
 import com.mojang.renderpearl.api.pipeline.BlendFunction;
@@ -110,12 +111,26 @@ final class FxRenderTypes {
                 .build();
     }
 
-    private static final Function<Identifier, RenderType> CLOUD = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_cloud",
-            RenderSetup.builder(CLOUD_PIPELINE).setOitPipelines(OIT_CLOUD).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
-    private static final Function<Identifier, RenderType> FIRE = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_fire",
-            RenderSetup.builder(FIRE_PIPELINE).setOitPipelines(OIT_FIRE).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
+    /**
+     * Each blended type's twin, which leaves its quads in the order they come: the effects' own quads are sorted by the
+     * mod ({@link FxSort}) and drawn under it; anything else (a reticle, a laser) under the sorting type as before.
+     */
+    private static final Map<RenderType, RenderType> PRESORTED = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Function<Identifier, RenderType> CLOUD = Util.memoize(texture -> sorting("_cloud", CLOUD_PIPELINE, OIT_CLOUD, texture));
+    private static final Function<Identifier, RenderType> FIRE = Util.memoize(texture -> sorting("_fire", FIRE_PIPELINE, OIT_FIRE, texture));
+
+    /** A blended type that has the game sort its quads, and its twin that does not. */
+    private static RenderType sorting(String name, RenderPipeline pipeline, OitPipelineSet oit, Identifier texture) {
+        RenderType sorted = RenderType.create(GroundBurst.MODID + name,
+                RenderSetup.builder(pipeline).setOitPipelines(oit).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup());
+        PRESORTED.put(sorted, RenderType.create(GroundBurst.MODID + name + "_presorted",
+                RenderSetup.builder(pipeline).setOitPipelines(oit).withTexture("Sampler0", texture).createRenderSetup()));
+        return sorted;
+    }
+    // The glow adds its light and writes no depth, so it comes out the same in any order: not sorted (DESIGN.md §11.10;
+    // sorting every effect's quads each frame was a tenth of the frame's work under a mushroom cloud).
     private static final Function<Identifier, RenderType> GLOW = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_glow",
-            RenderSetup.builder(GLOW_PIPELINE).setOitPipelines(OIT_GLOW).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
+            RenderSetup.builder(GLOW_PIPELINE).setOitPipelines(OIT_GLOW).withTexture("Sampler0", texture).createRenderSetup()));
 
     private FxRenderTypes() {}
 
@@ -147,6 +162,15 @@ final class FxRenderTypes {
         if (IRIS && IrisFx.shadowPass()) {
             return;                                        // a shader pack's shadow map: effects cast no shadows
         }
+        RenderType presorted = PRESORTED.get(type);
+        if (presorted != null && FxSort.add(poseStack, presorted, renderer)) {
+            return;                                        // (sorted with the rest of the effects' quads, at the end)
+        }
+        submitNow(collector, poseStack, type, renderer);
+    }
+
+    /** {@link #submit}, without keeping anything back to be sorted. */
+    static void submitNow(SubmitNodeCollector collector, PoseStack poseStack, RenderType type, SubmitNodeCollector.CustomGeometryRenderer renderer) {
         if (drawnLast()) {
             DrawnLast.submit(poseStack, type, renderer);
             return;

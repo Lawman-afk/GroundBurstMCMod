@@ -1381,6 +1381,53 @@ Client config (`groundburst-client.toml`): `fx.quality` (low/medium/high/ultra, 
 - **So:** no change beyond the runs' own spread. What came after 0.7.0 (healing, off by default; hulls; sea blasts)
   costs a blast on land nothing measurable.
 
+### 11.10 The performance pass: effects, fallout and saving (2026-11-07)
+- **Why:** the user's plan after 0.9.0 put the performance pass first with the loose ends (§30): the blast engine had
+  been benched at the Tsar's size (§11.7) and play at 32 chunks (§11.8), not what the effects cost to draw up close, the
+  fallout over the minutes after, or saving with the aftermath's records.
+- **Bench, grown:** `runBlastBench` sets any warhead off by its own path (`-PbenchKind=<ChargeKind>`: its fallout,
+  radiation and the special weapons, which are not blasts), watched from as near as asked (`-PbenchView`), recorded as
+  long after as asked (`-PbenchTail`, from the burst for a weapon with no blast job: a tactical warhead's blast is
+  instant, done as it starts); every frame timed by the run's phase (before the burst, while it runs, after), the worst
+  frame each tick in the CSV, a save at the end and the mod's data on disk, and with healing on a save as the blast
+  finishes, every block it changed remembered. `tools/bench/jfr_summary.py` sums a `-Pjfr` recording's samples by
+  thread and, on the render and server threads, by the mod's outermost and innermost frames, with the callers of any
+  hot frame (`--callers`).
+- **A tactical warhead from 160 blocks, its fallout for four minutes:** server ticks mean 3.4 ms (p99 11.5, max 21.7);
+  frames 0.74 ms before the burst, 0.91 ms after it (p99 3.0, max 30, none over 33 ms); saves 53 to 60 ms. Cheap on
+  the user's PC, but the mod's code was on the render thread's stack in 35.5% of its samples: the mushroom cloud's
+  cloudlets (10%, and its fire colour 4%), the puffs' vertices an attribute at a time (16%, the game's colour packing
+  half of it), the fallout layer drawing every puff's nine numbers from a new random source each frame and growing its
+  list from nothing (11%), and the game sorting every effect's quads far to near each frame (13%, half again in its
+  index writing). On the server the mod was in 5% of the samples (the blast, the fallout's once-a-second work).
+- **Changes, the picture the same:** every effect vertex written in one call (`FxVertex`: the game's buffer for this
+  layout writes it straight to memory), the pose's normal worked out once a draw and the identity pose (the level's,
+  which effects are drawn in) left out of it; a frame's quads in one flat array an effect (`Puffs.QuadBuffer`), not
+  an array a quad; the fallout layer's puffs laid out once a zone from its seed and kept (the same puffs: the same
+  numbers in the same order), and its own sort dropped (the cloud render type has the game sort them with the rest);
+  the glow not sorted at all (it adds its light and writes no depth: any order comes out the same); the mushroom
+  cloud's fire colours from a table of 1,024 steps, its cloudlets' turns worked out once, no power for a square.
+- **After:** frames 0.86 ms with the effects (0.75 before the burst): the effects' cost a frame down from 0.17 to
+  0.11 ms; the mod on the render thread's stack in 27.6% of the samples (the fallout layer from 7% to nearly
+  nothing, the vertices from about 18% to 10%). The game's sort of the cloud quads (about 15%) was the most left.
+- **The Tsar with healing on** (`-PbenchHeal=true`, watched from 360 blocks): the blast 137 s, 21.6 million blocks,
+  server ticks mean 18.7 ms (p95 21.8, p99 25.5, max 76.3, at 2 s in), one over 50 ms, as before (§11.8: 19.9, 31.0,
+  58.9); frames 1.06 ms with the blast, 0.79 before. Saving: 130 ms at 30 s in (4.7 million blocks remembered) and
+  138 ms as the blast finished with all 21.6 million remembered, so healing's records cost a save next to nothing (the
+  autosave during the healing in the recording: the records' encoding 1.5% of its samples); the region files 89 MB. The
+  healing took 676 s at 32,000 blocks a second, ticks mean 7.0 ms: its pace is the server's settings (20 blocks a second
+  a chunk, a chunk's longest 300 s), not its cost. The slow ticks were ten of 47 to 67 ms in the 8 s after the blast,
+  as its 700 chunks were let go and saved (the game's), the healing began at once (the bench's 20 s wait) and the
+  wasteland was painted 48 chunks a tick whatever that cost (a fifth of the server's samples then), and two autosaves
+  during the healing (90 and 51 ms).
+- **More changes:** the effects' blended quads sorted by the mod, once a frame, all together (`FxSort`): everything the
+  effects submit with the cloud and fire types while they submit is kept back, each renderer run into a buffer of its
+  own at draw time, the quads put in the game's own order (the square of their centre's distance from the camera, the
+  centre the middle of a quad's first and third corners, far first, ties in the order they came) by a sort of plain
+  numbers, and written out under a twin of the type that leaves them as they come; what is drawn is what the game's sort
+  drew (a reticle or a laser submitted outside the effects keeps the sorting type). The wasteland is painted 3 ms a tick
+  at most, going on through its batch the next.
+
 ## 12. Visual effects system (`client.fx`, "Spectacle")
 
 Principle: **the server is authoritative for radii.** Clients receive `BlastStart(id, profile, center, seed,

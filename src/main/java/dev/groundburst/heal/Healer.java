@@ -599,7 +599,7 @@ public final class Healer {
                 BlockEntity now = level.getBlockEntity(p);
                 if (now != null) {
                     Snapshots.load(now, be, level);
-                    if (be.getBooleanOr(ChunkScars.SPILLED, false)) {
+                    if (be.contains(ChunkScars.SPILLED)) {
                         Snapshots.empty(now, level);       // what it held spilled as it broke: not had twice
                     }
                     now.setChanged();
