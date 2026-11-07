@@ -4,7 +4,9 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `6fe765f5` (2026-11-07: a ladder built into the Bunker Hatch, down its front
+- **Last brought up to:** `main` at `8eb031af` (2026-11-07: 0.10.0, released for all three versions as
+  `groundburst-mc1.21.1-0.10.0.jar`: main's changelog, README and description; before it, at `6fe765f5`: a ladder
+  built into the Bunker Hatch, down its front
   under the coaming and climbable as a ladder (NeoForge's `isLadder`, this version's as main's), the extinguisher's
   hose closed, the open Ammo Crates painted as the shut ones, the doors board's shafts laddered; before it, at
   `060edbdb`: round tops as polygons, main's DESIGN.md §4.4: each round part's

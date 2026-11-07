@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.10.0 — 2026-11-07
+
+Four sets of blocks to build bunkers and bases from: bunker doors and hatches, a command room, bunker fittings, and
+the yard's obstacles, searchlight, crates and drums. Round parts in every model are smooth now and keep their full
+texture, and the blast effects cost less to draw. For Minecraft 26.3, 26.1.2 and 1.21.1.
 
 ### Bunker doors
 - **Blast Door**: a heavy steel blast door for a doorway two blocks wide and three high. Click it, or give it a
@@ -9,7 +13,9 @@
   reaching left), needs two blocks clear in front of its hinges to swing open, and stands up to blasts as reinforced
   concrete does.
 - **Bunker Hatch**: a round steel hatch with a handwheel, in a square steel frame. It opens as a trapdoor does, by hand or
-  by redstone, but its lid lifts up out of the floor (a hatch in a ceiling swings down).
+  by redstone, but its lid lifts up out of the floor and stands in the block above (click the standing lid to shut it;
+  a hatch in a ceiling swings down). A ladder is built in down its front, on the side nearest you as you place it: hang
+  ladders on the same wall under it and climb straight up through.
 - **Pressure Door**: a steel door with a porthole you can see through and a red lever on both sides. It opens as a door
   does, by hand or by redstone.
 - Each with its own sounds; in the Construction tab.
@@ -18,32 +24,45 @@
 - **Control Console**: a steel console with switches, buttons, dials and blinking lamps; place several side by side for
   one long console.
 - **Command Desk**: a steel desk with a CRT monitor whose green screen scrolls, and a red telephone.
-- **Filing Cabinet**: holds 27 stacks like a barrel; its top drawer slides out while it is open.
+- **Filing Cabinet**: holds 27 stacks like a barrel; its top drawer slides out while it is open, or while a redstone
+  signal reaches it.
 - **Tape Computer**: a tape drive two blocks high whose reels read, stop and rewind while its lamps blink. Click it to
-  stop or start it; a row of them makes a wall of computers that never runs in step.
+  stop or start it, or run it by redstone; a row of them makes a wall of computers that never runs in step.
 - **Situation Map Table**: a table two blocks by two with a map of a coast at war on it, its unit counters and pins.
 
 ### Bunker fittings
 - **Wall Pipes**: three pipes along a wall that run on into the wall pipes beside them, capped where the run ends.
 - **Pipe Valve**: a gate valve in a run of wall pipes. Turn its red handwheel to open it: it gives a redstone signal
-  like a lever.
+  like a lever. A signal from elsewhere shows it open.
 - **Vent Grille** and **Ventilation Duct**: the duct joins up on all six sides, and to the back of a grille.
-- **Bunker Lamp**: a caged lamp for walls, ceilings and floors; click it to switch it off and on.
-- **Fuse Box**: throw its breaker for a redstone signal; its lamp shows green or red.
-- **Fire Extinguisher**: click it to spray, putting out fire in front of it.
-- **Steel Locker**: two blocks high, holds 27 stacks; its door swings open while it is in use, a helmet, a coat and boots
-  inside.
-- **Bunk Bed**: two beds in one, two blocks high and two long. Two players can sleep in it, and each bunk sets a spawn
-  point.
+- **Bunker Lamp**: a caged lamp for walls, ceilings and floors, lit by a redstone signal.
+- **Fuse Box**: throw its breaker for a redstone signal; its lamp shows green or red. A signal from elsewhere shows it
+  on.
+- **Fire Extinguisher**: stands on the floor, or hangs on a wall when placed against one; click it to spray, putting
+  out fire in front of it.
+- **Steel Locker**: two blocks high, holds 27 stacks; its door swings open while it is in use, or while a redstone signal
+  reaches it.
+- **Bunk Bed**: two beds in one, two blocks high and two long, with guard rails and a ladder. Two players can sleep in
+  it, and each bunk sets a spawn point.
 
 ### The yard
 - **Jersey Barrier** and **Dragon's Teeth**: concrete obstacles as hard to break and to blast as Reinforced Concrete.
   Barriers set in a row make a wall; teeth go in rows.
-- **Czech Hedgehog**: three rusty steel beams crossed, standing on three of their ends.
-- **Searchlight**: a big searchlight on a stand, two blocks high. Click it to switch it on: it sweeps the sky with its
-  beam, brightest at night.
-- **Ammo Crates**: olive ammo boxes on a pallet that hold 27 stacks; a box's lid lifts while they are open.
+- **Czech Hedgehog** and **Rusty Czech Hedgehog**: three steel beams crossed, standing on three of their ends,
+  painted or left to rust.
+- **Searchlight**: a big searchlight on a stand, two blocks high. Click it to switch it on, or give it a redstone
+  signal: it sweeps the sky with its beam, brightest at night.
+- **Ammo Crates**: olive ammo boxes on a pallet that hold 27 stacks; a box's lid lifts while they are open, or while a
+  redstone signal reaches them.
 - **Oil Drum**, **Fuel Drum**, **Rusty Drum**: up to four drums stand in one block, like candles.
+
+### Models
+- **Round parts look round and keep their texture**: every round part in the mod (warheads, missiles, tanks, pipes,
+  drums, lamps) has smooth round ends painted like the rest of its model, where they had been stepped or one plain
+  colour, and nothing flickers where round parts meet.
+- The **Particle Uplink Cannon**, the **SCUD Storm** and the **Nuclear Missile Silo** are closed underneath.
+- Gas clouds, tank glass and lamp lenses are evenly lit again: Minecraft 26.3 had been shading them like solid
+  blocks.
 
 ### Performance
 - **Blast effects cost less to draw.** Under a mushroom cloud the mod's share of each frame's work is down by about a
