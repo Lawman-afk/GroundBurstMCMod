@@ -49,6 +49,7 @@ final class ConstructionTests {
         GBGameTests.test("map_table_breaks_whole_for_one_item", GBGameTests.FLOOR_16, 40, ConstructionTests::mapTableBreaks);
         GBGameTests.test("bunker_lamp_lights_on_a_signal", GBGameTests.FLOOR_16, 40, ConstructionTests::lampLights);
         GBGameTests.test("props_are_held_on_or_open_by_redstone", GBGameTests.FLOOR_16, 40, ConstructionTests::propsHeld);
+        GBGameTests.test("fuse_boxes_do_not_hold_each_other_on", GBGameTests.FLOOR_16, 20, ConstructionTests::fuseBoxesApart);
         GBGameTests.test("fire_extinguisher_hangs_on_a_wall", GBGameTests.FLOOR_16, 20, ConstructionTests::extinguisherHangs);
         GBGameTests.test("ducts_join_ducts_and_a_grilles_back", GBGameTests.FLOOR_16, 20, ConstructionTests::ductsJoin);
         GBGameTests.test("wall_pipes_run_on_into_their_neighbours", GBGameTests.FLOOR_16, 20, ConstructionTests::pipesJoin);
@@ -157,6 +158,39 @@ final class ConstructionTests {
      * switches that give a signal look on but give none of their own (else they would hold themselves on); the redstone gone,
      * each as it was.
      */
+    /**
+     * A Fuse Box thrown on gives a signal, but it holds no other Fuse Box on: not one beside it, nor one back to back
+     * through the wall it hangs on (strongly powered by it); a redstone block still holds one (after the user's look:
+     * fuse boxes turned each other on).
+     */
+    private static void fuseBoxesApart(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var fuse = GBConstruction.FUSE_BOX.block().get();
+        var facing = net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
+        BlockPos first = new BlockPos(3, 2, 6), beside = new BlockPos(4, 2, 6), behind = new BlockPos(3, 2, 8);
+        helper.setBlock(first.south(), Blocks.STONE);
+        helper.setBlock(beside.south(), Blocks.STONE);
+        helper.setBlock(first, fuse.defaultBlockState().setValue(facing, Direction.NORTH));
+        helper.setBlock(beside, fuse.defaultBlockState().setValue(facing, Direction.NORTH));
+        helper.setBlock(behind, fuse.defaultBlockState().setValue(facing, Direction.SOUTH));
+        helper.useBlock(first);
+        var powered = dev.groundburst.content.construction.FuseBoxBlock.POWERED;
+        var held = dev.groundburst.content.construction.FuseBoxBlock.HELD;
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(level.getBlockState(helper.absolutePos(first)).getValue(powered), "the first is thrown on");
+            helper.assertTrue(level.hasNeighborSignal(helper.absolutePos(beside)), "its signal reaches the one beside it");
+            for (BlockPos p : List.of(beside, behind)) {
+                BlockState s = level.getBlockState(helper.absolutePos(p));
+                helper.assertTrue(!s.getValue(held) && !s.getValue(powered), "not held on by another fuse box: " + s);
+            }
+            helper.setBlock(beside.above(), Blocks.REDSTONE_BLOCK);
+            helper.runAfterDelay(2, () -> {
+                helper.assertTrue(level.getBlockState(helper.absolutePos(beside)).getValue(held), "a redstone block still holds it on");
+                helper.succeed();
+            });
+        });
+    }
+
     private static void propsHeld(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos cabinet = new BlockPos(2, 1, 3), crates = new BlockPos(5, 1, 3), locker = new BlockPos(8, 1, 3), light = new BlockPos(11, 1, 3),

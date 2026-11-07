@@ -55,9 +55,10 @@ def build() -> tuple[GeoModel, dict]:
 
     g.bone("base")
     # (Each round part's caps on as few levels as keep their overlaps apart where they show: the foot's top, round the
-    # column, flickered on one plane where it showed past it.)
+    # column, flickered on one plane where it showed past it.) The column reaches a pixel down into the foot: its sides'
+    # lowest row of texels then lies all inside the foot (half in, its shade came from inside it: dark specks).
     parts["foot"] = ring(g, "foot", 5.0, 0.0, 1.2, "base", hi=1.8)
-    parts["column"] = ring(g, "column", 1.8, 1.2, 8.0, "base", root=0.5)
+    parts["column"] = ring(g, "column", 1.8, 1.2, 8.0, "base", root=1.0)
     parts["collar"] = ring(g, "collar", 2.6, 8.0, YOKE_Y + 0.1, "base", lo=1.8, toward="hi")
     g.bone("yoke", pivot=(0.0, YOKE_Y, 0.0), parent="base")
     parts["turntable"] = ring(g, "turntable", 3.2, YOKE_Y, YOKE_Y + 1.0, "yoke", lo=2.6, hi=0.0)
@@ -116,7 +117,7 @@ LENS_DARK = (38, 46, 54)
 
 
 def paint(g: GeoModel, parts: dict) -> tuple[Tex, Tex]:
-    k = K.Kit(g, {}, seed=6601, ao_reach=1.6)
+    k = K.Kit(g, {}, seed=6601, ao_reach=1.6, turned=True)
     W.round_faces(k.S, SS.ROUND, top=True, bottom=False, foot=False)
     S = k.S
     t = Tex(g.tex_w, g.tex_h)

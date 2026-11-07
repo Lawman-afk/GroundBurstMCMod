@@ -2,6 +2,7 @@ package dev.groundburst.content.construction;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,10 +37,45 @@ final class Fittings {
 
     /** A signal-giving switch looking again at the redstone round it (held on, or let go): its look alone, told to clients. */
     static void hold(BlockState state, Level level, BlockPos pos) {
-        boolean held = level.hasNeighborSignal(pos);
+        hold(state, level, pos, s -> false);
+    }
+
+    /**
+     * As {@link #hold(BlockState, Level, BlockPos)}, deaf to the signal of any block {@code ignored} accepts: two Fuse Boxes
+     * side by side, or back to back through the wall they hang on, would otherwise hold each other on.
+     */
+    static void hold(BlockState state, Level level, BlockPos pos, Predicate<BlockState> ignored) {
+        boolean held = signalFromOthers(level, pos, ignored);
         if (held != state.getValue(HELD)) {
             level.setBlock(pos, state.setValue(HELD, held), Block.UPDATE_CLIENTS);
         }
+    }
+
+    /**
+     * Whether a redstone signal reaches {@code pos} as the level's {@code hasNeighborSignal} finds one, but none given by a
+     * block {@code ignored} accepts, nor passed on by a solid block from one (a block strongly powered by it).
+     */
+    static boolean signalFromOthers(Level level, BlockPos pos, Predicate<BlockState> ignored) {
+        for (Direction d : Direction.values()) {
+            BlockPos n = pos.relative(d);
+            BlockState ns = level.getBlockState(n);
+            if (ignored.test(ns)) {
+                continue;
+            }
+            if (ns.getSignal(level, n, d) > 0) {
+                return true;
+            }
+            if (ns.shouldCheckWeakPower(level, n, d)) {
+                for (Direction e : Direction.values()) {
+                    BlockPos m = n.relative(e);
+                    BlockState ms = level.getBlockState(m);
+                    if (!m.equals(pos) && !ignored.test(ms) && ms.getDirectSignal(level, m, e) > 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /** Whether a redstone signal reaches either block of a two-high prop whose lower block is {@code lower}. */

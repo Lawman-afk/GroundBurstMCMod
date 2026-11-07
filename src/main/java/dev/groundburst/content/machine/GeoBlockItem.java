@@ -8,7 +8,6 @@ import com.geckolib.animatable.GeoItem;
 import com.geckolib.animatable.client.GeoRenderProvider;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.model.DefaultedBlockGeoModel;
 import com.geckolib.renderer.GeoItemRenderer;
 import com.geckolib.renderer.base.BoneSnapshots;
 import com.geckolib.renderer.base.GeoRenderState;
@@ -63,7 +62,7 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
             @Override
             public GeoItemRenderer<?> getGeoItemRenderer() {
                 if (this.renderer == null) {
-                    this.renderer = new GeoItemRenderer<>(new DefaultedBlockGeoModel<>(id)) {
+                    this.renderer = new GeoItemRenderer<>(new dev.groundburst.client.render.PolyGeoModel<>(id)) {
                         // GeckoLib lifts item models by half a block (it expects them centred on their origin); block
                         // models sit on their origin like a placed block, so only centre them horizontally.
                         @Override

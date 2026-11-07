@@ -41,6 +41,8 @@ public class GroundBurstClient {
         dev.groundburst.client.render.IceShellRenderer.register(modBus);
         modBus.addListener(dev.groundburst.client.render.GBFluidModels::register);
         modBus.addListener(dev.groundburst.client.render.GBFluidModels::registerTints);
+        // Models with flat polygons beside their elements: round parts' caps, rings' sides (DESIGN.md §4.4).
+        dev.groundburst.client.render.PolygonModels.register(modBus);
         dev.groundburst.client.blast.ClientBlasts.register(modBus);
         dev.groundburst.client.fx.Spectacle.register(modBus);
         dev.groundburst.client.fx.LaserFx.register();

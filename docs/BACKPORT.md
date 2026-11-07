@@ -6,7 +6,10 @@ Main is written for Minecraft 26.3 (NeoForge 26.3). This branch is the same mod 
 - **Why a backport from main** (main's DESIGN.md §30): 26.1.2 is two minor versions before 26.3 and shares most of its
   code (the same rendering by render states and submitted geometry, item model definitions, data components, the same
   GameTest framework); a forward port from the 1.21.1 branch would cross every change from 1.21.2 to 26.1.
-- **Last brought up to:** `main` at `2e61cc60` (2026-11-07: after the user's look round the showroom, main's DESIGN.md
+- **Last brought up to:** `main` at `060edbdb` (2026-11-07: round tops as polygons, main's DESIGN.md §4.4, main's own
+  model loader (`client/render/PolygonModels`; 26.1.2's quad baker shades a quad or not: a `FILE_FIXES` entry) and
+  `PolyGeoModel` (GeckoLib 5.5.2's the same) ported; the user's second look's fixes; before it, at `2e61cc60` (after
+  the user's look round the showroom, main's DESIGN.md
   §22.7: flat round tops in every model (a round part's overlapping caps on one level, one even colour, no corner
   shade), the cosmetic models' fixes, the hatch's lid block, redstone holding the props open, the Rusty Czech Hedgehog,
   the extinguisher on a wall, main's showroom world (`gradlew runShowroom`; its signs written through this version's
@@ -26,7 +29,7 @@ main at the commit in `tools\backport\base.txt` straight from git and writes its
   features' registry, `ModConfig.Type.SYNCED` and `LOCAL` to `SERVER` and `COMMON`, the GameTests' mock player and test
   data), a few functions (blocks' codecs, the picture-in-picture renderers, calls whose arguments changed, a block's
   outline drawn as lines) and per-file fixes (`FILE_FIXES`: fuel values, the sky's packed colours, healing's fire and
-  farmland mixins, an entity's load, the showroom's signs).
+  farmland mixins, an entity's load, the showroom's signs, the polygon loader's shading).
 - **Resources:** configured features to `worldgen/configured_feature` with their settings under `config` and full block
   states; loot tables' single conditions and modifiers to 26.1.2's lists; recipe unlocks name one recipe; a biome's mob
   spawns from 26.3's environment attribute to its spawners; tags' entries from outside the mod made optional; recipes
@@ -61,7 +64,7 @@ their lines).
 
 ## Checks
 
-- `gradlew runGameTestServer`: main's GameTests (440 at `09ad4608`, all passed).
+- `gradlew runGameTestServer`: main's GameTests (441 at `060edbdb`, all passed).
 - `gradlew runPlayBench [-Pjfr=<name>]`, `runBlastBench`, `runFxShots`, `runManualShots`, `runSiteShots`,
   `runHealShots`: main's benches and photographers (`runSiteShots -Psite=doors`: the bunker doors; `room`: the command room; `fittings`: the bunker fittings; `yard`: the yard, with a picture at midnight).
 - `gradlew runShowroom`: main's showroom world (`run/saves/ground_burst_showroom`; `-PshowroomWalk=true`: the timed

@@ -165,7 +165,7 @@ def front_face(f: M.Face, img: np.ndarray) -> None:
 
 
 def paint(g: GeoModel, parts: dict) -> tuple[Tex, Tex]:
-    k = K.Kit(g, {}, seed=4501, ao_reach=1.8)
+    k = K.Kit(g, {}, seed=4501, ao_reach=1.8, turned=True)
     W.round_faces(k.S, SS.ROUND, top=True, bottom=False, foot=False)
     S = k.S
     t = Tex(g.tex_w, g.tex_h)

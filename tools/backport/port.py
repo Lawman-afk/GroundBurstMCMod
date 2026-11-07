@@ -385,6 +385,11 @@ def drop_method(signature: str):
 SKY = "dev.groundburst.port.SkyColors"
 
 FILE_FIXES: dict[str, list] = {
+    # Main's polygon loader: 26.1.2's quad baker shades a quad or not (26.3 names the way it is shaded).
+    "src/main/java/dev/groundburst/client/render/PolygonModels.java": [
+        swap("            quad.setShadeOverride(p.shade() ? null : Direction.UP);\n",
+             "            quad.setShade(p.shade());\n"),
+    ],
     # --- the showroom (main's DESIGN.md §22.6): this version's sign text is read and set by front or back (a flag), each
     # line set on an unchanging SignText that gives back the new one; 26.3 has slots and a mutable copy.
     "src/main/java/dev/groundburst/client/fx/Showroom.java": [

@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gb import machine_kit as K  # noqa: E402
 from gb import materials as M  # noqa: E402
 from gb import paths  # noqa: E402
-from gb.model import BlockModel, write_json  # noqa: E402
+from gb.model import BlockModel, moved_polygon, polygon_centre, polygons_of, with_polygons, write_json  # noqa: E402
 from gb.tex import FONT, GLYPH_W, Tex  # noqa: E402
 
 ALL = ("north", "south", "east", "west", "up", "down")
@@ -552,7 +552,12 @@ def split_table(m: BlockModel) -> None:
                     el["rotation"]["origin"][2] += dz
                 els.append(el)
             out["elements"] = els
-            write_json(paths.MODELS / "block" / f"{m.name}_{u}_{w}.json", out)
+            polys = []
+            for p in polygons_of(whole):
+                cx, _, cz = polygon_centre(p)
+                if (cx >= 16) == (u == 1) and (cz < 0) == (w == 1):
+                    polys.append(moved_polygon(p, (dx, 0, dz)))
+            write_json(paths.MODELS / "block" / f"{m.name}_{u}_{w}.json", with_polygons(out, polys))
     turn = {"north": 0, "east": 90, "south": 180, "west": 270}
     variants = {}
     for f, r in turn.items():
