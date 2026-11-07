@@ -155,7 +155,7 @@ def gas_cloud_models(name: str) -> None:
         write_json(paths.MODELS / "block" / f"{name}_{v}.json", {
             "render_type": "minecraft:translucent",
             "textures": {"gas": "groundburst:block/fluid/gas_still", "particle": "groundburst:block/fluid/gas_still"},
-            "elements": [{"from": [0, y0, 0], "to": [16, 16, 16], "shade": False, "faces": faces}],
+            "elements": [{"from": [0, y0, 0], "to": [16, 16, 16], "shade": False, "shade_direction_override": "up", "faces": faces}],
         })
         variants[f"volume={v}"] = {"model": f"groundburst:block/{name}_{v}"}
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": variants})

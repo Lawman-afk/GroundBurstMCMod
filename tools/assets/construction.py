@@ -454,7 +454,7 @@ def floodlight_model() -> None:
              {"from": [3, 3, 6], "to": [13, 13, 13], "faces": {
                  "north": {"texture": "#lens", "uv": [3, 3, 13, 13]},
                  "south": dict(s), "east": dict(s), "west": dict(s), "up": dict(s), "down": dict(s)}},
-             {"from": [3.5, 3.5, 5.5], "to": [12.5, 12.5, 6], "light_emission": 15, "shade": False,
+             {"from": [3.5, 3.5, 5.5], "to": [12.5, 12.5, 6], "light_emission": 15, "shade": False, "shade_direction_override": "up",
               "faces": {"north": {"texture": "#lens", "uv": [3.5, 3.5, 12.5, 12.5]}}},
              {"from": [6, 6, 13], "to": [10, 10, 16], "faces": {d: dict(s) for d in ("east", "west", "up", "down", "south")}},
          ]}

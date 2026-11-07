@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.geckolib.animatable.GeoAnimatable;
-import com.geckolib.model.DefaultedBlockGeoModel;
 import com.geckolib.renderer.base.GeoRenderState;
 
 import dev.groundburst.GroundBurst;
@@ -15,7 +14,7 @@ import net.minecraft.resources.Identifier;
  * colour), its glowmask following the texture, or another model and its texture ({@code AnimatedMachine.modelVariant}:
  * the mirrored Blast Door); its own model and texture otherwise (and in its item).
  */
-public class VariantGeoModel<T extends GeoAnimatable> extends DefaultedBlockGeoModel<T> {
+public class VariantGeoModel<T extends GeoAnimatable> extends PolyGeoModel<T> {
     /** Each other model's geometry and texture, by name. */
     private final Map<String, Identifier[]> others = new ConcurrentHashMap<>();
 

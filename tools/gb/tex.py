@@ -82,8 +82,19 @@ class Tex:
         return Image.fromarray(self.a, "RGBA")
 
     def save(self, path: Path) -> Path:
+        """Saves the texture, trying again for a few seconds if the file is held (OneDrive, syncing a texture just
+        written, refuses another write for a moment: "Invalid argument"; a model saved with its texture not would not
+        match it)."""
+        import time  # noqa: PLC0415
         path.parent.mkdir(parents=True, exist_ok=True)
-        self.image().save(path, optimize=True)
+        for attempt in range(40):
+            try:
+                self.image().save(path, optimize=True)
+                return path
+            except OSError:
+                if attempt == 39:
+                    raise
+                time.sleep(0.25)
         return path
 
     def scaled(self, factor: int) -> Image.Image:

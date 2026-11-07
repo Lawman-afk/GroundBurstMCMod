@@ -914,12 +914,6 @@
     ],
     "subtitle": "subtitles.groundburst.machine.tape_switch"
   },
-  "machine.tape_whirr": {
-    "sounds": [
-      "groundburst:machine/tape_whirr"
-    ],
-    "subtitle": "subtitles.groundburst.machine.tape_whirr"
-  },
   "machine.water_pump": {
     "sounds": [
       "groundburst:machine/water_pump"

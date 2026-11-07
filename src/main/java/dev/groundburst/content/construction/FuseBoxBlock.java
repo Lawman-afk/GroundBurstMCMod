@@ -28,7 +28,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * The Fuse Box (DESIGN.md §22.5): a steel box on a wall, its conduit up into the ceiling, a breaker's handle at its side.
  * A click throws the breaker: {@link #POWERED}, its lamp green, it gives a signal as a lever does (strong into the wall it
  * is on); another throws it back, the lamp red. A redstone signal at it holds it on to look at ({@link Fittings#HELD}),
- * its signal still its breaker's alone.
+ * its signal still its breaker's alone; another Fuse Box's signal does not hold it.
  */
 public class FuseBoxBlock extends HorizontalDirectionalBlock {
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
@@ -50,15 +50,22 @@ public class FuseBoxBlock extends HorizontalDirectionalBlock {
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, Fittings.wallFacing(context))
-                .setValue(Fittings.HELD, context.getLevel().hasNeighborSignal(context.getClickedPos()));
+                .setValue(Fittings.HELD, Fittings.signalFromOthers(context.getLevel(), context.getClickedPos(), FuseBoxBlock::isFuseBox));
     }
 
-    /** A redstone signal at it holds it on to look at (its own signal still its breaker's alone). */
+    /**
+     * A redstone signal at it holds it on to look at (its own signal still its breaker's alone); another Fuse Box's signal
+     * does not, so a row of them each shows its own breaker.
+     */
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, @Nullable Orientation orientation, boolean movedByPiston) {
         if (!level.isClientSide()) {
-            Fittings.hold(state, level, pos);
+            Fittings.hold(state, level, pos, FuseBoxBlock::isFuseBox);
         }
+    }
+
+    private static boolean isFuseBox(BlockState state) {
+        return state.getBlock() instanceof FuseBoxBlock;
     }
 
     @Override

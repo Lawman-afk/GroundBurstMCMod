@@ -231,6 +231,21 @@ class Surfacer:
             extra = np.array([[*frm, *to] for frm, to in context], dtype=np.float32)
             base = self._arrays.get("", np.zeros((0, 6), dtype=np.float32))
             self._arrays[""] = np.concatenate([base, extra])
+        # Turned boxes are solid too, for a model painted turned (round parts' planks: a round column casts a round
+        # contact shadow on what it stands on, not its one unturned plank's square), each as (its turned bounds, its
+        # turn, origin, own from and to). Models painted before it (not turned) keep their look.
+        self._turned_solids: dict[str, list] = {}
+        if turned:
+            for b in model.boxes:
+                if b.rotation and b.poly is None and all(b.to[k] - b.frm[k] > 0.05 for k in range(3)) and \
+                        ("axis" in b.rotation or any(k in b.rotation for k in ("x", "y", "z"))):
+                    m3 = element_matrix(b.rotation).astype(np.float32)
+                    o = np.array(b.rotation.get("origin", (8, 8, 8)), dtype=np.float32)
+                    corners = np.array([[x, y, z] for x in (b.frm[0], b.to[0]) for y in (b.frm[1], b.to[1])
+                                        for z in (b.frm[2], b.to[2])], dtype=np.float32)
+                    world = (corners - o) @ m3.T + o
+                    self._turned_solids.setdefault(bone_of.get(b.name, ""), []).append(
+                        (world.min(axis=0), world.max(axis=0), m3, o, np.array(b.frm, np.float32), np.array(b.to, np.float32)))
         self._faces: dict[tuple[str, str], Face] = {}
 
     # -- geometry ---------------------------------------------------------------------------------------------------------
@@ -264,6 +279,7 @@ class Surfacer:
             X, Y, Z = x0 + ii * sx / w, np.full_like(ii, y0), z1 - jj * sz / h
             du, dv = (sx / w, 0, 0), (0, 0, -sz / h)
         normal = _NORMALS[d]
+        local = (X, Y, Z)
         if self.turned and b.rotation and ("axis" in b.rotation or any(k in b.rotation for k in ("x", "y", "z"))):
             X, Y, Z, normal, du, dv = _turn(b.rotation, X, Y, Z, normal, du, dv)
         f = Face(b, d, rect, X.astype(np.float32), Y.astype(np.float32), Z.astype(np.float32), normal, du, dv)
@@ -276,8 +292,56 @@ class Surfacer:
         else:
             f.ao = self._ao(f)
             f.edge = self._edges(f)
+        if b.poly is not None:
+            self._poly_borders(f, b, d, *local)
         self._faces[key] = f
         return f
+
+    def _poly_borders(self, f: Face, b: Box, d: str, X, Y, Z) -> None:
+        """A polygon carrier's borders are its polygons' sides, not its rect's (a round cap's rim): each texel's distance
+        to the nearest side (all under "top"; the other three none), to the nearest where the solid really ends (no box
+        carries the surface on past it, just under it: an edge, worn and lipped), and to the nearest where it stops (an
+        edge, or a corner where another surface meets it). Sides two of its polygons share (a ring's pieces) are inside
+        the surface, no border at all."""
+        ax = {"east": 0, "west": 0, "up": 1, "down": 1, "south": 2, "north": 2}[d]
+        o = [k for k in range(3) if k != ax]
+        U, V = (X, Y, Z)[o[0]], (X, Y, Z)[o[1]]
+        n = np.array(_NORMALS[d], dtype=np.float32)
+
+        def key(p):
+            return tuple(round(float(v), 4) for v in p)
+        sides = [(a, c) for poly in (b.poly or []) for a, c in zip(poly, list(poly[1:]) + [poly[0]])]
+        shared = {(key(a), key(c)) for a, c in sides}
+        sides = [(a, c) for a, c in sides if (key(c), key(a)) not in shared]
+        boxes = self._near(f, 2)
+        turned = self._near_turned(f, 2)
+        inf = np.full(U.shape, np.inf, dtype=np.float32)
+        any_, edge, stop = inf.copy(), inf.copy(), inf.copy()
+        for a, c in sides:
+            a3, c3 = np.array(a, dtype=np.float32), np.array(c, dtype=np.float32)
+            out = np.cross(c3 - a3, n)
+            out /= max(1e-6, float(np.linalg.norm(out)))
+            past = (a3 + c3) / 2 + out * 0.4
+            under, over = (past - n * 0.2)[None], (past + n * 0.2)[None]
+            carries = bool(self._inside(under, boxes)[0] or self._inside_turned(under, turned)[0])
+            meets = bool(self._inside(over, boxes)[0] or self._inside_turned(over, turned)[0])
+            ax_, ay, cx_, cy = a3[o[0]], a3[o[1]], c3[o[0]], c3[o[1]]
+            sx, sy = cx_ - ax_, cy - ay
+            t = np.clip(((U - ax_) * sx + (V - ay) * sy) / max(1e-9, sx * sx + sy * sy), 0, 1)
+            dist = np.hypot(U - (ax_ + t * sx), V - (ay + t * sy)).astype(np.float32)
+            any_ = np.minimum(any_, dist)
+            if not carries:
+                edge = np.minimum(edge, dist)
+            if not carries or meets:
+                stop = np.minimum(stop, dist)
+        texel = (float(np.linalg.norm(f.du)) + float(np.linalg.norm(f.dv))) / 2
+
+        def texels(px):
+            return np.where(np.isinf(px), np.inf, np.maximum(px / max(1e-6, texel) - 0.5, 0)).astype(np.float32)
+        none = {k: inf.copy() for k in ("bottom", "left", "right")}
+        f.border = {"top": texels(any_), **{k: v.copy() for k, v in none.items()}}
+        f.edge = {"top": texels(edge), **{k: v.copy() for k, v in none.items()}}
+        f.stop = {"top": texels(stop), **{k: v.copy() for k, v in none.items()}}
 
     def _solids(self, b: Box) -> np.ndarray:
         return self._arrays.get(self._bone_of.get(b.name, ""), np.zeros((0, 6), dtype=np.float32))
@@ -292,6 +356,24 @@ class Surfacer:
         inside = np.all((p > lo + eps) & (p < hi - eps), axis=-1)
         return inside.any(axis=-1)
 
+    def _near_turned(self, f: Face, reach: float) -> list:
+        """The model's turned boxes (same bone) within reach of a face (see _turned_solids)."""
+        lo = np.array([f.X.min(), f.Y.min(), f.Z.min()]) - reach
+        hi = np.array([f.X.max(), f.Y.max(), f.Z.max()]) + reach
+        return [t for t in self._turned_solids.get(self._bone_of.get(f.box.name, ""), ()) if np.all(t[1] > lo) and np.all(t[0] < hi)]
+
+    @staticmethod
+    def _inside_turned(points: np.ndarray, near: list, eps: float = 1e-3) -> np.ndarray:
+        """Which points (..., 3) lie strictly inside any of these turned boxes (each tested in its own unturned frame)."""
+        out = np.zeros(points.shape[:-1], dtype=bool)
+        for lo, hi, m3, o, frm, to in near:
+            close = np.all((points > lo - eps) & (points < hi + eps), axis=-1)
+            if not close.any():
+                continue
+            q = (points[close] - o) @ m3 + o
+            out[close] |= np.all((q > frm + eps) & (q < to - eps), axis=-1)
+        return out
+
     def _near(self, f: Face, reach: float) -> np.ndarray:
         """The model's boxes (same bone) within reach of a face."""
         boxes = self._solids(f.box)
@@ -302,7 +384,8 @@ class Surfacer:
 
     def _ao(self, f: Face) -> np.ndarray:
         boxes = self._near(f, self.ao_reach + 1)
-        if boxes.shape[0] == 0:
+        turned = self._near_turned(f, self.ao_reach + 1)
+        if boxes.shape[0] == 0 and not turned:
             return np.zeros(f.shape, dtype=np.float32)
         n = np.array(f.normal, dtype=np.float32)
         u = np.array(f.du, dtype=np.float32)
@@ -319,13 +402,15 @@ class Surfacer:
         occ = np.zeros(f.shape, dtype=np.float32)
         total = 0.0
         for off, wgt in samples:
-            occ += wgt * self._inside(P + off.astype(np.float32), boxes)
+            q = P + off.astype(np.float32)
+            occ += wgt * (self._inside(q, boxes) | self._inside_turned(q, turned))
             total += wgt
         return np.clip(occ / total * 2.8, 0, 1)
 
     def _edges(self, f: Face) -> dict:
         """Per border: the texels' distance to it where the solid really ends there (inf where it carries on)."""
         boxes = self._near(f, 2)
+        turned = self._near_turned(f, 2)
         n = np.array(f.normal, dtype=np.float32)
         u = np.array(f.du, dtype=np.float32)
         v = np.array(f.dv, dtype=np.float32)
@@ -339,9 +424,9 @@ class Surfacer:
             # The texel's point carried to just past this border, just under the surface: inside another box, the
             # solid carries on there (a coplanar continuation, or the foot of a wall); otherwise this border is an edge.
             past = P + t * (steps[..., None] + 0.5 + 0.25)
-            carries_on = self._inside(past - n * 0.2, boxes)
+            carries_on = self._inside(past - n * 0.2, boxes) | self._inside_turned(past - n * 0.2, turned)
             # Just over the surface there too: a corner where it meets another surface; open air: it runs on flat.
-            meets = self._inside(past + n * 0.2, boxes)
+            meets = self._inside(past + n * 0.2, boxes) | self._inside_turned(past + n * 0.2, turned)
             out[k] = np.where(carries_on, np.inf, f.border[k]).astype(np.float32)
             stop[k] = np.where(carries_on & ~meets, np.inf, f.border[k]).astype(np.float32)
         f.stop = stop

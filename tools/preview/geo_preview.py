@@ -175,6 +175,23 @@ def geo_quads(model_id: str, animation: dict | None = None, time: float = 0.0, l
                     labels.append(f"{bname}#{ci}/{d}")
                 quads.append(R.Quad(wp + np.array([8.0, 0.0, 8.0]), uvp * np.array([tex.shape[1] / tw, tex.shape[0] / th]),
                                     tex, shade, False, n, True))
+        # The bone's poly mesh (round parts' caps: the mod's PolyGeoModel draws it as GeckoLib draws cubes): points in
+        # Bedrock's space (x negated), UVs 0..1 from the texture's top left, each poly three or four corners.
+        mesh = b.get("groundburst:poly_mesh") or b.get("poly_mesh")
+        if mesh:
+            P, N, U = mesh["positions"], mesh["normals"], mesh["uvs"]
+            for pi, poly in enumerate(mesh["polys"]):
+                corners = [poly[min(i, len(poly) - 1)] for i in range(4)]
+                pos = np.array([[-P[c[0]][0], P[c[0]][1], P[c[0]][2], 1.0] for c in corners])
+                wp = (bm @ pos.T).T[:, :3]
+                nn = N[corners[0][1]]
+                n = bm[:3, :3] @ np.array([-nn[0], nn[1], nn[2]], dtype=float)
+                n = n / max(1e-9, float(np.linalg.norm(n)))
+                shade = 0.6 * n[0] ** 2 + 0.8 * n[2] ** 2 + (1.0 if n[1] > 0 else 0.5) * n[1] ** 2
+                uvp = np.array([(U[c[2]][0] * tex.shape[1], U[c[2]][1] * tex.shape[0]) for c in corners], dtype=float)
+                if labels is not None:
+                    labels.append(f"{bname}#poly{pi}")
+                quads.append(R.Quad(wp + np.array([8.0, 0.0, 8.0]), uvp, tex, shade, False, n, True))
     return quads
 
 

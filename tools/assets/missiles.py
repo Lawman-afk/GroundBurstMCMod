@@ -37,7 +37,7 @@ from gb import machine_kit as K  # noqa: E402
 from gb import materials as M  # noqa: E402
 from gb import palette as P  # noqa: E402
 from gb import paths  # noqa: E402
-from gb.model import BlockModel, write_json  # noqa: E402
+from gb.model import BlockModel, polygons_of, with_polygons, write_json  # noqa: E402
 from gb.tex import Tex  # noqa: E402
 import grenades as G  # noqa: E402
 import warheads as W  # noqa: E402
@@ -246,7 +246,8 @@ class Rocket:
     def mount(self, y: float) -> float:
         """Stands the warhead on the body at y; returns the nose's tip."""
         self.head = y
-        self.tip = y + max(el["to"][1] for el in warhead_json(self.warhead)["elements"])
+        data = warhead_json(self.warhead)
+        self.tip = y + max([el["to"][1] for el in data["elements"]] + [q[1] for p in polygons_of(data) for q in p["points"]])
         return self.tip
 
     def ring_of_head(self) -> float:
@@ -294,6 +295,27 @@ def head_elements(rk: Rocket) -> list[dict]:
         e["name"] = "head_" + e["name"]
         out.append(e)
     return out
+
+
+def head_polygons(rk: Rocket) -> list[dict]:
+    """The warhead's polygons (its round parts' caps), stood on the missile at its foot as its elements are."""
+    out = []
+    for poly in polygons_of(warhead_json(rk.warhead)):
+        if poly.get("name", "").startswith(LEFT_OFF):
+            continue
+        p = json.loads(json.dumps(poly))
+        p["points"] = [[round(v, 5) for v in rk.m.exported((q[0], q[1] + rk.head, q[2]))] for q in poly["points"]]
+        p["texture"] = "#w"
+        p["name"] = "head_" + poly.get("name", "")
+        out.append(p)
+    return out
+
+
+def as_element(poly: dict) -> dict:
+    """A polygon as the variants' tests read an element: its name, and the box round its points."""
+    pts = poly["points"]
+    return {"name": poly.get("name", ""), "from": [min(q[i] for q in pts) for i in range(3)],
+            "to": [max(q[i] for q in pts) for i in range(3)]}
 
 
 def head_box(rk: Rocket) -> tuple[tuple, tuple]:
@@ -356,6 +378,7 @@ def save(rk: Rocket, livery: Livery) -> dict:
     data = json.loads(path.read_text(encoding="utf-8"))
     data["textures"]["w"] = f"groundburst:block/{rk.warhead}"
     data["elements"] += head_elements(rk)
+    data = with_polygons(data, polygons_of(data) + head_polygons(rk))
     write_json(path, data)
     variants(rk, data)
     for issue in flicker(data):
@@ -394,6 +417,7 @@ def variants(rk: Rocket, data: dict) -> None:
     def write(suffix: str, keep) -> None:
         v = {k: val for k, val in data.items() if k != "display"}
         v["elements"] = [e for e in data["elements"] if keep(e)]
+        v = with_polygons(v, [p for p in polygons_of(data) if keep(as_element(p))])
         write_json(folder / f"{rk.name}_{suffix}.json", v)
     for i in range(len(rk.parts)):
         write(f"part{i + 1}", lambda e, i=i: part_of(rk, e) == i)

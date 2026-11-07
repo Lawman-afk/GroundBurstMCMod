@@ -38,7 +38,8 @@
           "texture": "#glass"
         }
       },
-      "shade": false
+      "shade": false,
+      "shade_direction_override": "up"
     }
   ]
 }

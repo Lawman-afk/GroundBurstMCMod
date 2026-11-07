@@ -76,7 +76,7 @@ from gb import machine_kit as K  # noqa: E402
 from gb import materials as M  # noqa: E402
 from gb import palette as P  # noqa: E402
 from gb import paths  # noqa: E402
-from gb.model import BlockModel, write_json  # noqa: E402
+from gb.model import BlockModel, make_polygon, regular, write_json  # noqa: E402
 from gb.palette import fixed  # noqa: E402
 from gb.tex import Tex  # noqa: E402
 import charges as C  # noqa: E402
@@ -189,7 +189,7 @@ def section(m: BlockModel, name: str, r: float, y0: float, y1: float, sides: int
         for long_x in (True, False):
             hx, hz = (r, s) if long_x else (s, r)
             index = i if long_x else i + sides // 4                  # the plank's place round the section, in facets
-            if FLAT:                                         # (flat caps: every plank on one level; see flat())
+            if POLY or FLAT:                                 # (one level: the caps a polygon, or one flat group)
                 sink = 0.0
             elif stagger == "base":                          # (a bottom that shows: the quarter-turned planks lower still)
                 sink = 0.06 * (index % 2) + (0.12 if not long_x else 0.0)
@@ -198,13 +198,17 @@ def section(m: BlockModel, name: str, r: float, y0: float, y1: float, sides: int
             ends = ("east", "west") if long_x else ("north", "south")
             rot = None if a == 0 else {"origin": (cx, y0, cz), "axis": "y", "angle": a}
             n = f"{name}_{k}"
-            m.box(n, (cx - hx, y0 - sink - root, cz - hz), (cx + hx, y1 - sink, cz + hz), faces=ends + tuple(caps), rotation=rot)
-            _open(m, n, [d for d in ("north", "south", "east", "west", "up", "down") if d not in ends and d not in caps])
-            if FLAT:
+            plank_caps = () if POLY else tuple(caps)
+            mark_round(m, m.box(n, (cx - hx, y0 - sink - root, cz - hz), (cx + hx, y1 - sink, cz + hz), faces=ends + plank_caps, rotation=rot))
+            _open(m, n, [d for d in ("north", "south", "east", "west", "up", "down") if d not in ends and d not in plank_caps])
+            if FLAT and not POLY:
                 for d in caps:
                     flat_face(m, f"{name}:{d}", n, d)
             names.append(n)
             k += 1
+    if POLY:
+        for d in caps:
+            names.append(cap(m, f"{name}_{d}", "y", (cx, cz), r, sides, y1 if d == "up" else y0, d))
     return names
 
 
@@ -220,6 +224,74 @@ def _open(m: BlockModel, box: str, faces) -> None:
 #: corner shade (BlockModel.flat): flat, even tops, nothing to see flicker. (Before, the planks were moved a little
 #: apart, which left steps round the rim and lines across the caps.)
 FLAT = True
+
+
+#: Round parts' caps and rings' sides drawn as real polygons (the user, after the flat tops, 2026-11-07: "Is there no way
+#: to get both a good texture and the perfectly smooth circle?"): each capped end one flat polygon (gb.model.make_polygon),
+#: the planks only its sides, so nothing overlaps in a cap's plane and it is painted as any face is, with its texture;
+#: the game draws it through the mod's model loader (client/model/PolygonModels; GeckoLib models: PolyGeoModel).
+#: DESIGN.md §4.4. FLAT, before it, painted the overlapping caps one even colour.
+POLY = True
+#: Each axis's capped ends (its low end's face, its high end's).
+CAP_FACES = {"x": ("west", "east"), "y": ("down", "up"), "z": ("north", "south")}
+#: The way a round part's first plank lies (round_section, section): its ends face this way and the opposite.
+FIRST_SIDE = {"x": (0.0, 1.0, 0.0), "y": (1.0, 0.0, 0.0), "z": (1.0, 0.0, 0.0)}
+
+
+def on_axis(axis: str, c, a: float) -> tuple[float, float, float]:
+    """The point at {a} along {axis} through c (for y the point (x, z), for x (y, z), for z (x, y))."""
+    return {"x": (a, c[0], c[1]), "y": (c[0], a, c[1]), "z": (c[0], c[1], a)}[axis]
+
+
+def mark_round(m, box) -> None:
+    """A round part's plank marked so (gb.model.Box.round): its bottom is the part's own cap, never a face of its own
+    (GeoModel.close_floor leaves it be)."""
+    if isinstance(box, str):
+        owner = getattr(m, "g", None) or getattr(m, "m", None) or m
+        box = owner.get(box)
+    box.round = True
+
+
+def cap(m, name: str, axis: str, c, r: float, sides: int, at: float, d: str, light: int = 0) -> str:
+    """A round part's capped end: one polygon of {sides} sides and apothem r at {at} along {axis} about c, its sides
+    where the part's planks' ends are (FIRST_SIDE turned a side at a time), facing {d}."""
+    pts = regular(on_axis(axis, c, at), axis, FIRST_SIDE[axis], sides, r)
+    return make_polygon(m, name, [pts], d, light=light).name
+
+
+def annulus(m, name: str, axis: str, c, r_in: float, r_out: float, n: int, at: float, d: str, n0, light: int = 0) -> str:
+    """A ring's side across its axis: n four-sided pieces between the regular n-gons of apothem r_in and r_out about c
+    at {at} along {axis}, the first side facing n0, all in one carrier (one surface: the pieces share their sides)."""
+    centre = on_axis(axis, c, at)
+    inner = regular(centre, axis, n0, n, r_in)
+    outer = regular(centre, axis, n0, n, r_out)
+    pieces = [[inner[k - 1], outer[k - 1], outer[k], inner[k]] for k in range(n)]
+    return make_polygon(m, name, pieces, d, light=light).name
+
+
+def between(m, name: str, axis: str, c, at: float, d: str, inner, outer, light: int = 0) -> str:
+    """The flat ring between two regular polygons of any sides about c at {at} along {axis} (a hexagonal pit's edge and a
+    round wall's inside): pieces from one corner of either to the next, each four-sided and convex, in one carrier.
+    {inner}, {outer}: (sides, apothem, n0), n0 the first side's outward direction (the same for both: angles are
+    measured from it)."""
+    import math as _m
+    from gb.model import turned  # noqa: PLC0415
+    if tuple(inner[2]) != tuple(outer[2]):
+        raise ValueError(f"{name}: both polygons' first sides must face one way")
+    centre = on_axis(axis, c, at)
+
+    def boundary(sides, apothem, n0, phi):
+        step = 360.0 / sides
+        off = phi - round(phi / step) * step
+        r = apothem / _m.cos(_m.radians(off))
+        v = turned(axis, phi, n0)
+        return (centre[0] + v[0] * r, centre[1] + v[1] * r, centre[2] + v[2] * r)
+    angles = sorted({round((k + 0.5) * 360.0 / n % 360.0, 6) for n, _, _ in (inner, outer) for k in range(n)})
+    pieces = []
+    for j, a0 in enumerate(angles):
+        a1 = angles[(j + 1) % len(angles)] + (360.0 if j + 1 == len(angles) else 0.0)
+        pieces.append([boundary(*inner, a0), boundary(*outer, a0), boundary(*outer, a1), boundary(*inner, a1)])
+    return make_polygon(m, name, pieces, d, light=light).name
 
 
 def flat_face(m, group: str, box: str, d: str) -> None:
@@ -326,6 +398,7 @@ def round_section(m, name: str, r: float, a0: float, a1: float, axis: str = "y",
     P = sides // 2
     s = r * math.tan(math.pi / sides)
     covers = [v for v in (lo, hi) if v is not None]
+    flat = flat or POLY
     levels = cap_levels(sides, r, covers) if covers and not flat else [0] * P
     jump = max(abs(levels[p] - levels[(p + 1) % P]) for p in range(P))
     # (Deep enough for the highest step anywhere: planks across the middle may lie many levels apart, not only neighbours.)
@@ -346,9 +419,10 @@ def round_section(m, name: str, r: float, a0: float, a1: float, axis: str = "y",
         frm, to, ends, longs = _plank(axis, c, h1, h2, b0, b1, long_)
         rot = None if abs(a) < 1e-9 else {"origin": origin, "axis": axis, "angle": round(a, 4)}
         n = f"{name}_{p}"
-        m.box(n, frm, to, faces=ends + capf, rotation=rot, light=light)
-        _open(m, n, [d for d in ALL6 if d not in ends + capf])
-        if flat:
+        plank_caps = () if POLY else capf
+        mark_round(m, m.box(n, frm, to, faces=ends + plank_caps, rotation=rot, light=light))
+        _open(m, n, [d for d in ALL6 if d not in ends + plank_caps])
+        if flat and not POLY:
             for d in capf:
                 flat_face(m, f"{name}:{d}", n, d)
         names.append(n)
@@ -367,6 +441,10 @@ def round_section(m, name: str, r: float, a0: float, a1: float, axis: str = "y",
             _open(m, n2, [d for d in ALL6 if d not in longs])
             SKIRTS[n2] = (n, cap_faces[0] if which == "lo" else cap_faces[1])
             names.append(n2)
+    if POLY:
+        for d, v, at in ((cap_faces[0], lo, a0), (cap_faces[1], hi, a1)):
+            if v is not None:
+                names.append(cap(m, f"{name}_{d}", axis, c, r, sides, at, d, light=light))
     return names
 
 
@@ -408,6 +486,8 @@ def round_ring(m, name: str, r_in: float, r_out: float, a0: float, a1: float, ax
     n += n % 2
     chord = 2 * r_out * math.tan(math.pi / n) + 0.02
     origin = {"x": (a0, c[0], c[1]), "y": (c[0], a0, c[1]), "z": (c[0], c[1], a0)}[axis]
+    across = CAP_FACES[axis]
+    poly = POLY and not step
     out = []
     for k in range(n):
         sh = step * (k % 2)
@@ -421,12 +501,20 @@ def round_ring(m, name: str, r_in: float, r_out: float, a0: float, a1: float, ax
             frm, to = (c[0] - chord / 2, c[1] + r_in, a0 + sh), (c[0] + chord / 2, c[1] + r_out, a1 + sh)
         nm = f"{name}_{k}"
         rot = None if k == 0 else {"origin": origin, "axis": axis, "angle": round(a, 4)}
-        m.box(nm, frm, to, faces=faces, rotation=rot, light=light)
-        if not step:
+        mark_round(m, m.box(nm, frm, to, faces=tuple(d for d in faces if not (poly and d in across)), rotation=rot, light=light))
+        if poly:
+            _open(m, nm, across)
+        elif not step:
             for d in {"x": ("east", "west"), "y": ("up", "down"), "z": ("north", "south")}[axis]:
                 if d in faces:
                     flat_face(m, f"{name}:{d}", nm, d)
         out.append(nm)
+    if poly:
+        # Its sides across the axis: the first length's outside faces this way (its box's low side across the ring).
+        n0 = {"x": (0.0, 0.0, -1.0), "y": (0.0, 0.0, -1.0), "z": (0.0, 1.0, 0.0)}[axis]
+        for d, at in ((across[0], a0), (across[1], a1)):
+            if d in faces:
+                out.append(annulus(m, f"{name}_{d}", axis, c, r_in, r_out, n, at, d, n0, light=light))
     return out
 
 
@@ -479,6 +567,8 @@ def round_faces(S: M.Surfacer, names, top: bool = True, bottom: bool = False, fo
     foot. A cap's long sides run under the other planks' caps; its ends are the rim."""
     for n in names:
         b = S.m.get(n)
+        if b.poly is not None:
+            continue                               # (a polygon's borders are its sides: Surfacer._poly_borders)
         long_x = (b.to[0] - b.frm[0]) >= (b.to[2] - b.frm[2])
         for d in list(b.faces):
             f = S.face(b, d)
@@ -1116,10 +1206,13 @@ def hoop(w: Build, group: str, R: float, cy: float, axis: str, thick: float = 0.
     each turned about the axis to its place (26.x elements turn by any angle), a hair longer than its share so they
     meet. About y it lies flat; about x it stands across the warhead's front and back; about z, from side to side. Its
     flat sides, where neighbours overlap at a joint, are a flat group (FLAT): one even colour, nothing to flicker."""
-    chord = 2 * R * math.tan(math.pi / n) + 0.04
     t = thick / 2
+    # (POLY: each plank as long as its outside's share, as a ring's lengths are, so the planks' union is the ring between
+    # two regular n-gons its polygons cover exactly; long as the middle's share, notches showed at the outside's corners.)
+    chord = 2 * (R + t) * math.tan(math.pi / n) + 0.02 if POLY else 2 * R * math.tan(math.pi / n) + 0.04
     names = []
     key = f"{group}:hoop{len(w.groups.get(group, []))}"         # (this hoop's flat group: its planks so far in the group)
+    across = {"x": ("west", "east"), "y": ("down", "up"), "z": ("north", "south")}[axis]
     for i in range(n):
         a = 360.0 * i / n
         h = width / 2 - (0.04 if i % 2 and not FLAT else 0.0)
@@ -1129,11 +1222,24 @@ def hoop(w: Build, group: str, R: float, cy: float, axis: str, thick: float = 0.
             frm, to = (8 - h, cy + R - t, 8 - chord / 2), (8 + h, cy + R + t, 8 + chord / 2)
         else:
             frm, to = (8 - chord / 2, cy + R - t, 8 - h), (8 + chord / 2, cy + R + t, 8 + h)
-        nm = w.box(group, frm, to, rotation={"origin": (8, cy, 8), "axis": axis, "angle": a})
-        if FLAT:
+        faces = tuple(d for d in ALL6 if not (POLY and d in across))
+        nm = w.box(group, frm, to, rotation={"origin": (8, cy, 8), "axis": axis, "angle": a}, faces=faces)
+        mark_round(w.m, nm)
+        if POLY:
+            _open(w.m, nm, across)
+        elif FLAT:
             for d in {"x": ("east", "west"), "y": ("up", "down"), "z": ("north", "south")}[axis]:
                 flat_face(w.m, f"{key}:{d}", nm, d)
         names.append(nm)
+    if POLY:
+        # The hoop's two flat sides, each one surface (annulus); the first plank lies out along +x (about y) or +y.
+        n0 = (1.0, 0.0, 0.0) if axis == "y" else (0.0, 1.0, 0.0)
+        c = {"x": (cy, 8.0), "y": (8.0, 8.0), "z": (8.0, cy)}[axis]
+        lo_at, hi_at = (cy - width / 2, cy + width / 2) if axis == "y" else (8 - width / 2, 8 + width / 2)
+        for d, at in ((across[0], lo_at), (across[1], hi_at)):
+            nm = annulus(w.m, f"{group}{len(w.groups.get(group, []))}", axis, c, R - t, R + t, n, at, d, n0)
+            w.groups.setdefault(group, []).append(nm)
+            names.append(nm)
     return names
 
 

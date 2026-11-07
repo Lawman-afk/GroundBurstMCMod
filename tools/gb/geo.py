@@ -88,7 +88,7 @@ class GeoModel(BlockModel):
         axis = {"east": (0, 1), "west": (0, -1), "up": (1, 1), "down": (1, -1), "south": (2, 1), "north": (2, -1)}
         hidden: set[tuple[str, str]] = set()
         for bone in self.bones:
-            boxes = [b for b in bone.boxes if not b.rotation]
+            boxes = [b for b in bone.boxes if not b.rotation and b.poly is None]
             for i, a in enumerate(boxes):
                 for d in list(a.faces):
                     ax, sign = axis[d]
@@ -155,7 +155,11 @@ class GeoModel(BlockModel):
             if any(bone.rotation):
                 bj["rotation"] = [-bone.rotation[0], -bone.rotation[1], bone.rotation[2]]
             cubes = []
+            mesh = {"positions": [], "normals": [], "uvs": [], "polys": []}
             for b in bone.boxes:
+                if b.poly is not None:
+                    self._poly_mesh(b, mesh)
+                    continue
                 (x0, y0, z0), (x1, y1, z1) = b.frm, b.to
                 cj: dict = {"origin": [-x1, y0, z0], "size": [x1 - x0, y1 - y0, z1 - z0]}
                 if b.rotation:
@@ -173,6 +177,11 @@ class GeoModel(BlockModel):
                     cubes.append(cj)
             if cubes:
                 bj["cubes"] = cubes
+            if mesh["polys"]:
+                # The bone's polygons, laid out as Bedrock's poly mesh but under a key of the mod's own: GeckoLib reads a
+                # "poly_mesh" as flat lists of numbers (and fails on lists of points, losing the whole model), and draws
+                # none; the mod's PolyGeoModel draws this one, in the bone.
+                bj["groundburst:poly_mesh"] = {"normalized_uvs": True, **mesh}
             bones_json.append(bj)
         lo, hi = self.bounds()
         width = max(abs(lo[0]), abs(hi[0]), abs(lo[2]), abs(hi[2])) * 2 / 16 + 1
@@ -192,6 +201,33 @@ class GeoModel(BlockModel):
             }],
         }
 
+    def _poly_mesh(self, b: Box, mesh: dict) -> None:
+        """A carrier's polygons into its bone's poly mesh, in Bedrock's space as the cubes are (x negated): each split
+        into fours (and a three left over) from its first point, counter-clockwise seen from outside; UVs 0..1 from the
+        texture's top left, where its face's paint has each point (model.poly_uv)."""
+        from .model import NORMALS, _element_matrix, _mat_vec, poly_uv  # noqa: PLC0415
+        (d, _f), = b.faces.items()
+        turn = _element_matrix(b.rotation) if b.rotation else None
+        o = (b.rotation or {}).get("origin", (0.0, 0.0, 0.0))
+        nrm = _mat_vec(turn, NORMALS[d]) if turn else NORMALS[d]
+        ni = len(mesh["normals"])
+        mesh["normals"].append([round(-nrm[0], 5), round(nrm[1], 5), round(nrm[2], 5)])
+        for poly in b.poly or []:
+            idx = []
+            for p in poly:
+                u, v = poly_uv(b, d, p, self)
+                if turn is not None:
+                    q = _mat_vec(turn, (p[0] - o[0], p[1] - o[1], p[2] - o[2]))
+                    p = (q[0] + o[0], q[1] + o[1], q[2] + o[2])
+                idx.append(len(mesh["positions"]))
+                mesh["positions"].append([round(-p[0], 5), round(p[1], 5), round(p[2], 5)])
+                mesh["uvs"].append([round(u / self.tex_w, 6), round(v / self.tex_h, 6)])
+            k = 1
+            while k + 1 < len(idx):
+                piece = [idx[0], idx[k], idx[k + 1]] + ([idx[k + 2]] if k + 2 < len(idx) else [])
+                mesh["polys"].append([[i, ni, i] for i in piece])
+                k += 2
+
     def geo_path(self) -> Path:
         return paths.GEO / self.kind / f"{self.name}.geo.json"
 
@@ -205,7 +241,7 @@ class GeoModel(BlockModel):
         rotated = {b.name for b in self.bones if any(b.rotation)}
         bone_of = {bx.name: bone.name for bone in self.bones for bx in bone.boxes}
         boxes = [(b.name, tuple(b.frm), tuple(b.to), list(b.faces)) for b in self.boxes
-                 if not b.rotation and bone_of.get(b.name) not in rotated]
+                 if not b.rotation and b.poly is None and bone_of.get(b.name) not in rotated]
         parent = {bone.name: bone.parent for bone in self.bones}
 
         def chain(name: str | None) -> list[str]:
@@ -228,6 +264,13 @@ class GeoModel(BlockModel):
             if any(x != y and x in grp and y in grp for grp in self.exclusive for x in ca for y in cb):
                 continue   # never drawn together (two of a group, or inside two of a group)
             issues.append(issue)
+        # A polygon's face against the faces in its plane (BlockModel's check, which knows polygons), in unturned bones.
+        carriers = {b.name for b in self.boxes if b.poly is not None and bone_of.get(b.name) not in rotated}
+        if carriers:
+            for issue in BlockModel.zfight(self):
+                a, b = issue.split(" vs ")[0].split("/")[0], issue.split(" vs ")[1].split("/")[0]
+                if (a in carriers or b in carriers) and bone_of.get(a) not in rotated and bone_of.get(b) not in rotated:
+                    issues.append(issue)
         return issues
 
     #: (box name, face) openings that are meant to be seen into (a hopper mouth, a vent).
@@ -315,6 +358,61 @@ class GeoModel(BlockModel):
             added.append(f"{name}/{d}")
         return added
 
+    def close_floor(self, eps: float = 0.01) -> list[str]:
+        """Bottoms for the boxes standing on the model's floor (its lowest level), each painted as its own top (sharing
+        its texture rect, so no texture space): a model left open underneath shows straight through when seen from
+        below, stood off the ground or over a drop (the superweapons, after the user's look, 2026-11-07).
+
+        No two bottoms may overlap (seen from below they would flicker): an unturned box's bottom covers only where no
+        bigger box's (or one already there) does: the whole of it a face; part of it polygons (a carrier sharing its top's
+        rect); none, if it is all covered. Round parts' planks (their bottom is the part's own cap), boxes turned about x
+        or z, flat ones and whole-box openings (open_ok "*") are left as they are."""
+        from gb.model import Face, make_polygon  # noqa: PLC0415
+
+        def level(b: Box) -> bool:
+            r = b.rotation
+            return not r or r.get("axis") == "y" or (not r.get("axis") and not r.get("x") and not r.get("z"))
+        flat = [b for b in self.boxes if level(b) and b.poly is None and not b.round and b.to[1] - b.frm[1] > eps
+                and (b.name, "*") not in self.open_ok]
+        if not flat:
+            return []
+        floor = min(b.frm[1] for b in flat)
+        on_floor = [b for b in flat if abs(b.frm[1] - floor) <= eps]
+        # Bottoms already there (unturned), and the order the rest are closed in: biggest first.
+        closed = [(b.frm[0], b.frm[2], b.to[0], b.to[2]) for b in on_floor if "down" in b.faces and not b.rotation]
+        added = []
+        for b in sorted(on_floor, key=lambda b: -(b.to[0] - b.frm[0]) * (b.to[2] - b.frm[2])):
+            if "down" in b.faces:
+                continue
+            if b.rotation:                        # (turned about y: its bottom as it is)
+                b.faces["down"] = Face()
+                if "up" in b.faces:
+                    self.share(b, "down", b, "up")
+                self.open_ok.discard((b.name, "down"))
+                added.append(b.name)
+                continue
+            rect = (b.frm[0], b.frm[2], b.to[0], b.to[2])
+            left = [rect]
+            for c in closed:
+                left = [piece for r in left for piece in _minus(r, c)]
+            left = [r for r in left if r[2] - r[0] > eps and r[3] - r[1] > eps]
+            self.open_ok.discard((b.name, "down"))
+            if not left:
+                continue                          # (all under other bottoms)
+            if left == [rect] or "up" not in b.faces:
+                b.faces["down"] = Face()
+                if "up" in b.faces:
+                    self.share(b, "down", b, "up")
+            else:
+                y = b.frm[1]
+                polys = [[(r[0], y, r[1]), (r[2], y, r[1]), (r[2], y, r[3]), (r[0], y, r[3])] for r in left]
+                bone = self._bone_of[b.name]
+                carrier = make_polygon(_OnBone(self, bone), f"{b.name}_under", polys, "down")
+                carrier.faces["down"].shared_with = (b.name, "up")
+            closed.append(rect)
+            added.append(b.name)
+        return added
+
     def layout(self) -> None:  # type: ignore[override]
         self.close_holes()
         super().layout()
@@ -334,6 +432,34 @@ class GeoModel(BlockModel):
             # GeckoLib's auto-glow layer convention: <texture>_glowmask.png
             emissive.save(tp.with_name(tp.stem + "_glowmask.png"))
         return gp, tp
+
+
+def _minus(r, c) -> list:
+    """Rect r (x0, z0, x1, z1) less rect c: up to four rects."""
+    x0, z0, x1, z1 = r
+    cx0, cz0, cx1, cz1 = max(c[0], x0), max(c[1], z0), min(c[2], x1), min(c[3], z1)
+    if cx0 >= cx1 or cz0 >= cz1:
+        return [r]
+    out = []
+    if z0 < cz0:
+        out.append((x0, z0, x1, cz0))
+    if cz1 < z1:
+        out.append((x0, cz1, x1, z1))
+    if x0 < cx0:
+        out.append((x0, cz0, cx0, cz1))
+    if cx1 < x1:
+        out.append((cx1, cz0, x1, cz1))
+    return out
+
+
+class _OnBone:
+    """A GeckoLib model's boxes going into one bone (for gb.model.make_polygon)."""
+
+    def __init__(self, g: "GeoModel", bone: str):
+        self.g, self.bone = g, bone
+
+    def box(self, name, frm, to, **kw):
+        return self.g.box(name, frm, to, bone=self.bone, **kw)
 
 
 @dataclass

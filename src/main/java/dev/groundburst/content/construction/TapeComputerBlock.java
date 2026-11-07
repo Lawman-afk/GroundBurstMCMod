@@ -132,15 +132,6 @@ public class TapeComputerBlock extends HorizontalDirectionalBlock implements Ent
         }
     }
 
-    /** While it runs, its motors whirr now and then, the lower block heard. */
-    @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (state.getValue(HALF) == DoubleBlockHalf.LOWER && state.getValue(ACTIVE) && random.nextInt(36) == 0) {
-            level.playLocalSound(pos.getX() + 0.5, pos.getY() + 1.4, pos.getZ() + 0.5, GBSounds.TAPE_WHIRR.get(), SoundSource.BLOCKS,
-                    0.35f, 0.9f + random.nextFloat() * 0.2f, false);
-        }
-    }
-
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES[state.getValue(FACING).get2DDataValue()][state.getValue(HALF) == DoubleBlockHalf.LOWER ? 0 : 1];

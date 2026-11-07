@@ -55,7 +55,8 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
     /** {@code depth}: how many blocks the model reaches down below its controller (the Missile Silo's shaft). */
     public MachineGeoRenderer(BlockEntityRendererProvider.Context context, BlockEntityType<? extends T> type, int height, int reach, int depth) {
-        super(context, type);
+        // (As GeckoLib's own constructor makes its model, but one that draws the bones' poly meshes: PolyGeoModel.)
+        super(context, new PolyGeoModel<>(java.util.Objects.requireNonNull(net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type))));
         this.height = height;
         this.reach = reach;
         this.depth = depth;
