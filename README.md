@@ -70,6 +70,16 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 - **Construction blocks** for building your own: chain-link fencing, barbed wire, corrugated steel, steel panels,
   grating, I-beams, lattice frames, radome panels, floodlights, sandbags and warning signs. Plus two showpieces: a
   Large Silo Door whose leaves slide apart on a redstone signal, and a Search Radar that turns.
+- **Bunker doors:** a two-by-three Blast Door whose handwheel turns and draws its bolts before the heavy leaf swings out,
+  a round Bunker Hatch whose lid lifts up out of the floor, a ladder built in to climb up through it, and a Pressure
+  Door with a porthole you can see through; all three open by hand or by redstone, each with its own sounds.
+- **A command room:** consoles with blinking lamps, a desk with a scrolling CRT and a red telephone, a filing cabinet
+  that stores items, tape computers whose reels spin, and a situation map table.
+- **Bunker fittings:** wall pipes and a valve that gives a redstone signal, vent grilles and ducts that join up, caged
+  lamps, a fuse box whose breaker is a switch, a fire extinguisher that puts out fires, a steel locker that stores items,
+  and a bunk bed two players can sleep in.
+- **The yard:** Jersey barriers and dragon's teeth as tough as reinforced concrete, Czech hedgehogs, a searchlight that
+  sweeps the night sky with its beam, ammo crates on a pallet that store items, and oil, fuel and rusty drums.
 - **Shader packs:** fireballs, smoke and mushroom clouds draw right with Iris shader packs and look the same in every
   pack (tried with Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas and MakeUp Ultra Fast), and stand
   in front of Distant Horizons' far terrain, on Minecraft 26.3 and 1.21.1.

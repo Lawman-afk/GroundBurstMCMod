@@ -56,8 +56,8 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 - **Construction blocks** for building your own: chain-link fencing, barbed wire, corrugated steel, I-beams, radome
   panels, floodlights, sandbags, warning signs, a Large Silo Door whose leaves slide apart, and a Search Radar that turns.
 - **Bunker doors:** a two-by-three Blast Door whose handwheel turns and draws its bolts before the heavy leaf swings out,
-  a round Bunker Hatch whose lid lifts up out of the floor, and a Pressure Door with a porthole you can see through; all
-  three open by hand or by redstone, each with its own sounds.
+  a round Bunker Hatch whose lid lifts up out of the floor, a ladder built in to climb up through it, and a Pressure
+  Door with a porthole you can see through; all three open by hand or by redstone, each with its own sounds.
 - **A command room:** consoles with blinking lamps, a desk with a scrolling CRT and a red telephone, a filing cabinet
   that stores items, tape computers whose reels spin, and a situation map table.
 - **Bunker fittings:** wall pipes and a valve that gives a redstone signal, vent grilles and ducts that join up, caged
@@ -220,7 +220,6 @@ Install it on the server and on every player's game: it adds blocks and items, s
 - Seismographs
 - A Dead Hand system
 - More underwater and naval weapons
-- A performance pass
 - Being considered: handheld weapons based on the special warheads
 
 ## Links
