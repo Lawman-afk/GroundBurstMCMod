@@ -37,13 +37,15 @@ final class YardBoard {
         }
         int[][] hedgehogs = {{2, -5}, {5, -4}, {3, -2}};
         Direction[] turns = {Direction.NORTH, Direction.EAST, Direction.WEST};
-        for (int i = 0; i < hedgehogs.length; i++) {
-            level.setBlock(new BlockPos(x + hedgehogs[i][0], y, z + hedgehogs[i][1]), GBConstruction.CZECH_HEDGEHOG.block().get().defaultBlockState()
+        for (int i = 0; i < hedgehogs.length; i++) {                       // (the middle one rusty)
+            var hedgehog = i == 1 ? GBConstruction.RUSTY_CZECH_HEDGEHOG : GBConstruction.CZECH_HEDGEHOG;
+            level.setBlock(new BlockPos(x + hedgehogs[i][0], y, z + hedgehogs[i][1]), hedgehog.block().get().defaultBlockState()
                     .setValue(HorizontalDirectionalBlock.FACING, turns[i]), 3);
         }
         SearchlightBlock light = GBConstruction.SEARCHLIGHT.block().get();
         BlockPos at = new BlockPos(x + 4, y, z + 2);
-        BlockState ls = light.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH).setValue(SearchlightBlock.ACTIVE, true);
+        BlockState ls = light.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH).setValue(SearchlightBlock.ACTIVE, true)
+                .setValue(SearchlightBlock.SWITCHED, true);
         level.setBlock(at, ls, 3);
         light.setPlacedBy(level, at, ls, null, ItemStack.EMPTY);
         for (int i = 0; i < 2; i++) {
@@ -67,6 +69,10 @@ final class YardBoard {
                 new BunkerDoorBoard.CloseUp("hedgehogs", new Vec3(x + 2.5, y + 2.0, z - 9.0), -15, 12),
                 new BunkerDoorBoard.CloseUp("searchlight", new Vec3(x + 1.5, y + 1.8, z - 1.5), -35, 4),
                 new BunkerDoorBoard.CloseUp("stores", new Vec3(x - 3.0, y + 2.4, z - 1.0), 0, 30),
-                new BunkerDoorBoard.CloseUp("searchlight_night", new Vec3(x - 8.0, y + 3.0, z - 14.0), -20, -30));
+                new BunkerDoorBoard.CloseUp("searchlight_night", new Vec3(x - 8.0, y + 3.0, z - 14.0), -20, -30),
+                new BunkerDoorBoard.CloseUp("hedgehog_middle", new Vec3(x + 3.5, y - 0.62, z - 3.6), 0, 10),
+                new BunkerDoorBoard.CloseUp("searchlight_foot", new Vec3(x + 3.0, y - 0.82, z + 2.5), -90, 28),
+                new BunkerDoorBoard.CloseUp("crate_lid", new Vec3(x - 4.5, y - 0.62, z + 1.6), 0, 18),
+                new BunkerDoorBoard.CloseUp("drum_tops", new Vec3(x - 2.0, y - 0.32, z + 2.0), 0, 40));
     }
 }

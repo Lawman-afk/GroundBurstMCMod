@@ -128,19 +128,24 @@ def ring(g, name, r, y0, y1, cx, cz, bone=F, caps=("up",), sides=None, stagger=N
 def facets(g: GeoModel, name: str, a_in: float, a_out: float, y0: float, y1: float, faces=("north", "south", "up"),
            bone: str = F, sink: float = 0.15) -> list[str]:
     """A ring of sixteen wall panels round the drum's middle (apothem a_in to a_out), each as wide as a facet at its
-    outer face and turned to its bearing; every other one a little lower at its top (and, if its bottom shows, a little
-    higher there), so their caps, which overlap toward the inside, never share a plane. Built facing the front: north is
+    outer face and turned to its bearing; their caps, which overlap toward the inside, one flat group each way (W.FLAT:
+    one even colour, nothing to flicker; before, every other panel sat a little lower). Built facing the front: north is
     a panel's outside, south its inside."""
     half = a_out * math.tan(math.pi / SIDES16)
     names = []
     for k in range(SIDES16):
         n = f"{name}{k}"
         rot = {"origin": (RX, y0, RZ), "axis": "y", "angle": -k * 360.0 / SIDES16} if k else None
-        lift = sink * (k % 2) if "down" in faces else 0.0
-        g.box(n, (RX - half, y0 + lift, RZ - a_out), (RX + half, y1 - sink * (k % 2), RZ - a_in), faces=faces, rotation=rot, bone=bone)
+        dip = 0.0 if W.FLAT else sink * (k % 2)
+        lift = dip if "down" in faces else 0.0
+        g.box(n, (RX - half, y0 + lift, RZ - a_out), (RX + half, y1 - dip, RZ - a_in), faces=faces, rotation=rot, bone=bone)
         for d in ALL:
             if d not in faces:
                 g.open_ok.add((n, d))
+        if W.FLAT:
+            for d in ("up", "down"):
+                if d in faces:
+                    g.flat(f"{name}:{d}", n, d)
         names.append(n)
     return names
 
@@ -148,19 +153,22 @@ def facets(g: GeoModel, name: str, a_in: float, a_out: float, y0: float, y1: flo
 def prism(g: GeoModel, name: str, a: float, y0: float, y1: float, cx: float, cz: float, bone: str, sides: int = 6, caps=("up",),
           step: float = 0.15) -> list[str]:
     """A prism of {sides} (even) sides and apothem a: planks a facet wide turned 360/sides degrees apart (each shows its
-    two ends, opposite facets, and its caps), each {step} lower than the last, so no two of its caps share a plane even
-    where nothing covers its middle (a ball's top, a hexagon's)."""
+    two ends, opposite facets, and its caps), its caps one flat group (W.FLAT; before, each {step} lower than the last,
+    so no two of its caps shared a plane where nothing covers its middle: a ball's top, a hexagon's)."""
     s = a * math.tan(math.pi / sides)
     names = []
     faces = ("north", "south") + tuple(caps)
     for k in range(sides // 2):
         n = f"{name}_{k}"
-        sink = step * k
+        sink = 0.0 if W.FLAT else step * k
         rot = {"origin": (cx, y0, cz), "axis": "y", "angle": -360.0 / sides * k} if k else None
         g.box(n, (cx - s, y0 - sink, cz - a), (cx + s, y1 - sink, cz + a), faces=faces, rotation=rot, bone=bone)
         for d in ALL:
             if d not in faces:
                 g.open_ok.add((n, d))
+        if W.FLAT:
+            for d in caps:
+                g.flat(f"{name}:{d}", n, d)
         names.append(n)
     return names
 
@@ -224,14 +232,17 @@ def build_drum(g: GeoModel, p: SS.Parts) -> None:
     p.add("plate", facets(g, "plate", WALL_OUT, PLATE_OUT, DECK_Y, PLATE_TOP, faces=("north", "up")))
     p.add("wall", facets(g, "wall", WALL_IN, WALL_OUT, DECK_Y, WALL_TOP, faces=("north", "south")))
     p.add("lip", facets(g, "lip", LIP_IN, LIP_OUT, LIP_Y0, LIP_Y1, faces=("north", "south", "up", "down")))
-    # The floor inside: six slabs round the pit, each from its edge of the hexagon out under the wall, every other one a
-    # touch lower (they overlap toward the wall); their inner ends are the pit's walls.
+    # The floor inside: six slabs round the pit, each from its edge of the hexagon out under the wall, their tops one
+    # flat group (they overlap toward the wall; W.FLAT); their inner ends are the pit's walls.
     for k in range(6):
         n = f"floor{k}"
         rot = {"origin": (RX, PIT_FLOOR, RZ), "axis": "y", "angle": -60.0 * k} if k else None
-        g.box(n, (RX - 30, PIT_FLOOR, RZ - 62), (RX + 30, FLOOR_TOP - 0.15 * (k % 2), RZ - PIT_A), faces=("up", "south"), rotation=rot, bone=F)
+        g.box(n, (RX - 30, PIT_FLOOR, RZ - 62), (RX + 30, FLOOR_TOP - (0.0 if W.FLAT else 0.15 * (k % 2)), RZ - PIT_A), faces=("up", "south"),
+              rotation=rot, bone=F)
         for d in ("north", "east", "west", "down"):
             g.open_ok.add((n, d))
+        if W.FLAT:
+            g.flat("floor:up", n, "up")
         p.add("floor", n)
     g.box("pit_floor", (RX - PIT_R, 2, RZ - 32), (RX + PIT_R, PIT_FLOOR, RZ + 32), faces=("up",), bone=F)
     for d in ("north", "south", "east", "west", "down"):

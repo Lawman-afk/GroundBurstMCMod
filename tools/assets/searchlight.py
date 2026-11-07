@@ -54,11 +54,13 @@ def build() -> tuple[GeoModel, dict]:
         parts.setdefault(group, []).append(n)
 
     g.bone("base")
-    parts["foot"] = SS.ring(g, "foot", 5.0, 0.0, 1.2, 0.0, 0.0, "base", caps=("up",))
-    parts["column"] = SS.ring(g, "column", 1.8, 1.2, 8.0, 0.0, 0.0, "base", caps=())
-    parts["collar"] = SS.ring(g, "collar", 2.6, 8.0, YOKE_Y, 0.0, 0.0, "base", caps=("up", "down"))
+    # (Each round part's caps on as few levels as keep their overlaps apart where they show: the foot's top, round the
+    # column, flickered on one plane where it showed past it.)
+    parts["foot"] = ring(g, "foot", 5.0, 0.0, 1.2, "base", hi=1.8)
+    parts["column"] = ring(g, "column", 1.8, 1.2, 8.0, "base", root=0.5)
+    parts["collar"] = ring(g, "collar", 2.6, 8.0, YOKE_Y + 0.1, "base", lo=1.8, toward="hi")
     g.bone("yoke", pivot=(0.0, YOKE_Y, 0.0), parent="base")
-    parts["turntable"] = SS.ring(g, "turntable", 3.2, YOKE_Y, YOKE_Y + 1.0, 0.0, 0.0, "yoke", caps=("up", "down"))
+    parts["turntable"] = ring(g, "turntable", 3.2, YOKE_Y, YOKE_Y + 1.0, "yoke", lo=2.6, hi=0.0)
     box("yoke", "crossbar", (-6.6, YOKE_Y + 1.0, -1.2), (6.6, YOKE_Y + 2.2, 1.2), "yoke")
     for side, x in (("l", -6.6), ("r", 5.6)):
         box("yoke", f"arm_{side}", (x, YOKE_Y + 2.2, -1.0), (x + 1.0, TRUNNION_Y + 1.2, 1.0), "yoke",
@@ -69,9 +71,13 @@ def build() -> tuple[GeoModel, dict]:
     # The drum laid on its side: built standing along y about the trunnions' axis (its front up), turned to face north.
     g.bone("drum", pivot=(0.0, TRUNNION_Y, 0.0), parent="lamp", rotation=(-90.0, 0.0, 0.0))
     cy = TRUNNION_Y
-    parts["back"] = SS.ring(g, "back", 4.6, cy - 6.4, cy - 5.0, 0.0, 0.0, "drum", caps=("down",))
-    parts["drum"] = SS.ring(g, "drum_body", DRUM_R, cy - 5.0, cy + 3.6, 0.0, 0.0, "drum", caps=())
-    parts["bezel"] = SS.ring(g, "bezel", DRUM_R + 0.4, cy + 3.6, cy + 4.6, 0.0, 0.0, "drum", caps=("up", "down"))
+    # The back: its plate, a boss in its middle (the lamp house's cap); the drum closed round the plate.
+    parts["back"] = (ring(g, "back", 4.6, cy - 6.4, cy - 4.9, "drum", lo=1.6)
+                     + ring(g, "back_boss", 1.6, cy - 7.0, cy - 6.2, "drum", lo=0.0))
+    parts["drum"] = ring(g, "drum_body", DRUM_R, cy - 5.0, cy + 3.7, "drum", lo=4.6)
+    parts["bezel"] = ring(g, "bezel", DRUM_R + 0.4, cy + 3.6, cy + 4.6, "drum", lo=DRUM_R, hi=4.3)
+    # The lens, dark glass a hair proud of the bezel (its own disc: painted on the bezel's planks it came out ragged).
+    parts["lens"] = ring(g, "lens", 4.3, cy + 4.5, cy + 4.7, "drum", hi=0.0, flat=True)
     # The vent stack on the drum's top (the drum's +z, as it lies), its handles at its sides.
     box("stack", "stack", (-1.4, cy - 3.0, DRUM_R - 0.4), (1.4, cy + 0.6, DRUM_R + 1.8), "drum",
         faces=("north", "south", "east", "west", "up"))
@@ -80,8 +86,15 @@ def build() -> tuple[GeoModel, dict]:
         box("handle", f"handle_{side}", (x, cy - 1.5, -0.4), (x + 0.6, cy + 1.5, 0.4), "drum")
     # The lit lens a hair in front of the bezel's glass, in its own bone (scaled to nothing while the light is off).
     g.bone("glow", pivot=(0.0, cy + 4.6, 0.0), parent="drum")
-    parts["lit"] = SS.ring(g, "lit", 4.4, cy + 4.6, cy + 4.95, 0.0, 0.0, "glow", caps=("up",), stagger="alternate")
+    parts["lit"] = ring(g, "lit", 4.4, cy + 4.6, cy + 4.95, "glow", hi=0.0, flat=True)
     return g, parts
+
+
+def ring(g: GeoModel, name: str, r: float, y0: float, y1: float, bone: str, **kw) -> list[str]:
+    """A round part about the bone's axis (warheads.round_section), its planks kept for painting round."""
+    names = W.round_section(SS.OnBone(g, bone), name, r, y0, y1, c=(0.0, 0.0), **kw)
+    SS.ROUND.extend(names)
+    return names
 
 
 OLIVE = M.painted(M.OLIVE_RAMP, tone=0.5, wear=0.22)
@@ -89,16 +102,17 @@ BEZEL = M.steel(tone=0.7, brushed=0.06)
 
 
 def bezel_face(f: M.Face, img: np.ndarray) -> None:
-    """The bezel's front: its steel ring round the lens, the lens dark glass with a pale glint across its top."""
+    """The bezel's front: its steel ring round the lens, darker at its inner lip."""
     if f.d != "up":
         return
     r = np.hypot(f.X, f.Z)
     rgb = img[..., :3].astype(np.float32)
-    glass = r < 4.5
-    rgb[glass] = (38, 46, 54)
-    rgb[glass & (np.abs(f.X + f.Z * 0.4 - 1.8) < 0.7) & (r < 3.8)] = (120, 138, 150)
-    rgb[(r >= 4.5) & (r < 4.9)] *= 0.62
+    rgb[(r >= 4.3) & (r < 4.9)] *= 0.62
     img[..., :3] = np.clip(rgb, 0, 255).astype(np.uint8)
+
+
+#: The dark lens: dark glass, even all over.
+LENS_DARK = (38, 46, 54)
 
 
 def paint(g: GeoModel, parts: dict) -> tuple[Tex, Tex]:
@@ -113,6 +127,7 @@ def paint(g: GeoModel, parts: dict) -> tuple[Tex, Tex]:
               only=("north", "south"))
     S.paint(t, parts["bezel"], BEZEL)
     S.overlay(t, parts["bezel"], bezel_face)
+    CR.fill_faces(g, t, parts["lens"], LENS_DARK)
     glow = Tex(g.tex_w, g.tex_h)
     CR.fill_faces(g, t, parts["lit"], LENS_LIT)
     CR.fill_faces(g, glow, parts["lit"], LENS_LIT)
@@ -186,6 +201,7 @@ def main() -> None:
     g, parts = build()
     g.layout()
     t, glow = paint(g, parts)
+    W.match_walls(g, t, [b.name for b in g.boxes], entity=True)
     g.save(t, glow)
     print(save_animations(NAME, animations()))
     print(NAME, "tex", g.tex_w, g.tex_h)

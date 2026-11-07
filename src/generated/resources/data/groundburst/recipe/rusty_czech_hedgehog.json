@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": "groundburst:czech_hedgehog",
+    "W": "minecraft:water_bucket"
+  },
+  "pattern": [
+    "###",
+    "#W#",
+    "###"
+  ],
+  "result": {
+    "count": 8,
+    "id": "groundburst:rusty_czech_hedgehog"
+  }
+}

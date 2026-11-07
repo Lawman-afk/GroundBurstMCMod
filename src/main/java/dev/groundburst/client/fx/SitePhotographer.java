@@ -165,7 +165,7 @@ public final class SitePhotographer {
      * A flat world deep enough for what the sites have underground (a silo's shaft, a bunker's stair, the waste store):
      * bedrock, seventy layers of stone, dirt and grass, the land's top at y 10.
      */
-    private static net.minecraft.world.level.levelgen.WorldDimensions deepFlat(net.minecraft.core.HolderLookup.Provider registries) {
+    static net.minecraft.world.level.levelgen.WorldDimensions deepFlat(net.minecraft.core.HolderLookup.Provider registries) {
         var biomes = registries.lookupOrThrow(net.minecraft.core.registries.Registries.BIOME);
         var flat = net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings.getDefault(biomes,
                         registries.lookupOrThrow(net.minecraft.core.registries.Registries.STRUCTURE_SET),

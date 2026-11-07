@@ -215,9 +215,15 @@ class GeoModel(BlockModel):
                 out.append(name)
                 name = parent.get(name)
             return out
+        flat = self.flat_group_of()
+        named = {"+x": "east", "-x": "west", "+y": "up", "-y": "down", "+z": "south", "-z": "north"}
         issues = []
         for issue in zfight.check(boxes, tol):
             a, b = issue.split(" vs ")[0].split("/")[0], issue.split(" vs ")[1].split("/")[0]
+            da = named.get(issue.split(" vs ")[0].split("/")[1].split(" ")[0])
+            db = named.get(issue.split(" vs ")[1].split("/")[1].split(" ")[0])
+            if flat.get((a, da)) is not None and flat.get((a, da)) == flat.get((b, db)):
+                continue                                   # (one flat group: they draw alike)
             ca, cb = chain(bone_of.get(a)), chain(bone_of.get(b))
             if any(x != y and x in grp and y in grp for grp in self.exclusive for x in ca for y in cb):
                 continue   # never drawn together (two of a group, or inside two of a group)
@@ -318,6 +324,7 @@ class GeoModel(BlockModel):
             print(f"  z-fight warning [{self.name}]: {issue}")
         for issue in self.holes():
             print(f"  open-face warning [{self.name}]: {issue}")
+        self.flatten(tex, emissive)
         self.bleed(tex)
         if emissive is not None:
             self.bleed(emissive)

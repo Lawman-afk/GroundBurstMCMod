@@ -1,32 +1,62 @@
 {
   "variants": {
-    "facing=north,powered=false": {
+    "facing=north,held=false,powered=false": {
       "model": "groundburst:block/fuse_box"
     },
-    "facing=north,powered=true": {
+    "facing=north,held=true,powered=false": {
       "model": "groundburst:block/fuse_box_on"
     },
-    "facing=east,powered=false": {
+    "facing=north,held=false,powered=true": {
+      "model": "groundburst:block/fuse_box_on"
+    },
+    "facing=north,held=true,powered=true": {
+      "model": "groundburst:block/fuse_box_on"
+    },
+    "facing=east,held=false,powered=false": {
       "model": "groundburst:block/fuse_box",
       "y": 90
     },
-    "facing=east,powered=true": {
+    "facing=east,held=true,powered=false": {
       "model": "groundburst:block/fuse_box_on",
       "y": 90
     },
-    "facing=south,powered=false": {
+    "facing=east,held=false,powered=true": {
+      "model": "groundburst:block/fuse_box_on",
+      "y": 90
+    },
+    "facing=east,held=true,powered=true": {
+      "model": "groundburst:block/fuse_box_on",
+      "y": 90
+    },
+    "facing=south,held=false,powered=false": {
       "model": "groundburst:block/fuse_box",
       "y": 180
     },
-    "facing=south,powered=true": {
+    "facing=south,held=true,powered=false": {
       "model": "groundburst:block/fuse_box_on",
       "y": 180
     },
-    "facing=west,powered=false": {
+    "facing=south,held=false,powered=true": {
+      "model": "groundburst:block/fuse_box_on",
+      "y": 180
+    },
+    "facing=south,held=true,powered=true": {
+      "model": "groundburst:block/fuse_box_on",
+      "y": 180
+    },
+    "facing=west,held=false,powered=false": {
       "model": "groundburst:block/fuse_box",
       "y": 270
     },
-    "facing=west,powered=true": {
+    "facing=west,held=true,powered=false": {
+      "model": "groundburst:block/fuse_box_on",
+      "y": 270
+    },
+    "facing=west,held=false,powered=true": {
+      "model": "groundburst:block/fuse_box_on",
+      "y": 270
+    },
+    "facing=west,held=true,powered=true": {
       "model": "groundburst:block/fuse_box_on",
       "y": 270
     }

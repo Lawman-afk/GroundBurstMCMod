@@ -20,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -41,7 +42,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The Searchlight (DESIGN.md §22.6): a big searchlight on a stand two blocks high, its lower block's block entity drawing
  * it (tools/assets/searchlight.py). A click switches it on ({@link #ACTIVE}): its lens lit, its beam out into the sky, it
- * sweeps the sky, turning on its yoke and raising and lowering its drum; another switches it off. Its two halves stand or
+ * sweeps the sky, turning on its yoke and raising and lowering its drum; another switches it off. A redstone signal at
+ * either of its blocks holds it on, whatever its clicks chose ({@link Fittings#SWITCHED}). Its two halves stand or
  * fall together, as a door's do; the lower drops the item.
  */
 public class SearchlightBlock extends HorizontalDirectionalBlock implements EntityBlock {
@@ -52,6 +54,8 @@ public class SearchlightBlock extends HorizontalDirectionalBlock implements Enti
 
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
     public static final BooleanProperty ACTIVE = MachineBlock.ACTIVE;
+    /** What its clicks last chose ({@link Fittings#SWITCHED}). */
+    public static final BooleanProperty SWITCHED = Fittings.SWITCHED;
     private static final VoxelShape[] LOWER = Fittings.facing(new double[] {3, 0, 3, 13, 1.2, 13}, new double[] {5.6, 1.2, 5.6, 10.4, 16, 10.4});
     private static final VoxelShape[] UPPER = Fittings.facing(new double[] {1.5, 0, 1.5, 14.5, 9, 14.5});
     private final Supplier<? extends BlockEntityType<?>> type;
@@ -59,12 +63,13 @@ public class SearchlightBlock extends HorizontalDirectionalBlock implements Enti
     public SearchlightBlock(Properties properties, Supplier<? extends BlockEntityType<?>> type) {
         super(properties);
         this.type = type;
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(HALF, DoubleBlockHalf.LOWER).setValue(ACTIVE, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(HALF, DoubleBlockHalf.LOWER).setValue(ACTIVE, false)
+                .setValue(Fittings.SWITCHED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, HALF, ACTIVE);
+        builder.add(FACING, HALF, ACTIVE, Fittings.SWITCHED);
     }
 
     /** Placed facing away from its placer (its lens to the way they look), if the block over it is free. */
@@ -75,7 +80,7 @@ public class SearchlightBlock extends HorizontalDirectionalBlock implements Enti
         if (level.isOutsideBuildHeight(up) || !level.getBlockState(up).canBeReplaced(context)) {
             return null;
         }
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection()).setValue(ACTIVE, Fittings.tallPowered(level, context.getClickedPos()));
     }
 
     @Override
@@ -89,7 +94,9 @@ public class SearchlightBlock extends HorizontalDirectionalBlock implements Enti
             BlockPos neighborPos, BlockState neighbor, RandomSource random) {
         DoubleBlockHalf half = state.getValue(HALF);
         if (direction.getAxis() == Direction.Axis.Y && (half == DoubleBlockHalf.LOWER) == (direction == Direction.UP)) {
-            return neighbor.is(this) && neighbor.getValue(HALF) != half ? state.setValue(ACTIVE, neighbor.getValue(ACTIVE)) : Blocks.AIR.defaultBlockState();
+            return neighbor.is(this) && neighbor.getValue(HALF) != half
+                    ? state.setValue(ACTIVE, neighbor.getValue(ACTIVE)).setValue(Fittings.SWITCHED, neighbor.getValue(Fittings.SWITCHED))
+                    : Blocks.AIR.defaultBlockState();
         }
         return super.updateShape(state, level, ticks, pos, direction, neighborPos, neighbor, random);
     }
@@ -110,18 +117,19 @@ public class SearchlightBlock extends HorizontalDirectionalBlock implements Enti
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide()) {
-            boolean on = !state.getValue(ACTIVE);
-            BlockPos lower = state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
-            for (BlockPos p : new BlockPos[] {lower, lower.above()}) {
-                BlockState s = level.getBlockState(p);
-                if (s.is(this)) {
-                    level.setBlock(p, s.setValue(ACTIVE, on), Block.UPDATE_ALL);
-                }
-            }
+            boolean on = Fittings.clickTall(this, state, level, pos, ACTIVE);
             level.playSound(null, pos, GBSounds.FUSE_BOX_SWITCH.get(), SoundSource.BLOCKS, 0.8f, on ? 0.9f : 0.75f);
             level.gameEvent(player, on ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, pos);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /** A redstone signal at either block holds it on; gone, it is as its last click left it. */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, @Nullable Orientation orientation, boolean movedByPiston) {
+        if (!level.isClientSide()) {
+            Fittings.lookTall(this, state, level, pos, ACTIVE);
+        }
     }
 
     @Override

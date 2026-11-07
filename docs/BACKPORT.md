@@ -6,10 +6,15 @@ Main is written for Minecraft 26.3 (NeoForge 26.3). This branch is the same mod 
 - **Why a backport from main** (main's DESIGN.md §30): 26.1.2 is two minor versions before 26.3 and shares most of its
   code (the same rendering by render states and submitted geometry, item model definitions, data components, the same
   GameTest framework); a forward port from the 1.21.1 branch would cross every change from 1.21.2 to 26.1.
-- **Last brought up to:** `main` at `c2acaac1` (2026-11-06, for 0.9.0: sea mines, depth charges and the Depth Charge
-  Rack, main's DESIGN.md §14.6; healing the game's own explosions and other mods', §21.9; 0.8.1's healed cables, pipes
-  and other mods' blocks; before it, at `07db772c`, 2026-11-04: fire never healed back; main's performance check, its
-  DESIGN.md §11.8).
+- **Last brought up to:** `main` at `2e61cc60` (2026-11-07: after the user's look round the showroom, main's DESIGN.md
+  §22.7: flat round tops in every model (a round part's overlapping caps on one level, one even colour, no corner
+  shade), the cosmetic models' fixes, the hatch's lid block, redstone holding the props open, the Rusty Czech Hedgehog,
+  the extinguisher on a wall, main's showroom world (`gradlew runShowroom`; its signs written through this version's
+  sign text, a `FILE_FIXES` entry); before it, at `d403431a`, `c7851148` and `27ad9525`: the yard, the bunker fittings
+  and the command room; at `c2acaac1` (2026-11-06, for 0.9.0: sea mines, depth charges and the Depth Charge Rack, main's
+  DESIGN.md §14.6; healing the game's own explosions and other mods', §21.9; 0.8.1's healed cables, pipes and other
+  mods' blocks; before it, at `07db772c`, 2026-11-04: fire never healed back; main's performance check, its DESIGN.md
+  §11.8).
 
 ## How it is made
 
@@ -21,7 +26,7 @@ main at the commit in `tools\backport\base.txt` straight from git and writes its
   features' registry, `ModConfig.Type.SYNCED` and `LOCAL` to `SERVER` and `COMMON`, the GameTests' mock player and test
   data), a few functions (blocks' codecs, the picture-in-picture renderers, calls whose arguments changed, a block's
   outline drawn as lines) and per-file fixes (`FILE_FIXES`: fuel values, the sky's packed colours, healing's fire and
-  farmland mixins, an entity's load).
+  farmland mixins, an entity's load, the showroom's signs).
 - **Resources:** configured features to `worldgen/configured_feature` with their settings under `config` and full block
   states; loot tables' single conditions and modifiers to 26.1.2's lists; recipe unlocks name one recipe; a biome's mob
   spawns from 26.3's environment attribute to its spawners; tags' entries from outside the mod made optional; recipes
@@ -56,8 +61,10 @@ their lines).
 
 ## Checks
 
-- `gradlew runGameTestServer`: main's GameTests (438 at `d403431a`).
+- `gradlew runGameTestServer`: main's GameTests (440 at `09ad4608`, all passed).
 - `gradlew runPlayBench [-Pjfr=<name>]`, `runBlastBench`, `runFxShots`, `runManualShots`, `runSiteShots`,
   `runHealShots`: main's benches and photographers (`runSiteShots -Psite=doors`: the bunker doors; `room`: the command room; `fittings`: the bunker fittings; `yard`: the yard, with a picture at midnight).
+- `gradlew runShowroom`: main's showroom world (`run/saves/ground_burst_showroom`; `-PshowroomWalk=true`: the timed
+  walk round the bunker doors).
 - The build deploys to the folder in `deploy_instance_dir_26_1_2` (in `%USERPROFILE%\.gradle\gradle.properties`), if set.
 - Releases: `groundburst-mc26.1.2-<version>.jar` (its own `mod_version`), kept with main's in main's `build/release`.

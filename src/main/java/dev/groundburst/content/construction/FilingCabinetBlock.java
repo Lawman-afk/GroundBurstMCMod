@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -30,7 +31,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The Filing Cabinet (DESIGN.md §22.4): four steel drawers that hold 27 stacks, as a barrel does; while someone has it
- * open, its top drawer stands pulled out ({@link #OPEN}). Its front toward its placer.
+ * open, or while a redstone signal reaches it, its top drawer stands pulled out ({@link #OPEN}). Its front toward its
+ * placer.
  */
 public class FilingCabinetBlock extends HorizontalDirectionalBlock implements EntityBlock {
     @Override
@@ -61,7 +63,8 @@ public class FilingCabinetBlock extends HorizontalDirectionalBlock implements En
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite())
+                .setValue(OPEN, context.getLevel().hasNeighborSignal(context.getClickedPos()));
     }
 
     @Override
@@ -80,6 +83,14 @@ public class FilingCabinetBlock extends HorizontalDirectionalBlock implements En
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         Containers.updateNeighboursAfterDestroy(state, level, pos);
+    }
+
+    /** A redstone signal reaching it holds it open (its block entity looks again). */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, @Nullable Orientation orientation, boolean movedByPiston) {
+        if (level instanceof ServerLevel && level.getBlockEntity(pos) instanceof FilingCabinetBlockEntity cabinet) {
+            cabinet.lookAtPower();
+        }
     }
 
     @Override

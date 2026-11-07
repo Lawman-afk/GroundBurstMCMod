@@ -1,5 +1,7 @@
 package dev.groundburst.content.construction;
 
+import org.jspecify.annotations.Nullable;
+
 import dev.groundburst.registry.GBSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,6 +19,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -24,7 +27,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The Fuse Box (DESIGN.md §22.5): a steel box on a wall, its conduit up into the ceiling, a breaker's handle at its side.
  * A click throws the breaker: {@link #POWERED}, its lamp green, it gives a signal as a lever does (strong into the wall it
- * is on); another throws it back, the lamp red.
+ * is on); another throws it back, the lamp red. A redstone signal at it holds it on to look at ({@link Fittings#HELD}),
+ * its signal still its breaker's alone.
  */
 public class FuseBoxBlock extends HorizontalDirectionalBlock {
     @Override
@@ -33,22 +37,33 @@ public class FuseBoxBlock extends HorizontalDirectionalBlock {
     }
 
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+    /** Held on by a redstone signal, to look at ({@link Fittings#HELD}). */
+    public static final BooleanProperty HELD = Fittings.HELD;
     private static final VoxelShape[] SHAPES = Fittings.facing(new double[] {2.5, 2.5, 12, 13.5, 14.5, 16},
             new double[] {13.5, 4, 12.5, 15, 12, 15.5}, new double[] {3.7, 14.5, 13, 6.3, 16, 15.6});
 
     public FuseBoxBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(POWERED, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(POWERED, false).setValue(Fittings.HELD, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, POWERED);
+        builder.add(FACING, POWERED, Fittings.HELD);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, Fittings.wallFacing(context));
+        return defaultBlockState().setValue(FACING, Fittings.wallFacing(context))
+                .setValue(Fittings.HELD, context.getLevel().hasNeighborSignal(context.getClickedPos()));
+    }
+
+    /** A redstone signal at it holds it on to look at (its own signal still its breaker's alone). */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, @Nullable Orientation orientation, boolean movedByPiston) {
+        if (!level.isClientSide()) {
+            Fittings.hold(state, level, pos);
+        }
     }
 
     @Override

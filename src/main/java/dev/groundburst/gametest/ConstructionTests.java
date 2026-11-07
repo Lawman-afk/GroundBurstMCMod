@@ -11,6 +11,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -28,7 +29,9 @@ import net.minecraft.world.phys.AABB;
  * both sides by their models) and never two faces in one plane. The Blast Door (§22.3): it opens and shuts by a click or
  * by redstone, lays its leaf's blocks in front of its hinges as it opens and takes them away when it has shut, will not
  * swing into a wall, and goes whole (one item back) when any of its blocks is broken. The Bunker Hatch: a signal opens it,
- * its lid standing up out of the floor and the way through it clear; the Pressure Door: a signal opens both its halves.
+ * its lid standing up out of the floor in a block of its own (clicked, it shuts the hatch) and the way through it clear;
+ * the Pressure Door: a signal opens both its halves. The props held on or open by a redstone signal (the user's wish);
+ * the Bunker Lamp lit by one; the Fire Extinguisher hung on a wall.
  */
 final class ConstructionTests {
     private ConstructionTests() {}
@@ -44,7 +47,9 @@ final class ConstructionTests {
         GBGameTests.test("filing_cabinet_holds_27_stacks", GBGameTests.FLOOR_16, 20, ConstructionTests::cabinetHolds);
         GBGameTests.test("tape_computer_stands_two_high", GBGameTests.FLOOR_16, 20, ConstructionTests::tapeTwoHigh);
         GBGameTests.test("map_table_breaks_whole_for_one_item", GBGameTests.FLOOR_16, 40, ConstructionTests::mapTableBreaks);
-        GBGameTests.test("bunker_lamp_clicks_off_and_on", GBGameTests.FLOOR_16, 20, ConstructionTests::lampClicks);
+        GBGameTests.test("bunker_lamp_lights_on_a_signal", GBGameTests.FLOOR_16, 40, ConstructionTests::lampLights);
+        GBGameTests.test("props_are_held_on_or_open_by_redstone", GBGameTests.FLOOR_16, 40, ConstructionTests::propsHeld);
+        GBGameTests.test("fire_extinguisher_hangs_on_a_wall", GBGameTests.FLOOR_16, 20, ConstructionTests::extinguisherHangs);
         GBGameTests.test("ducts_join_ducts_and_a_grilles_back", GBGameTests.FLOOR_16, 20, ConstructionTests::ductsJoin);
         GBGameTests.test("wall_pipes_run_on_into_their_neighbours", GBGameTests.FLOOR_16, 20, ConstructionTests::pipesJoin);
         GBGameTests.test("valve_and_fuse_box_give_a_signal", GBGameTests.FLOOR_16, 20, ConstructionTests::switchesSignal);
@@ -62,7 +67,8 @@ final class ConstructionTests {
         float concrete = dev.groundburst.content.launch.GBLaunch.REINFORCED_CONCRETE.block().get().getExplosionResistance();
         helper.assertTrue(GBConstruction.JERSEY_BARRIER.block().get().getExplosionResistance() == concrete
                 && GBConstruction.DRAGONS_TEETH.block().get().getExplosionResistance() == concrete, "barriers and teeth blast as reinforced concrete");
-        helper.assertTrue(GBConstruction.CZECH_HEDGEHOG.block().get().getExplosionResistance() >= 300, "a hedgehog's steel is hard to blast");
+        helper.assertTrue(GBConstruction.CZECH_HEDGEHOG.block().get().getExplosionResistance() >= 300
+                && GBConstruction.RUSTY_CZECH_HEDGEHOG.block().get().getExplosionResistance() >= 300, "a hedgehog's steel, painted or rusty, is hard to blast");
         helper.succeed();
     }
 
@@ -129,16 +135,99 @@ final class ConstructionTests {
     }
 
     // --- the bunker fittings ----------------------------------------------------------------------------------------------------
-    private static void lampClicks(GameTestHelper helper) {
+    private static void lampLights(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos at = new BlockPos(8, 1, 8);
         helper.setBlock(at, GBConstruction.BUNKER_LAMP.block().get().defaultBlockState());
         BlockPos abs = helper.absolutePos(at);
-        helper.assertTrue(level.getBlockState(abs).getLightEmission() == 14, "lit as it is put up");
+        helper.assertTrue(level.getBlockState(abs).getLightEmission() == 0, "dark with no signal");
         helper.useBlock(at);
-        helper.assertTrue(level.getBlockState(abs).getLightEmission() == 0, "a click turns it off");
-        helper.useBlock(at);
-        helper.assertTrue(level.getBlockState(abs).getValue(dev.groundburst.content.construction.BunkerLampBlock.LIT), "another on again");
+        helper.assertTrue(level.getBlockState(abs).getLightEmission() == 0, "a click does nothing");
+        helper.setBlock(at.east(), Blocks.REDSTONE_BLOCK);
+        helper.assertTrue(level.getBlockState(abs).getLightEmission() == 14, "a signal lights it");
+        helper.setBlock(at.east(), Blocks.AIR);
+        helper.runAfterDelay(6, () -> {
+            helper.assertTrue(!level.getBlockState(abs).getValue(dev.groundburst.content.construction.BunkerLampBlock.LIT), "the signal gone, it goes dark");
+            helper.succeed();
+        });
+    }
+
+    /**
+     * Each prop beside a redstone block: the containers stand open, the two-high props on (whatever their clicks chose), the
+     * switches that give a signal look on but give none of their own (else they would hold themselves on); the redstone gone,
+     * each as it was.
+     */
+    private static void propsHeld(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos cabinet = new BlockPos(2, 1, 3), crates = new BlockPos(5, 1, 3), locker = new BlockPos(8, 1, 3), light = new BlockPos(11, 1, 3),
+                tape = new BlockPos(14, 1, 3), valve = new BlockPos(4, 2, 10), fuse = new BlockPos(10, 2, 10);
+        helper.setBlock(cabinet, GBConstruction.FILING_CABINET.block().get().defaultBlockState());
+        helper.setBlock(crates, GBConstruction.AMMO_CRATES.block().get().defaultBlockState());
+        for (Block b : List.of(GBConstruction.STEEL_LOCKER.block().get(), GBConstruction.SEARCHLIGHT.block().get(), GBConstruction.TAPE_COMPUTER.block().get())) {
+            BlockPos p = b == GBConstruction.STEEL_LOCKER.block().get() ? locker : b == GBConstruction.SEARCHLIGHT.block().get() ? light : tape;
+            helper.setBlock(p, b.defaultBlockState());
+            b.setPlacedBy(level, helper.absolutePos(p), b.defaultBlockState(), null, ItemStack.EMPTY);
+        }
+        helper.useBlock(tape);                                              // stopped by a click
+        for (BlockPos p : List.of(valve, fuse)) {
+            helper.setBlock(p.south(), Blocks.STONE);
+        }
+        helper.setBlock(valve, GBConstruction.PIPE_VALVE.block().get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH));
+        helper.setBlock(fuse, GBConstruction.FUSE_BOX.block().get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH));
+        var open = net.minecraft.world.level.block.state.properties.BlockStateProperties.OPEN;
+        var active = dev.groundburst.content.machine.MachineBlock.ACTIVE;
+        var held = dev.groundburst.content.construction.PipeValveBlock.HELD;
+        helper.assertTrue(!level.getBlockState(helper.absolutePos(tape)).getValue(active), "a click stops the tape computer");
+        // The redstone beside each (the two-high ones' upper halves: either holds the whole).
+        List<BlockPos> power = List.of(cabinet.east(), crates.east(), locker.above().east(), light.above().east(), tape.above().east(),
+                valve.east(), fuse.east());
+        power.forEach(p -> helper.setBlock(p, Blocks.REDSTONE_BLOCK));
+        helper.runAfterDelay(2, () -> {
+            for (BlockPos p : List.of(cabinet, crates, locker, locker.above())) {
+                helper.assertTrue(level.getBlockState(helper.absolutePos(p)).getValue(open), "held open: " + level.getBlockState(helper.absolutePos(p)));
+            }
+            for (BlockPos p : List.of(light, light.above(), tape, tape.above())) {
+                helper.assertTrue(level.getBlockState(helper.absolutePos(p)).getValue(active), "held on: " + level.getBlockState(helper.absolutePos(p)));
+            }
+            helper.useBlock(light);                                         // a click while it is held: still on
+            helper.assertTrue(level.getBlockState(helper.absolutePos(light)).getValue(active), "a held light stays on when clicked");
+            helper.useBlock(light);
+            for (BlockPos p : List.of(valve, fuse)) {
+                BlockState s = level.getBlockState(helper.absolutePos(p));
+                helper.assertTrue(s.getValue(held), "held on to look at: " + s);
+                helper.assertTrue(level.getDirectSignal(helper.absolutePos(p), Direction.NORTH) == 0, "but no signal of its own: " + s);
+            }
+            power.forEach(p -> helper.setBlock(p, Blocks.AIR));
+            helper.runAfterDelay(2, () -> {
+                for (BlockPos p : List.of(cabinet, crates, locker, locker.above())) {
+                    helper.assertTrue(!level.getBlockState(helper.absolutePos(p)).getValue(open), "shut again: " + level.getBlockState(helper.absolutePos(p)));
+                }
+                for (BlockPos p : List.of(light, tape)) {
+                    helper.assertTrue(!level.getBlockState(helper.absolutePos(p)).getValue(active), "off again: " + level.getBlockState(helper.absolutePos(p)));
+                }
+                for (BlockPos p : List.of(valve, fuse)) {
+                    helper.assertTrue(!level.getBlockState(helper.absolutePos(p)).getValue(held), "let go");
+                }
+                helper.succeed();
+            });
+        });
+    }
+
+    private static void extinguisherHangs(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = new BlockPos(8, 2, 8);
+        helper.setBlock(at.south(), Blocks.STONE);
+        BlockState hung = GBConstruction.FIRE_EXTINGUISHER.block().get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH)
+                .setValue(dev.groundburst.content.construction.FireExtinguisherBlock.WALL, true);
+        BlockPos abs = helper.absolutePos(at);
+        helper.assertTrue(hung.canSurvive(level, abs), "it hangs on the wall behind it");
+        helper.setBlock(at, hung);
+        helper.assertTrue(level.getBlockState(abs).getShape(level, abs).bounds().maxZ > 0.99, "against the wall");
+        helper.setBlock(at.south(), Blocks.AIR);
+        helper.assertTrue(!level.getBlockState(abs).is(GBConstruction.FIRE_EXTINGUISHER.block().get()), "the wall gone, it falls");
         helper.succeed();
     }
 
@@ -356,8 +445,13 @@ final class ConstructionTests {
             BlockState s = level.getBlockState(abs);
             helper.assertTrue(s.getValue(TrapDoorBlock.OPEN), "a signal opens it");
             var shape = s.getCollisionShape(level, abs);
-            helper.assertTrue(shape.bounds().maxY > 1.5, "its lid stands up out of the floor: " + shape.bounds());
             helper.assertTrue(shape.toAabbs().stream().noneMatch(b -> b.contains(0.5, 0.9, 0.5)), "the way through it clear");
+            BlockState lid = level.getBlockState(abs.above());
+            helper.assertTrue(lid.is(GBConstruction.BUNKER_HATCH_LID.get()), "its lid stands up out of the floor, in a block of its own: " + lid);
+            helper.assertTrue(lid.getShape(level, abs.above()).bounds().maxY > 0.8, "solid up its height");
+            helper.useBlock(at.above());                                    // a click on the lid
+            helper.assertTrue(!level.getBlockState(abs).getValue(TrapDoorBlock.OPEN), "shuts the hatch");
+            helper.assertTrue(level.getBlockState(abs.above()).isAir(), "and the lid's block goes");
             helper.succeed();
         });
     }

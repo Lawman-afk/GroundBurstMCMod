@@ -385,6 +385,17 @@ def drop_method(signature: str):
 SKY = "dev.groundburst.port.SkyColors"
 
 FILE_FIXES: dict[str, list] = {
+    # --- the showroom (main's DESIGN.md §22.6): this version's sign text is read and set by front or back (a flag), each
+    # line set on an unchanging SignText that gives back the new one; 26.3 has slots and a mutable copy.
+    "src/main/java/dev/groundburst/client/fx/Showroom.java": [
+        swap("            SignText.Mutable text = sign.getText(SignTextSlot.FRONT).asMutable();\n",
+             "            SignText text = sign.getText(true);\n"),
+        swap("                text.setLine(i, Component.literal(lines.get(i)));\n",
+             "                text = text.setMessage(i, Component.literal(lines.get(i)));\n"),
+        swap("            sign.setText(text.asImmutable(), SignTextSlot.FRONT);\n",
+             "            sign.setText(text, true);\n"),
+        swap("import net.minecraft.world.level.block.entity.SignTextSlot;\n", ""),
+    ],
     # --- the Bunk Bed (main's DESIGN.md §22.5): this version's bed has a block entity and puts its sleeper at a height of
     # its own (no sleep height, no "destroy on use" of a bed rule): drawn by its blockstate's model, no block entity, the
     # bed's own way of blowing up where beds do.

@@ -25,6 +25,12 @@ public class SteelLockerBlockEntity extends FilingCabinetBlockEntity {
         return Component.translatable(T_NAME);
     }
 
+    /** Held open by a signal at either of its blocks. */
+    @Override
+    protected boolean held() {
+        return this.level != null && (this.level.hasNeighborSignal(this.worldPosition) || this.level.hasNeighborSignal(this.worldPosition.above()));
+    }
+
     @Override
     protected SoundEvent openSound() {
         return GBSounds.STEEL_LOCKER_OPEN.get();

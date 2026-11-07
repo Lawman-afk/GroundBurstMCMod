@@ -172,6 +172,9 @@ class Face:
     stop: dict = field(default=None)
     #: A block texture's face: its noise wraps every so many pixels, so the block tiles with its neighbours.
     period: int | None = None
+    #: Painted without the ordered dither: a round part's caps overlap, each plank turned its own way, and their
+    #: dithers' grids, meeting, drew the planks' edges across the cap.
+    even: bool = False
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -521,7 +524,8 @@ class Material:
 
     def render(self, f: Face, seed: int, **kw) -> np.ndarray:
         v = self.value(f, seed)
-        idx = quantize(v, self.ramp, f, self.dither, despeckle=self.despeckle, scatter=f.d == "tile" and not self.despeckle)
+        idx = quantize(v, self.ramp, f, 0.0 if f.even else self.dither, despeckle=self.despeckle,
+                       scatter=f.d == "tile" and not self.despeckle)
         idx = self._lips(f, idx)
         rgba = colours(self.ramp, idx)
         if self.pits:
