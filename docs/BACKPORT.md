@@ -6,7 +6,9 @@ Main is written for Minecraft 26.3 (NeoForge 26.3). This branch is the same mod 
 - **Why a backport from main** (main's DESIGN.md §30): 26.1.2 is two minor versions before 26.3 and shares most of its
   code (the same rendering by render states and submitted geometry, item model definitions, data components, the same
   GameTest framework); a forward port from the 1.21.1 branch would cross every change from 1.21.2 to 26.1.
-- **Last brought up to:** `main` at `6fe765f5` (2026-11-07: a ladder built into the Bunker Hatch, down its front
+- **Last brought up to:** `main` at `8eb031af` (2026-11-07: 0.10.0, released for all three versions as
+  `groundburst-mc26.1.2-0.10.0.jar`: main's changelog, README and description; before it, at `6fe765f5`: a ladder
+  built into the Bunker Hatch, down its front
   under the coaming and climbable as a ladder (NeoForge's `isLadder`, this version's as main's), the extinguisher's
   hose closed, the open Ammo Crates painted as the shut ones, the doors board's shafts laddered; before it, at
   `060edbdb`: round tops as polygons, main's DESIGN.md §4.4, main's own
