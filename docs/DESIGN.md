@@ -4960,7 +4960,13 @@ as a door: by hand and by redstone.
   turned over. While it stands open its lid has a block of its own where it stands (`BunkerHatchLidBlock`, no item:
   solid, the lid's shape, and a click on it shuts the hatch; breaking it breaks the hatch), laid as it opens if that place
   is free and taken away as it shuts or goes: the lid had stood out of the hatch's own block, where the server turns
-  clicks away (they are checked to land within a block of it), and only the hatch's block could be clicked.
+  clicks away (they are checked to land within a block of it), and only the hatch's block could be clicked. A ladder is
+  built in down its front, opposite its hinges, under the coaming (above it in a ceiling hatch), at the user's wish: no
+  ladder can be hung in the hatch's own block, so a shaft's ladder stopped a block short of it. Its rails stand where a
+  vanilla ladder's do and its rungs on a vanilla ladder's spacing (the coaming its last), so one hung on the wall under
+  it runs on up it; its shape is two pixels deep, as the coaming's ring is wide (one pressed to it passes up through the
+  ring), and the hatch climbs as a ladder does, open or shut (NeoForge's `isLadder`; a trapdoor climbs only open, over a
+  ladder of its own facing: one on the hinges' side, under the lid standing open, which barred the way out).
 - **Pressure Door** (vanilla's `DoorBlock`; block models `tools/assets/pressure_door.py`): a steel door a block wide and two
   high, as the doors between a bunker's rooms and a ship's compartments: a porthole of tinted glass at eye height (seen
   through: its models are translucent), a red dog lever on either face, two heavy hinges, hazard paint at its foot. The
@@ -5046,7 +5052,8 @@ credited (`tools/sound/fittings.py`).
   they held each other on: `Fittings.signalFromOthers`).
 - **Fire Extinguisher** (`FireExtinguisherBlock`): a red cylinder on the floor, or hung on a wall on the usual bracket (a
   steel strip, two straps round it with buckles; put up as a torch is, on the wall clicked, and it falls if the wall
-  goes), its hose and horn, a gauge and a label. A
+  goes), its hose and horn (the hose's bend as wide as the hose: narrower, the hose's open top showed past it, a gap
+  the user saw), a gauge and a label. A
   click gives a burst toward its front: a white cloud, its hiss, and the fire within a block of the block before it put out
   (and anything burning there), so a bunker can be kept from burning down.
 - **Steel Locker** (`SteelLockerBlock`, `SteelLockerBlockEntity`): a grey locker two blocks high, louvred vents in its door,
@@ -5106,8 +5113,10 @@ The last of the four sets (§22.3): what stands outside a Cold War site, each mo
 - **Ammo Crates** (`AmmoCratesBlock`, `AmmoCratesBlockEntity`): eight olive wooden ammo boxes in three crossed layers on a
   wooden pallet (rope handles, cleats, a yellow band and stencilling), holding 27 stacks as the Filing Cabinet does
   (a barrel's sounds); while anyone has them open, the top front box's lid stands up on its hinges, its cartridges
-  showing (the open lid painted with the shut model's texels, as the Steel Locker's door; its underside, against the box
-  while shut, keeps the open model's own paint: it had none, and the open lid was see-through from the front).
+  showing (the open model painted with the shut one's texels, as the Steel Locker's door: the lid's, which would have
+  changed as it swung, and the boxes' too, which took the standing lid's shadow and changed as it opened, the box
+  behind it most, the user saw; only the lid's underside, against the box while shut, and the open box's inside keep the
+  open model's own paint: the lid's had none, and the open lid was see-through from the front).
 - **Oil Drum**, **Fuel Drum**, **Rusty Drum** (`DrumBlock`): steel drums, olive drab, red, and left to rust; up to four
   stand in a block, as candles do (another put on it adds one), each a 16-sided prism closed at its foot, the rolled
   chime round its top a ring proud of it, the lid sunk inside the chime, its rolling hoops painted on and two bungs in its
@@ -5668,6 +5677,7 @@ No open decisions right now. New ones get added here as they come up.
 | Date | Decision |
 |---|---|
 | 2026-11-07 | **Round tops as polygons** (§4.4), researched at the user's question ("Is there no way to get both a good texture and the perfectly smooth circle?"): each round part's capped end one flat polygon, painted as any face is, drawn by the mod's model loader (block and item models) and by a GeckoLib model that adds Bedrock's poly meshes (GeckoLib draws none); every round part in the mod rebuilt so, the flat one-colour tops gone. With it: the hatch's opening a true octagon (its corners had reached past the lid: the sky showed through from below) and its open lid's knuckles out of its underside's plane; the drums' chimes no longer overlapping their neighbours'; the open crate's lid clear of the box behind it; the extinguisher's handle closed; the superweapons closed underneath (`close_floor`); a Fuse Box not held on by another's signal; the Tape Computer silent; unshaded parts unshaded on 26.3 too. |
+| 2026-11-07 | **A ladder built into the Bunker Hatch** (§22.3, the user: "the player can't place a ladder there"): down its front, opposite its hinges, under the coaming, lined up with a vanilla ladder's rails and rungs, and the hatch climbable as a ladder, open or shut. With it the extinguisher's hose closed at its bend and the open Ammo Crates painted with the shut model's texels (the box behind the lid had changed as they opened). |
 | 2026-11-07 | **After the user's look round the showroom** (§22.7): flicker, gaps and see-through faces fixed at their causes; round parts on a new builder (`warheads.round_section`, `round_ring`; §4.4) with more sides; and, researched at the user's question, flat round tops in every model of the mod: a round part's overlapping caps on one level, painted one even colour and drawn without the corner shade, so nothing can be seen to flicker (before, planks a hair apart left steps round rims and lines across tops); the hatch's open lid a block of its own (clicked, it shuts the hatch); a constant redstone signal holds the props on or open (the containers, the Searchlight, the Tape Computer; the Pipe Valve and Fuse Box only to look at, their own signal still their switch's), the Bunker Lamp lit by redstone alone; a Rusty Czech Hedgehog beside the painted one; the extinguisher hung on a wall; the locker emptied; the bunk's guard rails and ladder moved; the tape reels as the 1960s' (researched; the user's picture), the cabinet's paint smooth; the lag at the doors measured by a scripted walk and not reproduced. |
 | 2026-11-07 | **The outdoor defences and the yard** (§22.6; the cosmetics' last set, the user: "Yes, carry on" after the bunker fittings' previews): a Jersey Barrier and Dragon's Teeth as hard as Reinforced Concrete (the teeth true truncated pyramids: each face four plates, two turned about three axes to follow its corners), a Czech Hedgehog of three angle irons standing on three ends, a Searchlight two blocks high that sweeps the sky with its beam when switched on (the beam scaled by the sky's darkness), Ammo Crates on a pallet holding 27 stacks (a lid up while open), and steel drums four to a block (oil, fuel, rusty). |
 | 2026-11-07 | **The bunker fittings** (§22.5; the cosmetics' third set, the user: "Yes, carry on" after the command room's previews): Wall Pipes that run on into their neighbours (capped where nothing joins them), a Pipe Valve whose handwheel opens it and gives a signal, a Vent Grille, Ventilation Duct joining on all six sides, a caged Bunker Lamp clicked off and on, a Fuse Box whose breaker gives a signal, a Fire Extinguisher whose burst puts out fire before it, a Steel Locker two blocks high holding 27 stacks (its door open while it is, a helmet, a coat and boots inside), a Bunk Bed two beds high (each bunk a bed of its own: two sleep in it). |

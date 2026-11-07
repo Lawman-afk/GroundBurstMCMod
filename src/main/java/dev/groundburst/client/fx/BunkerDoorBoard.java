@@ -19,8 +19,8 @@ import net.minecraft.world.phys.Vec3;
  * The bunker doors in a wall, for the site photographer ({@code -Psite=doors}; DESIGN.md §22.3): a reinforced concrete
  * wall four high with four Blast Doors in it, facing north: shut (hinges on the left), opening (left), opening (right:
  * the mirrored model) and shut (right); two Pressure Doors between them, shut and open; in the ground in front, two
- * Bunker Hatches over a shaft, shut and open; under a concrete roof beside, a ceiling hatch open. Seen from all round,
- * and close up.
+ * Bunker Hatches over a shaft, shut and open, a ladder up each shaft's front wall to the hatch's own; under a concrete
+ * roof beside, a ceiling hatch open. Seen from all round, and close up.
  */
 final class BunkerDoorBoard {
     /** A close picture: its name, where the camera stands, the way it faces (Minecraft's yaw: 0 south) and looks down. */
@@ -67,14 +67,16 @@ final class BunkerDoorBoard {
                     net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER), 2);
             level.setBlock(at.above(2), wall, 2);
         }
-        // Two floor hatches in the ground before the wall, over a shaft three deep: shut, and open.
+        // Two floor hatches in the ground before the wall, over a shaft three deep: shut, and open. A ladder up each shaft's
+        // front wall (north: the hatches' own ladders' side, opposite their hinges) runs on up the hatch's.
         BlockState hatch = GBConstruction.BUNKER_HATCH.block().get().defaultBlockState()
                 .setValue(net.minecraft.world.level.block.TrapDoorBlock.FACING, Direction.NORTH)
                 .setValue(net.minecraft.world.level.block.TrapDoorBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP);
         for (int i = 0; i < 2; i++) {
             BlockPos at = new BlockPos(x - 5 + i * 3, y - 1, z - 6);
             for (int d = 1; d <= 3; d++) {
-                level.setBlock(at.below(d), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                level.setBlock(at.below(d), net.minecraft.world.level.block.Blocks.LADDER.defaultBlockState()
+                        .setValue(net.minecraft.world.level.block.LadderBlock.FACING, Direction.SOUTH), 2);
             }
             level.setBlock(at, hatch.setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, i == 1), 2);
         }
@@ -111,6 +113,7 @@ final class BunkerDoorBoard {
                 new CloseUp("floor_hatch_open", new Vec3(x - 0.2, y + 1.6, z - 7.0), 45, 30),
                 new CloseUp("ceiling_hatch", new Vec3(x + 7.5, y + 1.0, z - 11.0), 0, -28),
                 new CloseUp("hatch_open_close", new Vec3(x - 1.5, y - 0.72, z - 8.0), 0, 40),
+                new CloseUp("hatch_ladder", new Vec3(x - 2.0, y - 3.0, z - 5.0), 180, -38),
                 new CloseUp("pressure_door_open_close", new Vec3(x + 2.6, y + 0.0, z - 1.4), 45, 8));
     }
 }

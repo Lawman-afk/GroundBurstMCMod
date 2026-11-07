@@ -14,7 +14,8 @@ the material library.
 - **Drums** (Oil, Fuel, Rusty): one to four steel drums on end, 16-sided prisms, the rolled chime round each top a ring
   proud of it, the lid sunk inside it, the hoops painted on, two bungs.
 - **Ammo Crates**: eight olive ammo boxes in three crossed layers on a wooden pallet; open, the top front box's lid up
-  on its hinges (painted with the shut model's texels: share_shut), its cartridges showing.
+  on its hinges (the open model painted with the shut one's texels but for the open box's inside and the lid's
+  underside: share_shut), its cartridges showing.
 
     tools\\.venv\\Scripts\\python.exe tools\\assets\\yard.py [barrier|teeth|hedgehog|drums|crates]
 """
@@ -450,26 +451,28 @@ def crate_marks(f: M.Face, img: np.ndarray) -> None:
     img[..., :3] = np.clip(rgb, 0, 255).astype(np.uint8)
 
 
-def share_shut(name: str, moving: tuple[str, ...]) -> None:
-    """The open model's moving parts painted as the shut model's (its texels, its texture): painted where they swing to,
-    their noise and bands would fall another way, and they would change as they moved (the Steel Locker's way). A face
-    the shut model has none of (a lid's underside, against the box while shut) keeps the open model's own paint."""
+def share_shut(name: str, keep: tuple[tuple[str, str], ...] = ()) -> None:
+    """The open model painted with the shut model's texels (its texture) wherever the shut model has the same face: its
+    moving parts, painted where they swing to, would have their noise and bands fall another way and change as they moved
+    (the Steel Locker's way); its still parts, painted beside a lid standing open, took the lid's shadow and changed as it
+    opened (the box behind). A face the shut model has none of (a lid's underside, against the box while shut), or one in
+    {keep} (element, face: the open box's inside, under the shut lid there), keeps the open model's own paint."""
     closed = json.loads((paths.MODELS / "block" / f"{name}.json").read_text(encoding="utf-8"))
     faces = {el["name"]: el["faces"] for el in closed["elements"]}
     path = paths.MODELS / "block" / f"{name}_open.json"
     model = json.loads(path.read_text(encoding="utf-8"))
     model["textures"]["shut"] = f"groundburst:block/{name}"
     for el in model["elements"]:
-        if el["name"] in moving:
-            shut = faces[el["name"]]
-            el["faces"] = {d: ({**shut[d], "texture": "#shut"} if d in shut else f) for d, f in el["faces"].items()}
+        shut = faces.get(el["name"], {})
+        el["faces"] = {d: ({**shut[d], "texture": "#shut"} if d in shut and (el["name"], d) not in keep else f)
+                       for d, f in el["faces"].items()}
     write_json(path, model)
 
 
 def crate_files() -> None:
     crates(False)
     crates(True)
-    share_shut("ammo_crates", ("lid",))
+    share_shut("ammo_crates", keep=(("crate7", "up"),))
     v = {}
     for facing, rot in TURN.items():
         for open_ in (False, True):
