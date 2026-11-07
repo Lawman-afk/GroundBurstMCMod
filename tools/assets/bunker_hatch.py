@@ -4,13 +4,14 @@ on two hinges, as the hatches of shelters, silos and submarines have them; it op
 Its block models, as the hatch lies at the top of its block (a floor hatch, flush with the floor), facing north, its
 hinges at the south edge (vanilla's trapdoor facing north opens against its south side):
 - "bunker_hatch_frame": the coaming round an octagonal opening (hazard paint on its top), the hinges' frame knuckles and
-  their pins, the clamp the lid shuts under.
+  their pins, the clamp the lid shuts under, and a ladder down its front under the coaming (the hatch's own block takes
+  no ladder: a ladder hung on the wall under it runs on up into this one; Java's BunkerHatchBlock climbs as one).
 - "bunker_hatch_lid": the round lid (planks every 22.5 degrees), its boss and handwheel, its hinge straps and knuckles.
 - "bunker_hatch_lid_open": the same lid moved so that the blockstate's x 270 turn (about the block's middle) leaves it
   where swinging it up 90 degrees on its hinge pins would: standing on the south edge, its wheel to the south, out of
   the floor into the block above. The blockstate (multipart) puts the frame and one lid together for each facing and
   half; the bottom half (a ceiling hatch, its wheel down) is the top half turned over, so its lid opens down.
-- "bunker_hatch" (item): frame and lid in one.
+- "bunker_hatch" (item): frame and lid in one (no ladder).
 
     tools\\.venv\\Scripts\\python.exe tools\\assets\\bunker_hatch.py
 """
@@ -54,6 +55,13 @@ LID_KNUCKLES = ((5.2, 7.0), (9.0, 10.8))
 FRAME_KNUCKLES = ((2.6, 4.9), (11.1, 13.4))
 #: Where the open lid's model is moved to, so the blockstate's x 270 turn about the block's middle stands it on its hinge.
 OPEN_SHIFT = (0.0, -1.5, -15.5)
+#: The ladder down the front (north) wall under the coaming, opposite the hinges, so one climbing out passes clear of the
+#: lid standing open: its rails (x from, to) as a vanilla ladder's stand, how far they stand off the wall; its rungs'
+#: middles, a vanilla ladder's (one every four pixels: a ladder under it runs on, the coaming its last), and their depth.
+LADDER_RAILS = ((2.0, 3.5), (12.5, 14.0))
+LADDER_DEPTH = 1.6
+LADDER_RUNGS = (2.0, 6.0, 10.0)
+RUNG_Z = (0.4, 1.4)
 
 
 def frame(m: BlockModel, parts: dict) -> None:
@@ -102,6 +110,21 @@ def frame(m: BlockModel, parts: dict) -> None:
     m.box("clamp", (7.0, y1, 0.4), (9.0, y1 + 1.4, 1.4), faces=("north", "south", "east", "west", "up"))
     m.box("clamp_lip", (7.2, y1 + 1.1, 1.4), (8.8, y1 + 1.4, 1.9), faces=("south", "east", "west", "up", "down"))
     parts["clamp"] = ["clamp", "clamp_lip"]
+
+
+def ladder(m: BlockModel, parts: dict) -> None:
+    """The ladder down the front wall, from the block's foot to the coaming's underside: two flat bars standing on the wall
+    and three square rungs between them, set back a little from the bars' fronts."""
+    for j, (x0, x1) in enumerate(LADDER_RAILS):
+        n = f"rail{j}"
+        m.box(n, (x0, 0.0, 0.0), (x1, COAMING[0], LADDER_DEPTH), faces=("north", "south", "east", "west", "down"),
+              cull={"north": "north", "down": "down"})
+        parts.setdefault("rail", []).append(n)
+    for j, y in enumerate(LADDER_RUNGS):
+        n = f"rung{j}"
+        m.box(n, (LADDER_RAILS[0][1], y - 0.5, RUNG_Z[0]), (LADDER_RAILS[1][0], y + 0.5, RUNG_Z[1]),
+              faces=("north", "south", "up", "down"))
+        parts.setdefault("rung", []).append(n)
 
 
 def lid(m: BlockModel, parts: dict, lips: dict) -> None:
@@ -155,6 +178,13 @@ DARK = M.steel(tone=0.3, rust=0.1)
 
 
 SEAL_RUBBER = M.rubber(tone=0.3)
+#: The ladder's rungs: barer steel than its rails, their tops worn bright in the middle where boots stand.
+RUNG_STEEL = M.steel(tone=0.44, rust=0.05, brushed=0.1)
+
+
+def rung_wear(f: M.Face, img: np.ndarray) -> None:
+    if f.d == "up":
+        M.lighten(img, np.abs(f.X - 8.0) < 3.0, 1.18)
 
 
 def paint(m: BlockModel, parts: dict, lips: dict, seed: int) -> Tex:
@@ -170,6 +200,10 @@ def paint(m: BlockModel, parts: dict, lips: dict, seed: int) -> Tex:
         k.paint(t, parts["pin"] + parts["clamp"], DARK)
     if "knuckle" in parts:
         k.paint(t, parts["knuckle"], DARK)
+    if "rail" in parts:
+        k.paint(t, parts["rail"], COAMING_STEEL)
+        k.paint(t, parts["rung"], RUNG_STEEL)
+        k.overlay(t, parts["rung"], rung_wear)
     if "lid" in parts:
         k.paint(t, parts["lid"], LID_PAINT)
         k.S.paint(t, parts["lid"], UNDERSIDE, only=("down",))
@@ -190,6 +224,7 @@ def build(name: str, kind: str, with_frame: bool, with_lid: bool, seed: int) -> 
     lips: dict = {}
     if with_frame:
         frame(m, parts)
+        ladder(m, parts)
     if with_lid:
         lid(m, parts, lips)
     m.layout()

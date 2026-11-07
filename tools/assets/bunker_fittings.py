@@ -458,7 +458,8 @@ def extinguisher(wall: bool) -> None:
     box("head", "lever", (7.5, 11.4, 5.4), (8.5, 11.9, 9.2))
     box("head", "carry", (7.5, 10.6, 5.6), (8.5, 11.4, 7.2), faces=("north", "east", "west", "down"))   # up to the lever
     parts["gauge"] = W.round_section(m, "gauge", 0.65, dz + 6.8, dz + 7.4, axis="z", c=(8.0, dy + 10.6), lo=0.0, toward="lo")
-    box("hose", "hose_top", (8.8, 9.9, 7.7), (10.6, 10.5, 8.3), faces=("north", "south", "east", "up", "down"))
+    # The hose's bend as wide as the hose under it (narrower, the hose's open top showed past it at both sides).
+    box("hose", "hose_top", (8.8, 9.9, 7.6), (10.6, 10.5, 8.4), faces=("north", "south", "east", "up", "down"))
     box("hose", "hose", (10.0, 4.2, 7.6), (10.6, 9.9, 8.4), faces=("north", "south", "east", "west"))
     box("nozzle", "nozzle", (9.9, 3.4, 7.5), (10.7, 4.2, 8.5), faces=ALL)
     if wall:

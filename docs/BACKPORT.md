@@ -6,7 +6,10 @@ Main is written for Minecraft 26.3 (NeoForge 26.3). This branch is the same mod 
 - **Why a backport from main** (main's DESIGN.md §30): 26.1.2 is two minor versions before 26.3 and shares most of its
   code (the same rendering by render states and submitted geometry, item model definitions, data components, the same
   GameTest framework); a forward port from the 1.21.1 branch would cross every change from 1.21.2 to 26.1.
-- **Last brought up to:** `main` at `060edbdb` (2026-11-07: round tops as polygons, main's DESIGN.md §4.4, main's own
+- **Last brought up to:** `main` at `6fe765f5` (2026-11-07: a ladder built into the Bunker Hatch, down its front
+  under the coaming and climbable as a ladder (NeoForge's `isLadder`, this version's as main's), the extinguisher's
+  hose closed, the open Ammo Crates painted as the shut ones, the doors board's shafts laddered; before it, at
+  `060edbdb`: round tops as polygons, main's DESIGN.md §4.4, main's own
   model loader (`client/render/PolygonModels`; 26.1.2's quad baker shades a quad or not: a `FILE_FIXES` entry) and
   `PolyGeoModel` (GeckoLib 5.5.2's the same) ported; the user's second look's fixes; before it, at `2e61cc60` (after
   the user's look round the showroom, main's DESIGN.md
@@ -64,7 +67,7 @@ their lines).
 
 ## Checks
 
-- `gradlew runGameTestServer`: main's GameTests (441 at `060edbdb`, all passed).
+- `gradlew runGameTestServer`: main's GameTests (442 at `6fe765f5`, all passed).
 - `gradlew runPlayBench [-Pjfr=<name>]`, `runBlastBench`, `runFxShots`, `runManualShots`, `runSiteShots`,
   `runHealShots`: main's benches and photographers (`runSiteShots -Psite=doors`: the bunker doors; `room`: the command room; `fittings`: the bunker fittings; `yard`: the yard, with a picture at midnight).
 - `gradlew runShowroom`: main's showroom world (`run/saves/ground_burst_showroom`; `-PshowroomWalk=true`: the timed
