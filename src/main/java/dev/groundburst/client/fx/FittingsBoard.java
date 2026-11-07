@@ -26,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
  * The bunker fittings, for the site photographer ({@code -Psite=fittings}; DESIGN.md §22.5): a concrete room open to the
  * sky (for the light) and at its front; along its back wall a run of Wall Pipes through a Pipe Valve, two Fuse Boxes (one
  * on), Bunker Lamps (one off), Ventilation Duct along its top with Vent Grilles under it; Steel Lockers down its east side
- * (one open), two Bunk Beds down its west, a Fire Extinguisher by its front; from all round, and close up.
+ * (one held open by a lever), two Bunk Beds down its west, a Fire Extinguisher by its front; from all round, and close up.
  */
 final class FittingsBoard {
     private FittingsBoard() {}
@@ -85,14 +85,19 @@ final class FittingsBoard {
                 level.setBlock(p, duct.joined(s, level, p), 3);
             }
         }
-        // The lockers down the east side, facing into the room, the second open.
+        // The lockers down the east side, facing into the room, the second held open by a lever on the wall over it (a
+        // locker stands open while anyone has it open or a signal reaches it; set open, the next block update shuts it).
         SteelLockerBlock locker = GBConstruction.STEEL_LOCKER.block().get();
         for (int i = 0; i < 4; i++) {
             BlockPos at = new BlockPos(x + 6, y, z - 2 + i);
-            BlockState s = locker.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.WEST).setValue(SteelLockerBlock.OPEN, i == 1);
+            BlockState s = locker.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.WEST);
             level.setBlock(at, s, 3);
             locker.setPlacedBy(level, at, s, null, ItemStack.EMPTY);
         }
+        level.setBlock(new BlockPos(x + 6, y + 2, z - 1), net.minecraft.world.level.block.Blocks.LEVER.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.LeverBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
+                .setValue(net.minecraft.world.level.block.LeverBlock.FACING, Direction.WEST)
+                .setValue(net.minecraft.world.level.block.LeverBlock.POWERED, true), 3);
         // Two bunks down the west side, their heads to the back wall.
         BunkBedBlock bunk = GBConstruction.BUNK_BED.block().get();
         for (int i = 0; i < 2; i++) {
