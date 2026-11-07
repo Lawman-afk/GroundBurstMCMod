@@ -29,6 +29,7 @@ from gb import paths  # noqa: E402
 from gb.model import BlockModel, write_json  # noqa: E402
 from gb.tex import Tex  # noqa: E402
 import blast_door as BD  # noqa: E402
+import warheads as W  # noqa: E402
 
 NAME = "pressure_door"
 T = 3.0                                  # the leaf's thickness (vanilla's)
@@ -43,21 +44,6 @@ DOG = (12.6, 15.0)
 def zs(hinge_far: bool, a: float, b: float) -> tuple[float, float]:
     """z from a to b with the hinges at the north end, mirrored for the hinges at the south (in order)."""
     return tuple(sorted((16 - b, 16 - a))) if hinge_far else (a, b)
-
-
-def x_ring(m: BlockModel, name: str, r_in: float, r_out: float, x0: float, x1: float, cz: float, cy: float, n: int = 16) -> list[str]:
-    """A ring standing across the x axis: n straight lengths round it, each turned about x to its place; every other
-    one sunk 0.15 px along x so the faces where neighbours overlap never lie in one plane."""
-    chord = 2 * r_out * math.tan(math.pi / n) + 0.02
-    out = []
-    for k in range(n):
-        s = 0.15 * (k % 2) * (1 if x0 >= T / 2 else -1)
-        nm = f"{name}_{k}"
-        rot = None if k == 0 else {"origin": (x0, cy, cz), "axis": "x", "angle": 360.0 * k / n}
-        m.box(nm, (x0 + s, cy - chord / 2, cz - r_out), (x1 + s, cy + chord / 2, cz - r_in), rotation=rot,
-              faces=("east", "west", "north", "south", "up", "down"))
-        out.append(nm)
-    return out
 
 
 def build(hinge_far: bool) -> BlockModel:
@@ -98,7 +84,10 @@ def build(hinge_far: bool) -> BlockModel:
             rotation={"origin": (0.1, y, z), "axis": "x", "angle": 45.0})
     # The glass: one pane across the hole (planks overlapping would stack their tint), its corners in the fillets.
     box("glass", "glass", (T / 2 - 0.25, cy - HOLE, hz0), (T / 2 + 0.25, cy + HOLE, hz1), faces=("east", "west"))
-    parts["rim"] = x_ring(m, "rim_out", RIM[0], RIM[1], -0.6, 0.0, pz, cy) + x_ring(m, "rim_in", RIM[0], RIM[1], T, T + 0.6, pz, cy)
+    # The porthole's rims, each reaching 0.3 into the leaf: their backs never lie in the leaf's faces' planes (open, the
+    # outer face lies against the wall, and the rim's back there flickered with the wall through the glass).
+    parts["rim"] = (W.round_ring(m, "rim_out", RIM[0], RIM[1], -0.6, 0.3, axis="x", c=(cy, pz))
+                    + W.round_ring(m, "rim_in", RIM[0], RIM[1], T - 0.3, T + 0.6, axis="x", c=(cy, pz)))
     # --- the hinges: two heavy knuckles proud of both faces at the hinge end ------------------------------------------------
     for j, (k0, k1) in enumerate(((2.0, 6.0), (26.0, 30.0))):
         z0, z1 = zs(hinge_far, 0.3, 1.8)
@@ -176,12 +165,12 @@ def paint(m: BlockModel, parts: dict, hinge_far: bool, seed: int) -> Tex:
 
 ICON = [
     "................",
-    ".....kkkkkk.....",
-    ".....kGGGGk.....",
-    "....skGrrGk.....",
-    "....SkrbbrGk....",
-    "....skrbbrGk....",
-    ".....kGrrGGk....",
+    ".....kkkkkkk....",
+    ".....kGGGGGk....",
+    "....skGrrrGk....",
+    "....Skrbbbrk....",
+    "....skrbbbrk....",
+    ".....kGrrrGk....",
     ".....kGGGGGk....",
     "....skGGGGGk....",
     "....SkGGGRRk....",

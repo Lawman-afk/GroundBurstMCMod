@@ -38,6 +38,7 @@ class Face:
     mirror_x: bool = False                            # sample the shared rect mirrored horizontally
     texture: str = "0"                                # texture key in the model's "textures" map
     fixed_uv: tuple[float, float, float, float] | None = None  # explicit UV (0..16 space); skips packing
+    no_ao: bool = False                               # NeoForge's per-face data: no smooth lighting's corner shade
 
 
 @dataclass
@@ -92,6 +93,10 @@ class BlockModel:
         self.display: dict = {k: dict(v) for k, v in DISPLAY_BLOCK.items()}
         self.extra_textures: dict[str, str] = {}   # additional texture keys, e.g. vanilla stone for ore bases
         self._laid_out = False
+        #: Faces in one plane that overlap, by group (a round part's caps, a ring's faces across its axis): painted one
+        #: even colour together as the model is saved and drawn without smooth lighting's corner shade, so where they
+        #: overlap every one draws the same and nothing can be seen to flicker (flat; DESIGN.md §4.4).
+        self.flat_groups: dict[str, list[tuple[str, str]]] = {}
         self.particle: str | None = None
         #: Where the texture goes, under textures/ (by default the model's kind): an item model whose faces share an atlas
         #: with block textures keeps its own texture under block/ too (a missile, whose head is a warhead's block model).
@@ -118,6 +123,44 @@ class BlockModel:
             b.faces[d] = Face(cullface=(cull or {}).get(d))
         self.boxes.append(b)
         return b
+
+    def flat(self, group: str, box: str, d: str) -> None:
+        """Puts a face in a flat group (see flat_groups): it overlaps the group's others in their plane, and so is
+        painted their one colour and drawn without the corner shade, which differs from one face's corners to another's."""
+        self.flat_groups.setdefault(group, []).append((box, d))
+        self.get(box).faces[d].no_ao = True
+
+    def flatten(self, tex, emissive=None) -> None:
+        """Each flat group's faces filled with their own paint's mean colour, one colour for the whole group (in the
+        emissive texture too, where the group glows at all)."""
+        import numpy as np  # noqa: PLC0415
+        for faces in self.flat_groups.values():
+            rects = []
+            for name, d in faces:
+                f = self.get(name).faces.get(d)
+                if f is not None and f.rect is not None:
+                    rects.append(f.rect)
+            if not rects:
+                continue
+            for t in (tex, emissive):
+                if t is None:
+                    continue
+                px = np.concatenate([t.a[y:y + h, x:x + w].reshape(-1, 4) for (x, y, w, h) in rects])
+                lit = px[px[:, 3] > 0]
+                glows = len(lit) * 2 > len(px)
+                if t is emissive and not glows:
+                    for (x, y, w, h) in rects:
+                        t.a[y:y + h, x:x + w] = 0
+                    continue
+                if not len(lit):
+                    continue
+                mean = np.clip(np.round(lit[:, :3].astype(np.float64).mean(axis=0)), 0, 255).astype(np.uint8)
+                for (x, y, w, h) in rects:
+                    t.a[y:y + h, x:x + w, :3] = mean
+                    t.a[y:y + h, x:x + w, 3] = 255
+
+    def flat_group_of(self) -> dict[tuple[str, str], str]:
+        return {(b, d): g for g, faces in self.flat_groups.items() for b, d in faces}
 
     def get(self, name: str) -> Box:
         for b in self.boxes:
@@ -188,6 +231,7 @@ class BlockModel:
         Identical boxes (overlay layers) are skipped. Ignores rotated boxes."""
         solid = self._solid()
         faces = [(b, d) for b in solid for d in b.faces if d in self._AXIS]
+        flat = self.flat_group_of()
         issues = []
         for i in range(len(faces)):
             b1, d1 = faces[i]
@@ -197,6 +241,8 @@ class BlockModel:
                 b2, d2 = faces[j]
                 if d2 != d1 or b2 is b1 or (b1.frm == b2.frm and b1.to == b2.to):
                     continue
+                if flat.get((b1.name, d1)) is not None and flat.get((b1.name, d1)) == flat.get((b2.name, d2)):
+                    continue                                   # (one flat group: they draw alike)
                 p2 = b2.to[ax] if side else b2.frm[ax]
                 if abs(p1 - p2) > tol:
                     continue
@@ -334,6 +380,10 @@ class BlockModel:
                     el["rotation"]["origin"] = [round(v, 5) for v in self.exported(el["rotation"]["origin"])]
             if not b.shade:
                 el["shade"] = False
+            if b.__dict__.get("no_ao"):
+                # NeoForge's per-element data: no smooth lighting's corner shade (a round part's cap step's wall, which
+                # it drew as a dark line across the cap; warheads.round_section).
+                el["neoforge_data"] = {"ambient_occlusion": False}
             if b.light_emission:
                 el["light_emission"] = b.light_emission
             faces = {}
@@ -352,6 +402,8 @@ class BlockModel:
                     face["tintindex"] = f.tintindex
                 if f.rotation:
                     face["rotation"] = f.rotation
+                if f.no_ao:
+                    face["neoforge_data"] = {"ambient_occlusion": False}
                 faces[d] = face
             el["faces"] = faces
             elements.append(el)
@@ -397,6 +449,7 @@ class BlockModel:
             print(f"  z-fight warning [{self.name}]: {issue}")
         for issue in self.holes():
             print(f"  open-face warning [{self.name}]: {issue}")
+        self.flatten(tex, emissive)
         self.bleed(tex)
         if emissive is not None:
             self.bleed(emissive)

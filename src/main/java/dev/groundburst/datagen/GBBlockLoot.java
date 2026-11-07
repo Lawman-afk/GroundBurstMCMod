@@ -192,6 +192,7 @@ public class GBBlockLoot extends BlockLootSubProvider {
                                                 .hasProperty(dev.groundburst.content.construction.BlastDoorBlock.W, 0)))))));
         // The Bunker Hatch drops itself; the Pressure Door its lower half, as vanilla's doors.
         dropSelf(dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH.block().get());
+        add(dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH_LID.get(), noDrop());     // (its hatch drops the item)
         add(dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().get(),
                 createDoorTable(dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().get()));
         // The Tape Computer: its lower block drops it, as a door's; the map table: its placer's block alone.

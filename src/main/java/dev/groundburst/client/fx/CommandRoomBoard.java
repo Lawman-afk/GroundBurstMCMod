@@ -40,7 +40,8 @@ final class CommandRoomBoard {
         TapeComputerBlock tape = GBConstruction.TAPE_COMPUTER.block().get();
         for (int i = 0; i < 5; i++) {
             BlockPos at = new BlockPos(x - 4 + i * 2 - (i > 2 ? 1 : 0), y, z + 6);
-            BlockState s = tape.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH).setValue(TapeComputerBlock.ACTIVE, i != 3);
+            BlockState s = tape.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH).setValue(TapeComputerBlock.ACTIVE, i != 3)
+                    .setValue(TapeComputerBlock.SWITCHED, i != 3);
             level.setBlock(at, s, 3);
             tape.setPlacedBy(level, at, s, null, ItemStack.EMPTY);
         }
@@ -71,6 +72,7 @@ final class CommandRoomBoard {
         return List.of(
                 new BunkerDoorBoard.CloseUp("room_front", new Vec3(x, y + 3.2, z - 9.0), 0, 22),
                 new BunkerDoorBoard.CloseUp("tape_wall", new Vec3(x - 1.5, y + 1.7, z + 1.5), 0, 4),
+                new BunkerDoorBoard.CloseUp("tape_reels", new Vec3(x - 2.5, y + 1.6, z + 2.6), 0, 0),
                 new BunkerDoorBoard.CloseUp("consoles", new Vec3(x - 2.6, y + 1.9, z - 3.4), 58, 26),
                 new BunkerDoorBoard.CloseUp("desks", new Vec3(x + 3.0, y + 1.7, z - 2.0), 0, 22),
                 new BunkerDoorBoard.CloseUp("cabinets", new Vec3(x + 3.6, y + 1.6, z + 3.8), -90, 18),

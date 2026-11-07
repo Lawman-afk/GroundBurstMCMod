@@ -47,7 +47,10 @@
             7.5,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -56,7 +59,10 @@
             7.9375,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -64,12 +70,12 @@
       "name": "bbell-1_1",
       "from": [
         7.87071,
-        -15.515,
+        -15.5,
         7.35
       ],
       "to": [
         8.12929,
-        -15.265,
+        -15.25,
         8.65
       ],
       "faces": {
@@ -98,7 +104,10 @@
             4.0,
             10.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -107,7 +116,10 @@
             4.1875,
             10.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -115,12 +127,12 @@
       "name": "bbell-1_2",
       "from": [
         7.35,
-        -15.53,
+        -15.5,
         7.87071
       ],
       "to": [
         8.65,
-        -15.28,
+        -15.25,
         8.12929
       ],
       "rotation": {
@@ -158,7 +170,10 @@
             8.375,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -167,7 +182,10 @@
             8.8125,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -175,12 +193,12 @@
       "name": "bbell-1_3",
       "from": [
         7.87071,
-        -15.545,
+        -15.5,
         7.35
       ],
       "to": [
         8.12929,
-        -15.295,
+        -15.25,
         8.65
       ],
       "rotation": {
@@ -218,7 +236,10 @@
             4.375,
             10.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -227,7 +248,10 @@
             4.5625,
             10.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -235,12 +259,12 @@
       "name": "bbell-1_4",
       "from": [
         7.35,
-        -15.56,
+        -15.5,
         7.87071
       ],
       "to": [
         8.65,
-        -15.31,
+        -15.25,
         8.12929
       ],
       "rotation": {
@@ -278,7 +302,10 @@
             9.25,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -287,7 +314,10 @@
             9.6875,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -295,12 +325,12 @@
       "name": "bbell-1_5",
       "from": [
         7.87071,
-        -15.575,
+        -15.5,
         7.35
       ],
       "to": [
         8.12929,
-        -15.325,
+        -15.25,
         8.65
       ],
       "rotation": {
@@ -338,7 +368,10 @@
             4.75,
             10.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -347,7 +380,10 @@
             4.9375,
             10.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -355,12 +391,12 @@
       "name": "bbell-1_6",
       "from": [
         7.35,
-        -15.59,
+        -15.5,
         7.87071
       ],
       "to": [
         8.65,
-        -15.34,
+        -15.25,
         8.12929
       ],
       "rotation": {
@@ -398,7 +434,10 @@
             10.125,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -407,7 +446,10 @@
             10.5625,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -415,12 +457,12 @@
       "name": "bbell-1_7",
       "from": [
         7.87071,
-        -15.605,
+        -15.5,
         7.35
       ],
       "to": [
         8.12929,
-        -15.355,
+        -15.25,
         8.65
       ],
       "rotation": {
@@ -458,7 +500,10 @@
             5.125,
             10.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -467,7 +512,10 @@
             5.3125,
             10.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -509,7 +557,10 @@
             14.4375,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -517,12 +568,12 @@
       "name": "bbell-2_1",
       "from": [
         7.76545,
-        -15.515,
+        -15.5,
         7.43375
       ],
       "to": [
         8.23455,
-        -15.015,
+        -15.0,
         8.56625
       ],
       "faces": {
@@ -551,7 +602,10 @@
             13.375,
             10.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -559,12 +613,12 @@
       "name": "bbell-2_2",
       "from": [
         7.43375,
-        -15.53,
+        -15.5,
         7.76545
       ],
       "to": [
         8.56625,
-        -15.03,
+        -15.0,
         8.23455
       ],
       "rotation": {
@@ -602,7 +656,10 @@
             14.8125,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -610,12 +667,12 @@
       "name": "bbell-2_3",
       "from": [
         7.76545,
-        -15.545,
+        -15.5,
         7.43375
       ],
       "to": [
         8.23455,
-        -15.045,
+        -15.0,
         8.56625
       ],
       "rotation": {
@@ -653,7 +710,10 @@
             13.5625,
             10.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -695,7 +755,10 @@
             15.125,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -703,12 +766,12 @@
       "name": "bbell-3_1",
       "from": [
         7.8223,
-        -15.265,
+        -15.25,
         7.571
       ],
       "to": [
         8.1777,
-        -14.765,
+        -14.75,
         8.429
       ],
       "faces": {
@@ -737,7 +800,10 @@
             14.0,
             9.75
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -745,12 +811,12 @@
       "name": "bbell-3_2",
       "from": [
         7.571,
-        -15.28,
+        -15.25,
         7.8223
       ],
       "to": [
         8.429,
-        -14.78,
+        -14.75,
         8.1777
       ],
       "rotation": {
@@ -788,7 +854,10 @@
             15.4375,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -796,12 +865,12 @@
       "name": "bbell-3_3",
       "from": [
         7.8223,
-        -15.295,
+        -15.25,
         7.571
       ],
       "to": [
         8.1777,
-        -14.795,
+        -14.75,
         8.429
       ],
       "rotation": {
@@ -839,7 +908,10 @@
             14.1875,
             9.75
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -881,7 +953,10 @@
             15.0,
             9.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -890,7 +965,10 @@
             15.8125,
             9.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -898,12 +976,12 @@
       "name": "booster-1_1",
       "from": [
         7.70163,
-        -14.78,
+        -14.75,
         6.5
       ],
       "to": [
         8.29837,
-        -12.33,
+        -12.3,
         9.5
       ],
       "faces": {
@@ -932,7 +1010,10 @@
             4.1875,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -941,7 +1022,10 @@
             4.4375,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -949,12 +1033,12 @@
       "name": "booster-1_2",
       "from": [
         6.5,
-        -14.765,
+        -14.75,
         7.70163
       ],
       "to": [
         9.5,
-        -12.315,
+        -12.3,
         8.29837
       ],
       "rotation": {
@@ -992,7 +1076,10 @@
             0.75,
             11.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -1001,7 +1088,10 @@
             1.5625,
             11.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1009,12 +1099,12 @@
       "name": "booster-1_3",
       "from": [
         7.70163,
-        -14.795,
+        -14.75,
         6.5
       ],
       "to": [
         8.29837,
-        -12.345,
+        -12.3,
         9.5
       ],
       "rotation": {
@@ -1052,7 +1142,10 @@
             4.6875,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -1061,7 +1154,10 @@
             4.9375,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1112,7 +1208,10 @@
             2.375,
             11.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -1121,7 +1220,10 @@
             3.1875,
             11.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1129,12 +1231,12 @@
       "name": "booster-1_5",
       "from": [
         7.70163,
-        -14.78,
+        -14.75,
         6.5
       ],
       "to": [
         8.29837,
-        -12.33,
+        -12.3,
         9.5
       ],
       "rotation": {
@@ -1172,7 +1274,10 @@
             5.1875,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -1181,7 +1286,10 @@
             5.4375,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1189,12 +1297,12 @@
       "name": "booster-1_6",
       "from": [
         6.5,
-        -14.765,
+        -14.75,
         7.70163
       ],
       "to": [
         9.5,
-        -12.315,
+        -12.3,
         8.29837
       ],
       "rotation": {
@@ -1232,7 +1340,10 @@
             4.0,
             11.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -1241,7 +1352,10 @@
             4.8125,
             11.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1249,12 +1363,12 @@
       "name": "booster-1_7",
       "from": [
         7.70163,
-        -14.795,
+        -14.75,
         6.5
       ],
       "to": [
         8.29837,
-        -12.345,
+        -12.3,
         9.5
       ],
       "rotation": {
@@ -1292,7 +1406,10 @@
             5.6875,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -1301,7 +1418,10 @@
             5.9375,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1343,7 +1463,10 @@
             5.5625,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1351,12 +1474,12 @@
       "name": "baft-1_1",
       "from": [
         7.82794,
-        -14.93,
+        -14.9,
         7.135
       ],
       "to": [
         8.17206,
-        -14.78,
+        -14.75,
         8.865
       ],
       "faces": {
@@ -1385,7 +1508,10 @@
             15.8125,
             1.75
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1393,12 +1519,12 @@
       "name": "baft-1_2",
       "from": [
         7.135,
-        -14.915,
+        -14.9,
         7.82794
       ],
       "to": [
         8.865,
-        -14.765,
+        -14.75,
         8.17206
       ],
       "rotation": {
@@ -1436,7 +1562,10 @@
             6.0625,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1444,12 +1573,12 @@
       "name": "baft-1_3",
       "from": [
         7.82794,
-        -14.945,
+        -14.9,
         7.135
       ],
       "to": [
         8.17206,
-        -14.795,
+        -14.75,
         8.865
       ],
       "rotation": {
@@ -1487,7 +1616,10 @@
             16.0,
             1.75
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1538,7 +1670,10 @@
             6.5625,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1546,12 +1681,12 @@
       "name": "baft-1_5",
       "from": [
         7.82794,
-        -14.93,
+        -14.9,
         7.135
       ],
       "to": [
         8.17206,
-        -14.78,
+        -14.75,
         8.865
       ],
       "rotation": {
@@ -1589,7 +1724,10 @@
             0.125,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1597,12 +1735,12 @@
       "name": "baft-1_6",
       "from": [
         7.135,
-        -14.915,
+        -14.9,
         7.82794
       ],
       "to": [
         8.865,
-        -14.765,
+        -14.75,
         8.17206
       ],
       "rotation": {
@@ -1640,7 +1778,10 @@
             7.0625,
             12.25
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1648,12 +1789,12 @@
       "name": "baft-1_7",
       "from": [
         7.82794,
-        -14.945,
+        -14.9,
         7.135
       ],
       "to": [
         8.17206,
-        -14.795,
+        -14.75,
         8.865
       ],
       "rotation": {
@@ -1691,7 +1832,10 @@
             0.3125,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     }

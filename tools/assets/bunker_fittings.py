@@ -3,17 +3,20 @@ library.
 
 - **Bunker Lamp**: a vapour-proof "jelly jar" lamp: a cast base, a glass jar, a cage of four bars and a ring over it,
   a cap; lit (the jar's elements lit) or dark. Built standing on a floor, pointing up; turned by its blockstate to point
-  out of whatever face it is on.
+  out of whatever face it is on. Its round parts, and the pipes', valve's, fuse box's and extinguisher's, are
+  warheads.round_section's (their caps' planks a level apart only where they overlap in sight, the steps walled).
 - **Vent Grille**: a square louvred grille plate on any face, a dark duct behind its slats; built lying on a floor.
 - **Ventilation Duct**: square galvanised duct that joins its neighbours on all six sides: a core, and an arm toward each
   neighbour it joins (multipart), a flange at each joint.
 - **Wall Pipes**: three pipes along a wall on a bracket plate (multipart: the run, and a cap at each end left unjoined).
 - **Pipe Valve**: the big pipe through a gate valve, a handwheel out in front (shut and open: the stem out, the spokes on).
 - **Fuse Box**: a labelled steel box, its conduit up, a breaker's handle at its side (off: its lamp red; on: green).
-- **Fire Extinguisher**: a red cylinder on its foot, a head and lever, a hose and horn, a gauge, a label.
+- **Fire Extinguisher**: a red cylinder on its foot, a head and lever, a hose and horn, a gauge, a label; standing, or
+  hung on a wall on its bracket (a steel strip, two straps round it with buckles), as a torch is placed.
 - **Steel Locker**: two blocks high, built whole and cut into its halves; open, its door past square on its hinges, a
-  mirror inside it, a helmet on the shelf, a coat on its rail, boots (the open door painted as the shut one: share_door).
-- **Bunk Bed**: two bunks on olive steel posts, built whole (two blocks long, two high) and cut into its four blocks.
+  mirror inside it, a shelf and a coat rail, empty (the open door painted as the shut one: share_door).
+- **Bunk Bed**: two bunks on olive steel posts, built whole (two blocks long, two high) and cut into its four blocks;
+  the upper bunk's guard rails, the back one its whole length, the front one two thirds of it, the ladder in the gap.
 
     tools\\.venv\\Scripts\\python.exe tools\\assets\\bunker_fittings.py [lamp|grille|duct|pipes|fuse|extinguisher|locker|bed]
 """
@@ -49,46 +52,21 @@ POINT = {"up": {}, "down": {"x": 180}, "north": {"x": 90}, "south": {"x": 90, "y
 TURN = {"north": {}, "east": {"y": 90}, "south": {"y": 180}, "west": {"y": 270}}
 
 
-def section_along(m: BlockModel, name: str, axis: str, r: float, a0: float, a1: float, c1: float, c2: float, sides: int = 16,
-                  caps: bool = True, light: int = 0) -> list[str]:
-    """A round section along x or z (warheads.section's planks, turned about that axis through (c1, c2): for x the
-    point (y, z), for z the point (x, y)): each plank spans the diameter one way and one facet the other. With caps, each
-    plank's ends are sunk 0.06 px more than the last's so no two lie in one plane; without (a pipe's run, its ends
-    hidden in the next block's or under a flange), every plank runs the whole length."""
-    s = r * math.tan(math.pi / sides)
-    names = []
-    k = 0
-    for i in range(sides // 4):
-        a = i * 360.0 / sides
-        for long_first in (True, False):
-            h1, h2 = (r, s) if long_first else (s, r)
-            sink = 0.06 * k if caps else 0.0
-            nm = f"{name}_{k}"
-            if axis == "x":
-                frm, to = (a0 + sink, c1 - h1, c2 - h2), (a1 - sink, c1 + h1, c2 + h2)
-                ends = ("up", "down") if long_first else ("north", "south")
-                capf = ("east", "west")
-                origin = (a0, c1, c2)
-            else:
-                frm, to = (c1 - h1, c2 - h2, a0 + sink), (c1 + h1, c2 + h2, a1 - sink)
-                ends = ("east", "west") if long_first else ("up", "down")
-                capf = ("north", "south")
-                origin = (c1, c2, a0)
-            rot = None if a == 0 else {"origin": origin, "axis": axis, "angle": a}
-            m.box(nm, frm, to, faces=ends + (capf if caps else ()), rotation=rot, light=light)
-            names.append(nm)
-            k += 1
-    return names
-
-
 def round_along_faces(S: M.Surfacer, names, axis: str) -> None:
     """Readies a section's faces for painting as warheads.round_faces does for one along y: the borders that run along
-    its axis are where one facet meets the next (no lip there); its ends keep theirs."""
+    its axis are where one facet meets the next (no lip there); its ends keep theirs, painted evenly (W.round_faces);
+    its skirts, the walls of its caps' steps, have no lips."""
     ax = {"x": 0, "y": 1, "z": 2}[axis]
+    caps = {"x": ("east", "west"), "y": ("up", "down"), "z": ("north", "south")}[axis]
     for n in names:
         b = S.m.get(n)
         for d in list(b.faces):
             f = S.face(b, d)
+            if W.is_skirt(n):
+                W._even_wall(f, {k: np.full_like(v, np.inf) for k, v in f.border.items()})
+                continue
+            if d in caps:
+                f.even = True
             along_u = abs(f.du[ax]) > abs(f.dv[ax])
             for k in (("top", "bottom") if along_u else ("left", "right")):
                 f.edge[k] = np.full_like(f.border[k], np.inf)
@@ -123,13 +101,14 @@ def lamp(lit: bool) -> BlockModel:
     m = BlockModel(name, tex_size=(64, 64), kind="block")
     m.open_ok = set()
     parts: dict[str, list[str]] = {}
-    parts["base"] = W.section(m, "base", 4.2, 0.0, 1.2, 16, caps=("up", "down"), stagger="full")
-    parts["jar"] = W.section(m, "jar", 2.7, 1.2, 6.0, 16, caps=("up",))
-    parts["cap"] = W.section(m, "cap", 1.8, 6.0, 6.7, 8, caps=("up",))
+    # (The base's foot against what it is on; the jar and the cap each reach a little down into the part under it.)
+    parts["base"] = W.round_section(m, "base", 4.2, 0.0, 1.2, hi=2.7)
+    parts["jar"] = W.round_section(m, "jar", 2.7, 1.2, 6.0, hi=1.8, root=0.4)
+    parts["cap"] = W.round_section(m, "cap", 1.8, 6.0, 6.7, hi=0.0, root=0.4)
     if lit:
         light_up(m, parts["jar"])
     # The cage: a ring round the jar's middle, four bars from the base up to the cap.
-    parts["ring"] = BD.annulus(BH._Geo(m), "ring", 2.95, 3.4, 3.4, 3.9, 8.0, 8.0, None)
+    parts["ring"] = W.round_ring(m, "ring", 2.95, 3.4, 3.4, 3.9)
     for k, (dx, dz) in enumerate(((-1, -1), (1, -1), (-1, 1), (1, 1))):
         cx, cz = 8 + dx * 2.15, 8 + dz * 2.15
         m.box(f"bar{k}", (cx - 0.3, 1.2, cz - 0.3), (cx + 0.3, 6.4, cz + 0.3), faces=SIDES)
@@ -153,6 +132,7 @@ def lamp(lit: bool) -> BlockModel:
         img[..., :3] = np.clip(rgb, 0, 255).astype(np.uint8)
     k.overlay(t, parts["jar"], glass)
     m.fit_display(gui_rotation=(30, 225, 0), gui_margin=1.5)
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
     return m
 
@@ -196,6 +176,7 @@ def grille() -> None:
     k.paint(t, parts["frame"] + parts["slat"], M.galvanized(tone=0.56))
     k.paint(t, parts["screw"], K.BRIGHT)
     m.fit_display(gui_rotation=(30, 225, 0), gui_margin=1.0)
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
     states("vent_grille", {f"facing={f}": variant("vent_grille", rot) for f, rot in POINT.items()})
     CR.block_item("vent_grille")
@@ -257,28 +238,13 @@ PIPE_PAINT = {"big": M.steel(tone=0.46, rust=0.06), "mid": M.painted(M.RED_PAINT
               "small": M.painted(M.YELLOW_PAINT_RAMP, tone=0.58, wear=0.2)}
 
 
-def ring_along_z(m: BlockModel, name: str, r_in: float, r_out: float, z0: float, z1: float, cx: float, cy: float, n: int = 16) -> list[str]:
-    """A ring across the z axis (a handwheel's rim facing north): n straight lengths turned about z, every other one sunk
-    0.15 px along z."""
-    chord = 2 * r_out * math.tan(math.pi / n) + 0.02
-    out = []
-    for k in range(n):
-        s = 0.15 * (k % 2)
-        nm = f"{name}_{k}"
-        rot = None if k == 0 else {"origin": (cx, cy, z0), "axis": "z", "angle": 360.0 * k / n}
-        m.box(nm, (cx - chord / 2, cy + r_in, z0 + s), (cx + chord / 2, cy + r_out, z1 + s), rotation=rot, faces=ALL)
-        out.append(nm)
-    return out
-
-
 def pipes(m: BlockModel, parts: dict, x0: float = 0.0, x1: float = 16.0, skip_big=None) -> None:
-    """The three pipes along x from x0 to x1 (the big one left out between skip_big's ends, for a valve)."""
+    """The three pipes along x from x0 to x1 (the big one left out between skip_big's ends, for a valve: it runs a fifth
+    of a pixel on into the valve's flanges). No ends of their own: in the next block's pipe, or in a cap or a flange."""
     for key, r, cy, cz in PIPES:
-        spans = [(x0, x1)] if not (key == "big" and skip_big) else [(x0, skip_big[0]), (skip_big[1], x1)]
+        spans = [(x0, x1)] if not (key == "big" and skip_big) else [(x0, skip_big[0] + 0.2), (skip_big[1] - 0.2, x1)]
         for j, (a, b) in enumerate(spans):
-            names = section_along(m, f"pipe_{key}{j}", "x", r, a, b, cy, cz, sides=16 if r >= 1.5 else 8, caps=False)
-            for n in names:                       # its ends: in the next block's pipe, or under a flange or the valve
-                m.open_ok.update({(n, "east"), (n, "west")})
+            names = W.round_section(m, f"pipe_{key}{j}", r, a, b, axis="x", c=(cy, cz))
             parts.setdefault(f"pipe_{key}", []).extend(names)
 
 
@@ -308,19 +274,25 @@ def wall_pipes() -> None:
     paint_pipes(k, t, parts)
     k.paint(t, parts["bracket"], K.GUN)
     m.fit_display(gui_rotation=(30, 225, 0), gui_margin=1.0)
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
     # The caps: a flange on each pipe's end where the run stops (left as seen from the front: the east end, facing north).
-    for side, (a, b) in (("left", (15.3, 16.0)), ("right", (0.0, 0.7))):
-        c = BlockModel(f"wall_pipes_cap_{side}", tex_size=(32, 32), kind="block")
+    # The pipe runs into it to the block's edge; its planks' levels step outward from there (a hair past the edge), so no
+    # pipe shows past its cap.
+    for side, (a, b), outer in (("left", (15.3, 16.0), "hi"), ("right", (0.0, 0.7), "lo")):
+        c = BlockModel(f"wall_pipes_cap_{side}", tex_size=(64, 64), kind="block")
         c.open_ok = set()
         cp: dict[str, list[str]] = {}
         for key, r, cy, cz in PIPES:
-            cp.setdefault("flange", []).extend(section_along(c, f"flange_{key}", "x", r + RIM[key] + 0.05, a, b, cy, cz, sides=16 if r >= 1.5 else 8))
+            ends = {"lo": 0.0, "hi": r} if outer == "lo" else {"lo": r, "hi": 0.0}
+            cp.setdefault("flange", []).extend(W.round_section(c, f"flange_{key}", r + RIM[key] + 0.05, a, b, axis="x", c=(cy, cz),
+                                                                 toward=outer, **ends))
         c.layout()
         ct = Tex(c.tex_w, c.tex_h)
         ck = K.Kit(c, {}, seed=5402, ao_reach=1.0, turned=True)
         round_along_faces(ck.S, cp["flange"], "x")
         ck.paint(ct, cp["flange"], K.GUN)
+        W.match_walls(c, ct, [b.name for b in c.boxes])
         c.save(ct)
 
 
@@ -333,21 +305,23 @@ def pipe_valve(open_: bool) -> None:
     _, r, cy, cz = PIPES[0]
     # The gate valve: its body round the big pipe, a flange each side, the bonnet out toward the room, the stem through
     # the handwheel (rising: out further when the valve is open), the wheel on its spokes.
-    parts["body"] = section_along(m, "vbody", "x", 2.3, 5.6, 10.4, cy, cz, sides=16)
-    parts["vflange"] = (section_along(m, "vflange_a", "x", 2.0, 5.2, 5.6, cy, cz, sides=16)
-                        + section_along(m, "vflange_b", "x", 2.0, 10.4, 10.8, cy, cz, sides=16))
-    parts["bonnet"] = section_along(m, "bonnet", "z", 1.4, 9.6, cz - 2.15, 8.0, cy, sides=8)
+    # (Each part's ends capped only where they show: the body's round the flanges, a flange's toward its pipe, which runs
+    # into it; the flanges reach into the body, the bonnet into the body, the stem through the hub.)
+    parts["body"] = W.round_section(m, "vbody", 2.3, 5.6, 10.4, axis="x", c=(cy, cz), lo=2.0, hi=2.0)
+    parts["vflange"] = (W.round_section(m, "vflange_a", 2.0, 5.2, 5.8, axis="x", c=(cy, cz), lo=r, toward="lo")
+                        + W.round_section(m, "vflange_b", 2.0, 10.2, 10.8, axis="x", c=(cy, cz), hi=r, toward="hi"))
+    parts["bonnet"] = W.round_section(m, "bonnet", 1.4, 9.6, cz - 2.15, axis="z", c=(8.0, cy), lo=0.45, toward="lo")
     tip = 6.4 if open_ else 8.2
-    parts["stem"] = section_along(m, "stem", "z", 0.45, tip, 9.6, 8.0, cy, sides=4)
+    parts["stem"] = W.round_section(m, "stem", 0.45, tip, 9.6, axis="z", c=(8.0, cy), sides=4, lo=0.0)
     wz0, wz1 = 8.6, 9.2
-    parts["wheel"] = ring_along_z(m, "rim", 2.0, 2.6, wz0, wz1, 8.0, cy)
+    parts["wheel"] = W.round_ring(m, "rim", 2.0, 2.6, wz0, wz1, axis="z", c=(8.0, cy))
     turn = 45.0 if open_ else 0.0
     for j in range(4):
         n = f"spoke{j}"
         m.box(n, (7.65, cy + 0.5, wz0 + 0.1), (8.35, cy + 2.1, wz1 - 0.1), faces=("east", "west", "north", "south"),
               rotation={"origin": (8.0, cy, wz0), "axis": "z", "angle": turn + 90.0 * j + 22.5})
         parts["wheel"].append(n)
-    parts["hub"] = section_along(m, "hub", "z", 0.8, wz0 - 0.2, wz1 + 0.2, 8.0, cy, sides=8)
+    parts["hub"] = W.round_section(m, "hub", 0.8, wz0 - 0.2, wz1 + 0.2, axis="z", c=(8.0, cy), lo=0.45, hi=0.45)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
     k = K.Kit(m, {}, seed=5403, ao_reach=1.4, turned=True)
@@ -358,6 +332,7 @@ def pipe_valve(open_: bool) -> None:
     k.paint(t, parts["stem"] + parts["hub"], K.BRIGHT)
     k.paint(t, parts["wheel"], K.RED)
     m.fit_display(gui_rotation=(30, 225, 0), gui_margin=1.0)
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
 
 
@@ -370,8 +345,11 @@ def pipe_files() -> None:
         for facing, rot in TURN.items():
             for open_, model in models.items():
                 when = {"facing": facing}
-                if name == "pipe_valve":
-                    when["open"] = "true" if open_ else "false"
+                if name == "pipe_valve" and open_:
+                    # Open by its wheel, or held open by a redstone signal (its "held").
+                    when = {"OR": [{"facing": facing, "open": "true"}, {"facing": facing, "held": "true"}]}
+                elif name == "pipe_valve":
+                    when.update({"open": "false", "held": "false"})
                 parts.append({"when": when, "apply": variant(model, rot)})
             for side in ("left", "right"):
                 parts.append({"when": {"facing": facing, side: "false"}, "apply": variant(f"wall_pipes_cap_{side}", rot)})
@@ -396,9 +374,10 @@ def fuse_box(on: bool) -> None:
     for j, y in enumerate((4.0, 12.0)):
         box("hinge", f"hinge{j}", (2.6, y, 11.8), (3.2, y + 1.0, 12.5), faces=("north", "east", "west", "up", "down"))
     box(f"lamp_{'on' if on else 'off'}", "lamp", (10.4, 11.6, 11.8), (11.4, 12.6, 12.1), faces=("north", "east", "west", "up", "down"), light=15)
-    parts["conduit"] = W.section(m, "conduit", 0.9, 14.5, 16.0, 8, cx=5.0, cz=14.3, caps=())
-    parts["fitting"] = W.section(m, "fitting", 1.25, 14.5, 15.1, 8, cx=5.0, cz=14.3, caps=("up",))
-    parts["boss"] = section_along(m, "boss", "x", 0.9, 13.5, 14.3, 8.5, 14.2, sides=8)
+    # The conduit up from its fitting, capped at the block's top (it showed hollow from above with nothing over it).
+    parts["conduit"] = W.round_section(m, "conduit", 0.9, 14.6, 16.0, c=(5.0, 14.3), hi=0.0)
+    parts["fitting"] = W.round_section(m, "fitting", 1.25, 14.5, 15.1, c=(5.0, 14.3), hi=0.9)
+    parts["boss"] = W.round_section(m, "boss", 0.9, 13.3, 14.3, axis="x", c=(8.5, 14.2), hi=0.0, toward="lo")
     # The breaker's handle: up (on) or down (off), a red grip at its end.
     a = -25.0 if on else 25.0
     y0, y1 = (8.5, 12.8) if on else (4.2, 8.5)
@@ -412,11 +391,14 @@ def fuse_box(on: bool) -> None:
     k.paint(t, parts["body"] + parts["door"], CR.CONSOLE)
     k.overlay(t, ["door"], fuse_label, only=("north",))
     k.paint(t, parts["latch"] + parts["hinge"] + parts["boss"] + parts["handle"], K.GUN)
+    W.round_faces(k.S, parts["conduit"] + parts["fitting"], True, False, foot=False)
+    round_along_faces(k.S, parts["boss"], "x")
     k.paint(t, parts["conduit"] + parts["fitting"], M.galvanized(tone=0.5))
     k.paint(t, parts["grip"], K.RED)
     CR.fill_faces(m, t, parts.get("lamp_on", []), (96, 255, 112))
     CR.fill_faces(m, t, parts.get("lamp_off", []), (220, 50, 36))
     m.fit_display(gui_rotation=(30, 225, 0), gui_margin=1.0)
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
 
 
@@ -442,60 +424,99 @@ def fuse_files() -> None:
     v = {}
     for facing, rot in TURN.items():
         for on in (False, True):
-            v[f"facing={facing},powered={'true' if on else 'false'}"] = variant("fuse_box_on" if on else "fuse_box", rot)
+            for held in (False, True):                  # (on by its breaker, or held on by a redstone signal)
+                v[f"facing={facing},held={'true' if held else 'false'},powered={'true' if on else 'false'}"] = variant(
+                    "fuse_box_on" if on or held else "fuse_box", rot)
     states("fuse_box", v)
     CR.block_item("fuse_box")
 
 
 # --- the Fire Extinguisher -----------------------------------------------------------------------------------------------------
-def extinguisher() -> None:
-    m = BlockModel("fire_extinguisher", tex_size=(64, 64), kind="block")
+#: Hung on a wall: how far the extinguisher is lifted, and moved back toward the wall (to the south, behind it).
+WALL_LIFT, WALL_BACK = 3.0, 5.0
+
+
+def extinguisher(wall: bool) -> None:
+    """The extinguisher standing on its foot (built facing north); or hung on a wall behind it on the usual bracket: a
+    steel strip screwed to the wall, two straps round the cylinder from it, a buckle at the front of each."""
+    name = "fire_extinguisher_wall" if wall else "fire_extinguisher"
+    m = BlockModel(name, tex_size=(64, 64), kind="block")
     m.open_ok = set()
     parts: dict[str, list[str]] = {}
+    dy, dz = (WALL_LIFT, WALL_BACK) if wall else (0.0, 0.0)
+    c = (8.0, 8.0 + dz)
 
     def box(group, n, frm, to, faces=ALL, rotation=None):
-        m.box(n, frm, to, faces=faces, rotation=rotation)
+        m.box(n, (frm[0], frm[1] + dy, frm[2] + dz), (to[0], to[1] + dy, to[2] + dz), faces=faces, rotation=rotation)
         parts.setdefault(group, []).append(n)
 
-    parts["foot"] = W.section(m, "foot", 2.15, 0.0, 0.6, 16, caps=("up", "down"), stagger="full")
-    parts["body"] = W.section(m, "body", 2.0, 0.6, 9.0, 16, caps=("up",))
-    parts["shoulder"] = W.section(m, "shoulder", 1.45, 9.0, 9.8, 16, caps=("up",))
+    # (The foot's underside shows only when it hangs.)
+    parts["foot"] = W.round_section(m, "foot", 2.15, dy, dy + 0.6, c=c, lo=0.0 if wall else None, hi=2.0)
+    parts["body"] = W.round_section(m, "body", 2.0, dy + 0.6, dy + 9.0, c=c, hi=1.45, root=0.3)
+    parts["shoulder"] = W.round_section(m, "shoulder", 1.45, dy + 9.0, dy + 9.8, c=c, hi=0.8, root=0.3)
     box("head", "head", (7.2, 9.8, 7.2), (8.8, 11.4, 8.8))
     box("head", "lever", (7.5, 11.4, 5.4), (8.5, 11.9, 9.2))
     box("head", "carry", (7.5, 10.6, 5.6), (8.5, 11.0, 7.2), faces=("north", "east", "west", "up", "down"))
-    parts["gauge"] = section_along(m, "gauge", "z", 0.65, 6.8, 7.2, 8.0, 10.6, sides=8)
+    parts["gauge"] = W.round_section(m, "gauge", 0.65, dz + 6.8, dz + 7.4, axis="z", c=(8.0, dy + 10.6), lo=0.0, toward="lo")
     box("hose", "hose_top", (8.8, 9.9, 7.7), (10.6, 10.5, 8.3), faces=("north", "south", "east", "up", "down"))
     box("hose", "hose", (10.0, 4.2, 7.6), (10.6, 9.9, 8.4), faces=("north", "south", "east", "west"))
     box("nozzle", "nozzle", (9.9, 3.4, 7.5), (10.7, 4.2, 8.5), faces=ALL)
+    if wall:
+        # The strip on the wall, two screws in it; the straps round the cylinder, touching the strip at their backs.
+        m.box("strip", (6.9, dy - 0.6, 15.4), (9.1, dy + 10.4, 16.0), faces=("north", "east", "west", "up", "down"))
+        parts["bracket"] = ["strip"]
+        for j, y in enumerate((dy, dy + 9.2)):
+            n = f"screw{j}"
+            m.box(n, (7.6, y, 15.2), (8.4, y + 0.6, 15.4), faces=("north", "east", "west", "up", "down"))
+            parts.setdefault("screw", []).append(n)
+        for j, y in enumerate((dy + 2.4, dy + 7.6)):
+            parts["bracket"] += W.round_ring(m, f"strap{j}", 2.02, 2.4, y, y + 0.6, c=c)
+            n = f"buckle{j}"
+            m.box(n, (7.4, y - 0.1, c[1] - 2.7), (8.6, y + 0.7, c[1] - 2.3), faces=("north", "east", "west", "up", "down"))
+            parts.setdefault("buckle", []).append(n)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
     k = K.Kit(m, {}, seed=5601, ao_reach=1.2, turned=True)
     for n in parts["foot"] + parts["body"] + parts["shoulder"]:
-        W.round_faces(k.S, [n], True, n.startswith("foot"), foot=False)
+        W.round_faces(k.S, [n], True, n.startswith("foot") and wall, foot=False)
     round_along_faces(k.S, parts["gauge"], "z")
     k.paint(t, parts["foot"], K.RUBBER)
     k.paint(t, parts["body"] + parts["shoulder"], K.RED)
-    k.overlay(t, parts["body"], extinguisher_label)
+    k.overlay(t, parts["body"], lambda f, img: extinguisher_label(f, img, dy, c[1]))
     k.paint(t, parts["head"], K.BRIGHT)
     k.paint(t, parts["gauge"], K.WHITE)
     k.paint(t, parts["hose"] + parts["nozzle"], K.RUBBER)
+    if wall:
+        k.paint(t, parts["bracket"], K.GUN)
+        k.paint(t, parts["screw"] + parts["buckle"], K.BRIGHT)
     m.fit_display(gui_rotation=(30, 225, 0), gui_margin=1.5)
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
-    states("fire_extinguisher", {f"facing={f}": variant("fire_extinguisher", rot) for f, rot in TURN.items()})
+
+
+def extinguisher_files() -> None:
+    extinguisher(False)
+    extinguisher(True)
+    v = {}
+    for facing, rot in TURN.items():
+        for wall in (False, True):
+            v[f"facing={facing},wall={'true' if wall else 'false'}"] = variant("fire_extinguisher_wall" if wall else "fire_extinguisher", rot)
+    states("fire_extinguisher", v)
     CR.block_item("fire_extinguisher")
 
 
-def extinguisher_label(f: M.Face, img: np.ndarray) -> None:
+def extinguisher_label(f: M.Face, img: np.ndarray, dy: float = 0.0, cz: float = 8.0) -> None:
     """The cylinder's label on its front: a white card with black lines of instructions, a black band over it."""
     if f.d not in SIDES:
         return
-    front = (f.Z < 8.0 - 0.8) & (np.abs(f.X - 8.0) < 1.6)
+    Y = f.Y - dy                                       # (its height up the cylinder, hung or standing)
+    front = (f.Z < cz - 0.8) & (np.abs(f.X - 8.0) < 1.6)
     rgb = img[..., :3].astype(np.float32)
-    card = front & (f.Y > 3.2) & (f.Y < 7.0)
+    card = front & (Y > 3.2) & (Y < 7.0)
     rgb[card] = (226, 224, 214)
-    lines = card & (np.floor(f.Y * 2) % 3 == 0) & (np.abs(f.X - 8.0) < 1.2)
+    lines = card & (np.floor(Y * 2) % 3 == 0) & (np.abs(f.X - 8.0) < 1.2)
     rgb[lines] = (40, 40, 40)
-    band = (np.abs(f.Y - 7.6) < 0.4)
+    band = (np.abs(Y - 7.6) < 0.4)
     rgb[band] = (30, 30, 30)
     img[..., :3] = np.clip(rgb, 0, 255).astype(np.uint8)
 
@@ -527,12 +548,11 @@ def split_cells(name: str, cells: dict[str, tuple[float, float, float]], which) 
 
 
 # --- the Steel Locker -------------------------------------------------------------------------------------------------------------
-OLIVE_CLOTH = M.painted(M.OLIVE_RAMP, tone=0.48, wear=0.0, mottle=0.06, dither=0.8)
 
 
 def locker(open_: bool) -> None:
     """Built whole, two blocks high, facing north, its hinges on the viewer's left (east); cut at y 16 into its halves.
-    A shell (back, sides, top, floor) so it is hollow when open: a shelf with a helmet on it, a coat on its rail, boots."""
+    A shell (back, sides, top, floor) so it is hollow when open: a shelf and a coat rail, nothing on them."""
     name = "steel_locker_open" if open_ else "steel_locker"
     m = BlockModel(name, tex_size=(128, 128), kind="block")
     m.open_ok = set()
@@ -560,17 +580,9 @@ def locker(open_: bool) -> None:
     tall("handle", "handle", (2.6, 14.5, 2.0), (3.2, 17.5, 2.6), faces=("north", "east", "west", "up", "down"), rotation=door)
     box("lock", "padlock", (2.4, 18.2, 1.8), (3.4, 19.2, 2.6), faces=("north", "east", "west", "up", "down"), rotation=door)
     if open_:
+        # Inside, empty (the user's wish: the clothes looked wrong): a shelf near its top, a coat rail under it.
         box("shelf", "shelf", (1.6, 24.0, 3.6), (14.4, 24.5, 15.2), faces=("north", "up", "down"))
-        # A steel helmet on the shelf: its brim, then its dome ring by ring (warheads.nose's way, off the middle).
-        parts["brim"] = W.section(m, "brim", 2.5, 24.5, 24.8, 16, cx=8.0, cz=9.0, caps=("up", "down"), stagger="full")
-        parts["helmet"] = W.section(m, "helmet0", 2.0, 24.8, 25.6, 8, cx=8.0, cz=9.0, caps=("up", "down"), stagger="full")
-        for i, (r, y0, y1) in enumerate(((1.65, 25.6, 26.3), (1.1, 26.3, 26.7))):
-            parts["helmet"] += W.section(m, f"helmet{i + 1}", r, y0, y1, 8, cx=8.0, cz=9.0, caps=("up",), stagger="full")
         box("rail", "rail", (2.0, 22.6, 8.6), (14.0, 23.0, 9.0), faces=("north", "south", "up", "down"))
-        tall("coat", "coat", (4.6, 11.0, 6.6), (11.4, 22.4, 11.4))
-        box("coat", "collar", (5.6, 22.0, 6.4), (10.4, 22.8, 11.6), faces=("north", "south", "east", "west", "up"))
-        for j, x in enumerate((4.2, 8.8)):
-            box("boot", f"boot{j}", (x, 0.6, 5.0), (x + 2.4, 3.0, 10.0), faces=("north", "south", "east", "west", "up"))
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
     k = K.Kit(m, {}, seed=5701, ao_reach=1.6, turned=True)
@@ -581,9 +593,7 @@ def locker(open_: bool) -> None:
     k.paint(t, parts["lock"], K.BRASS)
     if open_:
         k.paint(t, parts["shelf"] + parts["rail"], CR.CONSOLE)
-        k.paint(t, parts["helmet"] + parts["brim"], K.OLIVE)
-        k.paint(t, parts["coat"], OLIVE_CLOTH)
-        k.paint(t, parts["boot"], K.BLACK)
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
     split_cells(name, {f"{name}_bottom": (0, 0, 0), f"{name}_top": (0, 16, 0)},
                 lambda c: f"{name}_top" if c[1] >= 16 else f"{name}_bottom")
@@ -676,6 +686,10 @@ def icon(name: str, rows: list[str], col: dict) -> None:
 # --- the Bunk Bed ------------------------------------------------------------------------------------------------------------------
 BLANKET = M.painted(M.ramp("#1d2633", "#26313f", "#303d4d", "#3b4a5c", "#47586b", "#566a7e", "#6a7f93"), tone=0.5, wear=0.0, mottle=0.07, dither=0.85)
 FRAME_PAINT = M.painted(M.OLIVE_RAMP, tone=0.38, wear=0.2)
+#: Where the upper bunk's front guard rail ends (z, two thirds along from its head), and the ladder's two stiles (z from,
+#: to) in the gap past it, up the bunk's front (west) side.
+GUARD_END = 4.7
+LADDER = ((6.2, 6.9), (11.9, 12.6))
 
 
 def bunk_bed() -> None:
@@ -709,12 +723,15 @@ def bunk_bed() -> None:
             box("frame", f"bar_{b}_{e}", (2.0, y0 + 4.6, z + 0.2), (14.0, y0 + 5.6, z + 1.2), faces=("north", "south", "up", "down"))
         box("mattress", f"mattress_{b}", (2.0, y0 + 1.0, -14.0), (14.0, y0 + 3.2, 14.0), faces=("north", "south", "east", "west", "up", "down"))
         box("pillow", f"pillow_{b}", (3.5, y0 + 3.2, -13.6), (12.5, y0 + 4.3, -10.4), faces=("north", "south", "east", "west", "up"))
-    # The upper bunk's guard rail on one side, its head half; the ladder at the foot.
-    box("frame", "guard", (14.0, 27.4, -14.0), (15.4, 28.4, -1.0), faces=("north", "south", "east", "west", "up", "down"))
-    for k, x in enumerate((4.0, 11.2)):
-        box("frame", f"ladder{k}", (x, 0.0, 15.4), (x + 0.8, 24.0, 16.0), faces=("north", "south", "east", "west", "up"))
-    for k, y in enumerate((4.5, 9.5, 14.5, 19.5)):
-        box("frame", f"rung{k}", (4.8, y, 15.5), (11.2, y + 0.6, 15.9), faces=("north", "south", "up", "down"))
+    # The upper bunk's guard rails: the back one (east) its whole length, post to post; the front one (west) two thirds
+    # of it from the head, its end held down on the bunk's side rail by an upright; the ladder in the gap past it.
+    box("frame", "guard_back", (14.0, 27.4, -14.0), (15.4, 28.4, 14.0), faces=("east", "west", "up", "down"))
+    box("frame", "guard_front", (0.6, 27.4, -14.0), (2.0, 28.4, GUARD_END), faces=("south", "east", "west", "up", "down"))
+    box("frame", "guard_stay", (0.6, 23.4, GUARD_END - 1.0), (2.0, 27.4, GUARD_END), faces=("north", "south", "east", "west"))
+    for k, (z0, z1) in enumerate(LADDER):
+        box("frame", f"ladder{k}", (0.0, 0.0, z0), (0.6, 27.4, z1), faces=("north", "south", "east", "west", "up"))
+    for k, y in enumerate((4.5, 9.5, 14.5, 19.5, 24.5)):
+        box("frame", f"rung{k}", (0.1, y, LADDER[0][1]), (0.5, y + 0.6, LADDER[1][0]), faces=("east", "west", "up", "down"))
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
     k = K.Kit(m, {}, seed=5801, ao_reach=1.6, turned=True)
@@ -723,6 +740,7 @@ def bunk_bed() -> None:
     k.paint(t, parts["mattress"], BLANKET, only=("up", "east", "west", "south"))
     k.overlay(t, parts["mattress"], blanket_fold)
     k.paint(t, parts["pillow"], M.white_paint(tone=0.86, wear=0.0))
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
     cells = {"bunk_bed_foot_bottom": (0, 0, 0), "bunk_bed_head_bottom": (0, 0, -16), "bunk_bed_foot_top": (0, 16, 0),
              "bunk_bed_head_top": (0, 16, -16)}
@@ -779,7 +797,7 @@ def main() -> None:
     if "fuse" in which:
         fuse_files()
     if "extinguisher" in which:
-        extinguisher()
+        extinguisher_files()
     if "lamp" in which:
         lamp_files()
     if "grille" in which:

@@ -28,7 +28,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 /**
  * The Filing Cabinet's 27 stacks (DESIGN.md §22.4), kept as a barrel keeps its own: its top drawer pulled out while
- * anyone has it open, a drawer's slide and thump as it opens and shuts.
+ * anyone has it open, or while a redstone signal reaches it (the user's wish: so it can be built with open), a drawer's
+ * slide and thump as it opens and shuts.
  */
 public class FilingCabinetBlockEntity extends RandomizableContainerBlockEntity {
     public static final String T_NAME = GBLang.add("container." + GroundBurst.MODID + ".filing_cabinet", "Filing Cabinet");
@@ -36,14 +37,18 @@ public class FilingCabinetBlockEntity extends RandomizableContainerBlockEntity {
     private final ContainerOpenersCounter openers = new ContainerOpenersCounter() {
         @Override
         protected void onOpen(Level level, BlockPos pos, BlockState state) {
-            sound(state, openSound());
-            setOpen(state, true);
+            if (!isOpen(state)) {
+                sound(state, openSound());
+                setOpen(state, true);
+            }
         }
 
         @Override
         protected void onClose(Level level, BlockPos pos, BlockState state) {
-            sound(state, closeSound());
-            setOpen(state, false);
+            if (!held()) {                                     // (a signal holding it open, it stays open)
+                sound(state, closeSound());
+                setOpen(state, false);
+            }
         }
 
         @Override
@@ -129,6 +134,28 @@ public class FilingCabinetBlockEntity extends RandomizableContainerBlockEntity {
         if (!this.remove) {
             this.openers.recheckOpeners(getLevel(), getBlockPos(), getBlockState());
         }
+    }
+
+    /** Whether a redstone signal holds it open: one reaching its block (a locker's, either of its two). */
+    protected boolean held() {
+        return this.level != null && this.level.hasNeighborSignal(this.worldPosition);
+    }
+
+    /** Looks again at the redstone round it: open while anyone has it open or a signal holds it, shut when neither does. */
+    public void lookAtPower() {
+        if (this.level == null || this.remove) {
+            return;
+        }
+        BlockState state = getBlockState();
+        boolean open = this.openers.getOpenerCount() > 0 || held();
+        if (state.hasProperty(FilingCabinetBlock.OPEN) && open != isOpen(state)) {
+            sound(state, open ? openSound() : closeSound());
+            setOpen(state, open);
+        }
+    }
+
+    private static boolean isOpen(BlockState state) {
+        return state.hasProperty(FilingCabinetBlock.OPEN) && state.getValue(FilingCabinetBlock.OPEN);
     }
 
     /** Its drawer rolled out (a locker: its door swung open). */

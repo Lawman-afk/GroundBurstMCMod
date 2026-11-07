@@ -36,7 +36,7 @@ public final class Showroom {
     private static final List<Area> AREAS = List.of(
             new Area("doors", 0, List.of("", "Bunker doors", "", ""), List.of("Click a door,", "or power it,", "to open it.", "")),
             new Area("room", 34, List.of("", "Command room", "", ""), List.of("Click tape drives,", "open the cabinet;", "the consoles", "join up.")),
-            new Area("fittings", 68, List.of("", "Bunker", "fittings", ""), List.of("Click lamps, valve,", "fuse box, extinguisher;", "open the lockers;", "sleep in a bunk.")),
+            new Area("fittings", 68, List.of("", "Bunker", "fittings", ""), List.of("Levers light", "the lamps. Click", "valve, fuse box,", "lockers, bunks.")),
             new Area("yard", 102, List.of("", "The yard", "", ""), List.of("Click the", "searchlight:", "best at night.", "Open the crates.")));
     /** The path's middle line (z), the spawn's place on it. */
     private static final int PATH_Z = -14;
@@ -52,6 +52,9 @@ public final class Showroom {
     public static void register() {
         if (enabled()) {
             NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> tick());
+            if (ShowroomWalk.enabled()) {
+                ShowroomWalk.register();
+            }
         }
     }
 
@@ -85,6 +88,13 @@ public final class Showroom {
         if (!built) {
             built = true;
             server.execute(() -> build(server.overworld()));
+            return;
+        }
+        // Or the walk round the doors, timed (-PshowroomWalk), instead of the pictures.
+        if (ShowroomWalk.enabled()) {
+            if (++waited > 200 && ShowroomWalk.tick(mc, server, mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, PATH_Z) - 1)) {
+                mc.stop();
+            }
             return;
         }
         // Pictures down the row and of each set (eight seconds at each, for the ground and its light to come in), back to
@@ -146,6 +156,8 @@ public final class Showroom {
             sign(level, new BlockPos(a.x() + 1, top + 1, PATH_Z + 2), a.name4());            // (looking south, +x is on the left)
             sign(level, new BlockPos(a.x() - 1, top + 1, PATH_Z + 2), a.hints());
         }
+        // At the spawn, what a redstone signal does to the props.
+        sign(level, new BlockPos(51, top + 1, PATH_Z + 2), List.of("Redstone holds", "the props open", "or on: try a", "lever by them."));
         // The path from the first set to the last.
         for (BlockPos p : BlockPos.betweenClosed(-16, top, PATH_Z - 1, 116, top, PATH_Z + 1)) {
             level.setBlock(p, Blocks.DIRT_PATH.defaultBlockState(), 2);

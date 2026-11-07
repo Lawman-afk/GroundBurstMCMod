@@ -116,7 +116,10 @@
             5.25,
             9.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -124,12 +127,12 @@
       "name": "objective_1",
       "from": [
         8.08873,
-        10.44,
+        10.5,
         5.8
       ],
       "to": [
         9.91127,
-        12.54,
+        12.6,
         10.2
       ],
       "faces": {
@@ -158,7 +161,10 @@
             1.75,
             7.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -166,12 +172,12 @@
       "name": "objective_2",
       "from": [
         6.8,
-        10.38,
+        10.5,
         7.08873
       ],
       "to": [
         11.2,
-        12.48,
+        12.6,
         8.91127
       ],
       "rotation": {
@@ -209,7 +215,10 @@
             6.75,
             9.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -217,12 +226,12 @@
       "name": "objective_3",
       "from": [
         8.08873,
-        10.32,
+        10.5,
         5.8
       ],
       "to": [
         9.91127,
-        12.42,
+        12.6,
         10.2
       ],
       "rotation": {
@@ -260,7 +269,10 @@
             2.5,
             7.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -302,7 +314,10 @@
             0.75,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -310,12 +325,12 @@
       "name": "port_1",
       "from": [
         4.90294,
-        10.44,
+        10.5,
         6.8
       ],
       "to": [
         5.89706,
-        12.14,
+        12.2,
         9.2
       ],
       "faces": {
@@ -344,7 +359,10 @@
             3.25,
             9.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -352,12 +370,12 @@
       "name": "port_2",
       "from": [
         4.2,
-        10.38,
+        10.5,
         7.50294
       ],
       "to": [
         6.6,
-        12.08,
+        12.2,
         8.49706
       ],
       "rotation": {
@@ -395,7 +413,10 @@
             1.75,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -403,12 +424,12 @@
       "name": "port_3",
       "from": [
         4.90294,
-        10.32,
+        10.5,
         6.8
       ],
       "to": [
         5.89706,
-        12.02,
+        12.2,
         9.2
       ],
       "rotation": {
@@ -446,7 +467,10 @@
             3.75,
             9.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -488,7 +512,10 @@
             8.0,
             9.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -496,12 +523,12 @@
       "name": "eyecup_1",
       "from": [
         8.29584,
-        0.54,
+        0.6,
         6.3
       ],
       "to": [
         9.70416,
-        2.94,
+        3.0,
         9.7
       ],
       "faces": {
@@ -530,7 +557,10 @@
             4.75,
             7.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -538,12 +568,12 @@
       "name": "eyecup_2",
       "from": [
         7.3,
-        0.48,
+        0.6,
         7.29584
       ],
       "to": [
         10.7,
-        2.88,
+        3.0,
         8.70416
       ],
       "rotation": {
@@ -581,7 +611,10 @@
             9.25,
             9.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -589,12 +622,12 @@
       "name": "eyecup_3",
       "from": [
         8.29584,
-        0.42,
+        0.6,
         6.3
       ],
       "to": [
         9.70416,
-        2.82,
+        3.0,
         9.7
       ],
       "rotation": {
@@ -632,7 +665,10 @@
             5.5,
             7.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1056,14 +1092,14 @@
         120
       ],
       "translation": [
-        -0.983,
-        -1.223,
+        -0.917,
+        -1.22,
         0
       ],
       "scale": [
-        0.9679,
-        0.9679,
-        0.9679
+        0.9777,
+        0.9777,
+        0.9777
       ]
     },
     "ground": {
@@ -1074,7 +1110,7 @@
       ],
       "translation": [
         -0.275,
-        1.745,
+        1.7,
         -0.45
       ],
       "scale": [
@@ -1091,7 +1127,7 @@
       ],
       "translation": [
         -0.468,
-        1.267,
+        1.19,
         -0.765
       ],
       "scale": [
@@ -1108,7 +1144,7 @@
       ],
       "translation": [
         -0.303,
-        -0.68,
+        -0.73,
         -0.495
       ],
       "scale": [
@@ -1125,7 +1161,7 @@
       ],
       "translation": [
         1.802,
-        3.536,
+        3.504,
         -0.324
       ],
       "scale": [
@@ -1142,7 +1178,7 @@
       ],
       "translation": [
         1.802,
-        3.536,
+        3.504,
         -0.324
       ],
       "scale": [
@@ -1159,7 +1195,7 @@
       ],
       "translation": [
         -0.44,
-        7.192,
+        7.12,
         -0.72
       ],
       "scale": [
@@ -1176,7 +1212,7 @@
       ],
       "translation": [
         -0.303,
-        -0.68,
+        -0.73,
         -0.495
       ],
       "scale": [

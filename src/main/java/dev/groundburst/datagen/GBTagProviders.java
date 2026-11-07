@@ -72,7 +72,8 @@ public final class GBTagProviders {
             dev.groundburst.content.construction.GBConstruction.DOORS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.construction.GBConstruction.BLAST_DOOR.block().key());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH.block().key(),
-                    dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().key());
+                    dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().key(),
+                    dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH_LID.getKey());
             tag(BlockTags.TRAPDOORS).add(dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH.block().key());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.construction.GBConstruction.TAPE_COMPUTER.block().key());
             tag(BlockTags.MINEABLE_WITH_AXE).add(dev.groundburst.content.construction.GBConstruction.SITUATION_MAP_TABLE.block().key());

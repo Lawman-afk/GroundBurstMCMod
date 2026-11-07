@@ -1,18 +1,33 @@
 {
   "variants": {
-    "facing=north": {
+    "facing=north,wall=false": {
       "model": "groundburst:block/fire_extinguisher"
     },
-    "facing=east": {
+    "facing=north,wall=true": {
+      "model": "groundburst:block/fire_extinguisher_wall"
+    },
+    "facing=east,wall=false": {
       "model": "groundburst:block/fire_extinguisher",
       "y": 90
     },
-    "facing=south": {
+    "facing=east,wall=true": {
+      "model": "groundburst:block/fire_extinguisher_wall",
+      "y": 90
+    },
+    "facing=south,wall=false": {
       "model": "groundburst:block/fire_extinguisher",
       "y": 180
     },
-    "facing=west": {
+    "facing=south,wall=true": {
+      "model": "groundburst:block/fire_extinguisher_wall",
+      "y": 180
+    },
+    "facing=west,wall=false": {
       "model": "groundburst:block/fire_extinguisher",
+      "y": 270
+    },
+    "facing=west,wall=true": {
+      "model": "groundburst:block/fire_extinguisher_wall",
       "y": 270
     }
   }

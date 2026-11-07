@@ -47,6 +47,8 @@ LID_R, LID = 6.8, (15.5, 16.5)
 #: The handwheel on the lid: its rim (out, in), its height.
 WHEEL_R = (4.6, 3.8)
 WHEEL = (17.3, 17.9)
+#: The dogs' hub under the lid's middle (its radius).
+UNDER_HUB = 2.4
 #: The lid's knuckles (x from, to), between the frame's on one pin.
 LID_KNUCKLES = ((5.2, 7.0), (9.0, 10.8))
 FRAME_KNUCKLES = ((2.6, 4.9), (11.1, 13.4))
@@ -60,11 +62,14 @@ def frame(m: BlockModel, parts: dict) -> None:
     clamp on the north."""
     y0, y1 = COAMING
     a, b = 8 - OPENING, 8 + OPENING
-    cull = {"north": "north", "south": "south", "east": "east", "west": "west"}
-    m.box("coam_n", (0, y0, 0), (16, y1, a), faces=("north", "south", "up", "down", "east", "west"), cull=cull)
-    m.box("coam_s", (0, y0, b), (16, y1, 16), faces=("north", "south", "up", "down", "east", "west"), cull=cull)
-    m.box("coam_w", (0, y0, a), (a, y1, b), faces=("west", "east", "up", "down"), cull=cull)
-    m.box("coam_e", (b, y0, a), (16, y1, b), faces=("west", "east", "up", "down"), cull=cull)
+    # Only its outer faces, on the block's sides, are culled against the neighbours (its faces into the opening were
+    # too, and vanished in a floor: the hatch's striped bars showed hollow).
+    m.box("coam_n", (0, y0, 0), (16, y1, a), faces=("north", "south", "up", "down", "east", "west"),
+          cull={"north": "north", "east": "east", "west": "west"})
+    m.box("coam_s", (0, y0, b), (16, y1, 16), faces=("north", "south", "up", "down", "east", "west"),
+          cull={"south": "south", "east": "east", "west": "west"})
+    m.box("coam_w", (0, y0, a), (a, y1, b), faces=("west", "east", "up", "down"), cull={"west": "west"})
+    m.box("coam_e", (b, y0, a), (16, y1, b), faces=("west", "east", "up", "down"), cull={"east": "east"})
     parts["coaming"] = ["coam_n", "coam_s", "coam_w", "coam_e"]
     # Fillets: a square turned 45 degrees on each inner corner, its inner edge 6 px from the middle (a regular octagon);
     # sunk a tenth under the plates' faces, which hide its other half.
@@ -90,17 +95,21 @@ def frame(m: BlockModel, parts: dict) -> None:
 def lid(m: BlockModel, parts: dict, lips: dict) -> None:
     """The lid: a round plate on the coaming, a boss in its middle with the handwheel's hub, the wheel's rim on four
     spokes, the hinge straps across it to its knuckles."""
-    def sec(group: str, name: str, r: float, y0: float, y1: float, caps, top=True, bottom=False, stagger=None, cx=8.0, cz=8.0):
-        names = W.section(m, name, r, y0, y1, W.sides_for(r), cx=cx, cz=cz, caps=caps, stagger=stagger)
+    def sec(group: str, name: str, r: float, y0: float, y1: float, top=True, bottom=False, **kw):
+        names = W.round_section(m, name, r, y0, y1, **kw)
         parts.setdefault(group, []).extend(names)
         for n in names:
             lips[n] = (top, bottom)
         return names
-    sec("lid", "lid", LID_R, *LID, ("up", "down"), top=True, bottom=True, stagger="full")
-    sec("boss", "boss", 2.2, LID[1], LID[1] + 0.6, ("up",))
-    sec("hub", "hub", 1.2, LID[1] + 0.5, WHEEL[1] + 0.3, ("up",))
-    # The wheel's rim: a ring of sixteen straight lengths (the Blast Door's), and its spokes.
-    rim = BD.annulus(_Geo(m), "rim", WHEEL_R[1], WHEEL_R[0], WHEEL[0], WHEEL[1], 8.0, 8.0, None)
+    # The lid, 32-sided: its top's planks on four levels (the boss covers their middle), its underside's likewise (the
+    # dogs' hub under it covers theirs); the rubber seal round its underside where it shuts on the coaming.
+    sec("lid", "lid", LID_R, *LID, top=True, bottom=True, lo=UNDER_HUB, hi=2.2)
+    sec("under", "under_hub", UNDER_HUB, LID[0] - 0.45, LID[0] + 0.1, top=False, bottom=True, lo=0.0, toward="lo")
+    parts["seal"] = W.round_ring(m, "seal", 5.6, 6.4, LID[0] - 0.2, LID[0])
+    sec("boss", "boss", 2.2, LID[1], LID[1] + 0.6, hi=1.2, root=0.3)
+    sec("hub", "hub", 1.2, LID[1] + 0.5, WHEEL[1] + 0.3, hi=0.0, root=0.2)
+    # The wheel's rim: a ring of straight lengths, one to each of its 24 sides, and its spokes.
+    rim = W.round_ring(m, "rim", WHEEL_R[1], WHEEL_R[0], WHEEL[0], WHEEL[1])
     parts["wheel"] = rim
     spokes = BD.spokes(_Geo(m), "spoke", 1.0, WHEEL_R[1] + 0.3, 0.7, WHEEL[0] + 0.1, WHEEL[1] - 0.1, 8.0, 8.0, None)
     parts["wheel"] += spokes
@@ -128,20 +137,9 @@ LID_PAINT = BD.DOOR
 UNDERSIDE = M.painted(BD.DOOR_RAMP, tone=0.68, wear=0.08, ao=0.12)
 COAMING_STEEL = M.steel(tone=0.36, rust=0.1)
 DARK = M.steel(tone=0.3, rust=0.1)
-SEAL = np.array([30, 30, 32], np.float32)
 
 
-def underside(f: M.Face, img: np.ndarray) -> None:
-    """Under the lid: the rubber seal ring where it shuts on the coaming, and the dogs' hub in its middle."""
-    if f.d != "down":
-        return
-    d = np.hypot(f.X - 8.0, f.Z - 8.0)
-    rgb = img[..., :3].astype(np.float32)
-    seal = (d > 5.6) & (d < 6.4)
-    rgb[seal] = rgb[seal] * 0.2 + SEAL * 0.8
-    hub = d < 1.5
-    rgb[hub] = rgb[hub] * 0.82
-    img[..., :3] = np.clip(rgb, 0, 255).astype(np.uint8)
+SEAL_RUBBER = M.rubber(tone=0.3)
 
 
 def paint(m: BlockModel, parts: dict, lips: dict, seed: int) -> Tex:
@@ -160,7 +158,8 @@ def paint(m: BlockModel, parts: dict, lips: dict, seed: int) -> Tex:
     if "lid" in parts:
         k.paint(t, parts["lid"], LID_PAINT)
         k.S.paint(t, parts["lid"], UNDERSIDE, only=("down",))
-        k.overlay(t, parts["lid"], underside)
+        k.paint(t, parts["under"], BD.CAM)
+        k.paint(t, parts["seal"], SEAL_RUBBER)
         k.paint(t, parts["boss"], BD.CAM)
         k.paint(t, parts["hub"], BD.BRIGHT)
         k.paint(t, parts["wheel"], BD.WHEEL_RED)
@@ -170,7 +169,7 @@ def paint(m: BlockModel, parts: dict, lips: dict, seed: int) -> Tex:
 
 
 def build(name: str, kind: str, with_frame: bool, with_lid: bool, seed: int) -> BlockModel:
-    m = BlockModel(name, tex_size=(64, 64), kind=kind)
+    m = BlockModel(name, tex_size=(128, 128) if with_lid else (64, 64), kind=kind)
     m.open_ok = set()
     parts: dict = {}
     lips: dict = {}
@@ -180,6 +179,7 @@ def build(name: str, kind: str, with_frame: bool, with_lid: bool, seed: int) -> 
         lid(m, parts, lips)
     m.layout()
     t = paint(m, parts, lips, seed)
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
     return m
 
@@ -231,6 +231,9 @@ def blockstate() -> None:
             {"when": when("bottom", True), "apply": apply(f"{NAME}_lid_open", 90, bottom)},
         ]
     write_json(paths.ASSETS / "blockstates" / f"{NAME}.json", {"multipart": parts})
+    # The open lid's own block (Java's BunkerHatchLidBlock) draws nothing: a model with its particle alone.
+    write_json(paths.MODELS / "block" / f"{NAME}_lid_particle.json", {"textures": {"particle": f"groundburst:block/{NAME}_lid"}})
+    write_json(paths.ASSETS / "blockstates" / f"{NAME}_lid.json", {"variants": {"": {"model": f"groundburst:block/{NAME}_lid_particle"}}})
     write_json(paths.ASSETS / "items" / f"{NAME}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:item/{NAME}"}})
 
 
@@ -247,6 +250,7 @@ def main() -> None:
     item.layout()
     t = paint(item, parts, lips, 3103)
     item.fit_display(gui_rotation=(30, 225, 0), gui_margin=1.5)
+    W.match_walls(item, t, [b.name for b in item.boxes])
     item.save(t)
     open_lid()
     blockstate()

@@ -153,6 +153,8 @@ neoForge {
             client()
             programArguments.addAll '--width', '1280', '--height', '720'
             systemProperty 'groundburst.showroom', 'true'
+            // -PshowroomWalk: a timed walk round the bunker doors instead of the pictures (run/bench/showroom_walk_*.txt).
+            systemProperty 'groundburst.showroom.walk', (project.findProperty('showroomWalk') ?: 'false').toString()
         }
 
         // Makes a flat world, turns healing on with short waits, builds a farmstead and a little town, blows them up (a

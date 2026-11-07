@@ -41,14 +41,18 @@ public class BunkBedBlock extends BedBlock {
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
     /** Where a sleeper lies: on its mattress, 9.6 pixels up its block. */
     private static final double MATTRESS = 9.6 / 16.0;
+    // (Each block's shape in its own frame, facing north: its posts, its bunk, its end; the upper bunk's guard rails, the
+    // back one its whole length, the front one two thirds of it from the head; the ladder up the front past it.)
     private static final VoxelShape[] FOOT_LOWER = Fittings.facing(new double[] {0.6, 0, 14, 2, 16, 15.4}, new double[] {14, 0, 14, 15.4, 16, 15.4},
-            new double[] {0.6, 6.4, 0, 15.4, 9.6, 15.4}, new double[] {2, 6.4, 14, 14, 12, 15.4}, new double[] {4, 0, 15.4, 12, 16, 16});
+            new double[] {0.6, 6.4, 0, 15.4, 9.6, 15.4}, new double[] {2, 6.4, 14, 14, 12, 15.4}, new double[] {0, 0, 6.2, 0.6, 16, 12.6});
     private static final VoxelShape[] HEAD_LOWER = Fittings.facing(new double[] {0.6, 0, 0.6, 2, 16, 2}, new double[] {14, 0, 0.6, 15.4, 16, 2},
             new double[] {0.6, 6.4, 0.6, 15.4, 9.6, 16}, new double[] {2, 6.4, 0.6, 14, 12, 2});
     private static final VoxelShape[] FOOT_UPPER = Fittings.facing(new double[] {0.6, 0, 14, 2, 14, 15.4}, new double[] {14, 0, 14, 15.4, 14, 15.4},
-            new double[] {0.6, 6.4, 0, 15.4, 9.6, 15.4}, new double[] {2, 6.4, 14, 14, 12, 15.4}, new double[] {4, 0, 15.4, 12, 8, 16});
+            new double[] {0.6, 6.4, 0, 15.4, 9.6, 15.4}, new double[] {2, 6.4, 14, 14, 12, 15.4}, new double[] {0, 0, 6.2, 0.6, 11.4, 12.6},
+            new double[] {14, 9.6, 0, 15.4, 12.4, 14}, new double[] {0.6, 9.6, 0, 2, 12.4, 4.7});
     private static final VoxelShape[] HEAD_UPPER = Fittings.facing(new double[] {0.6, 0, 0.6, 2, 14, 2}, new double[] {14, 0, 0.6, 15.4, 14, 2},
-            new double[] {0.6, 6.4, 0.6, 15.4, 9.6, 16}, new double[] {2, 6.4, 0.6, 14, 12, 2}, new double[] {14, 9.6, 2, 15.4, 12.4, 15});
+            new double[] {0.6, 6.4, 0.6, 15.4, 9.6, 16}, new double[] {2, 6.4, 0.6, 14, 12, 2}, new double[] {14, 9.6, 2, 15.4, 12.4, 16},
+            new double[] {0.6, 9.6, 2, 2, 12.4, 16});
 
     public BunkBedBlock(Properties properties) {
         super(DyeColor.GRAY, properties);

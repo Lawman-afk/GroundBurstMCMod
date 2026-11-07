@@ -2,7 +2,9 @@ package dev.groundburst.content.construction;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Half;
@@ -14,10 +16,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * The Bunker Hatch (DESIGN.md §22.3): a round steel lid in a square coaming, opened and shut as a trapdoor is (by hand,
  * by redstone; its sounds the bunker set's). Shut, it is a trapdoor's slab. Open, its coaming stays round the hole (a
  * thin ring, so the way is clear) and its lid stands where its hinges swing it: up out of the floor, at a floor hatch's
- * hinge side, into the block over it; down into the room under a ceiling hatch. Its models: tools/assets/bunker_hatch.py.
+ * hinge side, into the block over it; down into the room under a ceiling hatch. There the lid has a block of its own
+ * while it stands open ({@link BunkerHatchLidBlock}: solid, and a click on it shuts the hatch), laid as the hatch opens
+ * if that place is free and taken away as it shuts or goes. Its models: tools/assets/bunker_hatch.py.
  */
 public class BunkerHatchBlock extends TrapDoorBlock {
-    /** Open shapes by facing (2D data value) and half (0 bottom, 1 top). */
+    /** Open shapes by facing (2D data value) and half (0 bottom, 1 top): the coaming's ring alone (the lid's block has the lid). */
     private static final VoxelShape[][] OPEN_SHAPES = new VoxelShape[4][2];
 
     static {
@@ -34,16 +38,12 @@ public class BunkerHatchBlock extends TrapDoorBlock {
 
     /**
      * Worked out facing north (its hinges at the south edge), then turned: the coaming two pixels wide round the hole, at
-     * the top of the block for a floor hatch, the bottom for a ceiling hatch; the lid at the south edge, standing above
-     * the block (a floor hatch) or hanging below it (a ceiling hatch).
+     * the top of the block for a floor hatch, the bottom for a ceiling hatch.
      */
     private static VoxelShape openShape(Direction facing, boolean top) {
         double y0 = top ? 13.5 : 0.5, y1 = top ? 15.5 : 2.5;
-        VoxelShape ring = Shapes.or(BlastDoorBlock.box(facing, false, 0, y0, 0, 16, y1, 2), BlastDoorBlock.box(facing, false, 0, y0, 14, 16, y1, 16),
+        return Shapes.or(BlastDoorBlock.box(facing, false, 0, y0, 0, 16, y1, 2), BlastDoorBlock.box(facing, false, 0, y0, 14, 16, y1, 16),
                 BlastDoorBlock.box(facing, false, 0, y0, 2, 2, y1, 14), BlastDoorBlock.box(facing, false, 14, y0, 2, 16, y1, 14));
-        VoxelShape lid = top ? BlastDoorBlock.box(facing, false, 1.2, 16, 13.8, 14.8, 30.5, 16)
-                : BlastDoorBlock.box(facing, false, 1.2, -14.5, 13.8, 14.8, 0, 16);
-        return Shapes.or(ring, lid);
     }
 
     @Override
@@ -52,5 +52,19 @@ public class BunkerHatchBlock extends TrapDoorBlock {
             return super.getShape(state, level, pos, context);
         }
         return OPEN_SHAPES[state.getValue(FACING).get2DDataValue()][state.getValue(HALF) == Half.TOP ? 1 : 0];
+    }
+
+    /** Opened or shut (by hand, by redstone, by anything), its lid's block follows it. */
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        BunkerHatchLidBlock.follow(level, pos, state);
+    }
+
+    /** Gone, its lid's block goes with it. */
+    @Override
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        BunkerHatchLidBlock.clear(level, pos, state);
     }
 }

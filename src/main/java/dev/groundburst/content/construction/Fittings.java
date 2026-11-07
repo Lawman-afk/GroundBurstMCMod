@@ -10,12 +10,73 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/** What the bunker fittings (DESIGN.md §22.5) share: their shapes turned as their models are, a switch's signal. */
+/**
+ * What the bunker fittings (DESIGN.md §22.5) and the other props share: their shapes turned as their models are, a
+ * switch's signal, and a redstone signal holding a prop on or open (the user's wish: so it can be built with open).
+ */
 final class Fittings {
+    /**
+     * A switch that gives a signal (the Pipe Valve, the Fuse Box) held on by a redstone signal at it: shown open, or on,
+     * its signal still its own switch's alone (were it given while held, its own signal could hold it on).
+     */
+    static final BooleanProperty HELD = BooleanProperty.create("held");
+    /**
+     * What a two-high prop's clicks last chose (the Searchlight, the Tape Computer): it shows on ({@code ACTIVE}) while this
+     * is on or a redstone signal reaches either of its blocks.
+     */
+    static final BooleanProperty SWITCHED = BooleanProperty.create("switched");
+
     private Fittings() {}
+
+    /** A signal-giving switch looking again at the redstone round it (held on, or let go): its look alone, told to clients. */
+    static void hold(BlockState state, Level level, BlockPos pos) {
+        boolean held = level.hasNeighborSignal(pos);
+        if (held != state.getValue(HELD)) {
+            level.setBlock(pos, state.setValue(HELD, held), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    /** Whether a redstone signal reaches either block of a two-high prop whose lower block is {@code lower}. */
+    static boolean tallPowered(Level level, BlockPos lower) {
+        return level.hasNeighborSignal(lower) || level.hasNeighborSignal(lower.above());
+    }
+
+    private static BlockPos lowerOf(BlockState state, BlockPos pos) {
+        return state.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
+    }
+
+    /** A click on a two-high prop: its switch thrown, both halves on while it is on or powered. Returns whether it shows on. */
+    static boolean clickTall(Block block, BlockState state, Level level, BlockPos pos, BooleanProperty active) {
+        BlockPos lower = lowerOf(state, pos);
+        boolean switched = !state.getValue(SWITCHED);
+        boolean on = switched || tallPowered(level, lower);
+        setTall(block, level, lower, active, on, switched);
+        return on;
+    }
+
+    /** A two-high prop looking again at the redstone round it: on while switched on or powered. */
+    static void lookTall(Block block, BlockState state, Level level, BlockPos pos, BooleanProperty active) {
+        BlockPos lower = lowerOf(state, pos);
+        boolean on = state.getValue(SWITCHED) || tallPowered(level, lower);
+        if (on != state.getValue(active)) {
+            setTall(block, level, lower, active, on, state.getValue(SWITCHED));
+        }
+    }
+
+    private static void setTall(Block block, Level level, BlockPos lower, BooleanProperty active, boolean on, boolean switched) {
+        for (BlockPos p : new BlockPos[] {lower, lower.above()}) {
+            BlockState s = level.getBlockState(p);
+            if (s.is(block)) {
+                level.setBlock(p, s.setValue(active, on).setValue(SWITCHED, switched), Block.UPDATE_ALL);
+            }
+        }
+    }
 
     /**
      * Boxes (x0, y0, z0, x1, y1, z1 in block pixels) of a model built standing on a floor and pointing up, turned to point

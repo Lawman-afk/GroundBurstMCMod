@@ -565,6 +565,7 @@ def beacon() -> None:
     base = W.section(F, "base", 4.0, 0.0, 3.0, 16, cx=0, cz=0, caps=("up",), stagger="alternate", step=0.12)
     collar = W.section(F, "collar", 3.6, 3.0, 3.6, 16, cx=0, cz=0, caps=("up",), stagger="alternate", step=0.12)
     lenses = {}
+    g.exclusive = [{"lens", "lens_spot", "lens_full"}]          # (one lens drawn at a time: dark, turning, all lit)
     for b in ("lens", "lens_spot", "lens_full"):
         L = OnBone(g, b)
         lenses[b] = (W.section(L, f"{b}_body", 3.2, 3.6, 8.4, 16, cx=0, cz=0, caps=("up",), stagger="alternate", step=0.12)

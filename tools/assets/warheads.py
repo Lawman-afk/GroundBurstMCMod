@@ -63,6 +63,7 @@ with no warhead.
 from __future__ import annotations
 
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -188,7 +189,9 @@ def section(m: BlockModel, name: str, r: float, y0: float, y1: float, sides: int
         for long_x in (True, False):
             hx, hz = (r, s) if long_x else (s, r)
             index = i if long_x else i + sides // 4                  # the plank's place round the section, in facets
-            if stagger == "base":                            # (a bottom that shows: the quarter-turned planks lower still)
+            if FLAT:                                         # (flat caps: every plank on one level; see flat())
+                sink = 0.0
+            elif stagger == "base":                          # (a bottom that shows: the quarter-turned planks lower still)
                 sink = 0.06 * (index % 2) + (0.12 if not long_x else 0.0)
             else:
                 sink = step * (index % 2) if stagger == "alternate" else 0.06 * k
@@ -197,6 +200,9 @@ def section(m: BlockModel, name: str, r: float, y0: float, y1: float, sides: int
             n = f"{name}_{k}"
             m.box(n, (cx - hx, y0 - sink - root, cz - hz), (cx + hx, y1 - sink, cz + hz), faces=ends + tuple(caps), rotation=rot)
             _open(m, n, [d for d in ("north", "south", "east", "west", "up", "down") if d not in ends and d not in caps])
+            if FLAT:
+                for d in caps:
+                    flat_face(m, f"{name}:{d}", n, d)
             names.append(n)
             k += 1
     return names
@@ -206,6 +212,222 @@ def _open(m: BlockModel, box: str, faces) -> None:
     """Faces a section leaves out on purpose (inside it, or under what it stands on): not a hole to close."""
     for d in faces:
         m.open_ok.add((box, d))
+
+
+#: Round parts' caps flat (the user's question after the showroom, 2026-11-07: "Is there a way to avoid z fighting
+#: without having to make models have rough/uneven surfaces?"). Overlapping faces in one plane flicker only where they
+#: draw differently, so a part's caps all lie on one level, painted one even colour together and drawn without the
+#: corner shade (BlockModel.flat): flat, even tops, nothing to see flicker. (Before, the planks were moved a little
+#: apart, which left steps round the rim and lines across the caps.)
+FLAT = True
+
+
+def flat_face(m, group: str, box: str, d: str) -> None:
+    """A face into a flat group of the model behind {m} (a block model, or a GeckoLib model behind its bone's wrapper)."""
+    owner = getattr(m, "g", None) or getattr(m, "m", None) or m
+    owner.flat(group, box, d)
+
+
+# --- smooth round parts (the cosmetic blocks, after the user's look at them, 2026-11-07; DESIGN.md §4.4) ----------------------
+ALL6 = ("north", "south", "east", "west", "up", "down")
+
+
+def round_sides(r: float) -> int:
+    """Sides enough to look round, none much under a pixel: 32 or 24 (facets of 0.95 px or more), 16 or 12 (of 0.6 px or
+    more), else 8 (of 0.4 px or more), else a square."""
+    for n, least in ((32, 0.95), (24, 0.95), (16, 0.6), (12, 0.6), (8, 0.4)):
+        if 2 * r * math.tan(math.pi / n) >= least:
+            return n
+    return 4
+
+
+def cap_levels(sides: int, r: float, covers, margin: float = 0.1) -> list[int]:
+    """Each plank's level at a section's capped ends (in order round it; 0 not moved, 1 a step along, ...), so that no
+    two planks whose caps overlap where they show lie in one plane: as few levels as will do, and planks side by side
+    (whose levels show as notches round the rim) as near in level as can be. Planks d facets apart overlap out to
+    s / sin(d * pi / sides) from the middle (s a plank's half width); {covers} has, for each capped end, the radius
+    something else covers over its middle there (0: nothing), inside which their overlaps do not show."""
+    P = sides // 2
+    s = r * math.tan(math.pi / sides)
+    D = 0
+    for c in covers:
+        for d in range(1, P // 2 + 1):
+            if s / math.sin(d * math.pi / sides) > c + margin:
+                D = max(D, d)
+    if D == 0:
+        return [0] * P
+    if D >= P // 2:
+        # Every plank on its own level: up one side in twos and down the other, so neighbours differ by two at most.
+        return [2 * p if p < P // 2 else 2 * (P - p) - 1 for p in range(P)]
+
+    def apart(p: int, q: int) -> int:
+        return min(abs(p - q), P - abs(p - q))
+    for L in range(D + 1, P + 1):
+        for J in range(1, L):
+            out = [0] * P
+
+            def place(p: int) -> bool:
+                if p == P:
+                    return abs(out[P - 1] - out[0]) <= J
+                for lv in range(L):
+                    if p and abs(lv - out[p - 1]) > J:
+                        continue
+                    if any(out[q] == lv for q in range(p) if apart(p, q) <= D):
+                        continue
+                    out[p] = lv
+                    if place(p + 1):
+                        return True
+                return False
+            if place(0):
+                return out
+    return [2 * p if p < P // 2 else 2 * (P - p) - 1 for p in range(P)]
+
+
+def _plank(axis: str, c, h1: float, h2: float, b0: float, b1: float, long_: bool):
+    """A plank's box along {axis} from b0 to b1 about c, h1 by h2 across (h1 the facet way when long_: its ends there);
+    its ends (facets) and its long sides."""
+    if axis == "y":
+        frm, to = (c[0] - h1, b0, c[1] - h2), (c[0] + h1, b1, c[1] + h2)
+        ends, longs = (("east", "west"), ("north", "south")) if long_ else (("north", "south"), ("east", "west"))
+    elif axis == "x":
+        frm, to = (b0, c[0] - h1, c[1] - h2), (b1, c[0] + h1, c[1] + h2)
+        ends, longs = (("up", "down"), ("north", "south")) if long_ else (("north", "south"), ("up", "down"))
+    else:
+        frm, to = (c[0] - h1, c[1] - h2, b0), (c[0] + h1, c[1] + h2, b1)
+        ends, longs = (("east", "west"), ("up", "down")) if long_ else (("up", "down"), ("east", "west"))
+    return frm, to, ends, longs
+
+
+def round_section(m, name: str, r: float, a0: float, a1: float, axis: str = "y", c=(8.0, 8.0), sides: int | None = None,
+                  lo: float | None = None, hi: float | None = None, step: float = 0.04, toward: str | None = None,
+                  root: float = 0.0, light: int = 0, skirt: bool = True, flat: bool = True) -> list[str]:
+    """A round section from a0 to a1 along {axis} about c (for y the point (x, z), for x (y, z), for z (x, y)): a prism
+    of {sides} sides (round_sides by default) and apothem r, the union of planks each spanning the width one way and a
+    facet the other (section's way), each turned no more than 45 degrees.
+
+    {lo} and {hi} cap its ends: each the radius something else covers over that end's middle (0: nothing), or None for
+    no cap there (the end hidden in what it joins). Planks whose caps overlap where they show are moved whole along the
+    axis a level apart (cap_levels; {step} px a level, toward {toward}'s end: "lo" for an upright section, its top
+    sinking, else "hi"), and under each cap a skirt, the plank's long sides a level or two deep, walls the step between
+    its cap and its neighbours', so nothing shows through. {root}: how far an uncapped lo end reaches back into what it
+    stands on, unseen. {flat} (the default; FLAT): every plank on one level, its caps one flat group, painted one even
+    colour together, so where they overlap nothing can be seen to flicker (no levels, no skirts)."""
+    sides = sides or round_sides(r)
+    toward = toward or ("lo" if axis == "y" else "hi")
+    cap_faces = {"x": ("west", "east"), "y": ("down", "up"), "z": ("north", "south")}[axis]
+    capf = tuple(f for f, v in zip(cap_faces, (lo, hi)) if v is not None)
+    origin = {"x": lambda: (a0, c[0], c[1]), "y": lambda: (c[0], a0, c[1]), "z": lambda: (c[0], c[1], a0)}[axis]()
+    b_lo = a0 - (root if lo is None else 0.0)
+    if sides == 4:
+        frm, to, ends, longs = _plank(axis, c, r, r, b_lo, a1, True)
+        m.box(f"{name}_0", frm, to, faces=ends + longs + capf, light=light)
+        _open(m, f"{name}_0", [d for d in ALL6 if d not in ends + longs + capf])
+        return [f"{name}_0"]
+    P = sides // 2
+    s = r * math.tan(math.pi / sides)
+    covers = [v for v in (lo, hi) if v is not None]
+    levels = cap_levels(sides, r, covers) if covers and not flat else [0] * P
+    jump = max(abs(levels[p] - levels[(p + 1) % P]) for p in range(P))
+    # (Deep enough for the highest step anywhere: planks across the middle may lie many levels apart, not only neighbours.)
+    deep = (max(levels) - min(levels)) * step + 0.03
+    sign = -1.0 if toward == "lo" else 1.0
+    names = []
+    for p in range(P):
+        theta = p * 360.0 / sides
+        if theta < 45.0:
+            long_, a = True, theta
+        elif theta < 135.0:
+            long_, a = False, theta - 90.0
+        else:
+            long_, a = True, theta - 180.0
+        h1, h2 = (r, s) if long_ else (s, r)
+        shift = sign * levels[p] * step
+        b0, b1 = b_lo + shift, a1 + shift
+        frm, to, ends, longs = _plank(axis, c, h1, h2, b0, b1, long_)
+        rot = None if abs(a) < 1e-9 else {"origin": origin, "axis": axis, "angle": round(a, 4)}
+        n = f"{name}_{p}"
+        m.box(n, frm, to, faces=ends + capf, rotation=rot, light=light)
+        _open(m, n, [d for d in ALL6 if d not in ends + capf])
+        if flat:
+            for d in capf:
+                flat_face(m, f"{name}:{d}", n, d)
+        names.append(n)
+        if not (skirt and jump):
+            continue
+        for which, v in (("lo", lo), ("hi", hi)):
+            if v is None:
+                continue
+            k0, k1 = (b0, b0 + deep) if which == "lo" else (b1 - deep, b1)
+            frm2, to2, _, _ = _plank(axis, c, h1, h2, k0, k1, long_)
+            n2 = f"{name}_{p}{which[0]}s"
+            # (No shading and no corner shade of its own: match_walls paints it as bright as its cap is drawn. Shaded,
+            # the walls of the steps between the planks' levels showed as thin dark lines across the cap.)
+            wall = m.box(n2, frm2, to2, faces=longs, rotation=rot, light=light, shade=False)
+            wall.__dict__["no_ao"] = True
+            _open(m, n2, [d for d in ALL6 if d not in longs])
+            SKIRTS[n2] = (n, cap_faces[0] if which == "lo" else cap_faces[1])
+            names.append(n2)
+    return names
+
+
+#: Each skirt's plank and the cap it walls (round_section), for match_walls.
+SKIRTS: dict[str, tuple[str, str]] = {}
+#: How bright vanilla draws a face by the way it looks.
+SHADE = {"up": 1.0, "down": 0.5, "east": 0.6, "west": 0.6, "north": 0.8, "south": 0.8}
+
+
+def match_walls(m, t, names, entity: bool = False) -> None:
+    """After painting: each skirt (a cap's step's wall) its cap's own colour, as bright as the cap is drawn, so the steps
+    do not show as dark lines across it (they had, being shaded as the upright faces they are). A block model's skirt
+    has no shading ("shade": false), so it takes its cap's; a GeckoLib model's is lit as an upright face (about 0.7, which
+    is divided out)."""
+    for n in names:
+        if n not in SKIRTS:
+            continue
+        plank, capd = SKIRTS[n]
+        x, y, w, h = m.rect(plank, capd)
+        cap = t.a[y:y + h, x:x + w, :3].reshape(-1, 3).astype(np.float32)
+        cap = cap[t.a[y:y + h, x:x + w, 3].reshape(-1) > 0]
+        if not len(cap):
+            continue
+        factor = SHADE[capd] / (0.7 if entity else 1.0)
+        rgb = np.clip(cap.mean(axis=0) * factor, 0, 255).astype(int)
+        b = m.get(n)
+        for d in b.faces:
+            x2, y2, w2, h2 = m.rect(b, d)
+            t.rect(x2, y2, w2, h2, (*[int(v) for v in rgb], 255))
+
+
+def round_ring(m, name: str, r_in: float, r_out: float, a0: float, a1: float, axis: str = "y", c=(8.0, 8.0),
+               n: int | None = None, step: float = 0.0, light: int = 0, faces=ALL6) -> list[str]:
+    """A ring across {axis} (a handwheel's rim, a porthole's, a cage's): n straight lengths round it (round_sides of its
+    outside by default), each the facet's chord at its outside and a hair more, so neighbours overlap at their ends;
+    all on one level, their faces across the axis one flat group (FLAT: painted one even colour, so where they overlap
+    nothing can be seen to flicker); or, with a {step}, every other one moved that far along the axis instead."""
+    n = n or round_sides(r_out)
+    n += n % 2
+    chord = 2 * r_out * math.tan(math.pi / n) + 0.02
+    origin = {"x": (a0, c[0], c[1]), "y": (c[0], a0, c[1]), "z": (c[0], c[1], a0)}[axis]
+    out = []
+    for k in range(n):
+        sh = step * (k % 2)
+        theta = 360.0 * k / n
+        a = theta if theta <= 180.0 else theta - 360.0          # (the same turn, the short way round)
+        if axis == "y":
+            frm, to = (c[0] - chord / 2, a0 + sh, c[1] - r_out), (c[0] + chord / 2, a1 + sh, c[1] - r_in)
+        elif axis == "x":
+            frm, to = (a0 + sh, c[0] - chord / 2, c[1] - r_out), (a1 + sh, c[0] + chord / 2, c[1] - r_in)
+        else:
+            frm, to = (c[0] - chord / 2, c[1] + r_in, a0 + sh), (c[0] + chord / 2, c[1] + r_out, a1 + sh)
+        nm = f"{name}_{k}"
+        rot = None if k == 0 else {"origin": origin, "axis": axis, "angle": round(a, 4)}
+        m.box(nm, frm, to, faces=faces, rotation=rot, light=light)
+        if not step:
+            for d in {"x": ("east", "west"), "y": ("up", "down"), "z": ("north", "south")}[axis]:
+                if d in faces:
+                    flat_face(m, f"{name}:{d}", nm, d)
+        out.append(nm)
+    return out
 
 
 def sides_for(r: float) -> int:
@@ -261,9 +483,13 @@ def round_faces(S: M.Surfacer, names, top: bool = True, bottom: bool = False, fo
         for d in list(b.faces):
             f = S.face(b, d)
             inf = {k: np.full_like(v, np.inf) for k, v in f.border.items()}
+            if is_skirt(n):
+                _even_wall(f, inf)
+                continue
             if d in ("up", "down"):
                 for k in (("top", "bottom") if long_x else ("left", "right")):
                     f.edge[k] = inf[k]
+                f.even = True
             else:
                 f.edge["left"], f.edge["right"] = inf["left"], inf["right"]
                 if not top:
@@ -273,6 +499,18 @@ def round_faces(S: M.Surfacer, names, top: bool = True, bottom: bool = False, fo
             f.stop = {k: v.copy() for k, v in f.edge.items()}
             if foot and d in SIDES:
                 f.stop["bottom"] = f.border["bottom"].copy()
+
+
+def is_skirt(name: str) -> bool:
+    """Whether a box is a round_section's skirt (a wall under a cap's step)."""
+    return re.search(r"_\d+[lh]s$", name) is not None
+
+
+def _even_wall(f: M.Face, inf: dict) -> None:
+    """A skirt's face: no lips (it is the wall of a step a few hundredths of a pixel high), painted evenly."""
+    f.edge = {k: v.copy() for k, v in inf.items()}
+    f.stop = {k: v.copy() for k, v in inf.items()}
+    f.even = True
 
 
 def angle_of(f: M.Face) -> np.ndarray:
@@ -876,21 +1114,26 @@ def cryogenic() -> list[str]:
 def hoop(w: Build, group: str, R: float, cy: float, axis: str, thick: float = 0.6, width: float = 0.8, n: int = 16) -> list[str]:
     """A thin hoop of radius R round the point (8, cy, 8), in the plane square to {axis}: {n} planks laid tangent to it,
     each turned about the axis to its place (26.x elements turn by any angle), a hair longer than its share so they
-    meet. About y it lies flat; about x it stands across the warhead's front and back; about z, from side to side. Every
-    other plank is a hair narrower, so where neighbours overlap at a joint their flat faces are not in one plane."""
+    meet. About y it lies flat; about x it stands across the warhead's front and back; about z, from side to side. Its
+    flat sides, where neighbours overlap at a joint, are a flat group (FLAT): one even colour, nothing to flicker."""
     chord = 2 * R * math.tan(math.pi / n) + 0.04
     t = thick / 2
     names = []
+    key = f"{group}:hoop{len(w.groups.get(group, []))}"         # (this hoop's flat group: its planks so far in the group)
     for i in range(n):
         a = 360.0 * i / n
-        h = width / 2 - (0.04 if i % 2 else 0.0)
+        h = width / 2 - (0.04 if i % 2 and not FLAT else 0.0)
         if axis == "y":
             frm, to = (8 + R - t, cy - h, 8 - chord / 2), (8 + R + t, cy + h, 8 + chord / 2)
         elif axis == "x":
             frm, to = (8 - h, cy + R - t, 8 - chord / 2), (8 + h, cy + R + t, 8 + chord / 2)
         else:
             frm, to = (8 - chord / 2, cy + R - t, 8 - h), (8 + chord / 2, cy + R + t, 8 + h)
-        names.append(w.box(group, frm, to, rotation={"origin": (8, cy, 8), "axis": axis, "angle": a}))
+        nm = w.box(group, frm, to, rotation={"origin": (8, cy, 8), "axis": axis, "angle": a})
+        if FLAT:
+            for d in {"x": ("east", "west"), "y": ("up", "down"), "z": ("north", "south")}[axis]:
+                flat_face(w.m, f"{key}:{d}", nm, d)
+        names.append(nm)
     return names
 
 
@@ -1248,7 +1491,9 @@ def blockstates() -> None:
 
 def check_caps(name: str, step: float = 0.05, tol: float = 0.03) -> float:
     """Looking straight down on a model: the area (px2) where the two highest caps of different elements lie within
-    {tol} of each other (they would flicker). Turned elements are turned; the check walks a grid of points."""
+    {tol} of each other (they would flicker), unless both are a flat group's (one even colour, no corner shade: they
+    draw alike; their faces carry NeoForge's "ambient_occlusion": false). Turned elements are turned; the check walks a
+    grid of points."""
     import json
     data = json.loads((paths.MODELS / "block" / f"{name}.json").read_text(encoding="utf-8"))
     caps = []
@@ -1259,12 +1504,15 @@ def check_caps(name: str, step: float = 0.05, tol: float = 0.03) -> float:
         rot = el.get("rotation")
         a = math.radians(rot["angle"]) if rot and rot.get("axis") == "y" else 0.0
         o = rot["origin"] if rot else (8, 0, 8)
-        caps.append((x0, x1, z0, z1, y1, a, o[0], o[2]))
+        flat_cap = el["faces"]["up"].get("neoforge_data", {}).get("ambient_occlusion") is False
+        caps.append((x0, x1, z0, z1, y1, a, o[0], o[2], flat_cap))
     xs = np.arange(-8, 24, step) + step / 2
     X, Z = np.meshgrid(xs, xs)
     best = np.full(X.shape, -1e9)
     second = np.full(X.shape, -1e9)
-    for x0, x1, z0, z1, y1, a, ox, oz in caps:
+    best_flat = np.zeros(X.shape, bool)
+    second_flat = np.zeros(X.shape, bool)
+    for x0, x1, z0, z1, y1, a, ox, oz, flat_cap in caps:
         # The point in the element's own (unturned) frame: turned back by its angle about its origin.
         c, s = math.cos(-a), math.sin(-a)
         dx, dz = X - ox, Z - oz
@@ -1272,9 +1520,12 @@ def check_caps(name: str, step: float = 0.05, tol: float = 0.03) -> float:
         inside = (lx >= x0) & (lx <= x1) & (lz >= z0) & (lz <= z1)
         h = np.where(inside, y1, -1e9)
         higher = h > best
+        lower = ~higher & (h > second)
+        second_flat = np.where(higher, best_flat, np.where(lower, flat_cap, second_flat))
         second = np.where(higher, best, np.maximum(second, h))
+        best_flat = np.where(higher, flat_cap, best_flat)
         best = np.where(higher, h, best)
-    fight = (best > -1e8) & (second > -1e8) & (best - second < tol)
+    fight = (best > -1e8) & (second > -1e8) & (best - second < tol) & ~(best_flat & second_flat)
     return float(fight.sum()) * step * step
 
 

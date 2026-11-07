@@ -109,6 +109,8 @@ final class BunkerDoorBoard {
                 new CloseUp("pressure_door_open", new Vec3(x + 3.2, y + 1.7, z - 2.6), 40, 12),
                 new CloseUp("floor_hatches", new Vec3(x - 2.5, y + 2.2, z - 9.5), -20, 38),
                 new CloseUp("floor_hatch_open", new Vec3(x - 0.2, y + 1.6, z - 7.0), 45, 30),
-                new CloseUp("ceiling_hatch", new Vec3(x + 7.5, y + 1.0, z - 11.0), 0, -28));
+                new CloseUp("ceiling_hatch", new Vec3(x + 7.5, y + 1.0, z - 11.0), 0, -28),
+                new CloseUp("hatch_open_close", new Vec3(x - 1.5, y - 0.72, z - 8.0), 0, 40),
+                new CloseUp("pressure_door_open_close", new Vec3(x + 2.6, y + 0.0, z - 1.4), 45, 8));
     }
 }

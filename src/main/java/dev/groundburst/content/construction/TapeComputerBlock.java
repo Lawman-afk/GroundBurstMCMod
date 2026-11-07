@@ -21,6 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -41,12 +42,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The Tape Computer (DESIGN.md §22.4): a tape drive cabinet two blocks high, its lower block's block entity drawing the
  * whole of it (tools/assets/tape_computer.py). It runs from the moment it is placed ({@link #ACTIVE}: its reels read,
- * stop and rewind, its lamps blink, now and then its motors whirr); a click stops it, another starts it again. Its two
+ * stop and rewind, its lamps blink, now and then its motors whirr); a click stops it, another starts it again. A redstone
+ * signal at either of its blocks keeps it running, whatever its clicks chose ({@link Fittings#SWITCHED}). Its two
  * halves stand or fall together, as a door's do; the lower drops the item.
  */
 public class TapeComputerBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
     public static final BooleanProperty ACTIVE = MachineBlock.ACTIVE;
+    /** What its clicks last chose ({@link Fittings#SWITCHED}). */
+    public static final BooleanProperty SWITCHED = Fittings.SWITCHED;
     private static final VoxelShape[][] SHAPES = new VoxelShape[4][2];
     private final Supplier<? extends BlockEntityType<?>> type;
 
@@ -60,12 +64,13 @@ public class TapeComputerBlock extends HorizontalDirectionalBlock implements Ent
     public TapeComputerBlock(Properties properties, Supplier<? extends BlockEntityType<?>> type) {
         super(properties);
         this.type = type;
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(HALF, DoubleBlockHalf.LOWER).setValue(ACTIVE, true));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(HALF, DoubleBlockHalf.LOWER).setValue(ACTIVE, true)
+                .setValue(Fittings.SWITCHED, true));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, HALF, ACTIVE);
+        builder.add(FACING, HALF, ACTIVE, Fittings.SWITCHED);
     }
 
     /** Placed facing its placer, running, if the block over it is free. */
@@ -90,7 +95,9 @@ public class TapeComputerBlock extends HorizontalDirectionalBlock implements Ent
             BlockPos neighborPos, BlockState neighbor, RandomSource random) {
         DoubleBlockHalf half = state.getValue(HALF);
         if (direction.getAxis() == Direction.Axis.Y && (half == DoubleBlockHalf.LOWER) == (direction == Direction.UP)) {
-            return neighbor.is(this) && neighbor.getValue(HALF) != half ? state.setValue(ACTIVE, neighbor.getValue(ACTIVE)) : Blocks.AIR.defaultBlockState();
+            return neighbor.is(this) && neighbor.getValue(HALF) != half
+                    ? state.setValue(ACTIVE, neighbor.getValue(ACTIVE)).setValue(Fittings.SWITCHED, neighbor.getValue(Fittings.SWITCHED))
+                    : Blocks.AIR.defaultBlockState();
         }
         return super.updateShape(state, level, ticks, pos, direction, neighborPos, neighbor, random);
     }
@@ -111,17 +118,18 @@ public class TapeComputerBlock extends HorizontalDirectionalBlock implements Ent
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide()) {
-            boolean on = !state.getValue(ACTIVE);
-            BlockPos lower = state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
-            for (BlockPos p : new BlockPos[] {lower, lower.above()}) {
-                BlockState s = level.getBlockState(p);
-                if (s.is(this)) {
-                    level.setBlock(p, s.setValue(ACTIVE, on), Block.UPDATE_ALL);
-                }
-            }
+            boolean on = Fittings.clickTall(this, state, level, pos, ACTIVE);
             level.playSound(null, pos, GBSounds.TAPE_SWITCH.get(), SoundSource.BLOCKS, 0.7f, on ? 1.1f : 0.9f);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /** A redstone signal at either block keeps it running; gone, it is as its last click left it. */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, @Nullable Orientation orientation, boolean movedByPiston) {
+        if (!level.isClientSide()) {
+            Fittings.lookTall(this, state, level, pos, ACTIVE);
+        }
     }
 
     /** While it runs, its motors whirr now and then, the lower block heard. */

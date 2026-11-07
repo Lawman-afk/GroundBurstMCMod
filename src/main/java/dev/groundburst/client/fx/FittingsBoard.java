@@ -53,7 +53,12 @@ final class FittingsBoard {
             BlockState s = level.getBlockState(at);
             level.setBlock(at, ((WallPipesBlock) s.getBlock()).joined(s, level, at), 3);
         }
+        // Each lamp lit by a lever on the wall beside it (the middle one's thrown off).
         for (int i : new int[] {-5, -1, 3}) {
+            level.setBlock(new BlockPos(x + i - 1, y + 3, z + 6), net.minecraft.world.level.block.Blocks.LEVER.defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.LeverBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
+                    .setValue(net.minecraft.world.level.block.LeverBlock.FACING, Direction.NORTH)
+                    .setValue(net.minecraft.world.level.block.LeverBlock.POWERED, i != -1), 3);
             level.setBlock(new BlockPos(x + i, y + 3, z + 6), GBConstruction.BUNKER_LAMP.block().get().defaultBlockState()
                     .setValue(DirectionalBlock.FACING, Direction.NORTH).setValue(BunkerLampBlock.LIT, i != -1), 3);
         }
@@ -96,9 +101,11 @@ final class FittingsBoard {
             level.setBlock(foot, s, 3);
             bunk.setPlacedBy(level, foot, s, null, ItemStack.EMPTY);
         }
-        // The extinguisher by the front, its label to the room's open front.
+        // An extinguisher by the front, its label to the room's open front; another hung on the east wall.
         level.setBlock(new BlockPos(x + 4, y, z - 5), GBConstruction.FIRE_EXTINGUISHER.block().get().defaultBlockState()
                 .setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH), 3);
+        level.setBlock(new BlockPos(x + 6, y + 1, z + 4), GBConstruction.FIRE_EXTINGUISHER.block().get().defaultBlockState()
+                .setValue(HorizontalDirectionalBlock.FACING, Direction.WEST).setValue(dev.groundburst.content.construction.FireExtinguisherBlock.WALL, true), 3);
         return new BoundingBox(x - 7, o.getY(), z - 6, x + 7, y + 4, z + 7);
     }
 
@@ -111,6 +118,10 @@ final class FittingsBoard {
                 new BunkerDoorBoard.CloseUp("fuse_duct", new Vec3(x + 3.6, y + 2.2, z + 2.6), 20, 14),
                 new BunkerDoorBoard.CloseUp("lockers", new Vec3(x + 2.4, y + 1.7, z - 0.2), -90, 12),
                 new BunkerDoorBoard.CloseUp("bunks", new Vec3(x - 2.4, y + 1.9, z + 0.6), 90, 12),
-                new BunkerDoorBoard.CloseUp("extinguisher", new Vec3(x + 3.9, y + 1.1, z - 7.0), 0, 18));
+                new BunkerDoorBoard.CloseUp("extinguisher", new Vec3(x + 3.9, y + 1.1, z - 7.0), 0, 18),
+                new BunkerDoorBoard.CloseUp("extinguisher_wall", new Vec3(x + 3.6, y + 1.8, z + 4.5), -90, 10),
+                new BunkerDoorBoard.CloseUp("lamps", new Vec3(x - 1.5, y + 2.9, z + 3.6), 0, 6),
+                new BunkerDoorBoard.CloseUp("pipe_end", new Vec3(x - 5.8, y + 0.18, z + 4.6), -45, 5),
+                new BunkerDoorBoard.CloseUp("bunk_ladder", new Vec3(x - 3.0, y - 0.42, z - 1.6), 90, 5));
     }
 }

@@ -1205,6 +1205,8 @@ public class GBRecipeProvider extends RecipeProvider {
         shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.CZECH_HEDGEHOG.item(), 1)
                 .define('S', rod).pattern("S S").pattern(" S ").pattern("S S")
                 .unlockedBy(getHasName(rod), has(rod)).save(output);
+        rusted(dev.groundburst.content.construction.GBConstruction.CZECH_HEDGEHOG.item(),
+                dev.groundburst.content.construction.GBConstruction.RUSTY_CZECH_HEDGEHOG.item());
         shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.SEARCHLIGHT.item(), 1)
                 .define('P', plate).define('G', Items.GLASS).define('L', Items.REDSTONE_LAMP).define('S', rod)
                 .pattern("PGP").pattern("PLP").pattern(" S ")
