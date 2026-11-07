@@ -5050,6 +5050,11 @@ The last of the four sets (§22.3): what stands outside a Cold War site, each mo
   beam).
 - 1.21.1: its model loader (`FreeRotationModels`) bakes a part turned about three axes as unturned and turns its faces'
   corners (about the part's origin, then by the block state's turn), their facing and normals worked out again.
+- A world to look round all four sets in (the user asked for one): `runShowroom` (`Showroom`) makes a flat creative
+  world, "Ground Burst Showroom", lays out the photographer's four boards along a path (the bunker doors, the command room,
+  the bunker fittings, the yard), each with a sign naming it and one saying what to click, the spawn on the path facing
+  them; its time runs (the searchlight shows best at night), no weather, no mobs. It photographs the row and each set
+  (`run/screenshots/showroom_*.png`), quits, and the world in run/saves is copied into an instance's saves.
 
 ---
 

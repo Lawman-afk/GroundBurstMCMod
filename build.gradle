@@ -146,6 +146,15 @@ neoForge {
             systemProperty 'groundburst.siteShots.variant', (project.findProperty('siteVariant') ?: '0').toString()
         }
 
+        // Makes a flat creative world, "Ground Burst Showroom" (run/saves/ground_burst_showroom), lays out the four sets of
+        // cosmetic blocks along a path with signs, photographs it into run/screenshots/showroom_*.png and quits, the world
+        // saved to copy into an instance's saves (see Showroom).
+        showroom {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.showroom', 'true'
+        }
+
         // Makes a flat world, turns healing on with short waits, builds a farmstead and a little town, blows them up (a
         // thermobaric warhead, a tactical nuke), photographs them before, after, healing and healed into
         // run/screenshots/heal_<scene>_<stage>.png, compares every block with what it was (run/heal/heal_check.txt), then
