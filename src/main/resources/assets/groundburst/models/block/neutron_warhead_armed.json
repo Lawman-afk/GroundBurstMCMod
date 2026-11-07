@@ -16,13 +16,13 @@
       ],
       "translation": [
         0.076,
-        -1.031,
+        -1.049,
         0
       ],
       "scale": [
-        0.613,
-        0.613,
-        0.613
+        0.6144,
+        0.6144,
+        0.6144
       ]
     },
     "ground": {
@@ -33,13 +33,13 @@
       ],
       "translation": [
         0.0,
-        1.341,
+        1.328,
         -0.062
       ],
       "scale": [
-        0.3525,
-        0.3525,
-        0.3525
+        0.3535,
+        0.3535,
+        0.3535
       ]
     },
     "fixed": {
@@ -50,13 +50,13 @@
       ],
       "translation": [
         0.0,
-        -1.055,
+        -1.075,
         -0.099
       ],
       "scale": [
-        0.5639,
-        0.5639,
-        0.5639
+        0.5657,
+        0.5657,
+        0.5657
       ]
     },
     "thirdperson_righthand": {
@@ -67,13 +67,13 @@
       ],
       "translation": [
         0.0,
-        1.841,
+        1.828,
         -0.062
       ],
       "scale": [
-        0.3525,
-        0.3525,
-        0.3525
+        0.3535,
+        0.3535,
+        0.3535
       ]
     },
     "firstperson_righthand": {
@@ -84,13 +84,13 @@
       ],
       "translation": [
         0.0,
-        1.407,
+        1.395,
         -0.056
       ],
       "scale": [
-        0.3172,
-        0.3172,
-        0.3172
+        0.3182,
+        0.3182,
+        0.3182
       ]
     },
     "firstperson_lefthand": {
@@ -101,13 +101,13 @@
       ],
       "translation": [
         0.0,
-        1.407,
+        1.395,
         -0.056
       ],
       "scale": [
-        0.3172,
-        0.3172,
-        0.3172
+        0.3182,
+        0.3182,
+        0.3182
       ]
     },
     "thirdperson_lefthand": {
@@ -118,13 +118,13 @@
       ],
       "translation": [
         0.0,
-        1.841,
+        1.828,
         -0.062
       ],
       "scale": [
-        0.3525,
-        0.3525,
-        0.3525
+        0.3535,
+        0.3535,
+        0.3535
       ]
     },
     "head": {
@@ -135,13 +135,13 @@
       ],
       "translation": [
         0.0,
-        4.945,
+        4.925,
         -0.099
       ],
       "scale": [
-        0.5639,
-        0.5639,
-        0.5639
+        0.5657,
+        0.5657,
+        0.5657
       ]
     }
   },
@@ -185,7 +185,10 @@
             4.375,
             8.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -194,7 +197,10 @@
             5.5,
             8.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -236,7 +242,10 @@
             6.25,
             4.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -245,7 +254,10 @@
             6.625,
             4.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -253,12 +265,12 @@
       "name": "base0_2",
       "from": [
         4.1,
-        -0.06,
+        0.0,
         7.22424
       ],
       "to": [
         11.9,
-        1.44,
+        1.5,
         8.77576
       ],
       "rotation": {
@@ -296,7 +308,10 @@
             6.625,
             8.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -305,7 +320,10 @@
             7.75,
             8.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -313,12 +331,12 @@
       "name": "base0_3",
       "from": [
         7.22424,
-        -0.06,
+        0.0,
         4.1
       ],
       "to": [
         8.77576,
-        1.44,
+        1.5,
         11.9
       ],
       "rotation": {
@@ -356,7 +374,10 @@
             7.0,
             4.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -365,7 +386,10 @@
             7.375,
             4.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -416,7 +440,10 @@
             8.875,
             8.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -425,7 +452,10 @@
             10.0,
             8.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -476,7 +506,10 @@
             7.75,
             4.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -485,7 +518,10 @@
             8.125,
             4.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -493,12 +529,12 @@
       "name": "base0_6",
       "from": [
         4.1,
-        -0.06,
+        0.0,
         7.22424
       ],
       "to": [
         11.9,
-        1.44,
+        1.5,
         8.77576
       ],
       "rotation": {
@@ -536,7 +572,10 @@
             11.125,
             8.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -545,7 +584,10 @@
             12.25,
             8.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -553,12 +595,12 @@
       "name": "base0_7",
       "from": [
         7.22424,
-        -0.06,
+        0.0,
         4.1
       ],
       "to": [
         8.77576,
-        1.44,
+        1.5,
         11.9
       ],
       "rotation": {
@@ -596,7 +638,10 @@
             8.5,
             4.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         },
         "down": {
           "uv": [
@@ -605,7 +650,10 @@
             8.875,
             4.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -717,7 +765,10 @@
             13.25,
             8.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -759,7 +810,10 @@
             9.25,
             3.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -767,12 +821,12 @@
       "name": "body0_2",
       "from": [
         4.8,
-        0.44,
+        0.5,
         7.36348
       ],
       "to": [
         11.2,
-        12.94,
+        13.0,
         8.63652
       ],
       "rotation": {
@@ -810,7 +864,10 @@
             14.25,
             8.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -818,12 +875,12 @@
       "name": "body0_3",
       "from": [
         7.36348,
-        0.44,
+        0.5,
         4.8
       ],
       "to": [
         8.63652,
-        12.94,
+        13.0,
         11.2
       ],
       "rotation": {
@@ -861,7 +918,10 @@
             9.625,
             3.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -912,7 +972,10 @@
             15.25,
             8.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -963,7 +1026,10 @@
             10.0,
             3.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -971,12 +1037,12 @@
       "name": "body0_6",
       "from": [
         4.8,
-        0.44,
+        0.5,
         7.36348
       ],
       "to": [
         11.2,
-        12.94,
+        13.0,
         8.63652
       ],
       "rotation": {
@@ -1014,7 +1080,10 @@
             0.875,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1022,12 +1091,12 @@
       "name": "body0_7",
       "from": [
         7.36348,
-        0.44,
+        0.5,
         4.8
       ],
       "to": [
         8.63652,
-        12.94,
+        13.0,
         11.2
       ],
       "rotation": {
@@ -1065,7 +1134,10 @@
             10.375,
             3.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1107,7 +1179,10 @@
             1.875,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1149,7 +1224,10 @@
             10.75,
             3.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1157,12 +1235,12 @@
       "name": "nose0_2",
       "from": [
         4.92,
-        11.94,
+        12.0,
         7.38735
       ],
       "to": [
         11.08,
-        13.94,
+        14.0,
         8.61265
       ],
       "rotation": {
@@ -1200,7 +1278,10 @@
             2.875,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1208,12 +1289,12 @@
       "name": "nose0_3",
       "from": [
         7.38735,
-        11.94,
+        12.0,
         4.92
       ],
       "to": [
         8.61265,
-        13.94,
+        14.0,
         11.08
       ],
       "rotation": {
@@ -1251,7 +1332,10 @@
             11.125,
             3.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1302,7 +1386,10 @@
             3.875,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1353,7 +1440,10 @@
             11.5,
             3.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1361,12 +1451,12 @@
       "name": "nose0_6",
       "from": [
         4.92,
-        11.94,
+        12.0,
         7.38735
       ],
       "to": [
         11.08,
-        13.94,
+        14.0,
         8.61265
       ],
       "rotation": {
@@ -1404,7 +1494,10 @@
             4.875,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1412,12 +1505,12 @@
       "name": "nose0_7",
       "from": [
         7.38735,
-        11.94,
+        12.0,
         4.92
       ],
       "to": [
         8.61265,
-        13.94,
+        14.0,
         11.08
       ],
       "rotation": {
@@ -1455,7 +1548,10 @@
             11.875,
             3.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1497,7 +1593,10 @@
             5.75,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1539,7 +1638,10 @@
             12.25,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1547,12 +1649,12 @@
       "name": "nose1_2",
       "from": [
         5.04,
-        12.94,
+        13.0,
         7.41122
       ],
       "to": [
         10.96,
-        14.94,
+        15.0,
         8.58878
       ],
       "rotation": {
@@ -1590,7 +1692,10 @@
             6.625,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1598,12 +1703,12 @@
       "name": "nose1_3",
       "from": [
         7.41122,
-        12.94,
+        13.0,
         5.04
       ],
       "to": [
         8.58878,
-        14.94,
+        15.0,
         10.96
       ],
       "rotation": {
@@ -1641,7 +1746,10 @@
             12.625,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1692,7 +1800,10 @@
             7.5,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1743,7 +1854,10 @@
             13.0,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1751,12 +1865,12 @@
       "name": "nose1_6",
       "from": [
         5.04,
-        12.94,
+        13.0,
         7.41122
       ],
       "to": [
         10.96,
-        14.94,
+        15.0,
         8.58878
       ],
       "rotation": {
@@ -1794,7 +1908,10 @@
             8.375,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1802,12 +1919,12 @@
       "name": "nose1_7",
       "from": [
         7.41122,
-        12.94,
+        13.0,
         5.04
       ],
       "to": [
         8.58878,
-        14.94,
+        15.0,
         10.96
       ],
       "rotation": {
@@ -1845,7 +1962,10 @@
             13.375,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1887,7 +2007,10 @@
             9.25,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1929,7 +2052,10 @@
             13.75,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1937,12 +2063,12 @@
       "name": "nose2_2",
       "from": [
         5.246,
-        13.94,
+        14.0,
         7.4522
       ],
       "to": [
         10.754,
-        15.94,
+        16.0,
         8.5478
       ],
       "rotation": {
@@ -1980,7 +2106,10 @@
             10.125,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -1988,12 +2117,12 @@
       "name": "nose2_3",
       "from": [
         7.4522,
-        13.94,
+        14.0,
         5.246
       ],
       "to": [
         8.5478,
-        15.94,
+        16.0,
         10.754
       ],
       "rotation": {
@@ -2031,7 +2160,10 @@
             14.125,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2082,7 +2214,10 @@
             11.0,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2133,7 +2268,10 @@
             14.5,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2141,12 +2279,12 @@
       "name": "nose2_6",
       "from": [
         5.246,
-        13.94,
+        14.0,
         7.4522
       ],
       "to": [
         10.754,
-        15.94,
+        16.0,
         8.5478
       ],
       "rotation": {
@@ -2184,7 +2322,10 @@
             11.875,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2192,12 +2333,12 @@
       "name": "nose2_7",
       "from": [
         7.4522,
-        13.94,
+        14.0,
         5.246
       ],
       "to": [
         8.5478,
-        15.94,
+        16.0,
         10.754
       ],
       "rotation": {
@@ -2235,7 +2376,10 @@
             14.875,
             3.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2277,7 +2421,10 @@
             12.625,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2285,12 +2432,12 @@
       "name": "nose3_1",
       "from": [
         7.04897,
-        14.94,
+        15.0,
         5.704
       ],
       "to": [
         8.95103,
-        16.94,
+        17.0,
         10.296
       ],
       "faces": {
@@ -2319,7 +2466,10 @@
             15.25,
             2.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2327,12 +2477,12 @@
       "name": "nose3_2",
       "from": [
         5.704,
-        14.88,
+        15.0,
         7.04897
       ],
       "to": [
         10.296,
-        16.88,
+        17.0,
         8.95103
       ],
       "rotation": {
@@ -2370,7 +2520,10 @@
             13.375,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2378,12 +2531,12 @@
       "name": "nose3_3",
       "from": [
         7.04897,
-        14.82,
+        15.0,
         5.704
       ],
       "to": [
         8.95103,
-        16.82,
+        17.0,
         10.296
       ],
       "rotation": {
@@ -2421,7 +2574,10 @@
             15.625,
             2.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2463,7 +2619,10 @@
             14.0,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2471,12 +2630,12 @@
       "name": "nose4_1",
       "from": [
         7.32607,
-        15.94,
+        16.0,
         6.373
       ],
       "to": [
         8.67393,
-        18.94,
+        19.0,
         9.627
       ],
       "faces": {
@@ -2505,7 +2664,10 @@
             16.0,
             2.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2513,12 +2675,12 @@
       "name": "nose4_2",
       "from": [
         6.373,
-        15.88,
+        16.0,
         7.32607
       ],
       "to": [
         9.627,
-        18.88,
+        19.0,
         8.67393
       ],
       "rotation": {
@@ -2556,7 +2718,10 @@
             14.625,
             10.5
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },
@@ -2564,12 +2729,12 @@
       "name": "nose4_3",
       "from": [
         7.32607,
-        15.82,
+        16.0,
         6.373
       ],
       "to": [
         8.67393,
-        18.82,
+        19.0,
         9.627
       ],
       "rotation": {
@@ -2607,7 +2772,10 @@
             0.25,
             9.0
           ],
-          "texture": "#0"
+          "texture": "#0",
+          "neoforge_data": {
+            "ambient_occlusion": false
+          }
         }
       }
     },

@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -30,7 +31,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The Filing Cabinet (DESIGN.md §22.4): four steel drawers that hold 27 stacks, as a barrel does; while someone has it
- * open, its top drawer stands pulled out ({@link #OPEN}). Its front toward its placer.
+ * open, or while a redstone signal reaches it, its top drawer stands pulled out ({@link #OPEN}). Its front toward its
+ * placer.
  */
 public class FilingCabinetBlock extends HorizontalDirectionalBlock implements EntityBlock {
     @Override
@@ -61,7 +63,8 @@ public class FilingCabinetBlock extends HorizontalDirectionalBlock implements En
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite())
+                .setValue(OPEN, context.getLevel().hasNeighborSignal(context.getClickedPos()));
     }
 
     @Override
@@ -79,6 +82,14 @@ public class FilingCabinetBlock extends HorizontalDirectionalBlock implements En
 
     @Override
     protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { if (!state.is(newState_.getBlock())) { Containers.dropContentsOnDestroy(state, newState_, level_l, pos); } super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+    }
+
+    /** A redstone signal reaching it holds it open (its block entity looks again). */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
+        if (level instanceof ServerLevel && level.getBlockEntity(pos) instanceof FilingCabinetBlockEntity cabinet) {
+            cabinet.lookAtPower();
+        }
     }
 
     @Override

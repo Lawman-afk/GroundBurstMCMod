@@ -32,14 +32,15 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The Steel Locker (DESIGN.md §22.5): a grey locker two blocks high holding 27 stacks, its lower block's block entity
- * keeping them; while someone has it open its door stands open ({@link #OPEN}, both blocks), a helmet on its shelf, a coat
- * on its rail and boots below. Its two halves stand or fall together, as a door's do; the lower drops the item (and what
+ * keeping them; while someone has it open, or while a redstone signal reaches either of its blocks, its door stands open
+ * ({@link #OPEN}, both blocks), a shelf and a coat rail inside. Its two halves stand or fall together, as a door's do; the lower drops the item (and what
  * it holds).
  */
 public class SteelLockerBlock extends HorizontalDirectionalBlock implements EntityBlock {
@@ -73,7 +74,8 @@ public class SteelLockerBlock extends HorizontalDirectionalBlock implements Enti
         if (level.isOutsideBuildHeight(up) || !level.getBlockState(up).canBeReplaced(context)) {
             return null;
         }
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite())
+                .setValue(OPEN, Fittings.tallPowered(level, context.getClickedPos()));
     }
 
     @Override
@@ -120,6 +122,14 @@ public class SteelLockerBlock extends HorizontalDirectionalBlock implements Enti
 
     @Override
     protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { if (!state.is(newState_.getBlock())) { Containers.dropContentsOnDestroy(state, newState_, level_l, pos); } super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+    }
+
+    /** A redstone signal reaching it holds it open (its block entity looks again). */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
+        if (level instanceof ServerLevel && level.getBlockEntity(lower(state, pos)) instanceof FilingCabinetBlockEntity cabinet) {
+            cabinet.lookAtPower();
+        }
     }
 
     @Override

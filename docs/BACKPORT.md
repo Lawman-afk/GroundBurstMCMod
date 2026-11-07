@@ -4,26 +4,32 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `c2acaac1` (2026-11-06, for 0.9.0: healing the game's own explosions and other
-  mods', main's DESIGN.md §21.9, here through this branch's own two mixins, below; before it, at `aa759d21`, the Depth
-  Charge Rack, main's DESIGN.md §14.6, a stern rack
-  that rolls depth charges off into the sea, loaded through its Item Port by hoppers, pipes and Create's funnels; a
-  charge rolled off keeps its axis in its own synced data, since 1.21.1's client turns a new projectile's rotation to its
-  motion (`Projectile.lerpMotion`); before it, at `e2e3df4f`, the blast effects drawn last under shader packs and with
-  Distant Horizons, main's DESIGN.md §12.3, here by this branch's own `client/fx/DrawnLast`, below; before them, at
-  `d4df3de0`, sea mines, moored on their chains and adrift, and depth
-  charges, main's DESIGN.md §14.6, with blasts under water that keep the sea; the port tool taught that 1.21.1 tells an
-  entity a player uses it without where; before them, at `464565de`, 0.8.1, released for this version and 26.3:
-  `groundburst-mc1.21.1-0.8.1.jar` is this branch's; before it, at `59d16c5d`, healing wakes cables, pipes and other mods' blocks and leaves
-  this mod's blocks as they come back, main's DESIGN.md §21.9, here where a block's onPlace always runs; the blast effects
-  under shader packs, main's §12.3, this branch's own way, below; before them 0.8.0 at `01689009`, and at `07db772c`
-  fire never healed back, and damage waiting while a fire burns
-  by it; main's performance check, its DESIGN.md §11.8, with the play bench, which runs here too: `gradlew runPlayBench`
+- **Last brought up to:** `main` at `2e61cc60` (2026-11-07: after the user's look round the showroom, main's DESIGN.md
+  §22.7: flat round tops in every model (a round part's overlapping caps on one level, one even colour, no corner shade:
+  the per-face `neoforge_data` that NeoForge 21.1 reads too, kept by `FreeRotationModels`, which bakes each face with
+  vanilla's own face baker), the cosmetic models' fixes, the hatch's lid block, redstone holding the props open, the
+  Rusty Czech Hedgehog, the extinguisher on a wall; the Filing Cabinet's storage, this branch's own, merged by hand;
+  main's showroom world (`Showroom`, `ShowroomWalk`) left out with its photographers (`port.py`'s DROP); this branch's
+  port check holds its locker open and lights its lamp by levers, as main's fittings board holds its open locker at
+  `2e61cc60`; before it, at `d403431a`, the yard; before it, at `c2acaac1` (2026-11-06, for 0.9.0: healing the game's
+  own explosions and other mods', main's DESIGN.md §21.9, here through this branch's own two mixins, below; before it,
+  at `aa759d21`, the Depth Charge Rack, main's DESIGN.md §14.6, a stern rack that rolls depth charges off into the sea,
+  loaded through its Item Port by hoppers, pipes and Create's funnels; a charge rolled off keeps its axis in its own
+  synced data, since 1.21.1's client turns a new projectile's rotation to its motion (`Projectile.lerpMotion`); before
+  it, at `e2e3df4f`, the blast effects drawn last under shader packs and with Distant Horizons, main's DESIGN.md §12.3,
+  here by this branch's own `client/fx/DrawnLast`, below; before them, at `d4df3de0`, sea mines, moored on their chains
+  and adrift, and depth charges, main's DESIGN.md §14.6, with blasts under water that keep the sea; the port tool taught
+  that 1.21.1 tells an entity a player uses it without where; before them, at `464565de`, 0.8.1, released for this
+  version and 26.3: `groundburst-mc1.21.1-0.8.1.jar` is this branch's; before it, at `59d16c5d`, healing wakes cables,
+  pipes and other mods' blocks and leaves this mod's blocks as they come back, main's DESIGN.md §21.9, here where a
+  block's onPlace always runs; the blast effects under shader packs, main's §12.3, this branch's own way, below; before
+  them 0.8.0 at `01689009`, and at `07db772c` fire never healed back, and damage waiting while a fire burns by it;
+  main's performance check, its DESIGN.md §11.8, with the play bench, which runs here too: `gradlew runPlayBench`
   `[-Pjfr=<name>]`, its client half this branch's own (`client/fx/PlayBenchClient`, the world made as the port check
   makes its); before them healing, off by default, main's DESIGN.md §21.9: the damage every weapon does grows back over
-  time, block for block as it was; before it every weapon on ships and contraptions,
-  the designator and mortars aimed at ships, a crater lake's hang below y 0 fixed; before them blasts reaching ships and contraptions and
-  every machine on moving structures, main's DESIGN.md §17.16; before them 0.7.0, released for both versions:
+  time, block for block as it was; before it every weapon on ships and contraptions, the designator and mortars aimed at
+  ships, a crater lake's hang below y 0 fixed; before them blasts reaching ships and contraptions and every machine on
+  moving structures, main's DESIGN.md §17.16; before them 0.7.0, released for both versions:
   `groundburst-mc1.21.1-0.7.0.jar` is this branch's).
 - **Toolchain:** Minecraft 1.21.1, NeoForge 21.1.265, Java 21, GeckoLib 4.9.3, JEI 19.70 (optional), Create 6.0.10 and
   Sable 2.0.6 / Create Aeronautics 1.3.2 (optional; see below).
@@ -60,7 +66,7 @@ code is not ported by hand file by file. `tools/backport/port.py` turns main's s
 
 `tools/backport/compile.ps1` (run with PowerShell 7) compiles and sorts the errors; `errs.py <words>` prints a file's
 errors with their lines. `gradlew runGameTestServer` loads everything on a server and runs **all of main's GameTests**
-(437 at main d403431a, every one: `PortSkips` is empty) beside this branch's own seven (444). Main's are ported like the
+(439 at main 09ad4608, every one: `PortSkips` is empty) beside this branch's own seven (446). Main's are ported like the
 rest of its code (the gametest package; `port.py`'s rules for 26.x's test helper: `getBlockEntity(pos, Type.class)`,
 `makeMockServerPlayer` as `port/Tests.mockServerPlayer`, a missile's look by number, and a few per-file fixes); how they
 reach the game is this branch's own `gametest/GameTestRegistration` (`manual.txt`): a generator of 1.21.1's test
@@ -89,9 +95,10 @@ wall (a Blast Door opened, the mirrored model, and one shut; a Pressure Door shu
 it, one open; the log saying whether the blast door opened and laid its leaf's blocks), sets out the command room
 (consoles in a row, a desk, two filing cabinets, one open, two tape drives running, the map table; the log saying whether
 the drives stand two high, the cabinet holds its 27 slots and the table is laid), sets the bunker fittings against a
-wall (wall pipes through an open valve, a fuse box on, a lamp, a duct over a grille, an open locker, a bunk bed, an
-extinguisher; the log saying whether the pipes joined, the bunk stands four blocks, the locker holds 27 with its door
-open and the lamp is lit), sets the yard out on grass (barriers, dragon's teeth and hedgehogs, whose parts turn about
+wall (wall pipes through an open valve, a fuse box on, a lamp lit by a lever, a duct over a grille, a locker held open
+by a lever, a bunk bed, an extinguisher; the log saying whether the pipes joined, the bunk stands four blocks, the
+locker holds 27 with its door open and the lamp is lit), sets the yard out on grass (barriers, dragon's teeth and
+hedgehogs, whose parts turn about
 three axes, the searchlight on, crates, drums; the log saying whether the light stands two high and lit, the crates
 hold 27 and four drums stand in a block), screenshots each into
 `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it

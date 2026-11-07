@@ -346,13 +346,30 @@ boxes that read as ziggurats, the cluster family one shape in different colours.
   eight planks laid every 22.5 degrees, each spanning the width one way and exactly one facet the other (squares
   overlapped would make a star); a small one is an octagon (four planks). Each plank shows only its two ends (two
   facets) and its caps, so the textures stay small (most 128x64).
+- *Flat round tops* (2026-11-07, after the user's look at the cosmetic blocks: "the circles for all the models are a
+  bit rough", gaps in the drums, flicker on the searchlight's foot; then the user's question, "Is there a way to avoid z
+  fighting without having to make models have rough/uneven surfaces?", researched). Overlapping faces in one plane
+  flicker only where they draw differently: the depth test takes one or the other, pixel by pixel. The ways out: cut
+  the shapes so no faces overlap (turned boxes cannot tile a circle); move them apart (what the models had done: steps
+  round the rim, slits between them, and, walled, lines across the cap); draw a round top as one square face with a
+  round cutout texture (a pixel circle for a rim); or make the overlapping faces draw alike. The models take the last:
+  every round part's planks lie on one level, and its caps (a ring's faces across its axis, a hoop's sides, the
+  cannon's panels and floor too) are a flat group (`BlockModel.flat`), painted one even colour together as the model is
+  saved (the mean of their paint) and drawn without smooth lighting's corner shade (NeoForge's per-face
+  `neoforge_data`; the shade differs from one face's corners to another's); so where they overlap every one draws the
+  same, and nothing can be seen to flicker: tops flat and even, rims true. The flicker checks leave a flat group alone.
+  A top so painted shows no detail of its own (a detail on it is a part of its own). Every round part in the mod is
+  built so (27 scripts, regenerated together). Round parts take 32, 24, 16 or 12 sides as their radius allows
+  (`warheads.round_section` on any axis, `round_sides`: facets of about a pixel), each plank turned no more than 45
+  degrees; rings (a handwheel's rim, a chime) are `round_ring`: chord lengths overlapping at their ends. (The levels and
+  their walls, `cap_levels` and skirts, stay for a part asked to keep its painted top: `flat=False`.)
 - *Noses follow real profiles* a ring at a time, a whole pixel a step: a tangent ogive (the classic nose), a dome, a
   blunt mix, a cone (re-entry vehicles); each ring at least 0.12 px inside the one under it.
-- *No flicker*: caps of planks side by side round a section (which meet near its rim) stand 0.06 px apart, every
-  other plank sunk whole (so its texels stay a pixel tall and bands line up facet to facet); planks a quarter turn
-  apart meet only near the middle, which the ring above covers; small sections sink each plank further. A section
-  with no bottom reaches a pixel down into what it stands on, unseen, so a sunk cap leaves no slit. The script looks
-  straight down on every model and fails any place two caps lie within 0.03 px (`check_caps`).
+- *No flicker* (until 2026-11-07; now the flat tops above): caps of planks side by side round a section (which meet
+  near its rim) stood 0.06 px apart, every other plank sunk whole; planks a quarter turn apart met only near the middle,
+  which the ring above covered; small sections sank each plank further. A section with no bottom reaches a pixel down
+  into what it stands on, unseen. The script looked straight down on every model and failed any place two caps lay
+  within 0.03 px (`check_caps`).
 - *Painting*: the material library paints turned boxes where they really stand (`Surfacer(turned=True)`), so noise,
   bands and decals run on round the facets; a round body's facets are toned alike (the game lights them) and its
   ledges a touch darker against the game's brighter tops (a material's `facing`), so a stepped nose reads as a taper;
@@ -4904,12 +4921,17 @@ as a door: by hand and by redstone.
   into the room), not inside its own block as a trapdoor's does. Its blockstate is multipart, the frame and one lid
   turned for each facing and half; the open lid's model is the shut one moved so that the blockstate's quarter turn about
   the block's middle leaves it where a quarter turn about its hinge pins would, and a ceiling hatch is a floor hatch
-  turned over.
+  turned over. While it stands open its lid has a block of its own where it stands (`BunkerHatchLidBlock`, no item:
+  solid, the lid's shape, and a click on it shuts the hatch; breaking it breaks the hatch), laid as it opens if that place
+  is free and taken away as it shuts or goes: the lid had stood out of the hatch's own block, where the server turns
+  clicks away (they are checked to land within a block of it), and only the hatch's block could be clicked.
 - **Pressure Door** (vanilla's `DoorBlock`; block models `tools/assets/pressure_door.py`): a steel door a block wide and two
   high, as the doors between a bunker's rooms and a ship's compartments: a porthole of tinted glass at eye height (seen
   through: its models are translucent), a red dog lever on either face, two heavy hinges, hazard paint at its foot. The
   whole door is built and painted as one (no lip where its halves meet) and cut into vanilla's two half models; an open
-  door is drawn with the other hand's model, turned, as vanilla's are.
+  door is drawn with the other hand's model, turned, as vanilla's are. Its porthole's rims reach 0.3 px into the leaf:
+  open, the leaf's outer face lies against the wall, and a rim's back in that plane flickered with the wall through the
+  glass.
 - The hatch and the door share the block set `groundburst:bunker` (`BunkerSet`): opened by hand and by redstone, not by a
   wind charge, with their own sounds, and in vanilla's doors and trapdoors tags (not `mob_interactable_doors`: villagers
   leave them shut). Strength 6, resistance 300 (vanilla's iron door: 5).
@@ -4941,7 +4963,10 @@ The second of the four sets (§22.3): a Cold War command post's furniture, each 
   holding 27 stacks as a barrel does (dropped when it is broken; a comparator reads it); while anyone has it open its top
   drawer stands pulled out, its hanging folders showing, with a drawer's roll and thump (`tools/sound/rooms.py`).
 - **Tape Computer** (`TapeComputerBlock`, `TapeComputerBlockEntity`; GeckoLib): a tape drive cabinet two blocks high, two
-  reels behind its upper front (their flanges' windows showing the tape wound on), the vacuum columns and the head between
+  reels behind its upper front (after the 10½-inch reels of half-inch tape of the 1960s' drives, as the user's picture of
+  one shows them: pale grey flanges, the front one a rim and a middle on three spokes, three windows open onto the dark
+  brown tape wound full; the drive's hub and its locking knob; each part one even colour, no noise; the windows had been
+  painted on overlapping planks and came out as random black stripes), the vacuum columns and the head between
   them, a strip of lamps and buttons, panel doors and a louvred grille, a blue cap with vents. Its halves stand or fall
   together as a door's do (the lower drops the item). It runs from when it is placed: its reels read forward, stop,
   rewind, stop and read on in a twelve-second loop, its lamps blink (lit bones in the glowmask, scaled to nothing when
@@ -4976,21 +5001,25 @@ credited (`tools/sound/fittings.py`).
 - **Ventilation Duct** (`VentilationDuctBlock`): square galvanised duct that joins duct on all six sides and a grille whose
   back is to it (a multipart model: a core, an arm with a flange toward each it joins).
 - **Bunker Lamp** (`BunkerLampBlock`): a vapour-proof lamp out of any face, its glass jar in a cage of four bars under a
-  ring, on a cast base; lit as it is put up (light 14, the jar's elements lit), a click turns it off and on.
+  ring, on a cast base; lit while a redstone signal reaches it (light 14, the jar's elements lit), as a Redstone Lamp is
+  (it had been clicked off and on: the user asked for redstone).
 - **Fuse Box** (`FuseBoxBlock`): a steel box on a wall, its labelled door latched, its conduit up into the ceiling, a
   breaker's handle at its side. A click throws the breaker: its lamp green, a signal as a lever gives; thrown back, red.
-- **Fire Extinguisher** (`FireExtinguisherBlock`): a red cylinder on the floor, its hose and horn, a gauge and a label. A
+- **Fire Extinguisher** (`FireExtinguisherBlock`): a red cylinder on the floor, or hung on a wall on the usual bracket (a
+  steel strip, two straps round it with buckles; put up as a torch is, on the wall clicked, and it falls if the wall
+  goes), its hose and horn, a gauge and a label. A
   click gives a burst toward its front: a white cloud, its hiss, and the fire within a block of the block before it put out
   (and anything burning there), so a bunker can be kept from burning down.
 - **Steel Locker** (`SteelLockerBlock`, `SteelLockerBlockEntity`): a grey locker two blocks high, louvred vents in its door,
   a card holder, a padlock on its handle. It holds 27 stacks in its lower block (the Filing Cabinet's block entity, its own
   name and sounds); while anyone has it open its door stands open past square on its hinges, both blocks (the upper follows
-  the lower), showing a mirror inside the door, a helmet on the shelf, a coat on its rail and boots. Built whole and cut
+  the lower), showing a mirror inside the door, a shelf and a coat rail (empty: the clothes it had looked wrong). Built whole and cut
   into its blocks' models; the open model's door is painted with the shut one's texels (another texture of its own), so
   the door does not change as it swings. Its halves stand or fall together; the lower drops it and what it holds.
 - **Bunk Bed** (`BunkBedBlock`): an olive steel bunk two beds high and two blocks long (four blocks, a bed's head and foot,
-  lower and upper), mattresses with grey-blue blankets folded back, pillows, a ladder at its foot and a guard rail on the
-  upper bunk. Each bunk is a bed: two can sleep in it, each sets a spawn point (vanilla stands the upper sleeper up beside
+  lower and upper), mattresses with grey-blue blankets folded back, pillows; the upper bunk's guard rails, the back one
+  its whole length, the front one two thirds of it from the head, its end held down on the bunk by an upright, and the
+  ladder up the front in the gap past it. Each bunk is a bed: two can sleep in it, each sets a spawn point (vanilla stands the upper sleeper up beside
   it or below, as with beds stacked); a sleeper lies on the mattress (the bed's sleep height, 9.6 pixels up, not its
   shape's top), and only in a bunk whose four blocks all stand. Breaking any block takes the four (its lower head drops the
   item; in creative, nothing); where beds blow up, it blows up as a bed does.
@@ -5021,9 +5050,11 @@ The last of the four sets (§22.3): what stands outside a Cold War site, each mo
   and dirt are off (the plates' borders lie across the face) and put back by where each texel stands on the tooth
   (`tooth_weather`: its corners and its top's edge catching the light, grime at its foot, streaks from its top).
 - Both are as hard to break and to blast as Reinforced Concrete (the blasts read a block's explosion resistance).
-- **Czech Hedgehog** (`DecorBlock`): three steel angle irons crossed at their middles, each square to the other two and
-  the three's sum straight up, so it stands on three of their ends (each beam turned about all three axes, its flanges
-  onto the other two's lines), rusted brown with patches of its grey paint; it reaches out past its block.
+- **Czech Hedgehog** and **Rusty Czech Hedgehog** (`DecorBlock`): three steel angle irons crossed at their middles,
+  each square to the other two and the three's sum straight up, so it stands on three of their ends (each beam turned about
+  all three axes, its flanges onto the other two's lines; each beam's corner 0.12 px further out along its flanges than the
+  last's, as where they met in one plane the middle flickered); painted dark grey, or rusted brown with patches of its
+  grey paint (eight round a water bucket rust); it reaches out past its block.
 - **Searchlight** (`SearchlightBlock`, `SearchlightBlockEntity`; GeckoLib): a big searchlight on a stand two blocks high
   (a round foot and a column, a yoke on a turntable, the lamp drum on its trunnions: a polished bezel round the lens, a
   vent stack on top). A click switches it on (light 15): its lens lights, and it sweeps the sky, its yoke turning to and
@@ -5036,10 +5067,12 @@ The last of the four sets (§22.3): what stands outside a Cold War site, each mo
 - **Ammo Crates** (`AmmoCratesBlock`, `AmmoCratesBlockEntity`): eight olive wooden ammo boxes in three crossed layers on a
   wooden pallet (rope handles, cleats, a yellow band and stencilling), holding 27 stacks as the Filing Cabinet does
   (a barrel's sounds); while anyone has them open, the top front box's lid stands up on its hinges, its cartridges
-  showing (the open lid painted with the shut model's texels, as the Steel Locker's door).
+  showing (the open lid painted with the shut model's texels, as the Steel Locker's door; its underside, against the box
+  while shut, keeps the open model's own paint: it had none, and the open lid was see-through from the front).
 - **Oil Drum**, **Fuel Drum**, **Rusty Drum** (`DrumBlock`): steel drums, olive drab, red, and left to rust; up to four
-  stand in a block, as candles do (another put on it adds one), each a 16-sided prism, its rolling hoops and chime painted
-  on and two bungs in its lid; a block of them drops each.
+  stand in a block, as candles do (another put on it adds one), each a 16-sided prism closed at its foot, the rolled
+  chime round its top a ring proud of it, the lid sunk inside the chime, its rolling hoops painted on and two bungs in its
+  lid; a block of them drops each.
 - Recipes: four barriers from six Reinforced Concrete, four teeth from four in a pyramid; a hedgehog from five steel rods
   crossed; the searchlight from plates, glass, a redstone lamp and a rod; the crates from wooden slabs round a chest; four
   drums from seven plates round a green, red or brown dye.
@@ -5050,6 +5083,46 @@ The last of the four sets (§22.3): what stands outside a Cold War site, each mo
   beam).
 - 1.21.1: its model loader (`FreeRotationModels`) bakes a part turned about three axes as unturned and turns its faces'
   corners (about the part's origin, then by the block state's turn), their facing and normals worked out again.
+- A world to look round all four sets in (the user asked for one): `runShowroom` (`Showroom`) makes a flat creative
+  world, "Ground Burst Showroom", lays out the photographer's four boards along a path (the bunker doors, the command room,
+  the bunker fittings, the yard), each with a sign naming it and one saying what to click, the spawn on the path facing
+  them; its time runs (the searchlight shows best at night), no weather, no mobs. It photographs the row and each set
+  (`run/screenshots/showroom_*.png`), quits, and the world in run/saves is copied into an instance's saves.
+
+### 22.7 After the user's look round the showroom (2026-11-07)
+
+The user walked the four sets in the showroom world and listed what to fix:
+- **Flicker and holes**: the searchlight's foot (two planks a quarter turn apart shared a plane outside its column), the
+  hedgehog's middle, the pressure door's open porthole against the wall, gaps in the drums (their planks' caps stepped
+  up to 0.42 px with nothing walling the steps), the bunker lamp's gaps (the same), the open crate's see-through lid, the
+  fuse box's conduit hollow from above, the wall pipes and the valve's pipe showing past their end caps (a cap's planks
+  sunk from both its ends by more than its thickness came out inside out), the hatch's striped coaming seen through (its
+  faces into the opening were culled whenever the block beside was solid). Each fixed where it was made, the round parts
+  by §4.4's flat round tops, each model checked by its preview and in game.
+- **Rounder parts**: the hatch's lid 32-sided with a modelled hub and rubber seal under it and a 24-sided wheel, the
+  blast door's wheels, knuckles and pins, the porthole's rims, the drums, the lamp, the extinguisher, the pipes and the
+  valve, the searchlight: all on `round_section` and `round_ring`. Their tops were first stepped a level apart only where
+  the overlaps showed, the steps walled; the walls still showed as thin lines (the user: "The lines are from the
+  different height levels you used to avoid z fighting isnt it?"), and at the user's question the tops became flat
+  (§4.4), in every model of the mod.
+- **The hatch's open lid** a block of its own (§22.3), so it can be clicked shut.
+- **Redstone holds the props on or open** (the user: "so that people can build with them open as well"): the Filing
+  Cabinet, the Steel Locker and the Ammo Crates stand open while a signal reaches them (or either of a locker's blocks),
+  as while anyone has them open; the Searchlight and the Tape Computer are on while a signal reaches either of their
+  blocks or their clicks have them on (`Fittings.SWITCHED` keeps what the clicks chose); the Pipe Valve and the Fuse Box,
+  which give a signal themselves, look open (on) while one reaches them (`Fittings.HELD`) but their own signal stays their
+  switch's alone, or they could hold themselves on. The Bunker Lamp is lit by redstone alone.
+- **New**: the Rusty Czech Hedgehog beside a painted one; the Fire Extinguisher hung on a wall. **Changed**: the locker
+  emptied; the bunk's rails and ladder; the tape reels as the period's (§22.4), the cabinet's paint smooth.
+- **A lag spike** at the bunker doors, a few seconds long. The user's log showed no lost server ticks all session (the
+  server never fell behind) and, at the doors, six clicks on the open hatch's lid that the server turned away ("too far
+  away from hit block"): the hatch jumping shut and back open for each. `runShowroom -PshowroomWalk=true` (`ShowroomWalk`)
+  walks the doors as the user did, clicking as a player does (those six clicks on the lid, each blast door open and shut,
+  the pressure doors, the hatches), walking along the wall and the row, timing every frame and server tick into
+  `run/bench/showroom_walk_<time>.txt` (with `-Pjfr=<name>` a flight recording beside it): no frame over 32 ms (that one as
+  the world came in), no tick over 9 ms, garbage collection under 10 ms a pause, the mod's code 4% of the render thread.
+  The doors' code and models are cheap; the spike was not reproduced. The rejected clicks (and standing on the lid, which
+  the server found to be air) are gone with the lid's own block.
 
 ---
 
@@ -5555,6 +5628,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-07 | **After the user's look round the showroom** (§22.7): flicker, gaps and see-through faces fixed at their causes; round parts on a new builder (`warheads.round_section`, `round_ring`; §4.4) with more sides; and, researched at the user's question, flat round tops in every model of the mod: a round part's overlapping caps on one level, painted one even colour and drawn without the corner shade, so nothing can be seen to flicker (before, planks a hair apart left steps round rims and lines across tops); the hatch's open lid a block of its own (clicked, it shuts the hatch); a constant redstone signal holds the props on or open (the containers, the Searchlight, the Tape Computer; the Pipe Valve and Fuse Box only to look at, their own signal still their switch's), the Bunker Lamp lit by redstone alone; a Rusty Czech Hedgehog beside the painted one; the extinguisher hung on a wall; the locker emptied; the bunk's guard rails and ladder moved; the tape reels as the 1960s' (researched; the user's picture), the cabinet's paint smooth; the lag at the doors measured by a scripted walk and not reproduced. |
 | 2026-11-07 | **The outdoor defences and the yard** (§22.6; the cosmetics' last set, the user: "Yes, carry on" after the bunker fittings' previews): a Jersey Barrier and Dragon's Teeth as hard as Reinforced Concrete (the teeth true truncated pyramids: each face four plates, two turned about three axes to follow its corners), a Czech Hedgehog of three angle irons standing on three ends, a Searchlight two blocks high that sweeps the sky with its beam when switched on (the beam scaled by the sky's darkness), Ammo Crates on a pallet holding 27 stacks (a lid up while open), and steel drums four to a block (oil, fuel, rusty). |
 | 2026-11-07 | **The bunker fittings** (§22.5; the cosmetics' third set, the user: "Yes, carry on" after the command room's previews): Wall Pipes that run on into their neighbours (capped where nothing joins them), a Pipe Valve whose handwheel opens it and gives a signal, a Vent Grille, Ventilation Duct joining on all six sides, a caged Bunker Lamp clicked off and on, a Fuse Box whose breaker gives a signal, a Fire Extinguisher whose burst puts out fire before it, a Steel Locker two blocks high holding 27 stacks (its door open while it is, a helmet, a coat and boots inside), a Bunk Bed two beds high (each bunk a bed of its own: two sleep in it). |
 | 2026-11-07 | **The command room** (§22.4; the cosmetics' second set, the user: "Yes, carry on" after the bunker doors' previews): a Control Console that runs on into its neighbours (its lamps blinking, an animated texture), a Command Desk with a scrolling CRT and a red telephone, a Filing Cabinet that holds 27 stacks (its top drawer out while open), a Tape Computer two blocks high whose reels read, stop and rewind (three takes, so a row never runs in step; a click stops it), a Situation Map Table two by two with a coast at war on it. |

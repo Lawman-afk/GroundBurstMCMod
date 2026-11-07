@@ -133,6 +133,9 @@ class OnBone:
     def box(self, name, frm, to, **kw):
         return self.g.box(name, frm, to, bone=self.bone, **kw)
 
+    def flat(self, group, box, d):
+        return self.g.flat(group, box, d)
+
     @property
     def open_ok(self):
         return self.g.open_ok

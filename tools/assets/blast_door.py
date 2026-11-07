@@ -80,21 +80,6 @@ def xs(hand: int, a: float, b: float) -> tuple[float, float]:
     return tuple(sorted((hand * a, hand * b)))
 
 
-def annulus(g: GeoModel, name: str, r_in: float, r_out: float, y0: float, y1: float, cx: float, cz: float, bone: str,
-            n: int = 16) -> list[str]:
-    """A ring standing on its axis (y): n straight lengths round it, each the facet's chord at its outside, turned to its
-    place; every other one sunk 0.15 px so the ends where neighbours overlap never lie in one plane."""
-    chord = 2 * r_out * math.tan(math.pi / n) + 0.02
-    names = []
-    for k in range(n):
-        sink = 0.15 * (k % 2)
-        nm = f"{name}_{k}"
-        rot = None if k == 0 else {"origin": (cx, y0, cz), "axis": "y", "angle": 360.0 * k / n}
-        g.box(nm, (cx - chord / 2, y0 + sink, cz - r_out), (cx + chord / 2, y1 + sink, cz - r_in), faces=ALL, rotation=rot, bone=bone)
-        names.append(nm)
-    return names
-
-
 def spokes(g: GeoModel, name: str, r0: float, r1: float, w: float, y0: float, y1: float, cx: float, cz: float, bone: str,
            count: int = 4, turn: float = 45.0) -> list[str]:
     """Spokes from the hub out to the rim, one turned to each place (they meet only inside the hub)."""
@@ -115,13 +100,21 @@ def wheel(g: GeoModel, p: SS.Parts, side: str, hand: int, z_face: float, outward
     g.bone(mount, pivot=(cx, cy, z_face), parent="leaf", rotation=(90.0 * outward, 0, 0))
     g.bone(spin, pivot=(cx, cy, z_face), parent=mount)
     # (Standing: the axis runs up y from cy; the disc lies in x and z round (cx, z_face).)
-    p.add(f"boss_{side}", SS.ring(g, f"boss_{side}", 3.0, cy, cy + 1.0, cx, z_face, mount, caps=("up",)))
-    p.add(f"hub_{side}", SS.ring(g, f"hub_{side}", 1.5, cy + 0.9, cy + RIM_OFF + 1.5, cx, z_face, spin, caps=("up",)))
-    p.add(f"rim_{side}", annulus(g, f"rim_{side}", RIM_IN, RIM_OUT, cy + RIM_OFF, cy + RIM_OFF + 1.0, cx, z_face, spin))
+    # (Round parts: warheads.round_section, their caps' planks a level apart only where they overlap in sight.)
+    p.add(f"boss_{side}", ring(g, f"boss_{side}", 3.0, cy, cy + 1.0, cx, z_face, mount, hi=1.5))
+    p.add(f"hub_{side}", ring(g, f"hub_{side}", 1.5, cy + 0.9, cy + RIM_OFF + 1.5, cx, z_face, spin, hi=0.0))
+    p.add(f"rim_{side}", W.round_ring(SS.OnBone(g, spin), f"rim_{side}", RIM_IN, RIM_OUT, cy + RIM_OFF, cy + RIM_OFF + 1.0, c=(cx, z_face)))
     p.add(f"spoke_{side}", spokes(g, f"spoke_{side}", 1.2, RIM_IN + 0.3, 0.8, cy + RIM_OFF + 0.1, cy + RIM_OFF + 0.9, cx, z_face, spin))
     # A grip standing out from the rim, to spin it by.
     gx = cx + hand * (RIM_OUT - 0.55)
-    p.add(f"grip_{side}", SS.ring(g, f"grip_{side}", 0.7, cy + RIM_OFF + 0.8, cy + RIM_OFF + 3.2, gx, z_face, spin, caps=("up",)))
+    p.add(f"grip_{side}", ring(g, f"grip_{side}", 0.7, cy + RIM_OFF + 0.8, cy + RIM_OFF + 3.2, gx, z_face, spin, hi=0.0))
+
+
+def ring(g: GeoModel, name: str, r: float, y0: float, y1: float, cx: float, cz: float, bone: str, **kw) -> list[str]:
+    """A round part on a bone (warheads.round_section), its planks kept for painting round."""
+    names = W.round_section(SS.OnBone(g, bone), name, r, y0, y1, c=(cx, cz), **kw)
+    SS.ROUND.extend(names)
+    return names
 
 
 def build(hand: int) -> tuple[GeoModel, SS.Parts]:
@@ -148,19 +141,19 @@ def build(hand: int) -> tuple[GeoModel, SS.Parts]:
     # all on one pin -------------------------------------------------------------------------------------------------------
     kx = hand * HINGE_X
     for j, (ky0, ky1) in enumerate(FRAME_KNUCKLES):
-        p.add("knuckle", SS.ring(g, f"knuckle_f{j}", KNUCKLE, ky0, ky1, kx, HINGE_Z, F, caps=("up", "down")))
+        p.add("knuckle", ring(g, f"knuckle_f{j}", KNUCKLE, ky0, ky1, kx, HINGE_Z, F, lo=1.25, hi=1.25))
         bx0, bx1 = xs(hand, -7.8, HINGE_X)
         g.box(f"bracket{j}", (bx0, ky0 + 0.5, HINGE_Z), (bx1, ky1 - 0.5, z0), faces=("north", "east", "west", "up", "down"), bone=F)
         p.add("bracket", f"bracket{j}")
     for j, (ky0, ky1) in enumerate(LEAF_KNUCKLES):
-        p.add("knuckle", SS.ring(g, f"knuckle_l{j}", KNUCKLE, ky0, ky1, kx, HINGE_Z, L, caps=("up", "down")))
+        p.add("knuckle", ring(g, f"knuckle_l{j}", KNUCKLE, ky0, ky1, kx, HINGE_Z, L, lo=1.25, hi=1.25))
         sx0, sx1 = xs(hand, HINGE_X, 1.0)
         g.box(f"strap{j}", (sx0, ky0 + 0.5, HINGE_Z + 0.8), (sx1, ky1 - 0.5, LEAF_Z[0] + 0.2), faces=("north", "east", "west", "up", "down"), bone=L)
         p.add("strap", f"strap{j}")
     # A pin through each hinge, its ends showing past the knuckles.
     pins = ((FRAME_KNUCKLES[0][0] - 0.6, LEAF_KNUCKLES[0][1] + 0.6), (LEAF_KNUCKLES[1][0] - 0.6, FRAME_KNUCKLES[1][1] + 0.6))
     for j, (a, b) in enumerate(pins):
-        p.add("pin", SS.ring(g, f"pin{j}", 1.25, a, b, kx, HINGE_Z, F, caps=("up", "down")))
+        p.add("pin", ring(g, f"pin{j}", 1.25, a, b, kx, HINGE_Z, F, lo=0.0, hi=0.0))
     # --- the leaf: a steel slab, a raised rim round its face and two ribs across it ---------------------------------------
     fx0, fx1 = xs(hand, *LEAF_X)
     y0, y1 = LEAF_Y
@@ -336,6 +329,7 @@ def main() -> None:
         g, p = build(hand)
         g.layout()
         tex = paint(g, p, hand)
+        W.match_walls(g, tex, [b.name for b in g.boxes], entity=True)
         g.save(tex)
         print(save_animations(g.name, animations(hand)))
         lo, hi = g.bounds()

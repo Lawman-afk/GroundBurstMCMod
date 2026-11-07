@@ -2,12 +2,14 @@ package dev.groundburst.content.construction;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import dev.groundburst.registry.GBSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -19,14 +21,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.phys.BlockHitResult;
+
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The Bunker Lamp (DESIGN.md §22.5): a vapour-proof lamp in a cage, standing out of whatever face it was put on (a
- * ceiling, a wall, the floor). Lit as it is put up ({@link #LIT}, light 14); a click turns it off, another on again.
+ * ceiling, a wall, the floor). Lit while a redstone signal reaches it ({@link #LIT}, light 14), as a Redstone Lamp is (the
+ * user's wish: by redstone, not by a click); it goes dark a moment after the signal does, a relay's click each way.
  */
 public class BunkerLampBlock extends DirectionalBlock {
     @Override
@@ -39,7 +41,7 @@ public class BunkerLampBlock extends DirectionalBlock {
 
     public BunkerLampBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.DOWN).setValue(LIT, true));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.DOWN).setValue(LIT, false));
     }
 
     @Override
@@ -49,18 +51,36 @@ public class BunkerLampBlock extends DirectionalBlock {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getClickedFace());
+        return defaultBlockState().setValue(FACING, context.getClickedFace())
+                .setValue(LIT, context.getLevel().hasNeighborSignal(context.getClickedPos()));
+    }
+
+    /** A signal coming lights it at once; one gone puts it out four ticks on (if it has not come back). */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
+        if (level.isClientSide()) {
+            return;
+        }
+        boolean lit = state.getValue(LIT);
+        if (lit != level.hasNeighborSignal(pos)) {
+            if (lit) {
+                level.scheduleTick(pos, this, 4);
+            } else {
+                switchTo(state, level, pos, true);
+            }
+        }
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide()) {
-            boolean lit = !state.getValue(LIT);
-            level.setBlock(pos, state.setValue(LIT, lit), Block.UPDATE_ALL);
-            level.playSound(null, pos, GBSounds.LAMP_SWITCH.get(), SoundSource.BLOCKS, 0.5f, lit ? 1.1f : 0.9f);
-            level.gameEvent(player, lit ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, pos);
+    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (state.getValue(LIT) && !level.hasNeighborSignal(pos)) {
+            switchTo(state, level, pos, false);
         }
-        return InteractionResult.SUCCESS;
+    }
+
+    private static void switchTo(BlockState state, Level level, BlockPos pos, boolean lit) {
+        level.setBlock(pos, state.setValue(LIT, lit), Block.UPDATE_CLIENTS);
+        level.playSound(null, pos, GBSounds.LAMP_SWITCH.get(), SoundSource.BLOCKS, 0.35f, lit ? 1.1f : 0.9f);
     }
 
     @Override

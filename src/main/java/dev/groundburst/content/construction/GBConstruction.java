@@ -154,6 +154,11 @@ public final class GBConstruction {
     public static final WithItem<BunkerHatchBlock> BUNKER_HATCH = GBBlocks.register("bunker_hatch", "Bunker Hatch", TAB,
             BunkerHatchBlock::new, p -> metal(p, MapColor.METAL).strength(6f, 300f).noOcclusion()
                     .isValidSpawn(Blocks::never).isRedstoneConductor((s, l, at) -> false));
+    /** An open hatch's lid, where it stands over (or under) the hatch: solid, and clicked to shut it. No item (§22.3). */
+    public static final net.neoforged.neoforge.registries.DeferredBlock<BunkerHatchLidBlock> BUNKER_HATCH_LID = GBBlocks.blockOnly(
+            "bunker_hatch_lid", "Bunker Hatch", BunkerHatchLidBlock::new, p -> metal(p, MapColor.METAL).strength(6f, 300f).noOcclusion()
+                    .isValidSpawn(Blocks::never).isRedstoneConductor((s, l, at) -> false).isSuffocating((s, l, at) -> false)
+                    .isViewBlocking((s, l, at) -> false).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK));
     /** A steel door with a porthole and a dog lever, a block wide and two high, opening as a door does (§22.3). */
     public static final WithItem<net.minecraft.world.level.block.DoorBlock> PRESSURE_DOOR = GBBlocks.register("pressure_door", "Pressure Door",
             TAB, p -> new net.minecraft.world.level.block.DoorBlock(BunkerSet.get(), p),
@@ -206,14 +211,14 @@ public final class GBConstruction {
     /** Square galvanised duct, joining its neighbours (and a grille's back) on all six sides. */
     public static final WithItem<VentilationDuctBlock> VENTILATION_DUCT = GBBlocks.register("ventilation_duct", "Ventilation Duct", TAB,
             VentilationDuctBlock::new, p -> metal(p, MapColor.METAL).strength(2f, 6f).noOcclusion());
-    /** A caged lamp out of any face, lit until it is clicked off. */
+    /** A caged lamp out of any face, lit while a redstone signal reaches it. */
     public static final WithItem<BunkerLampBlock> BUNKER_LAMP = GBBlocks.register("bunker_lamp", "Bunker Lamp", TAB,
             BunkerLampBlock::new, p -> metal(p, MapColor.COLOR_GRAY).strength(1.5f, 6f).sound(SoundType.LANTERN).noOcclusion()
                     .lightLevel(s -> s.getValue(BunkerLampBlock.LIT) ? 14 : 0));
     /** A steel box on a wall whose breaker gives a signal as a lever does. */
     public static final WithItem<FuseBoxBlock> FUSE_BOX = GBBlocks.register("fuse_box", "Fuse Box", TAB,
             FuseBoxBlock::new, p -> metal(p, MapColor.COLOR_GRAY).strength(2f, 6f).noOcclusion());
-    /** A red extinguisher standing on the floor: a click puts out the fire before it. */
+    /** A red extinguisher standing on the floor or hung on a wall: a click puts out the fire before it. */
     public static final WithItem<FireExtinguisherBlock> FIRE_EXTINGUISHER = GBBlocks.register("fire_extinguisher", "Fire Extinguisher", TAB,
             FireExtinguisherBlock::new, p -> metal(p, MapColor.COLOR_RED).strength(1f, 3f).noOcclusion());
     /** A grey steel locker two blocks high holding 27 stacks, its door open while it is. */
@@ -239,8 +244,12 @@ public final class GBConstruction {
     /** A concrete truncated pyramid, set out in rows against tanks; as hard as Reinforced Concrete. */
     public static final WithItem<DragonsTeethBlock> DRAGONS_TEETH = GBBlocks.register("dragons_teeth", "Dragon's Teeth", TAB,
             DragonsTeethBlock::new, GBConstruction::concreteObstacle);
-    /** Three steel angle irons crossed at their middles, standing on three of their ends. */
+    /** Three steel angle irons crossed at their middles, standing on three of their ends: painted dark grey. */
     public static final WithItem<DecorBlock> CZECH_HEDGEHOG = GBBlocks.register("czech_hedgehog", "Czech Hedgehog", TAB,
+            p -> new DecorBlock(p, List.of(new double[] {2, 0, 2, 14, 16, 14})),
+            p -> metal(p, MapColor.COLOR_GRAY).strength(6f, 300f).noOcclusion());
+    /** The same left out in the weather, rusted brown. */
+    public static final WithItem<DecorBlock> RUSTY_CZECH_HEDGEHOG = GBBlocks.register("rusty_czech_hedgehog", "Rusty Czech Hedgehog", TAB,
             p -> new DecorBlock(p, List.of(new double[] {2, 0, 2, 14, 16, 14})),
             p -> metal(p, MapColor.TERRACOTTA_BROWN).strength(6f, 300f).noOcclusion());
     /** A big searchlight on a stand two blocks high: switched on, it sweeps the sky with its beam. */
@@ -277,7 +286,7 @@ public final class GBConstruction {
             RADOME_PANEL, RADOME_PANEL_STAIRS, RADOME_PANEL_SLAB, FLOODLIGHT, SANDBAGS, SANDBAG_SLAB, RADIATION_SIGN, HIGH_VOLTAGE_SIGN,
             KEEP_OUT_SIGN, TOXIC_SIGN, SEARCH_RADAR, SEARCH_RADAR_WRECK, MISSILE_WRECK, CONTROL_CONSOLE, COMMAND_DESK, FILING_CABINET,
             WALL_PIPES, PIPE_VALVE, VENT_GRILLE, VENTILATION_DUCT, BUNKER_LAMP, FUSE_BOX, FIRE_EXTINGUISHER, JERSEY_BARRIER, DRAGONS_TEETH,
-            CZECH_HEDGEHOG);
+            CZECH_HEDGEHOG, RUSTY_CZECH_HEDGEHOG);
     /** The slabs (they drop two when doubled). */
     public static final List<WithItem<SlabBlock>> SLABS = List.of(CORRUGATED_STEEL_SLAB, RUSTED_CORRUGATED_STEEL_SLAB, STEEL_GRATING_SLAB,
             RADOME_PANEL_SLAB, SANDBAG_SLAB);

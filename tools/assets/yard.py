@@ -8,9 +8,11 @@ the material library.
   its plane: two turned in that plane as well (26.x's turns about all three axes) so each runs exactly along one corner
   edge, a band across its top and a block across its foot between them; each a hundredth of a pixel behind the one in
   front of it, so the face is whole and flat, its corners true and nothing flickers.
-- **Czech Hedgehog**: three steel angle irons crossed at their middles, each square to the others, standing on three
-  of their ends (the three turned about all three axes).
-- **Drums** (Oil, Fuel, Rusty): one to four steel drums on end, 16-sided prisms, hoops and chime painted on, two bungs.
+- **Czech Hedgehog** (painted dark grey) and **Rusty Czech Hedgehog**: three steel angle irons crossed at their
+  middles, each square to the others, standing on three of their ends (the three turned about all three axes), each
+  beam's corner a hair further out than the last's so no two lie in one plane where they cross.
+- **Drums** (Oil, Fuel, Rusty): one to four steel drums on end, 16-sided prisms, the rolled chime round each top a ring
+  proud of it, the lid sunk inside it, the hoops painted on, two bungs.
 - **Ammo Crates**: eight olive ammo boxes in three crossed layers on a wooden pallet; open, the top front box's lid up
   on its hinges (painted with the shut model's texels: share_shut), its cartridges showing.
 
@@ -18,6 +20,7 @@ the material library.
 """
 from __future__ import annotations
 
+import dataclasses
 import json
 import math
 import sys
@@ -127,6 +130,7 @@ def barrier() -> None:
     k.paint(t, parts["foot"] + parts["core"] + parts["slope"], M.concrete(tone=0.6))
     k.overlay(t, parts["foot"], scupper)
     m.fit_display()
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
     CR.blockstate("jersey_barrier")
     CR.block_item("jersey_barrier")
@@ -194,6 +198,7 @@ def teeth() -> None:
                                          dither=0.35, extra=tooth_weather))
     k.paint(t, parts["cap"], M.concrete(tone=0.62, dither=0.35))
     m.fit_display()
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
     write_json(paths.ASSETS / "blockstates" / "dragons_teeth.json", {"variants": {"": {"model": "groundburst:block/dragons_teeth"}}})
     CR.block_item("dragons_teeth")
@@ -222,9 +227,16 @@ def tooth_weather(f: M.Face) -> np.ndarray:
 # --- the Czech Hedgehog --------------------------------------------------------------------------------------------------------
 #: Each beam's length, its angle iron's flanges (width, thickness): a hedgehog a block and a bit high.
 BEAM, FLANGE, FLANGE_T = 28.0, 2.4, 0.6
+#: How far each beam's corner stands out along its own flanges from the last's: the three cross at the middle, and
+#: no face of one lies in the plane of another's (where they met in one, the middle flickered).
+BEAM_STAGGER = 0.12
 #: Steel left out in the weather: rust brown, the old grey paint in patches (painted in rust, worn to grey).
 HEDGEHOG_RUST = M.ramp("#1f110a", "#2f190e", "#432414", "#583019", "#6e3d1f", "#844b26", "#9a5b30", "#b06f3e")
 RUSTED = M.painted(HEDGEHOG_RUST, tone=0.5, wear=0.35, rust=0.3, under=M.ARMOUR_RAMP[2:7], mottle=0.09)
+#: The same, new: dark grey paint, a little chipped at its edges to the steel.
+PAINTED = M.painted(M.ARMOUR_RAMP, tone=0.5, wear=0.16, under=M.STEEL_RAMP[3:8])
+#: The two hedgehogs: block id, paint.
+HEDGEHOGS = {"czech_hedgehog": PAINTED, "rusty_czech_hedgehog": RUSTED}
 
 
 def turn_between(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -238,33 +250,41 @@ def turn_between(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return np.eye(3) + vx + vx @ vx * ((1 - c) / s ** 2)
 
 
-def hedgehog() -> None:
+def hedgehog(name: str, paint: M.Material) -> None:
     """Three angle irons, each square to the others and the three's sum straight up, so the hedgehog stands on three of
-    their ends: each beam's own x turned onto its line, its flanges onto the other two's (so all three lie alike)."""
-    m = BlockModel("czech_hedgehog", tex_size=(128, 64), kind="block")
+    their ends: each beam's own x turned onto its line, its flanges onto the other two's (so all three lie alike), each
+    beam's corner BEAM_STAGGER further out along its flanges than the last's."""
+    m = BlockModel(name, tex_size=(128, 64), kind="block")
     m.open_ok = set()
     R0 = turn_between(np.array([1.0, 1.0, 1.0]), np.array([0.0, 1.0, 0.0]))
     R_yaw = ry(15.0)
     cycle = np.array([[0, 0, 1], [1, 0, 0], [0, 1, 0]], dtype=float)        # x to y, y to z, z to x
-    rise = BEAM / 2 / math.sqrt(3)                                           # a beam end's height above or below the middle
-    c = np.array([8.0, rise + 0.02, 8.0])                                     # (its feet' corners just on the ground)
-    names = []
+    beams = []
     for i in range(3):
         R = R_yaw @ R0 @ np.linalg.matrix_power(cycle, i)
-        web = (c + (-BEAM / 2, FLANGE_T, 0.0), c + (BEAM / 2, FLANGE, FLANGE_T))
-        leg = (c + (-BEAM / 2, 0.0, 0.0), c + (BEAM / 2, FLANGE_T, FLANGE))
-        for part, (frm, to) in (("web", web), ("leg", leg)):
+        o = BEAM_STAGGER * i
+        web = (np.array((-BEAM / 2, FLANGE_T + o, o)), np.array((BEAM / 2, FLANGE + o, FLANGE_T + o)))
+        leg = (np.array((-BEAM / 2, o, o)), np.array((BEAM / 2, FLANGE_T + o, FLANGE + o)))
+        beams.append((R, (("web", web), ("leg", leg))))
+    # Stood with its lowest corner a hair above the ground.
+    low = min(float((R @ np.array([x, y, z]))[1]) for R, pieces in beams for _, (a, b) in pieces
+              for x in (a[0], b[0]) for y in (a[1], b[1]) for z in (a[2], b[2]))
+    c = np.array([8.0, 0.02 - low, 8.0])
+    names = []
+    for i, (R, pieces) in enumerate(beams):
+        for part, (a, b) in pieces:
             n = f"beam{i}_{part}"
-            m.box(n, tuple(frm), tuple(to), faces=ALL, rotation=rotation(R, c))
+            m.box(n, tuple(c + a), tuple(c + b), faces=ALL, rotation=rotation(R, c))
             names.append(n)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
     k = K.Kit(m, {}, seed=6301, ao_reach=1.2, turned=True)
-    k.paint(t, names, RUSTED)
+    k.paint(t, names, paint)
     m.fit_display()
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
-    CR.blockstate("czech_hedgehog")
-    CR.block_item("czech_hedgehog")
+    CR.blockstate(name)
+    CR.block_item(name)
 
 
 # --- the drums -----------------------------------------------------------------------------------------------------------------
@@ -280,31 +300,44 @@ DRUMS = {
 }
 
 
+#: The chime round a drum's top (its inside, its outside proud of the drum, its foot, its top) and the lid sunk inside it.
+CHIME = (DRUM_R - 0.6, DRUM_R + 0.1, DRUM_H - 0.55, DRUM_H + 0.2)
+LID_R, LID_TOP = DRUM_R - 0.5, DRUM_H - 0.3
+
+
 def drums(name: str) -> None:
-    """One to four steel drums on end, each a 16-sided prism, its rolling hoops and chime painted on (they stand out
-    under a pixel), two bungs in its lid."""
+    """One to four steel drums on end, each a 16-sided prism (its bottom closed, no top of its own), the rolled chime
+    round its top a ring standing proud of it, the lid sunk inside the chime (its planks' levels hidden under it), the
+    rolling hoops painted on, two bungs in its lid."""
     paint = DRUMS[name]
     for count, spots in DRUM_SPOTS.items():
-        m = BlockModel(f"{name}_{count}", tex_size=(128, 64), kind="block")
+        m = BlockModel(f"{name}_{count}", tex_size=(128, 128), kind="block")
         m.open_ok = set()
-        bodies, bungs = [], []
+        bodies, lids, chimes, bungs = [], [], [], []
         for j, (cx, cz) in enumerate(spots):
-            bodies += W.section(m, f"drum{j}", DRUM_R, 0.0, DRUM_H, 16, cx=cx, cz=cz, caps=("up",), stagger="full")
+            # (Its bottom closed, its planks' levels stepping down into what it stands on.)
+            bodies += W.round_section(m, f"drum{j}", DRUM_R, 0.0, DRUM_H - 0.2, c=(cx, cz), sides=16, lo=0.0)
+            lids += W.round_section(m, f"lid{j}", LID_R, LID_TOP - 0.6, LID_TOP, c=(cx, cz), sides=16, hi=0.0)
+            chimes += W.round_ring(m, f"chime{j}", CHIME[0], CHIME[1], CHIME[2], CHIME[3], c=(cx, cz), n=16)
             a = math.radians(40 + 97 * j)
-            for b_, (rr, size) in enumerate(((2.3, 1.0), (2.6, 0.7))):
+            for b_, (rr, size) in enumerate(((2.0, 1.0), (2.3, 0.7))):
                 bx, bz = cx + rr * math.cos(a + b_ * 2.6), cz + rr * math.sin(a + b_ * 2.6)
                 n = f"bung{j}_{b_}"
-                m.box(n, (bx - size / 2, DRUM_H, bz - size / 2), (bx + size / 2, DRUM_H + 0.3, bz + size / 2),
+                m.box(n, (bx - size / 2, LID_TOP - 0.7, bz - size / 2), (bx + size / 2, LID_TOP + 0.3, bz + size / 2),
                       faces=("north", "south", "east", "west", "up"))
                 bungs.append(n)
         m.layout()
         t = Tex(m.tex_w, m.tex_h)
         k = K.Kit(m, {}, seed=6400 + count, ao_reach=1.2, turned=True)
-        W.round_faces(k.S, bodies)
-        k.paint(t, bodies, paint)
+        W.round_faces(k.S, bodies + lids)
+        k.paint(t, bodies + chimes, paint)
+        # The lid flat (no dithering: its planks lie each its own way, and their dither would draw their edges on it).
+        k.paint(t, lids, dataclasses.replace(paint, dither=0.0, grain=0.0))
+        k.S.paint(t, bodies, dataclasses.replace(paint, dither=0.0, grain=0.0), only=("down",))
         k.paint(t, bungs, K.STEEL)
-        k.overlay(t, bodies, lambda f, img: drum_marks(f, img, spots))
+        k.overlay(t, bodies + lids, lambda f, img: drum_marks(f, img, spots))
         m.fit_display()
+        W.match_walls(m, t, [b.name for b in m.boxes])
         m.save(t)
     v = {}
     for facing, rot in TURN.items():
@@ -315,17 +348,15 @@ def drums(name: str) -> None:
 
 
 def drum_marks(f: M.Face, img: np.ndarray, spots) -> None:
-    """A drum's two rolling hoops (a dark band with a lit top), its chime round the lid's edge and the lid sunk inside it."""
+    """A drum's two rolling hoops (a dark band with a lit top); its lid a shade darker at its edge, in the chime's shadow."""
     rgb = img[..., :3].astype(np.float32)
     if f.d == "up":
         r = np.min([np.hypot(f.X - cx, f.Z - cz) for cx, cz in spots], axis=0)
-        rgb[r > DRUM_R - 0.55] *= 1.18
-        rgb[(r > DRUM_R - 1.1) & (r <= DRUM_R - 0.55)] *= 0.72
-    else:
+        rgb[r > LID_R - 0.7] *= 0.78
+    elif f.d in SIDES:
         for y in (DRUM_H * 0.34, DRUM_H * 0.66):
             rgb[np.abs(f.Y - y) < 0.5] *= 0.74
             rgb[np.abs(f.Y - (y + 0.75)) < 0.25] *= 1.16
-        rgb[f.Y > DRUM_H - 0.6] *= 1.12
     img[..., :3] = np.clip(rgb, 0, 255).astype(np.uint8)
 
 
@@ -373,6 +404,7 @@ def crates(open_: bool) -> None:
     k.paint(t, parts["crate"] + parts["lid"], CRATE_PAINT)
     k.overlay(t, parts["crate"] + parts["lid"], crate_marks)
     m.fit_display()
+    W.match_walls(m, t, [b.name for b in m.boxes])
     m.save(t)
 
 
@@ -418,7 +450,8 @@ def crate_marks(f: M.Face, img: np.ndarray) -> None:
 
 def share_shut(name: str, moving: tuple[str, ...]) -> None:
     """The open model's moving parts painted as the shut model's (its texels, its texture): painted where they swing to,
-    their noise and bands would fall another way, and they would change as they moved (the Steel Locker's way)."""
+    their noise and bands would fall another way, and they would change as they moved (the Steel Locker's way). A face
+    the shut model has none of (a lid's underside, against the box while shut) keeps the open model's own paint."""
     closed = json.loads((paths.MODELS / "block" / f"{name}.json").read_text(encoding="utf-8"))
     faces = {el["name"]: el["faces"] for el in closed["elements"]}
     path = paths.MODELS / "block" / f"{name}_open.json"
@@ -426,7 +459,8 @@ def share_shut(name: str, moving: tuple[str, ...]) -> None:
     model["textures"]["shut"] = f"groundburst:block/{name}"
     for el in model["elements"]:
         if el["name"] in moving:
-            el["faces"] = {d: {**f, "texture": "#shut"} for d, f in faces[el["name"]].items() if d in el["faces"]}
+            shut = faces[el["name"]]
+            el["faces"] = {d: ({**shut[d], "texture": "#shut"} if d in shut else f) for d, f in el["faces"].items()}
     write_json(path, model)
 
 
@@ -448,7 +482,8 @@ def main() -> None:
     if "crates" in which:
         crate_files()
     if "hedgehog" in which:
-        hedgehog()
+        for name, paint in HEDGEHOGS.items():
+            hedgehog(name, paint)
     if "drums" in which:
         for name in DRUMS:
             drums(name)

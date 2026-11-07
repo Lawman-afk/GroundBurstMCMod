@@ -357,7 +357,8 @@ public final class PortCheck {
                         tape && cabinet && table ? "OK" : "WRONG");
             });
             // The bunker fittings (main's DESIGN.md §22.5) against a concrete wall: wall pipes through an open valve, a fuse box
-            // on, a lamp, a duct over a grille, an open locker, a bunk bed, an extinguisher; the log saying whether they stand.
+            // on, a lamp lit by a lever, a duct over a grille, a locker held open by a lever, a bunk bed, an extinguisher; the log
+            // saying whether they stand.
             case 1220 -> command(mc, "fill -51 -61 -60 -38 -61 -54 " + GroundBurst.MODID + ":reinforced_concrete");
             case 1221 -> command(mc, "fill -51 -60 -54 -38 -57 -54 " + GroundBurst.MODID + ":reinforced_concrete");
             case 1223 -> onServer(mc, level -> {
@@ -392,9 +393,17 @@ public final class PortCheck {
                 }
                 var locker = dev.groundburst.content.construction.GBConstruction.STEEL_LOCKER.block().get();
                 BlockPos la = new BlockPos(-41, -60, -55);
-                var ls = locker.defaultBlockState().setValue(facing, north).setValue(dev.groundburst.content.construction.SteelLockerBlock.OPEN, true);
+                var ls = locker.defaultBlockState().setValue(facing, north);
                 level.setBlockAndUpdate(la, ls);
                 locker.setPlacedBy(level, la, ls, null, net.minecraft.world.item.ItemStack.EMPTY);
+                // A lever over the locker holds it open and one beside the lamp lights it (main's DESIGN.md §22.5: the props
+                // follow redstone; set open or lit, the next block update would put them back).
+                var lever = net.minecraft.world.level.block.Blocks.LEVER.defaultBlockState()
+                        .setValue(net.minecraft.world.level.block.LeverBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL)
+                        .setValue(net.minecraft.world.level.block.LeverBlock.FACING, north)
+                        .setValue(net.minecraft.world.level.block.LeverBlock.POWERED, true);
+                level.setBlockAndUpdate(new BlockPos(-41, -58, -55), lever);
+                level.setBlockAndUpdate(new BlockPos(-48, -57, -55), lever);
                 var bunk = dev.groundburst.content.construction.GBConstruction.BUNK_BED.block().get();
                 BlockPos foot = new BlockPos(-39, -60, -57);
                 var bs = bunk.defaultBlockState().setValue(facing, net.minecraft.core.Direction.SOUTH);

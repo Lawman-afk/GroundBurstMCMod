@@ -1,5 +1,7 @@
 package dev.groundburst.content.construction;
 
+import org.jspecify.annotations.Nullable;
+
 import dev.groundburst.registry.GBSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -7,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -15,6 +18,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -22,21 +26,37 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The Pipe Valve (DESIGN.md §22.5): the big pipe of a run of Wall Pipes through a gate valve, its handwheel out in front.
  * A click turns the wheel: the valve opens ({@link #OPEN}: its stem out, its spokes a quarter round) and gives a signal as
- * a lever does (strong into the wall it is on); another shuts it.
+ * a lever does (strong into the wall it is on); another shuts it. A redstone signal at it holds it open to look at
+ * ({@link Fittings#HELD}), its signal still its wheel's alone.
  */
 public class PipeValveBlock extends WallPipesBlock {
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
+    /** Held open by a redstone signal, to look at ({@link Fittings#HELD}). */
+    public static final BooleanProperty HELD = Fittings.HELD;
     private static final VoxelShape[] SHAPES = Fittings.facing(new double[] {0, 6.6, 12, 16, 16, 16}, new double[] {4.5, 8.5, 8.2, 11.5, 15.8, 12});
 
     public PipeValveBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(OPEN, false));
+        registerDefaultState(defaultBlockState().setValue(OPEN, false).setValue(Fittings.HELD, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(OPEN);
+        builder.add(OPEN, Fittings.HELD);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return super.getStateForPlacement(context).setValue(Fittings.HELD, context.getLevel().hasNeighborSignal(context.getClickedPos()));
+    }
+
+    /** A redstone signal at it holds it open to look at (its own signal still its wheel's alone). */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
+        if (!level.isClientSide()) {
+            Fittings.hold(state, level, pos);
+        }
     }
 
     @Override

@@ -31,6 +31,7 @@ from gb import paths  # noqa: E402
 from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gb.model import write_json  # noqa: E402
 from gb.tex import Tex  # noqa: E402
+import blast_door as BD  # noqa: E402
 import command_room as CR  # noqa: E402
 import scud_storm as SS  # noqa: E402
 import warheads as W  # noqa: E402
@@ -42,9 +43,10 @@ HALF, FRONT, BACK, TOP = 7.0, -6.0, 8.0, 30.5
 #: The reel window (x from, to; y from, to) and the reel plate's face behind it.
 WIN = (-6.0, 6.0, 17.0, 29.0)
 PLATE_Z = -4.5
-#: The reels' middles and their flanges' radius.
+#: The reels' middles and their flanges' radius; how far the tape is wound on each (both alike: the user's wish).
 REELS = {"l": (-3.0, 24.6), "r": (3.0, 24.6)}
 REEL_R = 2.8
+PACK = {"l": 2.55, "r": 2.55}
 #: The control strip's lamps (x, y, colour).
 LAMPS = [(-5.4, 16.1, "red"), (-4.2, 16.1, "amber"), (-3.0, 16.1, "green"), (-1.8, 16.1, "white"), (-5.4, 15.0, "amber"),
          (-4.2, 15.0, "green")]
@@ -82,38 +84,51 @@ def build() -> tuple[GeoModel, dict]:
         g.bone(f"lamp{j}", pivot=(lx, ly, FRONT), parent=C)
         box(f"lit_{c}", f"lit{j}", (lx - 0.5, ly - 0.5, FRONT - 0.45), (lx + 0.5, ly + 0.5, FRONT), faces=("north", "east", "west", "up", "down"),
             bone=f"lamp{j}")
-    # The reels: built standing about their middles, laid on the plate by their mounts; a back flange, the tape wound
-    # on, a front flange with three windows (painted), the hub.
-    SS.ROUND.clear()
+    # The reels (after the 10.5-inch reels of the 1960s' drives, as the user's picture of one shows them): built standing
+    # about their middles, laid on the plate by their mounts. A back flange; the tape wound on (both reels alike), dark
+    # brown, its edge showing between the flanges; the front flange
+    # a rim and a middle on three spokes, three windows open between them onto the tape; the drive's hub through the
+    # middle, its locking knob in front. Each part one even colour (the overlaps of its planks can show nothing), so
+    # every plank lies on one level.
     for side, (cx, cy) in REELS.items():
         mount, spin = f"reel_{side}_mount", f"reel_{side}"
         g.bone(mount, pivot=(cx, cy, PLATE_Z), parent=C, rotation=(-90.0, 0, 0))
         g.bone(spin, pivot=(cx, cy, PLATE_Z), parent=mount)
-        parts.setdefault(f"flange_{side}", []).extend(SS.ring(g, f"back_{side}", REEL_R, cy, cy + 0.25, cx, PLATE_Z, spin, caps=("up",)))
-        parts.setdefault(f"pack_{side}", []).extend(SS.ring(g, f"pack_{side}", 2.0, cy + 0.25, cy + 0.9, cx, PLATE_Z, spin, caps=("up",)))
-        parts.setdefault(f"front_{side}", []).extend(SS.ring(g, f"front_{side}", REEL_R, cy + 0.9, cy + 1.15, cx, PLATE_Z, spin, caps=("up", "down")))
-        parts.setdefault(f"hub_{side}", []).extend(SS.ring(g, f"hub_{side}", 1.2, cy + 1.1, cy + 1.5, cx, PLATE_Z, spin, caps=("up",)))
+        on = SS.OnBone(g, spin)
+
+        def sec(group: str, name: str, r: float, y0: float, y1: float, side=side, cx=cx, on=on, **kw):
+            parts.setdefault(f"{group}_{side}", []).extend(W.round_section(on, name, r, y0, y1, c=(cx, PLATE_Z), flat=True, **kw))
+        sec("flange", f"back_{side}", REEL_R, cy, cy + 0.25, hi=0.0)
+        sec("pack", f"pack_{side}", PACK[side], cy + 0.15, cy + 0.9, hi=0.0)
+        parts[f"flange_{side}"] += W.round_ring(on, f"rim_{side}", REEL_R - 0.5, REEL_R, cy + 0.9, cy + 1.15, c=(cx, PLATE_Z), step=0.0)
+        sec("flange", f"middle_{side}", 1.3, cy + 0.9, cy + 1.15, hi=0.0)
+        parts[f"flange_{side}"] += BD.spokes(g, f"spoke_{side}", 1.1, REEL_R - 0.4, 0.6, cy + 0.9, cy + 1.15, cx, PLATE_Z, spin,
+                                             count=3, turn=0.0)
+        sec("hub", f"hub_{side}", 0.9, cy + 1.1, cy + 1.5, hi=0.0)
+        sec("hub", f"knob_{side}", 0.5, cy + 1.45, cy + 1.85, hi=0.0)
     return g, parts
 
 
 # --- painting ----------------------------------------------------------------------------------------------------------------
-CABINET = M.painted(CR.GREY_RAMP, tone=0.62, wear=0.1)
+#: The cabinet's paint, smooth: no mottle, grain or dither (its sides sat on the edge between two shades, and they had
+#: dithered into blotches the size of a hand: the user asked for the noise gone).
+CABINET = M.painted(CR.GREY_RAMP, tone=0.62, wear=0.05, mottle=0.0, grain=0.0, dither=0.0, falloff=0.03)
 CAP = M.painted(M.ramp("#1f2b3b", "#283850", "#324766", "#3e577b", "#4c6a92", "#6283ab", "#7f9ec2"), tone=0.5, wear=0.12)
 PLATE = CR.PANEL
-FLANGE = M.painted(M.ramp("#5e646b", "#747b83", "#8a929b", "#a2aab3", "#b8c0c8", "#ccd3da", "#dde3e8"), tone=0.62, wear=0.02)
-TAPE = M.painted(M.ramp("#1c120c", "#271a11", "#342317", "#422d1e", "#523926", "#634630", "#77563c"), tone=0.4, wear=0.0)
+#: The reels' colours, even (no noise): pale grey flanges, the tape's brown oxide, the hub's bright steel; each for the
+#: faces that look out of the reel's front, along its edge, and back into the drive.
+FLANGE = {"up": (196, 202, 207), "side": (164, 170, 176), "down": (128, 133, 138)}
+TAPE = {"up": (74, 50, 34), "side": (58, 39, 27), "down": (44, 30, 21)}
+HUB = {"up": (214, 218, 222), "side": (168, 172, 177), "down": (120, 124, 128)}
 
 
-def windows(f: M.Face, img: np.ndarray, cx: float) -> None:
-    """A reel's front flange: three windows onto the tape wound on it (dark brown), its rim lighter."""
-    if f.d != "up":
-        return
-    dx, dz = f.X - cx, f.Z - PLATE_Z
-    r = np.hypot(dx, dz)
-    a = np.degrees(np.arctan2(dz, dx)) % 120.0
-    win = (r > 1.4) & (r < 2.45) & (np.abs(a - 60.0) < 28.0)
-    img[win, :3] = (52, 36, 24)
-    img[(r >= 2.5), :3] = np.clip(img[(r >= 2.5), :3].astype(np.int32) + 18, 0, 255).astype(np.uint8)
+def fill_reel(g: GeoModel, t: Tex, names, colours: dict) -> None:
+    """A reel's parts in one even colour each way they face (the reel stands built up its axis: up is its front)."""
+    for n in names:
+        b = g.get(n)
+        for d in b.faces:
+            x, y, w, h = g.rect(b, d)
+            t.rect(x, y, w, h, (*colours[d if d in ("up", "down") else "side"], 255))
 
 
 def plate_face(f: M.Face, img: np.ndarray) -> None:
@@ -166,11 +181,10 @@ def paint(g: GeoModel, parts: dict) -> tuple[Tex, Tex]:
     S.paint(t, parts["head"] + parts["guide"], K.BRIGHT)
     for c, mat in (("white", K.WHITE), ("red", K.RED), ("green", CR.GREEN_PAINT)):
         S.paint(t, parts.get(f"button_{c}", []), mat)
-    for side, (cx, cy) in REELS.items():
-        S.paint(t, parts[f"flange_{side}"] + parts[f"front_{side}"], FLANGE)
-        S.overlay(t, parts[f"front_{side}"], lambda f, img, cx=cx: windows(f, img, cx))
-        S.paint(t, parts[f"pack_{side}"], TAPE)
-        S.paint(t, parts[f"hub_{side}"], K.BRIGHT)
+    for side in REELS:
+        fill_reel(g, t, parts[f"flange_{side}"], FLANGE)
+        fill_reel(g, t, parts[f"pack_{side}"], TAPE)
+        fill_reel(g, t, parts[f"hub_{side}"], HUB)
     glow = Tex(g.tex_w, g.tex_h)
     for colour in LAMP_ON:
         for n in parts.get(f"dark_{colour}", []):
