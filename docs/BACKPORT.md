@@ -4,7 +4,10 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `060edbdb` (2026-11-07: round tops as polygons, main's DESIGN.md §4.4: each round part's
+- **Last brought up to:** `main` at `6fe765f5` (2026-11-07: a ladder built into the Bunker Hatch, down its front
+  under the coaming and climbable as a ladder (NeoForge's `isLadder`, this version's as main's), the extinguisher's
+  hose closed, the open Ammo Crates painted as the shut ones, the doors board's shafts laddered; before it, at
+  `060edbdb`: round tops as polygons, main's DESIGN.md §4.4: each round part's
   capped end one flat polygon, painted as any face is; main draws block models' through its own loader
   (`client/render/PolygonModels`, 26.x's model API: left out here) and GeckoLib models' through `PolyGeoModel`; this
   branch bakes the block models' `"groundburst:polygons"` in `FreeRotationModels` beside the elements (`port.py` turns
@@ -73,7 +76,7 @@ code is not ported by hand file by file. `tools/backport/port.py` turns main's s
 
 `tools/backport/compile.ps1` (run with PowerShell 7) compiles and sorts the errors; `errs.py <words>` prints a file's
 errors with their lines. `gradlew runGameTestServer` loads everything on a server and runs **all of main's GameTests**
-(every one: `PortSkips` is empty) beside this branch's own seven (447 at main `060edbdb`). Main's are ported like the
+(every one: `PortSkips` is empty) beside this branch's own seven (448 at main `6fe765f5`). Main's are ported like the
 rest of its code (the gametest package; `port.py`'s rules for 26.x's test helper: `getBlockEntity(pos, Type.class)`,
 `makeMockServerPlayer` as `port/Tests.mockServerPlayer`, a missile's look by number, and a few per-file fixes); how they
 reach the game is this branch's own `gametest/GameTestRegistration` (`manual.txt`): a generator of 1.21.1's test

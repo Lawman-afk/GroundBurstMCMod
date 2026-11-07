@@ -30,6 +30,7 @@ import net.minecraft.world.phys.AABB;
  * by redstone, lays its leaf's blocks in front of its hinges as it opens and takes them away when it has shut, will not
  * swing into a wall, and goes whole (one item back) when any of its blocks is broken. The Bunker Hatch: a signal opens it,
  * its lid standing up out of the floor in a block of its own (clicked, it shuts the hatch) and the way through it clear;
+ * its built-in ladder down its front, climbable open or shut, the way up it past the coaming clear;
  * the Pressure Door: a signal opens both its halves. The props held on or open by a redstone signal (the user's wish);
  * the Bunker Lamp lit by one; the Fire Extinguisher hung on a wall.
  */
@@ -43,6 +44,7 @@ final class ConstructionTests {
         GBGameTests.test("blast_door_follows_redstone", GBGameTests.FLOOR_16, 200, ConstructionTests::blastDoorRedstone);
         GBGameTests.test("blast_door_breaks_whole_for_one_item", GBGameTests.FLOOR_16, 40, ConstructionTests::blastDoorBreaks);
         GBGameTests.test("bunker_hatch_opens_up_out_of_the_floor", GBGameTests.FLOOR_16, 20, ConstructionTests::hatchOpens);
+        GBGameTests.test("bunker_hatch_climbs_as_a_ladder", GBGameTests.FLOOR_16, 20, ConstructionTests::hatchLadder);
         GBGameTests.test("pressure_door_opens_on_a_signal", GBGameTests.FLOOR_16, 20, ConstructionTests::pressureDoorOpens);
         GBGameTests.test("filing_cabinet_holds_27_stacks", GBGameTests.FLOOR_16, 20, ConstructionTests::cabinetHolds);
         GBGameTests.test("tape_computer_stands_two_high", GBGameTests.FLOOR_16, 20, ConstructionTests::tapeTwoHigh);
@@ -473,7 +475,9 @@ final class ConstructionTests {
         helper.setBlock(at, GBConstruction.BUNKER_HATCH.block().get().defaultBlockState().setValue(TrapDoorBlock.FACING, Direction.NORTH)
                 .setValue(TrapDoorBlock.HALF, Half.TOP));
         BlockPos abs = helper.absolutePos(at);
-        helper.assertTrue(level.getBlockState(abs).getCollisionShape(level, abs).bounds().minY > 0.75, "shut, a floor hatch lies at its block's top");
+        var shut = level.getBlockState(abs).getCollisionShape(level, abs).toAabbs();
+        helper.assertTrue(shut.stream().anyMatch(b -> b.contains(0.5, 0.9, 0.5)) && shut.stream().noneMatch(b -> b.contains(0.5, 0.4, 0.5)),
+                "shut, a floor hatch lies at its block's top");
         helper.setBlock(at.east(), Blocks.REDSTONE_BLOCK);
         helper.runAfterDelay(2, () -> {
             BlockState s = level.getBlockState(abs);
@@ -488,6 +492,36 @@ final class ConstructionTests {
             helper.assertTrue(level.getBlockState(abs.above()).isAir(), "and the lid's block goes");
             helper.succeed();
         });
+    }
+
+    /**
+     * Its ladder: down its front wall (facing north, its hinges at the south: the north wall), under the coaming; one in its
+     * block climbs, open or shut, a floor hatch or a ceiling one; one pressed to the ladder passes up through the coaming.
+     */
+    private static void hatchLadder(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = new BlockPos(8, 2, 8);
+        BlockState hatch = GBConstruction.BUNKER_HATCH.block().get().defaultBlockState().setValue(TrapDoorBlock.FACING, Direction.NORTH)
+                .setValue(TrapDoorBlock.HALF, Half.TOP);
+        helper.setBlock(at, hatch);
+        BlockPos abs = helper.absolutePos(at);
+        var stand = helper.spawn(net.minecraft.world.entity.EntityType.ARMOR_STAND, at);
+        helper.assertTrue(stand.blockPosition().equals(abs), "the stand in the hatch's block: " + stand.blockPosition());
+        helper.assertTrue(stand.onClimbable(), "shut, its block climbs");
+        var ladder = new AABB(0.2, 0.0, 0.0, 0.8, 0.8, 0.1);              // the front wall's foot, between the rails' outsides
+        helper.assertTrue(level.getBlockState(abs).getCollisionShape(level, abs).toAabbs().stream().anyMatch(b -> b.intersects(ladder)),
+                "its ladder down the front, under the coaming");
+        for (boolean top : new boolean[] {true, false}) {
+            helper.setBlock(at, hatch.setValue(TrapDoorBlock.OPEN, true).setValue(TrapDoorBlock.HALF, top ? Half.TOP : Half.BOTTOM));
+            BlockState open = level.getBlockState(abs);
+            helper.assertTrue(open.isLadder(level, abs, stand), (top ? "a floor" : "a ceiling") + " hatch open, its block climbs");
+            // One pressed to the ladder (a player's width, from its front back), the block's height: clear of the coaming.
+            var climber = new AABB(0.2, 0.0, 0.125, 0.8, 1.0, 0.725);
+            helper.assertTrue(open.getCollisionShape(level, abs).toAabbs().stream().noneMatch(b -> b.intersects(climber)),
+                    (top ? "a floor" : "a ceiling") + " hatch open: up its ladder, through the coaming");
+        }
+        stand.discard();
+        helper.succeed();
     }
 
     private static void pressureDoorOpens(GameTestHelper helper) {
