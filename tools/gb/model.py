@@ -53,6 +53,13 @@ class Box:
     #: Texels per model pixel (2: twice as fine). A missile in flight is its item model drawn four times over, so its
     #: own flight model is four texels a pixel, as fine as the missiles standing on the launchers (after slice 9b).
     density: int = 1
+    #: A polygon carrier (make_polygon): the flat convex polygons drawn on its one face instead of the face's rectangle,
+    #: each a list of points counter-clockwise seen from outside. The face (no thicker than a plane) is only their
+    #: texture's room, laid out and painted as any face is; the game draws the polygons themselves (a round part's cap,
+    #: a ring's sides: one surface, nothing overlapping in its plane; DESIGN.md §4.4).
+    poly: list[list[Vec3]] | None = None
+    #: A plank of a round part (warheads' round builders): its caps are the part's polygons, never its own faces.
+    round: bool = False
 
     def size(self) -> Vec3:
         return (self.to[0] - self.frm[0], self.to[1] - self.frm[1], self.to[2] - self.frm[2])
@@ -179,7 +186,8 @@ class BlockModel:
     _AXIS = {"west": (0, 0), "east": (0, 1), "down": (1, 0), "up": (1, 1), "north": (2, 0), "south": (2, 1)}
 
     def _solid(self) -> list[Box]:
-        return [b for b in self.boxes if not b.rotation]
+        """The boxes that are solid for the checks: unturned ones, not polygon carriers (planes, which cover nothing)."""
+        return [b for b in self.boxes if not b.rotation and b.poly is None]
 
     @staticmethod
     def _inside(p, boxes, skip, eps: float) -> bool:
@@ -228,9 +236,31 @@ class BlockModel:
     def zfight(self, tol: float = 0.05, eps: float = 0.02, step: float = 0.25) -> list[str]:
         """Faces that flicker: two faces pointing the same way on (or within `tol` of) the same plane, overlapping
         where no third box covers them. Block and item models are back-face culled, so opposite faces never fight.
-        Identical boxes (overlay layers) are skipped. Ignores rotated boxes."""
+        Identical boxes (overlay layers) are skipped. Ignores rotated boxes. A polygon carrier's face counts where its
+        polygons are (poly_contains)."""
         solid = self._solid()
-        faces = [(b, d) for b in solid for d in b.faces if d in self._AXIS]
+        # Turned boxes cover too (a round part's planks: a cap buried in another round part is hidden), tested in their
+        # own unturned frame.
+        turned_boxes = []
+        for c in self.boxes:
+            if c.rotation and c.poly is None and all(c.to[k] - c.frm[k] > 0.3 for k in range(3)):
+                mtx = _element_matrix(c.rotation)
+                inv = [[mtx[j][i] for j in range(3)] for i in range(3)]
+                turned_boxes.append((c, inv, c.rotation.get("origin", (8.0, 8.0, 8.0))))
+
+        def covered(p, skip) -> bool:
+            if self._inside(p, solid, skip, eps):
+                return True
+            for c, inv, o in turned_boxes:
+                if c in skip:
+                    continue
+                q = _mat_vec(inv, (p[0] - o[0], p[1] - o[1], p[2] - o[2]))
+                q = (q[0] + o[0], q[1] + o[1], q[2] + o[2])
+                # (Strictly inside: a cap's own planks end in its plane, and the point is a hair past it.)
+                if all(c.frm[k] < q[k] < c.to[k] for k in range(3)):
+                    return True
+            return False
+        faces = [(b, d) for b in self.boxes if not b.rotation for d in b.faces if d in self._AXIS]
         flat = self.flat_group_of()
         issues = []
         for i in range(len(faces)):
@@ -259,7 +289,8 @@ class BlockModel:
                         p = [0.0, 0.0, 0.0]
                         p[o[0]], p[o[1]] = u, v
                         p[ax] = max(p1, p2) + eps if side else min(p1, p2) - eps
-                        if not self._inside(p, solid, (b1, b2), eps):
+                        drawn = all(c.poly is None or poly_contains(c, p, ax) for c in (b1, b2))
+                        if drawn and not covered(p, (b1, b2)):
                             seen += min(step, hi[0] - lo[0]) * min(step, hi[1] - lo[1])
                         v += step
                     u += step
@@ -371,7 +402,11 @@ class BlockModel:
             raise RuntimeError("call layout() first")
         su, sv = 16.0 / self.tex_w, 16.0 / self.tex_h
         elements = []
+        polygons = []
         for b in self.boxes:
+            if b.poly is not None:
+                polygons += self._polygons_json(b, su, sv)
+                continue
             el: dict = {"name": b.name, "from": [round(v, 5) for v in self.exported(b.frm)],
                         "to": [round(v, 5) for v in self.exported(b.to)]}
             if b.rotation:
@@ -379,7 +414,10 @@ class BlockModel:
                 if "origin" in el["rotation"]:
                     el["rotation"]["origin"] = [round(v, 5) for v in self.exported(el["rotation"]["origin"])]
             if not b.shade:
+                # Unshaded: 1.21.1 and 26.1.2 read "shade", 26.3 only "shade_direction_override" (lit as a face looking
+                # up is: not at all darker). Before, 26.3 shaded every part meant to be unshaded.
                 el["shade"] = False
+                el["shade_direction_override"] = "up"
             if b.__dict__.get("no_ao"):
                 # NeoForge's per-element data: no smooth lighting's corner shade (a round part's cap step's wall, which
                 # it drew as a dark line across the cap; warheads.round_section).
@@ -408,6 +446,8 @@ class BlockModel:
             el["faces"] = faces
             elements.append(el)
         out: dict = {}
+        if polygons:
+            out["loader"] = POLYGON_LOADER
         if self.render_type:
             out["render_type"] = self.render_type
         if not self.ambient_occlusion:
@@ -417,7 +457,40 @@ class BlockModel:
         textures.update(self.extra_textures)
         out["textures"] = textures
         out["elements"] = elements
+        if polygons:
+            out[POLYGON_KEY] = polygons
         out["display"] = self.display
+        return out
+
+    def _polygons_json(self, b: Box, su: float, sv: float) -> list[dict]:
+        """A carrier's polygons as the mod's loader reads them (client/model/PolygonModels): points as the elements' are,
+        each point's UV (0..16 across the texture) where its face's paint has that point, its face's texture, and its
+        box's shading, corner shade, glow and tint."""
+        (d, f), = b.faces.items()
+        out = []
+        turn = _element_matrix(b.rotation) if b.rotation else None
+        origin = (b.rotation or {}).get("origin", (8.0, 8.0, 8.0))
+        for poly in b.poly or []:
+            pts = []
+            for p in poly:
+                if turn is not None:
+                    q = _mat_vec(turn, (p[0] - origin[0], p[1] - origin[1], p[2] - origin[2]))
+                    p = (q[0] + origin[0], q[1] + origin[1], q[2] + origin[2])
+                pts.append([round(v, 5) for v in self.exported(p)])
+            uvs = [poly_uv(b, d, p, self) for p in poly]
+            entry: dict = {"name": b.name, "texture": f"#{f.texture}", "points": pts,
+                           "uv": [[round(u * su, 5), round(v * sv, 5)] for u, v in uvs]}
+            if not b.shade:
+                entry["shade"] = False
+            if f.no_ao:
+                entry["ao"] = False
+            if b.light_emission:
+                entry["light"] = b.light_emission
+            if f.tintindex is not None:
+                entry["tint"] = f.tintindex
+            if f.cullface:
+                entry["cull"] = f.cullface
+            out.append(entry)
         return out
 
     def model_path(self) -> Path:
@@ -493,3 +566,156 @@ def write_json(path: Path, data: dict) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     return path
+
+
+# --- polygons (round parts' caps, rings' sides: DESIGN.md §4.4) -----------------------------------------------------------------
+#: The mod's model loader that draws a model's polygons beside its elements (client/model/PolygonModels), and the key its
+#: polygons are under in the model's JSON.
+POLYGON_LOADER = f"{paths.MODID}:polygons"
+POLYGON_KEY = f"{paths.MODID}:polygons"
+NORMALS = {"north": (0, 0, -1), "south": (0, 0, 1), "east": (1, 0, 0), "west": (-1, 0, 0), "up": (0, 1, 0), "down": (0, -1, 0)}
+
+
+def _element_matrix(rot: dict) -> list[list[float]]:
+    """An element's turn as the game makes it (materials.element_matrix): by an angle about one axis, or (26.x) about x,
+    then y, then z (Rz * Ry * Rx); right-handed."""
+    def axis_m(axis: str, deg: float):
+        c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+        return {"x": [[1, 0, 0], [0, c, -s], [0, s, c]], "y": [[c, 0, s], [0, 1, 0], [-s, 0, c]],
+                "z": [[c, -s, 0], [s, c, 0], [0, 0, 1]]}[axis]
+
+    def mul(a, b):
+        return [[sum(a[i][k] * b[k][j] for k in range(3)) for j in range(3)] for i in range(3)]
+    if "axis" in rot:
+        return axis_m(rot["axis"], rot.get("angle", 0.0))
+    return mul(mul(axis_m("z", rot.get("z", 0.0)), axis_m("y", rot.get("y", 0.0))), axis_m("x", rot.get("x", 0.0)))
+
+
+def turned(axis: str, degrees: float, v) -> tuple[float, float, float]:
+    """A vector turned about {axis} by {degrees} as the game turns an element (right-handed)."""
+    return _mat_vec(_element_matrix({"axis": axis, "angle": degrees}), v)  # type: ignore[return-value]
+
+
+def poly_uv(b: Box, d: str, p, model=None) -> tuple[float, float]:
+    """Where a point of a carrier's face lies in its texture rect (texels, from the texture's corner): the inverse of
+    the painter's mapping (materials.Surfacer.face), so a polygon shows each point's own paint. A carrier whose face
+    shares another face's rect ({model} given) takes that face's paint at the point: as a shared face does."""
+    f = b.faces[d]
+    if f.shared_with is not None and model is not None:
+        src = model.get(f.shared_with[0])
+        return poly_uv(src, f.shared_with[1], p)
+    x, y, w, h = f.rect  # type: ignore[misc]
+    (x0, y0, z0), (x1, y1, z1) = b.frm, b.to
+    sx, sy, sz = x1 - x0, y1 - y0, z1 - z0
+    px, py, pz = p
+    if d == "up":
+        u, v = (px - x0) / sx * w, (pz - z0) / sz * h
+    elif d == "down":
+        u, v = (px - x0) / sx * w, (z1 - pz) / sz * h
+    elif d == "north":
+        u, v = (x1 - px) / sx * w, (y1 - py) / sy * h
+    elif d == "south":
+        u, v = (px - x0) / sx * w, (y1 - py) / sy * h
+    elif d == "east":
+        u, v = (z1 - pz) / sz * w, (y1 - py) / sy * h
+    else:
+        u, v = (pz - z0) / sz * w, (y1 - py) / sy * h
+    return x + u, y + v
+
+
+def poly_contains(b: Box, p, ax: int) -> bool:
+    """Whether point p (on or near a carrier's plane, square to axis {ax}) lies inside one of its polygons."""
+    o = [k for k in range(3) if k != ax]
+    for poly in b.poly or []:
+        inside = False
+        n = len(poly)
+        for i in range(n):
+            a, c = poly[i], poly[(i + 1) % n]
+            ya, yc = a[o[1]], c[o[1]]
+            if (ya > p[o[1]]) != (yc > p[o[1]]):
+                xa, xc = a[o[0]], c[o[0]]
+                if p[o[0]] < xa + (p[o[1]] - ya) * (xc - xa) / (yc - ya):
+                    inside = not inside
+        if inside:
+            return True
+    return False
+
+
+def _outward(poly, d: str) -> list:
+    """The polygon counter-clockwise seen from outside its face {d} (the way the game's quads face)."""
+    nx = ny = nz = 0.0
+    n = len(poly)
+    for i in range(n):
+        a, c = poly[i], poly[(i + 1) % n]
+        nx += (a[1] - c[1]) * (a[2] + c[2])
+        ny += (a[2] - c[2]) * (a[0] + c[0])
+        nz += (a[0] - c[0]) * (a[1] + c[1])
+    want = NORMALS[d]
+    return list(poly) if nx * want[0] + ny * want[1] + nz * want[2] >= 0 else list(reversed(poly))
+
+
+def make_polygon(m, name: str, polygons, d: str, light: int = 0, shade: bool = True) -> Box:
+    """A polygon carrier (Box.poly): convex polygons in one plane facing {d}, drawn as they are, on a face no thicker
+    than a plane that only holds their paint. {m} may be a model or a wrapper that makes its boxes (a GeckoLib model's
+    bone: its box() puts the carrier in the bone)."""
+    pts = [tuple(float(v) for v in p) for poly in polygons for p in poly]
+    lo = tuple(min(p[k] for p in pts) for k in range(3))
+    hi = tuple(max(p[k] for p in pts) for k in range(3))
+    ax = {"east": 0, "west": 0, "up": 1, "down": 1, "south": 2, "north": 2}[d]
+    if hi[ax] - lo[ax] > 1e-4:
+        raise ValueError(f"{name}: polygon points not in one plane square to {d} ({lo[ax]} .. {hi[ax]})")
+    plane = (lo[ax] + hi[ax]) / 2
+    lo = tuple(plane if k == ax else lo[k] for k in range(3))
+    hi = tuple(plane if k == ax else hi[k] for k in range(3))
+    kw = {"light": light} if light else {}
+    if not shade:
+        kw["shade"] = False
+    b = m.box(name, lo, hi, faces=(d,), **kw)
+    if not isinstance(b, Box):                       # (a wrapper's box() may give the name back)
+        owner = getattr(m, "g", None) or getattr(m, "m", None) or m
+        b = owner.get(b if isinstance(b, str) else name)
+    b.poly = [_outward([tuple(float(v) for v in p) for p in poly], d) for poly in polygons]
+    return b
+
+
+def polygons_of(model: dict) -> list[dict]:
+    """A saved model's polygons (the mod's loader's), as its JSON has them."""
+    return list(model.get(POLYGON_KEY, []))
+
+
+def polygon_centre(poly: dict) -> list[float]:
+    pts = poly["points"]
+    return [sum(p[i] for p in pts) / len(pts) for i in range(3)]
+
+
+def moved_polygon(poly: dict, offset) -> dict:
+    """A copy of a saved polygon, its points moved by {offset} (dx, dy, dz) and its cull dropped (moved off its block's
+    side, as a moved element's faces are)."""
+    out = json.loads(json.dumps(poly))
+    out["points"] = [[round(p[i] + offset[i], 5) for i in range(3)] for p in poly["points"]]
+    out.pop("cull", None)
+    return out
+
+
+def with_polygons(model: dict, polys: list[dict]) -> dict:
+    """A saved model's JSON with these polygons and the loader that draws them (or neither, given none): for a script
+    that writes a model's parts out as other models (a two-high block's halves, a table's blocks)."""
+    out = {k: v for k, v in model.items() if k not in ("loader", POLYGON_KEY)}
+    if polys:
+        out = {"loader": POLYGON_LOADER, **out}
+        keys = list(out)
+        at = keys.index("display") if "display" in keys else len(keys)
+        out = {**{k: out[k] for k in keys[:at]}, POLYGON_KEY: polys, **{k: out[k] for k in keys[at:]}}
+    return out
+
+
+def regular(centre, axis: str, n0, sides: int, apothem: float, phase: float = 0.5) -> list[tuple[float, float, float]]:
+    """A regular polygon's corners about point {centre}, square to {axis}: side k faces n0 turned k * 360 / sides about
+    the axis (as the game turns elements), so its corners lie at (k + phase) steps on (phase 0.5: between the sides),
+    apothem / cos(pi / sides) out. n0: the first side's outward direction (a unit vector across the axis)."""
+    R = apothem / math.cos(math.pi / sides)
+    out = []
+    for k in range(sides):
+        v = turned(axis, (k + phase) * 360.0 / sides, n0)
+        out.append((centre[0] + v[0] * R, centre[1] + v[1] * R, centre[2] + v[2] * R))
+    return out

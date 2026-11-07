@@ -55,7 +55,7 @@ def load_model(src: str | Path) -> dict:
     """Loads a model and merges its parent chain (textures, elements, display)."""
     path = Path(src) if isinstance(src, Path) or str(src).endswith(".json") else model_file(str(src))
     data = json.loads(path.read_text(encoding="utf-8"))
-    merged = {"textures": {}, "elements": None, "display": {}, "texture_size": None}
+    merged = {"textures": {}, "elements": None, "display": {}, "texture_size": None, "polygons": []}
     chain = [data]
     while "parent" in chain[-1]:
         parent = chain[-1]["parent"]
@@ -69,6 +69,8 @@ def load_model(src: str | Path) -> dict:
         merged["textures"].update(m.get("textures", {}))
         if m.get("elements") is not None:
             merged["elements"] = m["elements"]
+            # (The mod's polygons go with the elements beside them: client/model/PolygonModels.)
+            merged["polygons"] = m.get("groundburst:polygons", [])
         merged["display"].update(m.get("display", {}))
         if m.get("texture_size"):
             merged["texture_size"] = m["texture_size"]
@@ -201,7 +203,34 @@ def build_quads(model: dict) -> list[Quad]:
                 normal = m @ normal
             uvp = np.array([(u * tw, v * th) for u, v in corners_uv], dtype=float)
             quads.append(Quad(pos, uvp, tex, SHADE[d] if shade_on and not emissive else 1.0, emissive, normal, shade_on and not emissive))
+    for poly in model.get("polygons", []):
+        quads += polygon_quads(model, poly)
     return quads
+
+
+def polygon_quads(model: dict, poly: dict) -> list[Quad]:
+    """A polygon of the mod's loader (client/model/PolygonModels) as the game bakes it: quads fanned from its first point
+    (a three-sided rest a quad with its last corner twice), facing the nearest way to its normal, shaded that way."""
+    tex = _load_tex(resolve_texture(model["textures"], poly.get("texture", "#0")))
+    th, tw = tex.shape[:2]
+    pts = np.array(poly["points"], dtype=float)
+    uvs = np.array([(u / 16.0 * tw, v / 16.0 * th) for u, v in poly["uv"]], dtype=float)
+    n = np.zeros(3)
+    for i in range(len(pts)):
+        a, b = pts[i], pts[(i + 1) % len(pts)]
+        n += ((a[1] - b[1]) * (a[2] + b[2]), (a[2] - b[2]) * (a[0] + b[0]), (a[0] - b[0]) * (a[1] + b[1]))
+    n /= max(1e-9, float(np.linalg.norm(n)))
+    d = max(NORMALS, key=lambda k: float(np.dot(NORMALS[k], n)))
+    shade_on = poly.get("shade", True)
+    emissive = poly.get("light", 0) >= 10
+    out = []
+    k = 1
+    while k + 1 < len(pts):
+        idx = [0, k, k + 1, k + 2] if k + 2 < len(pts) else [0, k, k + 1, k + 1]
+        out.append(Quad(pts[idx], uvs[idx], tex, SHADE[d] if shade_on and not emissive else 1.0, emissive, n.copy(),
+                        shade_on and not emissive))
+        k += 2
+    return out
 
 
 # --- rasteriser ---------------------------------------------------------------------------------------------------------

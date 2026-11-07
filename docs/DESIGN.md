@@ -358,11 +358,45 @@ boxes that read as ziggurats, the cluster family one shape in different colours.
   saved (the mean of their paint) and drawn without smooth lighting's corner shade (NeoForge's per-face
   `neoforge_data`; the shade differs from one face's corners to another's); so where they overlap every one draws the
   same, and nothing can be seen to flicker: tops flat and even, rims true. The flicker checks leave a flat group alone.
-  A top so painted shows no detail of its own (a detail on it is a part of its own). Every round part in the mod is
-  built so (27 scripts, regenerated together). Round parts take 32, 24, 16 or 12 sides as their radius allows
+  A top so painted shows no detail of its own (a detail on it is a part of its own). Every round part in the mod was
+  built so (27 scripts, regenerated together); the same day, polygon caps took their place (below). Round parts take 32, 24, 16 or 12 sides as their radius allows
   (`warheads.round_section` on any axis, `round_sides`: facets of about a pixel), each plank turned no more than 45
   degrees; rings (a handwheel's rim, a chime) are `round_ring`: chord lengths overlapping at their ends. (The levels and
   their walls, `cap_levels` and skirts, stay for a part asked to keep its painted top: `flat=False`.)
+- *Round tops as polygons* (2026-11-07, the user, after the flat tops: "the smooth circle models look great in terms of
+  being 3D, but now they are lacking in texture. Is there no way to get both a good texture and the perfectly smooth
+  circle? Please do heavy research on this."). Researched: only the model format is made of rectangles; the game draws
+  quads with any four corners (26.3's BakedQuad holds four points and their UVs; NeoForge's OBJ loader draws "arbitrary
+  shapes, including triangles and circles"; a custom loader may take the game's own model and add quads to it, NeoForge's
+  docs' way). Painting overlapping planks' caps alike in world space still flickers wherever the paint has detail
+  (each plank's texel grid turned its own way); a round cutout texture has a stepped edge against true sides. So a round
+  part's capped end is one flat polygon, nothing else in its plane, painted as any face is: the planks keep only their
+  sides, and `gb.model.make_polygon` makes a carrier (a box no thicker than a plane, its one face the polygon's texture
+  room, laid out and painted by the material library as any face, its edges the polygon's sides: a rim worn, a side running
+  on into another surface not) whose polygons are written instead of an element, each point's UV where the face's paint
+  has that point (`poly_uv`, the painter's mapping reversed). Block and item models: `"loader": "groundburst:polygons"` and
+  the polygons under `"groundburst:polygons"`, drawn by `client/render/PolygonModels` (the game's own model read as the
+  game reads it, the polygons baked beside its elements as quads fanned from each one's first point, turned with the
+  block state). GeckoLib models: the bone's polygons laid out as Bedrock's poly mesh but under
+  `"groundburst:poly_mesh"` (GeckoLib draws no poly mesh, and reads a `"poly_mesh"` as flat lists of numbers: one of
+  points lost the whole model, 16 machines' in the first try; GeckoMesh, an add-on, flattens poly meshes into cubes the
+  same way): `client/render/PolyGeoModel` adds each bone's to it as one more cube of quads, and every machine's
+  renderer, the variant model and the block items use it. Builders:
+  `warheads.cap` (a section's end), `annulus` (a ring's sides, four-sided pieces in one carrier), `between` (the flat ring
+  between two polygons of different sides: the cannon's floor between its hexagonal pit and round wall). Checks: the
+  flicker checks test a polygon where it is, and count turned boxes as solid (a cap buried in another round part is
+  hidden); the painter (a model painted turned) counts turned boxes as solid too, so a round column casts a round
+  contact shadow on the cap it stands on (it had cast its one unturned plank's square; the Searchlight, the Blast Door
+  and the Tape Computer, painted unturned until then, are painted turned now too, and the Searchlight's column reaches
+  a whole pixel into its foot: its lowest row of texels, half inside the foot, had been shaded from inside it, dark
+  specks on its two unturned planks); `GeoModel.close_floor` gives the
+  parts on a model's floor bottoms (each its own top's paint), only where no bigger bottom is already (a carrier of the
+  uncovered rects otherwise). The preview renderers draw polygons and poly
+  meshes. The 1.21.1 branch bakes the block models' in its own loader (`FreeRotationModels`) and adds the GeckoLib
+  ones to GeckoLib 4's bones (its own `PolyGeoModel`; its BACKPORT.md).
+- *Unshaded parts on 26.3* (found the same day): 26.3 reads an element's `"shade_direction_override"` and no longer
+  `"shade": false`, so every part meant unshaded (the gas clouds, tank glass, lamps' lenses) had been shaded on 26.3; the
+  models now write both (1.21.1 and 26.1.2 read `"shade"`), `"up"` drawing a part as bright as a top.
 - *Noses follow real profiles* a ring at a time, a whole pixel a step: a tangent ogive (the classic nose), a dome, a
   blunt mix, a cone (re-entry vehicles); each ring at least 0.12 px inside the one under it.
 - *No flicker* (until 2026-11-07; now the flat tops above): caps of planks side by side round a section (which meet
@@ -4914,7 +4948,9 @@ as a door: by hand and by redstone.
     so both swing out to the front: the machines' renderer now takes another model, not only another texture, from its
     block entity (`AnimatedMachine.modelVariant`, `VariantGeoModel`).
 - **Bunker Hatch** (`BunkerHatchBlock`, a trapdoor; block models `tools/assets/bunker_hatch.py`): a round lid (planks
-  every 22.5 degrees) with a small handwheel, in a square steel coaming round an octagonal opening; hazard paint on the
+  every 22.5 degrees) with a small handwheel, in a square steel coaming round an octagonal opening (a true octagon, its
+  corners 6.49 px out under the lid's 6.8: its corner fillets each a triangle, top and bottom polygons and a diagonal
+  side; squares turned 45 degrees had left its corners past the lid's edge, the sky showing through from below); hazard paint on the
   coaming, two hinges, a clamp. A trapdoor in all but its open shape and models: shut, a trapdoor's slab (a floor hatch at
   its block's top, a ceiling hatch at its bottom, its wheel down); open, the coaming stays as a thin ring round the hole
   and the lid stands where its hinges swing it, up out of the floor into the block above (a ceiling hatch's hangs down
@@ -4970,7 +5006,8 @@ The second of the four sets (§22.3): a Cold War command post's furniture, each 
   them, a strip of lamps and buttons, panel doors and a louvred grille, a blue cap with vents. Its halves stand or fall
   together as a door's do (the lower drops the item). It runs from when it is placed: its reels read forward, stop,
   rewind, stop and read on in a twelve-second loop, its lamps blink (lit bones in the glowmask, scaled to nothing when
-  dark), its motors whirr now and then; a click stops it (lamps dark, reels still) and starts it again. Three takes of the
+  dark), silent (its motors' whirr taken out at the user's wish, 2026-11-07); a click stops it (lamps dark, reels
+  still) and starts it again. Three takes of the
   loop, begun four and eight seconds apart, are chosen by where each stands, so a row never runs in step.
 - **Situation Map Table** (`MapTableBlock`): a table two blocks by two (one item lays its four blocks, to the placer's
   right and ahead; breaking any takes the whole, one item back), a wooden rim and apron, steel legs, and a map: a coast at
@@ -5005,6 +5042,8 @@ credited (`tools/sound/fittings.py`).
   (it had been clicked off and on: the user asked for redstone).
 - **Fuse Box** (`FuseBoxBlock`): a steel box on a wall, its labelled door latched, its conduit up into the ceiling, a
   breaker's handle at its side. A click throws the breaker: its lamp green, a signal as a lever gives; thrown back, red.
+  A redstone signal holds it on to look at, but not another Fuse Box's (side by side, or back to back through their wall,
+  they held each other on: `Fittings.signalFromOthers`).
 - **Fire Extinguisher** (`FireExtinguisherBlock`): a red cylinder on the floor, or hung on a wall on the usual bracket (a
   steel strip, two straps round it with buckles; put up as a torch is, on the wall clicked, and it falls if the wall
   goes), its hose and horn, a gauge and a label. A
@@ -5628,6 +5667,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-07 | **Round tops as polygons** (§4.4), researched at the user's question ("Is there no way to get both a good texture and the perfectly smooth circle?"): each round part's capped end one flat polygon, painted as any face is, drawn by the mod's model loader (block and item models) and by a GeckoLib model that adds Bedrock's poly meshes (GeckoLib draws none); every round part in the mod rebuilt so, the flat one-colour tops gone. With it: the hatch's opening a true octagon (its corners had reached past the lid: the sky showed through from below) and its open lid's knuckles out of its underside's plane; the drums' chimes no longer overlapping their neighbours'; the open crate's lid clear of the box behind it; the extinguisher's handle closed; the superweapons closed underneath (`close_floor`); a Fuse Box not held on by another's signal; the Tape Computer silent; unshaded parts unshaded on 26.3 too. |
 | 2026-11-07 | **After the user's look round the showroom** (§22.7): flicker, gaps and see-through faces fixed at their causes; round parts on a new builder (`warheads.round_section`, `round_ring`; §4.4) with more sides; and, researched at the user's question, flat round tops in every model of the mod: a round part's overlapping caps on one level, painted one even colour and drawn without the corner shade, so nothing can be seen to flicker (before, planks a hair apart left steps round rims and lines across tops); the hatch's open lid a block of its own (clicked, it shuts the hatch); a constant redstone signal holds the props on or open (the containers, the Searchlight, the Tape Computer; the Pipe Valve and Fuse Box only to look at, their own signal still their switch's), the Bunker Lamp lit by redstone alone; a Rusty Czech Hedgehog beside the painted one; the extinguisher hung on a wall; the locker emptied; the bunk's guard rails and ladder moved; the tape reels as the 1960s' (researched; the user's picture), the cabinet's paint smooth; the lag at the doors measured by a scripted walk and not reproduced. |
 | 2026-11-07 | **The outdoor defences and the yard** (§22.6; the cosmetics' last set, the user: "Yes, carry on" after the bunker fittings' previews): a Jersey Barrier and Dragon's Teeth as hard as Reinforced Concrete (the teeth true truncated pyramids: each face four plates, two turned about three axes to follow its corners), a Czech Hedgehog of three angle irons standing on three ends, a Searchlight two blocks high that sweeps the sky with its beam when switched on (the beam scaled by the sky's darkness), Ammo Crates on a pallet holding 27 stacks (a lid up while open), and steel drums four to a block (oil, fuel, rusty). |
 | 2026-11-07 | **The bunker fittings** (§22.5; the cosmetics' third set, the user: "Yes, carry on" after the command room's previews): Wall Pipes that run on into their neighbours (capped where nothing joins them), a Pipe Valve whose handwheel opens it and gives a signal, a Vent Grille, Ventilation Duct joining on all six sides, a caged Bunker Lamp clicked off and on, a Fuse Box whose breaker gives a signal, a Fire Extinguisher whose burst puts out fire before it, a Steel Locker two blocks high holding 27 stacks (its door open while it is, a helmet, a coat and boots inside), a Bunk Bed two beds high (each bunk a bed of its own: two sleep in it). |

@@ -294,7 +294,8 @@ def build_tower(g: GeoModel, p: SS.Parts) -> None:
 def build_house(g: GeoModel, p: SS.Parts) -> None:
     """The octagonal control house: a fieldstone footing, cream walls, a conical roof of brown tiles, two antenna masts."""
     cx, cz = HOUSE
-    p.add("stone_round", ring(g, "house_foot", 21.5, 0, 8, cx, cz, sides=8, stagger="full", caps=("up",)))
+    # (Its bottom capped: seen from below, as the silo is from its shaft, it showed through; GeoModel.close_floor.)
+    p.add("stone_round", ring(g, "house_foot", 21.5, 0, 8, cx, cz, sides=8, stagger="full", caps=("up", "down")))
     p.add("house", ring(g, "house", 20.0, 6, 30, cx, cz, sides=8, stagger="full", caps=()))
     # The roof's eave (a broad ring over the walls), then the cone a pixel at a time from a real profile.
     p.add("roof", ring(g, "house_eave", 22.5, 29, 30.5, cx, cz, sides=8, stagger="full", caps=("up", "down")))
@@ -602,6 +603,7 @@ def ammo() -> None:
 
 def main() -> None:
     g, p = build()
+    g.close_floor()            # closed underneath: seen from below it showed through (after the user's look)
     g.layout()
     tex, glow = paint_model(g, p)
     g.save(tex, glow)

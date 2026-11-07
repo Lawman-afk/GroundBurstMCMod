@@ -30,6 +30,8 @@ DROP = [re.compile(p) for p in (
     r"src/main/java/dev/groundburst/datagen/.*",
     r"src/main/java/dev/groundburst/client/fx/(FxPhotographer|SitePhotographer|HealPhotographer|BlastBenchClient|WorldSurveyClient|DevWorlds|Showroom|ShowroomWalk)\.java",
     r"src/main/java/dev/groundburst/client/manual/ManualPhotographer\.java",
+    # Main's model loader for polygons (26.x's model API): this branch's FreeRotationModels bakes them.
+    r"src/main/java/dev/groundburst/client/render/PolygonModels\.java",
     r"src/main/java/dev/groundburst/blast/BlastBench\.java",
     r"src/main/java/dev/groundburst/world/structure/WorldSurvey\.java",
     r"src/main/resources/data/groundburst/structure/test/.*",          # the GameTests' structures
@@ -74,6 +76,8 @@ def sub(pattern: str, repl, flags: int = 0):
 DROP_LINES = [re.compile(p) for p in (
     r"^\s*dev\.groundburst\.client\.fx\.(FxPhotographer|BlastBenchClient|WorldSurveyClient|SitePhotographer|HealPhotographer|Showroom)\.register\(\);\s*$",
     r"^\s*ManualPhotographer\.register\(\);\s*$",
+    r"^\s*dev\.groundburst\.client\.render\.PolygonModels\.register\(modBus\);\s*$",
+    r"^\s*// Models with flat polygons beside their elements: round parts' caps, rings' sides \(DESIGN\.md §4\.4\)\.\s*$",
     r"^\s*BlastBench\.register\(\);\s*$",
     r"^\s*WorldSurvey\.register\(\);\s*$",
     r"^\s*GBDataGen\.register\(modBus\);\s*$",
@@ -1251,6 +1255,12 @@ def port_model(data: bytes) -> bytes:
     if isinstance(m.get("parent"), str) and m["parent"].startswith("minecraft:block/template_bars_"):
         m["parent"] = m["parent"].replace("minecraft:block/template_bars_", "minecraft:block/iron_bars_")
         data = (json.dumps(m, indent=2) + "\n").encode("utf-8")
+    if m.get("loader") == "groundburst:polygons":
+        # Main's polygons, drawn there by its own loader (client/render/PolygonModels): this branch's bakes them beside
+        # the elements (dev.groundburst.port.render.FreeRotationModels).
+        m["loader"] = "groundburst:free_rotation"
+        m["groundburst:elements"] = m.pop("elements", [])
+        return (json.dumps(m, indent=2) + "\n").encode("utf-8")
     elements = m.get("elements")
     if not isinstance(elements, list) or "loader" in m:
         return data

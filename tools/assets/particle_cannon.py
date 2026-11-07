@@ -34,7 +34,7 @@ from gb import palette as P  # noqa: E402
 from gb import panels as PN  # noqa: E402
 from gb import paths  # noqa: E402
 from gb.geo import Animation, GeoModel, rest_pose, save_animations  # noqa: E402
-from gb.model import write_json  # noqa: E402
+from gb.model import make_polygon, regular, write_json  # noqa: E402
 from gb.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
 import multiblock_tools as MT  # noqa: E402
@@ -133,20 +133,26 @@ def facets(g: GeoModel, name: str, a_in: float, a_out: float, y0: float, y1: flo
     a panel's outside, south its inside."""
     half = a_out * math.tan(math.pi / SIDES16)
     names = []
+    caps = tuple(d for d in ("up", "down") if d in faces)
+    own = tuple(d for d in faces if not (W.POLY and d in caps))
     for k in range(SIDES16):
         n = f"{name}{k}"
         rot = {"origin": (RX, y0, RZ), "axis": "y", "angle": -k * 360.0 / SIDES16} if k else None
-        dip = 0.0 if W.FLAT else sink * (k % 2)
+        dip = 0.0 if (W.POLY or W.FLAT) else sink * (k % 2)
         lift = dip if "down" in faces else 0.0
-        g.box(n, (RX - half, y0 + lift, RZ - a_out), (RX + half, y1 - dip, RZ - a_in), faces=faces, rotation=rot, bone=bone)
+        W.mark_round(g, g.box(n, (RX - half, y0 + lift, RZ - a_out), (RX + half, y1 - dip, RZ - a_in), faces=own, rotation=rot, bone=bone))
         for d in ALL:
-            if d not in faces:
+            if d not in own:
                 g.open_ok.add((n, d))
-        if W.FLAT:
-            for d in ("up", "down"):
-                if d in faces:
-                    g.flat(f"{name}:{d}", n, d)
+        if W.FLAT and not W.POLY:
+            for d in caps:
+                g.flat(f"{name}:{d}", n, d)
         names.append(n)
+    if W.POLY:
+        # The panels' caps one ring each way (warheads.annulus), the first panel's outside facing north.
+        for d in caps:
+            names.append(W.annulus(SS.OnBone(g, bone), f"{name}_{d}", "y", (RX, RZ), a_in, a_out, SIDES16,
+                                   y1 if d == "up" else y0, d, (0.0, 0.0, -1.0)))
     return names
 
 
@@ -157,19 +163,24 @@ def prism(g: GeoModel, name: str, a: float, y0: float, y1: float, cx: float, cz:
     so no two of its caps shared a plane where nothing covers its middle: a ball's top, a hexagon's)."""
     s = a * math.tan(math.pi / sides)
     names = []
-    faces = ("north", "south") + tuple(caps)
+    faces = ("north", "south") + (() if W.POLY else tuple(caps))
     for k in range(sides // 2):
         n = f"{name}_{k}"
-        sink = 0.0 if W.FLAT else step * k
+        sink = 0.0 if (W.POLY or W.FLAT) else step * k
         rot = {"origin": (cx, y0, cz), "axis": "y", "angle": -360.0 / sides * k} if k else None
-        g.box(n, (cx - s, y0 - sink, cz - a), (cx + s, y1 - sink, cz + a), faces=faces, rotation=rot, bone=bone)
+        W.mark_round(g, g.box(n, (cx - s, y0 - sink, cz - a), (cx + s, y1 - sink, cz + a), faces=faces, rotation=rot, bone=bone))
         for d in ALL:
             if d not in faces:
                 g.open_ok.add((n, d))
-        if W.FLAT:
+        if W.FLAT and not W.POLY:
             for d in caps:
                 g.flat(f"{name}:{d}", n, d)
         names.append(n)
+    if W.POLY:
+        # Its caps one polygon each, its first plank's ends facing north and south.
+        for d in caps:
+            pts = regular((cx, y1 if d == "up" else y0, cz), "y", (0.0, 0.0, -1.0), sides, a)
+            names.append(make_polygon(SS.OnBone(g, bone), f"{name}_{d}", [pts], d).name)
     return names
 
 
@@ -237,15 +248,23 @@ def build_drum(g: GeoModel, p: SS.Parts) -> None:
     for k in range(6):
         n = f"floor{k}"
         rot = {"origin": (RX, PIT_FLOOR, RZ), "axis": "y", "angle": -60.0 * k} if k else None
-        g.box(n, (RX - 30, PIT_FLOOR, RZ - 62), (RX + 30, FLOOR_TOP - (0.0 if W.FLAT else 0.15 * (k % 2)), RZ - PIT_A), faces=("up", "south"),
-              rotation=rot, bone=F)
-        for d in ("north", "east", "west", "down"):
+        flat_top = W.POLY or W.FLAT
+        g.box(n, (RX - 30, PIT_FLOOR, RZ - 62), (RX + 30, FLOOR_TOP - (0.0 if flat_top else 0.15 * (k % 2)), RZ - PIT_A),
+              faces=("south",) if W.POLY else ("up", "south"), rotation=rot, bone=F)
+        for d in ("north", "east", "west", "down") + (("up",) if W.POLY else ()):
             g.open_ok.add((n, d))
-        if W.FLAT:
+        if W.FLAT and not W.POLY:
             g.flat("floor:up", n, "up")
         p.add("floor", n)
-    g.box("pit_floor", (RX - PIT_R, 2, RZ - 32), (RX + PIT_R, PIT_FLOOR, RZ + 32), faces=("up",), bone=F)
-    for d in ("north", "south", "east", "west", "down"):
+    if W.POLY:
+        # Its top one surface from the pit's hexagonal edge to the wall's inside (warheads.between).
+        p.add("floor", W.between(SS.OnBone(g, F), "floor_up", "y", (RX, RZ), FLOOR_TOP, "up",
+                                 (6, PIT_A, (0.0, 0.0, -1.0)), (SIDES16, WALL_IN, (0.0, 0.0, -1.0))))
+    # The pit's floor closed underneath too, painted as its top (the deck has a hole under it: seen from below, the
+    # drum showed through; after the user's look).
+    pit = g.box("pit_floor", (RX - PIT_R, 2, RZ - 32), (RX + PIT_R, PIT_FLOOR, RZ + 32), faces=("up", "down"), bone=F)
+    g.share(pit, "down", pit, "up")
+    for d in ("north", "south", "east", "west"):
         g.open_ok.add(("pit_floor", d))
 
 
@@ -959,6 +978,7 @@ def spawner_plan(t: Tex) -> None:
 
 def main() -> None:
     g, p = build()
+    g.close_floor()            # closed underneath: seen from below it showed through (after the user's look)
     g.layout()
     tex, glow = paint_model(g, p)
     g.save(tex, glow)

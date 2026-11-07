@@ -301,7 +301,9 @@ DRUMS = {
 
 
 #: The chime round a drum's top (its inside, its outside proud of the drum, its foot, its top) and the lid sunk inside it.
-CHIME = (DRUM_R - 0.6, DRUM_R + 0.1, DRUM_H - 0.55, DRUM_H + 0.2)
+#: Its outside 0.04 proud (neighbours stand 7.8 apart: chimes 0.1 proud overlapped in their tops' plane and flickered),
+#: standing on the drum's sides' top (reaching down over them, its sides would lie a hair off theirs).
+CHIME = (DRUM_R - 0.6, DRUM_R + 0.04, DRUM_H - 0.2, DRUM_H + 0.2)
 LID_R, LID_TOP = DRUM_R - 0.5, DRUM_H - 0.3
 
 
@@ -367,7 +369,7 @@ PALLET_WOOD = M.wood(tone=0.6)
 #: top two (the front one) has a lid of its own, which stands open while the crates are.
 CRATES = [(1.0, 1.0, 15.0, 5.4, 2.3, 5.7), (1.0, 5.8, 15.0, 10.2, 2.3, 5.7), (1.0, 10.6, 15.0, 15.0, 2.3, 5.7),
           (1.0, 1.0, 5.4, 15.0, 5.7, 9.1), (5.8, 1.0, 10.2, 15.0, 5.7, 9.1), (10.6, 1.0, 15.0, 15.0, 5.7, 9.1),
-          (1.5, 8.2, 14.5, 12.6, 9.1, 12.5), (1.5, 3.4, 14.5, 7.8, 9.1, 12.5)]
+          (1.5, 8.7, 14.5, 13.1, 9.1, 12.5), (1.5, 3.4, 14.5, 7.8, 9.1, 12.5)]
 LID = 0.6
 
 

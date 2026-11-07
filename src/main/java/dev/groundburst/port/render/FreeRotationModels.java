@@ -16,6 +16,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
+import com.mojang.math.Transformation;
+
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
@@ -38,6 +41,7 @@ import net.neoforged.neoforge.client.model.IModelBuilder;
 import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
 import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
 import net.neoforged.neoforge.client.model.geometry.SimpleUnbakedGeometry;
+import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 import net.neoforged.neoforge.client.model.geometry.UnbakedGeometryHelper;
 
 /**
@@ -46,7 +50,9 @@ import net.neoforged.neoforge.client.model.geometry.UnbakedGeometryHelper;
  * about all three axes at once ({@code "x"}, {@code "y"}, {@code "z"}: about x, then y, then z), which 1.21.1's baker
  * cannot. tools/backport/port.py moves such a model's parts to {@code groundburst:elements} and names this loader: a part
  * turned about one axis is baked as 1.21.1 bakes any; one turned about three is baked unturned and its faces' corners
- * then turned (about its origin, then by the block state's turn), their facing and normals worked out again.
+ * then turned (about its origin, then by the block state's turn), their facing and normals worked out again. Main's
+ * polygons ({@code "groundburst:polygons"}, which main's own loader, client/render/PolygonModels, draws there: a round
+ * part's caps) are baked here too, as main bakes them: quads fanned from each one's first point.
  */
 public final class FreeRotationModels {
     public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("groundburst", "free_rotation");
@@ -60,6 +66,9 @@ public final class FreeRotationModels {
     /** A part turned about all three axes: its turn (block units, about its origin). */
     private record Turn(Vector3f origin, Matrix4f matrix) {}
 
+    /** One of main's polygons: its points (block pixels), each point's UV (0..16), and how it is drawn. */
+    private record Polygon(String texture, float[][] points, float[][] uvs, boolean shade, boolean ao, int light, int tint, Direction cull) {}
+
     private static final class Loader implements IGeometryLoader<Elements> {
         static final Loader INSTANCE = new Loader();
 
@@ -70,7 +79,32 @@ public final class FreeRotationModels {
             for (JsonElement e : GsonHelper.getAsJsonArray(json, "groundburst:elements")) {
                 element(e.getAsJsonObject(), context, elements, turns);
             }
-            return new Elements(elements, turns);
+            List<Polygon> polygons = new ArrayList<>();
+            if (json.has("groundburst:polygons")) {
+                for (JsonElement e : GsonHelper.getAsJsonArray(json, "groundburst:polygons")) {
+                    polygons.add(polygon(e.getAsJsonObject()));
+                }
+            }
+            return new Elements(elements, turns, polygons);
+        }
+
+        private static Polygon polygon(JsonObject o) {
+            var points = GsonHelper.getAsJsonArray(o, "points");
+            var uv = GsonHelper.getAsJsonArray(o, "uv");
+            if (points.size() < 3 || uv.size() != points.size()) {
+                throw new JsonParseException("A polygon needs three points or more, and a UV for each");
+            }
+            float[][] p = new float[points.size()][];
+            float[][] t = new float[points.size()][];
+            for (int i = 0; i < p.length; i++) {
+                var a = points.get(i).getAsJsonArray();
+                p[i] = new float[] {a.get(0).getAsFloat(), a.get(1).getAsFloat(), a.get(2).getAsFloat()};
+                var b = uv.get(i).getAsJsonArray();
+                t[i] = new float[] {b.get(0).getAsFloat(), b.get(1).getAsFloat()};
+            }
+            Direction cull = o.has("cull") ? Direction.byName(GsonHelper.getAsString(o, "cull")) : null;
+            return new Polygon(GsonHelper.getAsString(o, "texture", "#0"), p, t, GsonHelper.getAsBoolean(o, "shade", true),
+                    GsonHelper.getAsBoolean(o, "ao", true), GsonHelper.getAsInt(o, "light", 0), GsonHelper.getAsInt(o, "tint", -1), cull);
         }
     }
 
@@ -78,10 +112,12 @@ public final class FreeRotationModels {
     private static final class Elements extends SimpleUnbakedGeometry<Elements> {
         private final List<BlockElement> elements;
         private final Map<BlockElement, Turn> turns;
+        private final List<Polygon> polygons;
 
-        Elements(List<BlockElement> elements, Map<BlockElement, Turn> turns) {
+        Elements(List<BlockElement> elements, Map<BlockElement, Turn> turns, List<Polygon> polygons) {
             this.elements = elements;
             this.turns = turns;
+            this.polygons = polygons;
         }
 
         @Override
@@ -105,6 +141,56 @@ public final class FreeRotationModels {
                         builder.addCulledFace(state.getRotation().rotateTransform(face.cullForDirection()), quad);
                     }
                 }
+            }
+            for (Polygon p : this.polygons) {
+                polygon(p, sprites.apply(context.getMaterial(p.texture())), state, builder);
+            }
+        }
+    }
+
+    /** A polygon's quads: its points turned with the model (about the block's middle), fanned from its first. */
+    private static void polygon(Polygon p, TextureAtlasSprite sprite, ModelState state, IModelBuilder<?> builder) {
+        Transformation transform = state.getRotation();
+        boolean turned = !transform.isIdentity();
+        Transformation fromCorner = turned ? transform.blockCenterToCorner() : transform;
+        int n = p.points().length;
+        Vector3f[] at = new Vector3f[n];
+        for (int i = 0; i < n; i++) {
+            Vector4f v = new Vector4f(p.points()[i][0] / 16f, p.points()[i][1] / 16f, p.points()[i][2] / 16f, 1f);
+            if (turned) {
+                fromCorner.transformPosition(v);
+            }
+            at[i] = new Vector3f(v.x, v.y, v.z);
+        }
+        Vector3f normal = new Vector3f();
+        for (int i = 0; i < n; i++) {
+            Vector3f a = at[i], b = at[(i + 1) % n];
+            normal.add((a.y - b.y) * (a.z + b.z), (a.z - b.z) * (a.x + b.x), (a.x - b.x) * (a.y + b.y));
+        }
+        normal.normalize();
+        Direction facing = Direction.getNearest(normal.x, normal.y, normal.z);
+        Direction cull = p.cull() == null ? null : transform.rotateTransform(p.cull());
+        int light = p.light() > 0 ? LightTexture.pack(p.light(), p.light()) : 0;
+        for (int k = 1; k + 1 < n; k += 2) {
+            int[] corners = k + 2 < n ? new int[] {0, k, k + 1, k + 2} : new int[] {0, k, k + 1, k + 1};
+            QuadBakingVertexConsumer quad = new QuadBakingVertexConsumer();
+            quad.setSprite(sprite);
+            quad.setTintIndex(p.tint());
+            quad.setShade(p.shade());
+            quad.setHasAmbientOcclusion(p.ao());
+            quad.setDirection(facing);
+            for (int i : corners) {
+                quad.addVertex(at[i].x, at[i].y, at[i].z);
+                quad.setColor(255, 255, 255, 255);
+                quad.setUv(sprite.getU(p.uvs()[i][0] / 16f), sprite.getV(p.uvs()[i][1] / 16f));
+                quad.setLight(light);
+                quad.setNormal(normal.x, normal.y, normal.z);
+            }
+            BakedQuad baked = quad.bakeQuad();
+            if (cull == null) {
+                builder.addUnculledFace(baked);
+            } else {
+                builder.addCulledFace(cull, baked);
             }
         }
     }

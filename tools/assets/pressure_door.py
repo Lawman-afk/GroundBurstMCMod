@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gb import machine_kit as K  # noqa: E402
 from gb import materials as M  # noqa: E402
 from gb import paths  # noqa: E402
-from gb.model import BlockModel, write_json  # noqa: E402
+from gb.model import BlockModel, moved_polygon, polygon_centre, polygons_of, with_polygons, write_json  # noqa: E402
 from gb.tex import Tex  # noqa: E402
 import blast_door as BD  # noqa: E402
 import warheads as W  # noqa: E402
@@ -118,7 +118,9 @@ def split(name: str, side: str) -> None:
                     el["rotation"]["origin"][1] -= 16
             els.append(el)
         out["elements"] = els
-        write_json(paths.MODELS / "block" / f"{NAME}_{half}_{side}.json", out)
+        polys = [moved_polygon(p, (0, -16 if half == "top" else 0, 0)) for p in polygons_of(whole)
+                 if (min(q[1] for q in p["points"]) >= 16 - 1e-6) == (half == "top")]
+        write_json(paths.MODELS / "block" / f"{NAME}_{half}_{side}.json", with_polygons(out, polys))
     path.unlink()
 
 

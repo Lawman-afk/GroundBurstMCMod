@@ -842,6 +842,7 @@ def residue() -> None:
 def main() -> None:
     residue()
     g, p = build()
+    g.close_floor()            # closed underneath: seen from below it showed through (after the user's look)
     g.layout()
     tex, glow = paint_model(g, p)
     g.save(tex, glow)

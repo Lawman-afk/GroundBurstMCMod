@@ -36,7 +36,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gb import machine_kit as K  # noqa: E402
 from gb import materials as M  # noqa: E402
 from gb import paths  # noqa: E402
-from gb.model import BlockModel, write_json  # noqa: E402
+from gb.model import BlockModel, moved_polygon, polygon_centre, polygons_of, with_polygons, write_json  # noqa: E402
 from gb.tex import Tex  # noqa: E402
 import blast_door as BD  # noqa: E402
 import bunker_hatch as BH  # noqa: E402
@@ -456,7 +456,7 @@ def extinguisher(wall: bool) -> None:
     parts["shoulder"] = W.round_section(m, "shoulder", 1.45, dy + 9.0, dy + 9.8, c=c, hi=0.8, root=0.3)
     box("head", "head", (7.2, 9.8, 7.2), (8.8, 11.4, 8.8))
     box("head", "lever", (7.5, 11.4, 5.4), (8.5, 11.9, 9.2))
-    box("head", "carry", (7.5, 10.6, 5.6), (8.5, 11.0, 7.2), faces=("north", "east", "west", "up", "down"))
+    box("head", "carry", (7.5, 10.6, 5.6), (8.5, 11.4, 7.2), faces=("north", "east", "west", "down"))   # up to the lever
     parts["gauge"] = W.round_section(m, "gauge", 0.65, dz + 6.8, dz + 7.4, axis="z", c=(8.0, dy + 10.6), lo=0.0, toward="lo")
     box("hose", "hose_top", (8.8, 9.9, 7.7), (10.6, 10.5, 8.3), faces=("north", "south", "east", "up", "down"))
     box("hose", "hose", (10.0, 4.2, 7.6), (10.6, 9.9, 8.4), faces=("north", "south", "east", "west"))
@@ -540,10 +540,14 @@ def split_cells(name: str, cells: dict[str, tuple[float, float, float]], which) 
             if "rotation" in el and "origin" in el["rotation"]:
                 el["rotation"]["origin"][i] -= d
         out[cell].append(el)
+    polys = {cell: [] for cell in cells}
+    for p in polygons_of(whole):
+        cell = which(polygon_centre(p))
+        polys[cell].append(moved_polygon(p, tuple(-v for v in cells[cell])))
     for cell, els in out.items():
         model = {k: v for k, v in whole.items() if k not in ("elements", "display")}
         model["elements"] = els
-        write_json(paths.MODELS / "block" / f"{cell}.json", model)
+        write_json(paths.MODELS / "block" / f"{cell}.json", with_polygons(model, polys[cell]))
     path.unlink()
 
 

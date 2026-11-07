@@ -7,7 +7,6 @@ import dev.groundburst.GroundBurst;
 import dev.groundburst.content.machine.AnimatedMachine;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.model.DefaultedBlockGeoModel;
 
 /**
  * A block model whose texture its block entity may choose ({@code AnimatedMachine.textureVariant}: the Warning Beacon's
@@ -15,7 +14,7 @@ import software.bernie.geckolib.model.DefaultedBlockGeoModel;
  * the mirrored Blast Door); its own model and texture otherwise (and in its item). The 1.21.1 backport's, for GeckoLib 4:
  * asked of the block entity itself as it is drawn.
  */
-public class VariantGeoModel<T extends GeoAnimatable> extends DefaultedBlockGeoModel<T> {
+public class VariantGeoModel<T extends GeoAnimatable> extends PolyGeoModel<T> {
     /** Each other model's geometry and texture, by name. */
     private final Map<String, ResourceLocation[]> others = new ConcurrentHashMap<>();
 

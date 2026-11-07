@@ -37,7 +37,6 @@ import net.minecraft.world.phys.AABB;
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.model.DefaultedBlockGeoModel;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoBlockRenderer;
 import software.bernie.geckolib.renderer.GeoRenderer;
@@ -76,7 +75,8 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
     /** {@code depth}: how many blocks the model reaches down below its controller (the Missile Silo's shaft). */
     public MachineGeoRenderer(BlockEntityRendererProvider.Context context, BlockEntityType<? extends T> type, int height, int reach, int depth) {
-        super(new DefaultedBlockGeoModel<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type)));
+        // (As GeckoLib's own model, but one that draws the bones' poly meshes too: PolyGeoModel.)
+        super(new PolyGeoModel<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type)));
         this.height = height;
         this.reach = reach;
         this.depth = depth;

@@ -4,7 +4,14 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `2e61cc60` (2026-11-07: after the user's look round the showroom, main's DESIGN.md
+- **Last brought up to:** `main` at `060edbdb` (2026-11-07: round tops as polygons, main's DESIGN.md §4.4: each round part's
+  capped end one flat polygon, painted as any face is; main draws block models' through its own loader
+  (`client/render/PolygonModels`, 26.x's model API: left out here) and GeckoLib models' through `PolyGeoModel`; this
+  branch bakes the block models' `"groundburst:polygons"` in `FreeRotationModels` beside the elements (`port.py` turns
+  main's `"loader": "groundburst:polygons"` into this branch's), and its own `PolyGeoModel` (`manual.txt`; GeckoLib 4:
+  added to the bones' own cube lists) adds each bone's `"groundburst:poly_mesh"`; with them the user's second look's
+  fixes (the hatch's octagon, the drums' chimes, the crate, the extinguisher, the superweapons' bottoms, the fuse boxes,
+  the silent tape drive); before it, at `2e61cc60` (after the user's look round the showroom, main's DESIGN.md
   §22.7: flat round tops in every model (a round part's overlapping caps on one level, one even colour, no corner shade:
   the per-face `neoforge_data` that NeoForge 21.1 reads too, kept by `FreeRotationModels`, which bakes each face with
   vanilla's own face baker), the cosmetic models' fixes, the hatch's lid block, redstone holding the props open, the
@@ -66,7 +73,7 @@ code is not ported by hand file by file. `tools/backport/port.py` turns main's s
 
 `tools/backport/compile.ps1` (run with PowerShell 7) compiles and sorts the errors; `errs.py <words>` prints a file's
 errors with their lines. `gradlew runGameTestServer` loads everything on a server and runs **all of main's GameTests**
-(439 at main 09ad4608, every one: `PortSkips` is empty) beside this branch's own seven (446). Main's are ported like the
+(every one: `PortSkips` is empty) beside this branch's own seven (447 at main `060edbdb`). Main's are ported like the
 rest of its code (the gametest package; `port.py`'s rules for 26.x's test helper: `getBlockEntity(pos, Type.class)`,
 `makeMockServerPlayer` as `port/Tests.mockServerPlayer`, a missile's look by number, and a few per-file fixes); how they
 reach the game is this branch's own `gametest/GameTestRegistration` (`manual.txt`): a generator of 1.21.1's test

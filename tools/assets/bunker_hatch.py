@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gb import machine_kit as K  # noqa: E402
 from gb import materials as M  # noqa: E402
 from gb import paths  # noqa: E402
-from gb.model import BlockModel, write_json  # noqa: E402
+from gb.model import BlockModel, make_polygon, write_json  # noqa: E402
 from gb.tex import Tex  # noqa: E402
 import blast_door as BD  # noqa: E402
 import warheads as W  # noqa: E402
@@ -71,13 +71,25 @@ def frame(m: BlockModel, parts: dict) -> None:
     m.box("coam_w", (0, y0, a), (a, y1, b), faces=("west", "east", "up", "down"), cull={"west": "west"})
     m.box("coam_e", (b, y0, a), (16, y1, b), faces=("west", "east", "up", "down"), cull={"east": "east"})
     parts["coaming"] = ["coam_n", "coam_s", "coam_w", "coam_e"]
-    # Fillets: a square turned 45 degrees on each inner corner, its inner edge 6 px from the middle (a regular octagon);
-    # sunk a tenth under the plates' faces, which hide its other half.
-    side = (OPENING * math.sqrt(2) - OPENING) * math.sqrt(2)
-    for k, (cx, cz) in enumerate(((a, a), (b, a), (a, b), (b, b))):
-        n = f"fillet{k}"
-        m.box(n, (cx - side / 2, y0 + 0.1, cz - side / 2), (cx + side / 2, y1 - 0.1, cz + side / 2), faces=("north", "south", "east", "west", "up", "down"),
-              rotation={"origin": (cx, y0, cz), "axis": "y", "angle": 45.0})
+    # Fillets: each inner corner filled to a regular octagon's side, 6 px from the middle like the plates' edges, so the
+    # opening is a true octagon (its corners 6.49 px out) the lid (6.8) covers all round. Each a triangle on top and under
+    # (polygons, level with the plates: no face in their planes but its own) and its diagonal side, a face turned 45
+    # degrees. (A square turned 45 degrees on each corner, as before, left the opening's corners 6.95 px out: past the
+    # lid, the sky showed through them from below; the user saw it.)
+    h = 2 * OPENING - OPENING * math.sqrt(2)                 # how far each triangle runs along the plates' edges
+    L = h * math.sqrt(2)                                      # its diagonal side's length
+    q = OPENING / math.sqrt(2)                                # the diagonal side's middle, from the opening's middle
+    for k, (cx, cz, sx, sz) in enumerate(((a, a, 1, 1), (b, a, -1, 1), (a, b, 1, -1), (b, b, -1, -1))):
+        tri = [(cx, 0.0, cz), (cx + sx * h, 0.0, cz), (cx, 0.0, cz + sz * h)]
+        for d, y in (("up", y1), ("down", y0)):
+            n = make_polygon(m, f"fillet{k}_{d}", [[(p[0], y, p[2]) for p in tri]], d).name
+            parts["coaming"].append(n)
+        # The diagonal side: a face a plane thin, its middle where the side's is, turned to face the opening's middle
+        # (south turned 45 degrees faces +x+z; north turned -45 faces +x-z, ...).
+        mx, mz = 8 - sx * q, 8 - sz * q
+        face, angle = {(1, 1): ("south", 45.0), (-1, 1): ("south", -45.0), (1, -1): ("north", -45.0), (-1, -1): ("north", 45.0)}[(sx, sz)]
+        n = f"fillet{k}_side"
+        m.box(n, (mx - L / 2, y0, mz), (mx + L / 2, y1, mz), faces=(face,), rotation={"origin": (mx, y0, mz), "axis": "y", "angle": angle})
         parts["coaming"].append(n)
     # The frame's knuckles on the coaming's south plate, a pin through each pair.
     for j, (x0, x1) in enumerate(FRAME_KNUCKLES):
@@ -105,7 +117,7 @@ def lid(m: BlockModel, parts: dict, lips: dict) -> None:
     # dogs' hub under it covers theirs); the rubber seal round its underside where it shuts on the coaming.
     sec("lid", "lid", LID_R, *LID, top=True, bottom=True, lo=UNDER_HUB, hi=2.2)
     sec("under", "under_hub", UNDER_HUB, LID[0] - 0.45, LID[0] + 0.1, top=False, bottom=True, lo=0.0, toward="lo")
-    parts["seal"] = W.round_ring(m, "seal", 5.6, 6.4, LID[0] - 0.2, LID[0])
+    parts["seal"] = W.round_ring(m, "seal", 5.6, 6.4, LID[0] - 0.2, LID[0], faces=("north", "south", "east", "west", "down"))
     sec("boss", "boss", 2.2, LID[1], LID[1] + 0.6, hi=1.2, root=0.3)
     sec("hub", "hub", 1.2, LID[1] + 0.5, WHEEL[1] + 0.3, hi=0.0, root=0.2)
     # The wheel's rim: a ring of straight lengths, one to each of its 24 sides, and its spokes.
@@ -116,7 +128,10 @@ def lid(m: BlockModel, parts: dict, lips: dict) -> None:
     # The hinge straps and the lid's knuckles.
     for j, (x0, x1) in enumerate(LID_KNUCKLES):
         m.box(f"strap{j}", (x0 + 0.2, LID[1], 10.5), (x1 - 0.2, LID[1] + 0.45, PIN_Z - 0.6), faces=("north", "east", "west", "up"))
-        m.box(f"lknuckle{j}", (x0, PIN_Y - 1.0, PIN_Z - 1.0), (x1, PIN_Y + 1.0, PIN_Z + 1.0), faces=("north", "south", "east", "west", "up", "down"))
+        # Their bottoms a twentieth under the lid's (in its plane, they flickered with its underside when it stood open),
+        # the whole knuckle a twentieth down (still two pixels tall: two texels, not three thin ones), their sides 0.06 in
+        # from the coaming's (so the twentieth down in it is inside it, in none of its faces' planes).
+        m.box(f"lknuckle{j}", (x0, PIN_Y - 1.05, PIN_Z - 0.94), (x1, PIN_Y + 0.95, PIN_Z + 0.94), faces=("north", "south", "east", "west", "up", "down"))
         parts.setdefault("strap", []).append(f"strap{j}")
         parts.setdefault("knuckle", []).append(f"lknuckle{j}")
 
@@ -198,6 +213,9 @@ def open_lid() -> None:
             el["rotation"]["origin"] = moved(el["rotation"]["origin"])
         for f in el["faces"].values():
             f.pop("cullface", None)
+    for poly in out.get("groundburst:polygons", []):        # (its round parts' caps: the mod's polygons)
+        poly["points"] = [moved(p) for p in poly["points"]]
+        poly.pop("cull", None)
     write_json(paths.MODELS / "block" / f"{NAME}_lid_open.json", out)
 
 

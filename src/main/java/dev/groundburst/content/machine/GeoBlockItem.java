@@ -24,7 +24,6 @@ import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.model.DefaultedBlockGeoModel;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
@@ -76,7 +75,7 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
             @Override
             public BlockEntityWithoutLevelRenderer getGeoItemRenderer() {
                 if (this.renderer == null) {
-                    this.renderer = new GeoItemRenderer<>(new DefaultedBlockGeoModel<>(id)) {
+                    this.renderer = new GeoItemRenderer<>(new dev.groundburst.client.render.PolyGeoModel<>(id)) {
                         // GeckoLib lifts item models by half a block (it expects them centred on their origin); block
                         // models sit on their origin like a placed block, so only centre them horizontally.
                         @Override

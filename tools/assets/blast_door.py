@@ -239,7 +239,7 @@ def kick_plate(S, f: M.Face, img: np.ndarray) -> None:
 
 
 def paint(g: GeoModel, p: SS.Parts, hand: int) -> Tex:
-    k = K.Kit(g, {}, seed=2203 + (hand < 0), ao_reach=2.6)
+    k = K.Kit(g, {}, seed=2203 + (hand < 0), ao_reach=2.6, turned=True)
     W.round_faces(k.S, SS.ROUND, top=True, bottom=True, foot=False)
     S = k.S
     tex = Tex(g.tex_w, g.tex_h)
