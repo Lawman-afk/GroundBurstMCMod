@@ -3,13 +3,16 @@ Trinity; the user's choice, an earlier shot's crater and a tower readied for the
 
 Two parts. The shot tower (`test_site_tower`, its middle the site's origin): a lattice tower twenty-nine high on splayed
 legs, guyed out to concrete anchors, a grating deck at its top under the cab (corrugated, rusting at its foot) where the
-device sits on its stand with its cables, a hoist on the cab's roof; instrument masts with their cameras (observers)
-trained on it; poles carrying the firing line to the control bunker, banked with sand, its slit facing the tower; and
-Doom Town, a street of two houses built to be blown down, dressed mannequins on their porches and at their windows.
-Forty-eight blocks east, the earlier shot (`test_site_zero`, sunk three): its crater, glassed in rings from trinitite
-at the middle out through glassed sand and irradiated soil to scorched earth, ragged at its edge; the old tower's
-footings broken off at its floor; the obelisk on its rim; a fence ring with radiation signs, most of it down; the
-charred frame of an earlier town; bleachers facing it all.
+device sits on its stand with its cables, the ladder up through a bunker hatch in the deck, a pressure door, the firing
+console under its arming switches, the crew's crates, a breaker left on with its lamp lit; a hoist on the cab's roof;
+fuel drums and crates by the tower's pad; instrument masts with their cameras (observers) trained on it; poles carrying
+the firing line to the control bunker, banked with sand, its slit facing the tower, a blast door at its back (inside,
+the row of consoles under the slit, the tape drives that recorded the shots, the records cabinet); Jersey barriers
+across the road in; and Doom Town, a street of two houses built to be blown down, dressed mannequins on their porches
+and at their windows. Forty-eight blocks east, the earlier shot (`test_site_zero`, sunk three): its crater, glassed in
+rings from trinitite at the middle out through glassed sand and irradiated soil to scorched earth, ragged at its edge;
+the old tower's footings broken off at its floor; the obelisk on its rim; a fence ring with radiation signs, most of it
+down; the charred frame of an earlier town; bleachers facing it all, rusted drums by them.
 
 Templates: 48 x 44 x 48 and 40 x 14 x 40 (layer 0 the land's top; the crater's grade is its layer 3).
 """
@@ -44,6 +47,17 @@ def grounds(k: Kit) -> None:
     k.road([(31, 26), (31, 39)], width=3, salt=13)
     k.road([(31, 40), (2, 40)], width=3, salt=17)
     k.pad(C - 4, C - 4, C + 4, C + 4, "light_gray_concrete", cracked="smooth_sandstone", salt=19)
+    # A checkpoint on the road in: Jersey barriers staggered across it. Fuel drums and the crates the shot's crew brought
+    # out, by the pad.
+    for z in (23, 24):
+        k.barrier(44, 1, z, E)
+    for z in (24, 25):
+        k.barrier(41, 1, z, E)
+    k.drums(C + 5, 1, C - 4, "fuel", 3, N)
+    k.drums(C + 5, 1, C - 5, "fuel", 2, E)
+    k.drums(C + 6, 1, C - 4, "oil", 1, N)
+    k.crates(C - 5, 1, C + 4, E)
+    k.crates(C - 5, 1, C + 5, N)
 
 
 # --- the shot tower --------------------------------------------------------------------------------------------------------------
@@ -71,7 +85,7 @@ def tower(k: Kit) -> None:
     k.ladder(C, 1, TOP, C, S)
     # The deck and the cab on it.
     k.fill(C - 3, TOP, C - 3, C + 3, TOP, C + 3, GRATING)
-    k.set(C, TOP, C, AIR)
+    k.hatch(C, TOP, C, N)                              # the ladder's top: a bunker hatch, its own ladder running on
     for x in range(C - 3, C + 4):
         for z in range(C - 3, C + 4):
             if max(abs(x - C), abs(z - C)) == 3 and k.n(x, 1, z, 2.0, 23) > 0.2:
@@ -79,17 +93,20 @@ def tower(k: Kit) -> None:
     k.clad(C - 2, TOP + 1, C - 2, C + 2, TOP + 4, C + 2, salt=29, rust_courses=1.0)
     k.clear(C - 1, TOP + 1, C - 1, C + 1, TOP + 4, C + 1)
     k.fill(C - 3, TOP + 5, C - 3, C + 3, TOP + 5, C + 3, CORRUGATED_SLAB, {"type": "bottom", "waterlogged": False})
-    k.iron_door(C, TOP + 1, C + 2, S)
+    k.pressure_door(C, TOP + 1, C + 2, S)
     k.set(C + 2, TOP + 2, C, "glass_pane")
     k.set(C - 2, TOP + 2, C, "glass_pane")
-    # The device on its stand, its cables up into the roof; the firing panel; a chest of what the crew left.
+    # The device on its stand, its cables up into the roof; the firing console under its two arming switches; the crates
+    # of what the crew left; the breaker still on, its lamp lit; the roof's lamp dead.
     k.set(C, TOP + 1, C - 1, "heavy_core", {"waterlogged": False})
     for y in range(TOP + 2, TOP + 5):
         k.set(C, y, C - 1, "iron_chain", {"axis": "y", "waterlogged": False})
+    k.console(C - 1, TOP + 1, C + 1, E)
     k.set(C - 1, TOP + 2, C + 1, "lever", {"face": "wall", "facing": E, "powered": False})
     k.set(C - 1, TOP + 3, C + 1, "lever", {"face": "wall", "facing": E, "powered": True})
-    k.chest(C + 1, TOP + 1, C + 1, W, "test_site")
-    k.lantern(C - 1, TOP + 4, C - 1, hanging=True)
+    k.crates(C + 1, TOP + 1, C + 1, W, "test_site")
+    k.breaker(C + 1, TOP + 2, C - 1, W)
+    k.bunker_lamp(C - 1, TOP + 4, C - 1)
     # The hoist on the cab's roof.
     for x in (C - 2, C + 2):
         k.fill(x, TOP + 6, C, x, TOP + 8, C, I_BEAM, {"axis": "y"})
@@ -135,8 +152,9 @@ def instruments(k: Kit) -> None:
 
 # --- the control bunker ------------------------------------------------------------------------------------------------------------
 def control_bunker(k: Kit) -> None:
-    """Concrete banked with sand on three sides, its north face (to the tower) a slit under a visor, a ramp down to its
-    door at the back; inside, the panels, a periscope up through its roof."""
+    """Concrete banked with sand on three sides, its north face (to the tower) a slit under a visor, a cut through the
+    bank to a blast door at the back (two wide, swinging out into the cut); inside, the consoles under the slit, the tape
+    drives that recorded the shots, the records cabinet, a periscope up through its roof, a breaker left on."""
     x0, x1, z0, z1 = 33, 41, 38, 43
     k.pad(x0 - 1, z0 - 1, x1 + 1, z1 + 1, "light_gray_concrete", cracked="smooth_sandstone", salt=31)
     k.walls(x0, 1, z0, x1, 4, z1, "light_gray_concrete")
@@ -159,19 +177,27 @@ def control_bunker(k: Kit) -> None:
         for z in range(z0 + 1, z1 + 1):
             if k.n(x, 6, z, 2.5, 35) > 0.3:
                 k.set(x, 6, z, "sand")
-    # The door at the back, down a cut in the bank.
+    # The blast door at the back, down a cut two wide through the bank, open to the sky (no sand over it to fall into the
+    # door's swing), hazard stripes over the door.
     dx = (x0 + x1) // 2
-    k.fill(dx, 1, z1 + 1, dx, 3, z1 + 4, AIR)
-    k.iron_door(dx, 1, z1, S)
-    # Inside: the firing panel and the recorders, a chest; the periscope through the roof.
+    k.fill(dx, 1, z1 + 1, dx + 1, 6, z1 + 5, AIR)
+    k.blast_door(dx, 1, z1, S, hinge="left")
+    k.fill(dx - 1, 4, z1, dx + 2, 4, z1, gb("hazard_concrete"))
+    # Inside: the consoles along the slit, chairs before them; the tape drives and the records; the periscope through the
+    # roof; the breaker on the east wall, its lamp lit (by the door its signal opened the blast door, `sites.check_power`),
+    # an extinguisher; the lamp in the roof dead.
     for x in range(x0 + 1, x1):
-        k.set(x, 1, z0 + 1, PANEL)
-        k.set(x, 2, z0 + 1, "black_stained_glass" if x % 2 else "lever", {"face": "floor", "facing": S, "powered": False} if x % 2 == 0 else None)
-    k.chest(x1 - 1, 1, z1 - 1, W, "test_site")
-    k.set(x0 + 1, 1, z1 - 1, "barrel", {"facing": "up", "open": False})
+        k.console(x, 1, z0 + 1, S)
+        if x % 2:
+            k.stairs(x, 1, z0 + 2, "spruce_stairs", S)
+    for x in (x0 + 1, x0 + 2):
+        k.tape_computer(x, 1, z1 - 1, N)
+    k.cabinet(x1 - 1, 1, z1 - 1, W, "test_site")
+    k.extinguisher(x1 - 2, 1, z1 - 1, N)
     k.fill(dx - 2, 4, z0 + 2, dx - 2, 7, z0 + 2, "iron_chain", {"axis": "y", "waterlogged": False})
     k.set(dx - 2, 8, z0 + 2, "observer", {"facing": N, "powered": False})      # looking north at the tower
-    k.lantern(dx, 4, z0 + 3, hanging=True)
+    k.breaker(x1 - 1, 2, z0 + 2, W)
+    k.bunker_lamp(dx, 4, z0 + 3)
 
 
 # --- Doom Town ---------------------------------------------------------------------------------------------------------------------
@@ -425,3 +451,5 @@ def bleachers(k: Kit) -> None:
                 k.set(x, yy, z, "spruce_planks" if x in (x0, x1) else "spruce_fence")
     for x in (x0, x1):
         k.fill(x, y + 4, z0, x, y + 5, z0, "spruce_fence")
+    k.drums(x1 + 2, y, z0 + 1, "rusty", 2, N)                # left by the bleachers, rusting
+    k.drums(x1 + 3, y, z0 + 2, "rusty", 1, E)

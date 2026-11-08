@@ -16,6 +16,7 @@ import math
 from typing import Callable, Iterable
 
 from build import AIR, OPPOSITE, STEP, Build, gb, mc
+from nbt import Byte, Int
 
 N, E, S, W = "north", "east", "south", "west"
 DIR4 = (N, E, S, W)
@@ -43,6 +44,21 @@ RADOME_SLAB = gb("radome_panel_slab")
 FLOODLIGHT = gb("floodlight")
 SANDBAGS = gb("sandbags")
 SANDBAG_SLAB = gb("sandbag_slab")
+
+# The cosmetic sets (DESIGN.md §22.3-22.6), the props the sites are fitted with since their remaster (§22.8).
+BLAST_DOOR, PRESSURE_DOOR, HATCH = gb("blast_door"), gb("pressure_door"), gb("bunker_hatch")
+CONSOLE, DESK, CABINET, TAPE, MAP_TABLE = (gb("control_console"), gb("command_desk"), gb("filing_cabinet"), gb("tape_computer"),
+                                          gb("situation_map_table"))
+PIPES, VALVE, GRILLE, DUCT = gb("wall_pipes"), gb("pipe_valve"), gb("vent_grille"), gb("ventilation_duct")
+LAMP, FUSE_BOX, EXTINGUISHER, LOCKER, BUNK = (gb("bunker_lamp"), gb("fuse_box"), gb("fire_extinguisher"), gb("steel_locker"),
+                                              gb("bunk_bed"))
+BARRIER, TEETH, HEDGEHOG, RUSTY_HEDGEHOG = gb("jersey_barrier"), gb("dragons_teeth"), gb("czech_hedgehog"), gb("rusty_czech_hedgehog")
+SEARCHLIGHT, CRATES = gb("searchlight"), gb("ammo_crates")
+DRUMS = {"oil": gb("oil_drum"), "fuel": gb("fuel_drum"), "rusty": gb("rusty_drum")}
+CW = {N: E, E: S, S: W, W: N}
+CCW = {E: N, S: E, W: S, N: W}
+#: How far a Blast Door's handwheel and leaf travel, shut to open (BlastDoorBlockEntity.TRAVEL).
+BLAST_DOOR_TRAVEL = 70
 
 
 # --- noise -------------------------------------------------------------------------------------------------------------------------
@@ -97,7 +113,18 @@ class Kit(Build):
 
     def finish(self) -> None:
         """What waits for the walls to be built: a button by each iron door on each side of it, at shoulder height on the
-        wall beside the door; where the door opens into a passage one wide, on the passage's wall just in front of it."""
+        wall beside the door; where the door opens into a passage one wide, on the passage's wall just in front of it.
+        Then the props' joins (wall pipes end to end, duct to duct and to the grilles on it), and the places a door's leaf
+        or a hatch's lid swings through opened (anything solid there is a mistake in the site's plan)."""
+        self._join_props()
+        for x, y, z in sorted(self.clear_of_wear):
+            there = self.name(x, y, z)
+            if there is None:
+                self.set(x, y, z, AIR)
+            elif there != AIR and not any(w in there for w in ("short_grass", "tall_grass", "fern", "moss_carpet", "cobweb")):
+                raise SystemExit(f"a door or hatch swings through ({x}, {y}, {z}), where {there} stands")
+            elif there != AIR:
+                self.set(x, y, z, AIR)
         for x, y, z, facing in self._iron_doors:
             fx, fz = STEP[facing]
             sides = ((fz, fx), (-fz, -fx))                          # along the wall, either way
@@ -120,6 +147,176 @@ class Kit(Build):
     def _free(self, x: int, y: int, z: int) -> bool:
         there = self.name(x, y, z)
         return there == AIR or (there is None and not self.buried)
+
+    # --- the props (DESIGN.md §22.8) -------------------------------------------------------------------------------------------
+    # Each laid as its item lays it: every block of a prop of several, in the states its own placing gives them. Facings
+    # are the props' own: a console's, a desk's, a cabinet's, a locker's or crates' front to the one using it; a wall
+    # fitting's out of its wall; a searchlight's lens the way it points; a bunk's foot to head, as a bed's.
+    @staticmethod
+    def _loot(loot: str | None) -> dict | None:
+        return {"LootTable": loot if ":" in loot else "groundburst:chests/" + loot} if loot else None
+
+    def keep_clear(self, x: int, y: int, z: int) -> None:
+        """A place that must stay open (where a door's leaf or a hatch's lid swings): no wear is put there, and `finish`
+        opens it."""
+        self.clear_of_wear.add((x, y, z))
+
+    def blast_door(self, x: int, y: int, z: int, facing: str, hinge: str = "left", open_: bool = False, jammed: bool = False) -> None:
+        """A Blast Door (§22.3) from its hinges' lowest block at (x, y, z): the doorway two wide and three high, its front
+        to {facing} (the way its leaf swings out), the leaf reaching across from its hinges ({hinge}: the side they are on
+        as seen from the front). Shut, the six places its leaf swings through, two out in front of the hinges' column, are
+        kept clear (it will not open while anything stands there), unless it is {jammed} (what fell there stays: it opens
+        once that is dug away); open, its leaf's own six blocks stand there."""
+        ax, az = STEP[CW[facing] if hinge == "right" else CCW[facing]]
+        fx, fz = STEP[facing]
+        for u in (0, 1):
+            for v in (0, 1, 2):
+                nbt = None
+                if (u, v) == (0, 0) and open_:                 # the hinges' lowest: its block entity told it stands open
+                    nbt = {"door_pos": Int(BLAST_DOOR_TRAVEL), "from": Int(BLAST_DOOR_TRAVEL), "wanted": Byte(1), "powered": Byte(0)}
+                self.set(x + ax * u, y + v, z + az * u, BLAST_DOOR, {"facing": facing, "hinge": hinge, "u": u, "v": v, "w": 0,
+                                                                     "open": open_}, nbt=nbt)
+        for v in (0, 1, 2):
+            for w in (1, 2):
+                if open_:
+                    self.set(x + fx * w, y + v, z + fz * w, BLAST_DOOR, {"facing": facing, "hinge": hinge, "u": 0, "v": v, "w": w,
+                                                                         "open": True})
+                elif not jammed:
+                    self.keep_clear(x + fx * w, y + v, z + fz * w)
+
+    def pressure_door(self, x: int, y: int, z: int, facing: str, hinge: str = "left", open_: bool = False) -> None:
+        """A Pressure Door (§22.3), set as an iron door would be; it opens by hand, so it needs no buttons."""
+        self.door(x, y, z, facing, PRESSURE_DOOR, hinge, open_)
+
+    def hatch(self, x: int, y: int, z: int, facing: str, ladder_from: int | None = None) -> None:
+        """A Bunker Hatch shut in a floor (its lid flush with its block's top; it lifts into the block above, kept clear),
+        its ladder built in down its {facing} side; {ladder_from}: a ladder hung on the shaft's wall on that side from
+        that height up to it, so the two run on as one."""
+        self.trapdoor(x, y, z, HATCH, facing, half="top")
+        self.keep_clear(x, y + 1, z)
+        if ladder_from is not None:
+            self.ladder(x, ladder_from, y - 1, z, OPPOSITE[facing])
+
+    def console(self, x: int, y: int, z: int, facing: str) -> None:
+        self.set(x, y, z, CONSOLE, {"facing": facing})
+
+    def desk(self, x: int, y: int, z: int, facing: str) -> None:
+        self.set(x, y, z, DESK, {"facing": facing})
+
+    def cabinet(self, x: int, y: int, z: int, facing: str, loot: str | None = None) -> None:
+        self.set(x, y, z, CABINET, {"facing": facing, "open": False}, nbt=self._loot(loot))
+
+    def tape_computer(self, x: int, y: int, z: int, facing: str, running: bool = True) -> None:
+        """A Tape Computer's two halves, running as one placed runs (or stopped, as a click leaves it)."""
+        for half, dy in (("lower", 0), ("upper", 1)):
+            self.set(x, y + dy, z, TAPE, {"facing": facing, "half": half, "active": running, "switched": running})
+
+    def map_table(self, x: int, y: int, z: int, facing: str) -> None:
+        """A Situation Map Table's four blocks from the one it is placed on, laid to the right and ahead as one looks {facing}."""
+        rx, rz = STEP[CW[facing]]
+        fx, fz = STEP[facing]
+        for u in (0, 1):
+            for w in (0, 1):
+                self.set(x + rx * u + fx * w, y, z + rz * u + fz * w, MAP_TABLE, {"facing": facing, "u": u, "w": w})
+
+    def pipes(self, a: tuple[int, int], b: tuple[int, int], y: int, facing: str, valves: Iterable[tuple[int, int]] = ()) -> None:
+        """A run of Wall Pipes along a wall from (x, z) {a} to {b} (a straight line), {facing} out of the wall, a Pipe Valve
+        (shut) at each of {valves}; `finish` joins them end to end."""
+        valves = set(valves)
+        (ax, az), (bx, bz) = a, b
+        steps = max(abs(bx - ax), abs(bz - az))
+        for k in range(steps + 1):
+            x = ax + (bx - ax) * k // max(steps, 1)
+            z = az + (bz - az) * k // max(steps, 1)
+            if (x, z) in valves:
+                self.set(x, y, z, VALVE, {"facing": facing, "left": False, "right": False, "open": False, "held": False})
+            else:
+                self.set(x, y, z, PIPES, {"facing": facing, "left": False, "right": False})
+
+    def grille(self, x: int, y: int, z: int, facing: str) -> None:
+        """A Vent Grille looking {facing} (any of the six), its back to the block it is fixed to."""
+        self.set(x, y, z, GRILLE, {"facing": facing})
+
+    def duct(self, x0: int, y0: int, z0: int, x1: int, y1: int, z1: int) -> None:
+        """Ventilation Duct along a box (a line, usually); `finish` joins it to duct and to the grilles on it."""
+        self.fill(x0, y0, z0, x1, y1, z1, DUCT, {d: False for d in ("north", "east", "south", "west", "up", "down")})
+
+    def bunker_lamp(self, x: int, y: int, z: int, facing: str = "down", lit: bool = False) -> None:
+        """A Bunker Lamp out of the face it is fixed to ({facing}: down from a ceiling). Lit only where a signal reaches it
+        (a Fuse Box beside it with its breaker on), or the first block update puts it out."""
+        self.set(x, y, z, LAMP, {"facing": facing, "lit": lit})
+
+    def fuse_box(self, x: int, y: int, z: int, facing: str, on: bool = False) -> None:
+        """A Fuse Box on a wall, {facing} out of it; {on}: its breaker thrown, a signal as a lever gives (to a lamp beside it)."""
+        self.set(x, y, z, FUSE_BOX, {"facing": facing, "powered": on, "held": False})
+
+    def breaker(self, x: int, y: int, z: int, facing: str) -> None:
+        """A room's breaker left on (a Fuse Box on the wall at {y}, {facing} out of it) and the lamp over it lit by it: the
+        one light still burning (a click on the breaker puts it out)."""
+        self.fuse_box(x, y, z, facing, on=True)
+        self.bunker_lamp(x, y + 1, z, facing, lit=True)
+
+    def extinguisher(self, x: int, y: int, z: int, facing: str, wall: bool = False) -> None:
+        """A Fire Extinguisher on the floor, its label to {facing}; or hung on a wall, {facing} out of it (`sites.check`
+        keeps it and its wall in one chunk: it falls if its wall goes)."""
+        self.set(x, y, z, EXTINGUISHER, {"facing": facing, "wall": wall})
+
+    def locker(self, x: int, y: int, z: int, facing: str, loot: str | None = None) -> None:
+        """A Steel Locker's two halves, shut (the lower holds what it holds)."""
+        self.set(x, y, z, LOCKER, {"facing": facing, "half": "lower", "open": False}, nbt=self._loot(loot))
+        self.set(x, y + 1, z, LOCKER, {"facing": facing, "half": "upper", "open": False})
+
+    def bunk(self, x: int, y: int, z: int, facing: str) -> None:
+        """A Bunk Bed's four blocks, its foot at (x, y, z) and its head one block {facing}, the upper bunk over both
+        (`sites.check` keeps its head and foot in one chunk: each goes without the other)."""
+        fx, fz = STEP[facing]
+        for part, (dx, dz) in (("foot", (0, 0)), ("head", (fx, fz))):
+            for half, dy in (("lower", 0), ("upper", 1)):
+                self.set(x + dx, y + dy, z + dz, BUNK, {"facing": facing, "part": part, "occupied": False, "half": half})
+
+    def barrier(self, x: int, y: int, z: int, facing: str) -> None:
+        """A Jersey Barrier, its face to {facing} (a row of them runs across it)."""
+        self.set(x, y, z, BARRIER, {"facing": facing})
+
+    def teeth(self, x: int, y: int, z: int) -> None:
+        self.set(x, y, z, TEETH)
+
+    def hedgehog(self, x: int, y: int, z: int, facing: str = N, rusty: bool = False) -> None:
+        self.set(x, y, z, RUSTY_HEDGEHOG if rusty else HEDGEHOG, {"facing": facing})
+
+    def searchlight(self, x: int, y: int, z: int, facing: str, on: bool = False) -> None:
+        """A Searchlight's two halves, its lens to {facing}, off (a click switches it on)."""
+        for half, dy in (("lower", 0), ("upper", 1)):
+            self.set(x, y + dy, z, SEARCHLIGHT, {"facing": facing, "half": half, "active": on, "switched": on})
+
+    def crates(self, x: int, y: int, z: int, facing: str, loot: str | None = None) -> None:
+        """Ammo Crates on their pallet, shut, the front box to {facing}."""
+        self.set(x, y, z, CRATES, {"facing": facing, "open": False}, nbt=self._loot(loot))
+
+    def drums(self, x: int, y: int, z: int, kind: str = "oil", n: int = 1, facing: str = N) -> None:
+        """One to four steel drums in a block ({kind}: oil, fuel or rusty)."""
+        self.set(x, y, z, DRUMS[kind], {"facing": facing, "drums": n})
+
+    def _join_props(self) -> None:
+        """Wall pipes and valves joined to their neighbours along the wall (those facing the same way), duct to duct on
+        all six sides and to a grille whose back is to it: as each would be joined placed by hand."""
+        pipes, duct, grille = {mc(PIPES), mc(VALVE)}, mc(DUCT), mc(GRILLE)
+        up = {"up": (0, 1, 0), "down": (0, -1, 0)}
+        for (x, y, z), name, props in list(self.t.blocks()):
+            if name in pipes:
+                facing = props["facing"]
+                def joins(dx, dz):
+                    got = self.t.get(x + dx, y, z + dz)
+                    return bool(got) and got[0] in pipes and got[1].get("facing") == facing
+                lx, lz = STEP[CW[facing]]
+                props["left"], props["right"] = str(joins(lx, lz)).lower(), str(joins(-lx, -lz)).lower()
+                self.t.set(x, y, z, name, props, self.t._nbt.get((x, y, z)))
+            elif name == duct:
+                for d in ("north", "east", "south", "west", "up", "down"):
+                    dx, dy, dz = up[d] if d in up else (STEP[d][0], 0, STEP[d][1])
+                    got = self.t.get(x + dx, y + dy, z + dz)
+                    props[d] = str(bool(got) and (got[0] == duct or got[0] == grille and got[1].get("facing") == d)).lower()
+                self.t.set(x, y, z, name, props)
 
     def n(self, x: float, y: float, z: float, scale: float, salt: int = 0) -> float:
         return fbm(x, y, z, scale, self.seed + salt)
@@ -321,7 +518,8 @@ class Kit(Build):
                 if self.n(x, 0, z, 2.5, salt) < 1 - density:
                     continue
                 for y in range(y0, y1 + 1):
-                    if self.name(x, y, z) is None and (self.solid(x, y - 1, z) or (on_ground and y == 1)):
+                    if (self.name(x, y, z) is None and (self.solid(x, y - 1, z) or (on_ground and y == 1))
+                            and (x, y, z) not in self.clear_of_wear):
                         blk = blocks[int(self.n(x, 3, z, 1.3, salt + 1) * len(blocks)) % len(blocks)]
                         if "slab" in blk:
                             self.set(x, y, z, blk, {"type": "bottom", "waterlogged": False})
@@ -336,7 +534,7 @@ class Kit(Build):
         x0, z0, x1, z1 = box
         for x in range(x0, x1 + 1):
             for z in range(z0, z1 + 1):
-                if self.name(x, 0, z) not in (None,) or self.name(x, 1, z) is not None:
+                if self.name(x, 0, z) not in (None,) or self.name(x, 1, z) is not None or (x, 1, z) in self.clear_of_wear:
                     continue
                 near = any(self.name(x + dx, 1, z + dz) is not None for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)))
                 v = self.n(x, 0, z, 2.2, salt) + (0.18 if near else 0.0)
@@ -354,7 +552,7 @@ class Kit(Build):
         for x in range(x0, x1 + 1):
             for z in range(z0, z1 + 1):
                 for y in range(y1, y0 - 1, -1):
-                    if not self.solid(x, y, z) or self.name(x + fx, y, z + fz) is not None:
+                    if not self.solid(x, y, z) or self.name(x + fx, y, z + fz) is not None or (x + fx, y, z + fz) in self.clear_of_wear:
                         continue
                     if self.n(x, y * 0.5, z, 2.5, salt) > 1 - density * (1.2 - y / max(1, y1)):
                         self.set(x + fx, y, z + fz, "vine", {attach: True, "up": False, "north": attach == N, "south": attach == S,

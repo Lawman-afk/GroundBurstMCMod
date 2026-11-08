@@ -6,8 +6,9 @@ A two-stage missile came down from the south at a shallow angle, ploughed a furr
 engine thrown onto the land beside the furrow, the body lying in it torn and buckled, the nose driven into the crater at
 its end; the warhead split there, its core bare in the crater's floor, the soil round it irradiated. The furrow shallows
 back south to where it first struck, earth thrown up along its sides, burned black near the crater, debris all along.
-Afterwards a recovery team roped the place off (posts and rope round it, radiation signs on them), set up a floodlight
-behind sandbags, a decontamination point and its crates under a tarp, and left: a suit still hangs on its stand.
+Afterwards a recovery team roped the place off (posts and rope round it, radiation signs on them), set up a searchlight
+on a sandbag wall turned on the crater with the drums of fuel for its generator, a decontamination point (its ammo
+crates of kit, an extinguisher) and stores under a tarp, and left: a suit still hangs on its stand.
 
 One template, 28 x 11 x 46, its grade at y 4 (the furrow and crater dug below it); the origin is the wreck's block, at
 (15, 20) on the land.
@@ -17,7 +18,7 @@ from __future__ import annotations
 import math
 
 from build import AIR, gb
-from kit import E, FLOODLIGHT, I_BEAM, LATTICE, N, RUSTED_SLAB, S, SANDBAG_SLAB, SANDBAGS, W, Kit
+from kit import E, I_BEAM, LATTICE, N, RUSTED_SLAB, S, SANDBAG_SLAB, SANDBAGS, W, Kit
 
 SIZE = (28, 11, 46)
 G = 4                                        # grade: the land's top block
@@ -235,26 +236,26 @@ def cordon(k: Kit) -> None:
 
 
 def camp(k: Kit) -> None:
-    """Outside the cordon to the south-east: a floodlight behind a sandbag wall turned on the crater, the
-    decontamination point (crates, a tub, the suit left on its stand), crates under a tarp."""
+    """Outside the cordon to the south-east: a searchlight on a sandbag wall turned on the crater, the drums of fuel for
+    its generator behind it; the decontamination point (ammo crates of kit, a tub, an extinguisher, the suit left on its
+    stand); stores under a tarp."""
     x0, z0 = 21, 29
+    px = x0 + 2                                                  # the searchlight's place on the wall
     for x in range(x0, x0 + 4):
         k.set(x, G + 1, z0, SANDBAGS)
-        k.set(x, G + 2, z0, SANDBAG_SLAB if k.n(x, 0, z0, 1.5, 71) > 0.4 else SANDBAGS)
+        k.set(x, G + 2, z0, SANDBAG_SLAB if x != px and k.n(x, 0, z0, 1.5, 71) > 0.4 else SANDBAGS)
     for z in (z0 + 1, z0 + 2):
         k.set(x0, G + 1, z, SANDBAGS)
-    # The floodlight on its pole (the kit's pole stands on layer 0; this site's ground is layer G).
-    px, pz = x0 + 2, z0 + 1
-    k.set(px, G, pz, "polished_andesite")
-    for y in range(G + 1, G + 5):
-        k.set(px, y, pz, LATTICE)
-    k.set(px, G + 4, pz - 1, FLOODLIGHT, {"facing": N})
-    # Decontamination: crates of kit, a tub, the suit.
-    k.barrel(x0 + 3, G + 1, z0 + 4, "up")
-    k.barrel(x0 + 4, G + 1, z0 + 4, "up")
+    k.searchlight(px, G + 3, z0, N)
+    for x, z, n in ((x0 + 3, z0 + 1, 3), (x0 + 4, z0 + 1, 2), (x0 + 3, z0 + 2, 1)):
+        k.drums(x, G + 1, z, "fuel", n, N if x % 2 else E)
+    # Decontamination: ammo crates of kit, a tub, an extinguisher, the suit.
+    k.crates(x0 + 3, G + 1, z0 + 4, N)
+    k.crates(x0 + 4, G + 1, z0 + 4, W)
     k.set(x0 + 4, G + 1, z0 + 5, "cauldron")
+    k.extinguisher(x0 + 1, G + 1, z0 + 4, E)
     k.marker(x0 + 2, G + 1, z0 + 5, "stand:hazmat:north")
-    # Crates under a tarp.
+    # Stores under a tarp (barrels: the tarp lies flat on them).
     for x, z in ((x0 - 2, z0 + 5), (x0 - 1, z0 + 5), (x0 - 2, z0 + 6)):
         k.barrel(x, G + 1, z, "up")
         k.set(x, G + 2, z, "green_carpet")
