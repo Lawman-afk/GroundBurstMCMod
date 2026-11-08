@@ -115,6 +115,7 @@ RULES = [
     sub(r"\.gui\.setScreen\(", ".setScreen("),
     sub(r"\.gui\.hud\.isHidden\(\)", ".options.hideGui"),
     sub(r"(\b\w+)\.gui\.hud\.toggle\(\)", r"\1.options.hideGui = !\1.options.hideGui"),
+    sub(r"\.gui\.hud\.getChat\(\)", ".gui.getChat()"),
     sub(r"\.mainCamera\(\)", ".getMainCamera()"),
     sub(r"(\b\w+)\.gameRenderer\.mainRenderTarget\(\)", r"\1.getMainRenderTarget()"),
     sub(r"\.gameRenderer\.lighting\(\)", ".gameRenderer.getLighting()"),
@@ -385,6 +386,26 @@ def drop_method(signature: str):
 SKY = "dev.groundburst.port.SkyColors"
 
 FILE_FIXES: dict[str, list] = {
+    # GeckoLib's glowmask pipeline handed to Iris (main's client/fx/IrisFx, left out here, on 26.3's renderer package): its
+    # accessors go with it.
+    "src/main/java/dev/groundburst/client/render/MachineGeoRenderer.java": [
+        swap("""    /**
+     * GeckoLib's pipeline for glowmasks, for Iris to be told how to draw it (client/fx/IrisFx): a shader pack has no
+     * program for a pipeline it does not know, and drew the glowing parts' vertices as long streaks across the sky (a
+     * warning beacon's light fins, a machine's lamps).
+     */
+    public static com.mojang.renderpearl.api.pipeline.RenderPipeline glowPipeline() {
+        return GlowLayer.pipeline();
+    }
+
+""", ""),
+        swap("""
+        /** GeckoLib's own pipeline for the glowmasks (one for every model that has one, other mods' too). */
+        static com.mojang.renderpearl.api.pipeline.RenderPipeline pipeline() {
+            return RENDER_PIPELINE;
+        }
+""", ""),
+    ],
     # Main's polygon loader: 26.1.2's quad baker shades a quad or not (26.3 names the way it is shaded).
     "src/main/java/dev/groundburst/client/render/PolygonModels.java": [
         swap("            quad.setShadeOverride(p.shade() ? null : Direction.UP);\n",

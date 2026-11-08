@@ -17,7 +17,7 @@
 Mine, refine and assemble your own arsenal, from grenades, mines and mortars to missiles and the Tsar Bomba, then
 watch real craters, mushroom clouds and radioactive fallout reshape the world.
 
-![The Tsar Bomba's mushroom cloud rising over green hills](docs/screenshots/tsar_bomba.jpg)
+![The Tsar Bomba's mushroom cloud rising over cherry groves and green hills](docs/screenshots/tsar_bomba.jpg)
 
 ## What's in it
 
@@ -91,39 +91,43 @@ What changed in each version is in the [changelog](CHANGELOG.md).
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/particle_cannon.jpg" width="380" alt="The Particle Uplink Cannon firing its uplink beam into the sky from its pit"><br>The Particle Uplink Cannon fires</td>
-    <td><img src="docs/screenshots/particle_beam.jpg" width="380" alt="The particle beam burning down through the night onto a meadow, fires round its foot"><br>The particle beam, steered across a meadow at night</td>
+    <td><img src="docs/screenshots/crater.jpg" width="380" alt="A tactical nuke's crater from above, the forest flattened and burning"><br>A tactical nuclear warhead's crater</td>
+    <td><img src="docs/screenshots/launch.jpg" width="380" alt="A missile climbing from its launch silo on a column of exhaust"><br>Lift-off from a Launch Silo</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/howitzer.jpg" width="380" alt="A 155 mm howitzer on its split trails firing a shell high over the desert"><br>The 155 mm Howitzer fires</td>
-    <td><img src="docs/screenshots/mortar.jpg" width="380" alt="A mortar's strategic view over a hut struck by its shell, the aiming readout below"><br>The mortar's strategic view: a shell lands on target</td>
+    <td><img src="docs/screenshots/black_hole.jpg" width="380" alt="A black hole ringed with violet light over a snowy forest and ice spikes"><br>A singularity warhead's black hole</td>
+    <td><img src="docs/screenshots/circuit_factory.jpg" width="380" alt="Two rows of machines facing each other across a striped aisle, piped and wired"><br>An advanced-circuit factory, piped and wired</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/cryo_icbm.jpg" width="380" alt="Spires of ice standing over snowed-over trees after a Cryo ICBM"><br>Spires of ice after a Cryo ICBM</td>
-    <td><img src="docs/screenshots/launch.jpg" width="380" alt="A missile lifting off from its launch silo in a cloud of exhaust"><br>Lift-off from a Launch Silo</td>
+    <td><img src="docs/screenshots/healing.jpg" width="380" alt="A village before a nuclear blast, wrecked, and healed back as it was"><br>Healing: before, after, healed</td>
+    <td><img src="docs/screenshots/particle_cannon.jpg" width="380" alt="The Particle Uplink Cannon firing its beam into the sky from its pit"><br>The Particle Uplink Cannon fires</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/scud_strike.jpg" width="380" alt="A SCUD strike throwing up fire, smoke and blocks of sand"><br>The SCUD Storm strikes</td>
-    <td><img src="docs/screenshots/vertical_launch_battery.jpg" width="380" alt="Missiles climbing out of a Vertical Launch Battery's cells in a column of smoke"><br>The Vertical Launch Battery's ripple</td>
+    <td><img src="docs/screenshots/alarms.jpg" width="380" alt="A wall of alarm devices at night in the snow, the beacons glowing in five colours under an aurora"><br>The alarm system at night</td>
+    <td><img src="docs/screenshots/antimatter.jpg" width="380" alt="A perfectly round crater left in green hills by an antimatter warhead"><br>An antimatter warhead's crater</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/laser_designator.jpg" width="380" alt="The Laser Designator's sight on a target, its range and coordinates shown"><br>Calling fire with the Laser Designator</td>
-    <td><img src="docs/screenshots/launch_control_station.jpg" width="380" alt="A Launch Control Station console with two missile silos behind it"><br>The Launch Control Station</td>
+    <td><img src="docs/screenshots/bunker.jpg" width="380" alt="A concrete bunker in the snow, its blast door open, Jersey barriers in front"><br>A bunker in the snow</td>
+    <td><img src="docs/screenshots/tactical_nuke.jpg" width="380" alt="A mushroom cloud rising over a forest beyond a pond"><br>A tactical nuclear warhead</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/alarms.jpg" width="380" alt="A wall of alarm devices at night with rotating beacons on top"><br>The alarm system at night</td>
-    <td><img src="docs/screenshots/missiles.jpg" width="380" alt="Seven nuclear missiles standing in a row on sand"><br>The nuclear missiles, from tactical to Tsar</td>
+    <td><img src="docs/screenshots/shock_front.jpg" width="380" alt="A fireball inside a spreading dome of shock front over cherry groves"><br>The Tsar Bomba's shock front</td>
+    <td><img src="docs/screenshots/circuit_factory_layout.jpg" width="380" alt="The circuit factory from above: two rows of machines, a striped aisle, pipes and cables"><br>The factory's layout from above</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/crater.jpg" width="380" alt="Smoke rising from a fresh crater ringed with fires"><br>A tactical nuclear warhead's crater</td>
+    <td><img src="docs/screenshots/vertical_launch_battery.jpg" width="380" alt="Missiles climbing out of a Vertical Launch Battery in a column of smoke"><br>The Vertical Launch Battery's ripple</td>
+    <td><img src="docs/screenshots/launch_control_station.jpg" width="380" alt="A Launch Control Station console in the snow, two missile silos behind it"><br>The Launch Control Station</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/mortar.jpg" width="380" alt="A mortar's strategic view over the land, the aiming readout below"><br>The mortar's strategic view</td>
+    <td><img src="docs/screenshots/cryo_icbm.jpg" width="380" alt="Spires of ice standing over snowed-over trees after a cryo warhead"><br>Spires of ice after a cryo warhead</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/field_manual.jpg" width="380" alt="The Field Manual open at its contents page"><br>The Field Manual</td>
     <td><img src="docs/screenshots/radar_outpost.jpg" width="380" alt="A radar outpost on a green hill above the sea"><br>A Radar Outpost</td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/research_station.jpg" width="380" alt="A domed research station among chorus plants on an End island"><br>The Exotic Research Station</td>
-    <td><img src="docs/screenshots/silo_cutaway.jpg" width="380" alt="A cut-away view of an abandoned silo with its missile in the shaft"><br>An abandoned silo, cut away</td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/field_manual.jpg" width="380" alt="The Field Manual open at its contents page"><br>The Field Manual</td>
   </tr>
 </table>
 

@@ -36,6 +36,28 @@ public final class FxPhotographer {
     private static int clock;
     private static int site;
     private static boolean worldMade;
+    /**
+     * {@code -PfxWorld=real}: a normally generated world (seed {@code -PfxSeed}, else the blast bench's), every scene on
+     * land found for it; the pictures the mod page shows are taken this way (the user's rule: real worlds only).
+     */
+    private static final boolean REAL = "real".equals(System.getProperty("groundburst.fxShots.world", ""));
+    /** The middle of the scene being shot (x; z is 0): site * 1200 in a flat world, moved on to suitable land in a real one. */
+    private static volatile int sceneX;
+    /** Whether the server has the scene's site found (and levelled) and the camera there: the client waits for it. */
+    private static volatile boolean siteReady;
+    /** A real world's scene for which no dry land was found: not shot at all (never set down on water). */
+    private static volatile boolean sceneSkipped;
+    /** The circuit line's origin while its scene runs (its count is logged at each picture). */
+    private static volatile net.minecraft.core.@org.jspecify.annotations.Nullable BlockPos lineAt;
+    /**
+     * Open country, where a real world's site for something set up goes first: a player clears little there, and the
+     * pictures show its grass and flowers round the build rather than a cleared forest.
+     */
+    private static final List<net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome>> OPEN = List.of(
+            net.minecraft.world.level.biome.Biomes.PLAINS, net.minecraft.world.level.biome.Biomes.SUNFLOWER_PLAINS,
+            net.minecraft.world.level.biome.Biomes.MEADOW, net.minecraft.world.level.biome.Biomes.SAVANNA,
+            net.minecraft.world.level.biome.Biomes.SAVANNA_PLATEAU, net.minecraft.world.level.biome.Biomes.SNOWY_PLAINS,
+            net.minecraft.world.level.biome.Biomes.DESERT, net.minecraft.world.level.biome.Biomes.BADLANDS);
 
     private FxPhotographer() {}
 
@@ -219,6 +241,19 @@ public final class FxPhotographer {
                 new Scene("station_night", "station", 5, 10, List.of(30), "midnight"),
                 new Scene("station_desk", "station", 2, 42, List.of(30)),
                 new Scene("station_ui", "station", 4, 0, List.of(30)),
+                // An advanced-circuit line laid out as a factory hall, every machine piped and wired (gametest/CircuitLine,
+                // its numbers in tools/factory/circuit_line.py): down its aisle from above the west end; its layout from
+                // overhead; in the aisle; at night. What it has made is logged at each picture (the last four minutes in).
+                new Scene("circuit_line", "circuit_line", 11, 19, List.of(400, 1200, 4800)),
+                new Scene("circuit_line_aerial", "circuit_line", 4, 72, List.of(400)),
+                new Scene("circuit_line_close", "circuit_line", 9, 7, List.of(400)),
+                new Scene("circuit_line_night", "circuit_line", 11, 19, List.of(400), "midnight"),
+                // A player's bunker built of the cosmetic sets (DESIGN.md §22): a concrete blockhouse, its Blast Door open, a
+                // Pressure Door and a hatch; barriers, teeth and hedgehogs before it, crates and drums by it, a searchlight on
+                // its roof; by day, close, and at night (the searchlight's beam, lanterns in the doorway).
+                new Scene("bunker", "bunker", 17, 5, List.of(80)),
+                new Scene("bunker_close", "bunker", 9, 3, List.of(80)),
+                new Scene("bunker_night", "bunker", 17, 5, List.of(80), "midnight"),
                 // The Laser Designator (DESIGN.md §17.13): through its sight, lasing a pillbox 40 blocks off while a
                 // laser-guided missile homes on the spot and lands on it; at night; and from outside, held to the eye.
                 new Scene("designator", "designator", 40, 1.5f, List.of(20, 60, 68, 72, 76, 90)),
@@ -383,7 +418,9 @@ public final class FxPhotographer {
                 // stands round and behind the cloud (a player saw its water drawn over a mushroom cloud).
                 new Scene("dh_nuke", "tactical_nuclear_warhead", 230, -6, List.of(300, 700)),
                 new Scene("dh_nuke_far", "tactical_nuclear_warhead", 520, -10, List.of(400, 900)))) {
-            if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
+            // -PfxOnly=a,b: the scenes whose names start with a or b; "a$" the one named a alone.
+            if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).map(String::trim)
+                    .anyMatch(o -> o.endsWith("$") ? s.name().equals(o.substring(0, o.length() - 1)) : s.name().startsWith(o))) {
                 SCENES.add(s);
             }
         }
@@ -406,6 +443,448 @@ public final class FxPhotographer {
             }
         }
         return surface + 2;
+    }
+
+    /**
+     * Scenes with nothing to set up on the ground (in flight, coming down from the sky, a warhead set off on the land
+     * itself): land, no pad.
+     */
+    private static boolean needsPad(Scene s) {
+        if (s.profile().endsWith("_warhead") || s.profile().startsWith("test/")) {
+            return false;
+        }
+        return !List.of("flight_reentry", "flight_icbm", "cruise_flight", "cruise_dive", "scud_strike", "particle_beam", "airburst",
+                "mortar_impact").contains(s.profile());
+    }
+
+    /**
+     * A real world's place for a scene near {@code x0}: east along z = 0, the first stretch of dry land that suits it,
+     * never on or near another scene's site. With something to set up, open country first (plains, meadow, savanna,
+     * snowy plains, desert, badlands: {@link #OPEN}) at its middle, its ground within 5 blocks up or down over the
+     * scene's pad (from the camera to 22 past the middle, 18 either side; wider where a scene sets things further out)
+     * and no structure on it, then anywhere within 7; the pad is then cleared as a player clears a site
+     * ({@link #levelPad}). A blast needs no pad: level dry ground round its middle and no hill between it and the camera.
+     * The camera's ground no higher than 3 above the middle's.
+     */
+    private static int realSite(ServerLevel level, int x0, Scene s) {
+        boolean pad = needsPad(s);
+        for (boolean open : pad ? new boolean[] {true, false} : new boolean[] {false}) {
+            int x = realSite(level, x0, s, pad, open);
+            if (x != Integer.MIN_VALUE) {
+                return x;
+            }
+        }
+        GroundBurst.LOGGER.warn("Fx shot: no dry land found for {}: skipped", s.name());
+        return Integer.MIN_VALUE;
+    }
+
+    /** Sites already used this run ({x, how far round it is taken}): a scene never shares one, nor stands in a crater. */
+    private static final List<int[]> USED = new java.util.ArrayList<>();
+
+    private static int realSite(ServerLevel level, int x0, Scene s, boolean pad, boolean open) {
+        // The pad: from behind the camera to past the middle, either side of it; no more than a scene sets up on.
+        int back = s.distance() + 3, front = switch (s.profile()) {
+            case "mortar_view" -> 78;
+            case "circuit_line" -> 9;
+            case "bunker" -> 13;
+            default -> 22;
+        };
+        int room = s.profile().endsWith("_warhead") || s.profile().startsWith("test/") ? 700 : pad ? 140 : 300;
+        int side = s.profile().equals("circuit_line") ? 8 : s.profile().equals("bunker") ? 11 : 18;
+        int zMin = pad ? (s.profile().startsWith("intercept") ? -12 : -side) : -10;
+        int zMax = pad ? (s.profile().startsWith("intercept") ? 48 : side) : 10;
+        var gen = level.getChunkSource().getGenerator();
+        var random = level.getChunkSource().randomState();
+        for (int x = x0; x < x0 + 60_000; x += 16) {
+            // The generator's own ground (no trees, no water: where its surface and its sea floor differ is water).
+            int middle = groundAt(gen, level, random, x, 0), camera = groundAt(gen, level, random, x - s.distance(), 0);
+            if (middle == Integer.MIN_VALUE || camera == Integer.MIN_VALUE || camera > middle + 3) {
+                continue;
+            }
+            final int here = x;
+            if (USED.stream().anyMatch(u -> Math.abs(here - u[0]) < u[1] + room)) {
+                continue;
+            }
+            if (open && !openAt(level, x, middle, 0)) {
+                continue;
+            }
+            int lo = Integer.MAX_VALUE, hi = Integer.MIN_VALUE;
+            boolean wet = false;
+            for (int dx = pad ? -back : -20; dx <= (pad ? front : 20) && !wet; dx += 4) {
+                for (int dz = zMin; dz <= zMax; dz += 4) {
+                    int h = groundAt(gen, level, random, x + dx, dz);
+                    if (h == Integer.MIN_VALUE) {
+                        wet = true;
+                        break;
+                    }
+                    lo = Math.min(lo, h);
+                    hi = Math.max(hi, h);
+                }
+            }
+            if (wet || hi - lo > (pad ? (open ? 5 : 7) : 9)) {
+                continue;
+            }
+            if (!pad) {                                        // no hill between the camera and the middle
+                int top = Math.max(middle, camera) + 6;
+                boolean blocked = false;
+                for (int t = 20; t < s.distance() && !blocked; t += 8) {
+                    int h = gen.getBaseHeight(x - t, 0, Heightmap.Types.WORLD_SURFACE_WG, level, random);
+                    blocked = h > top;
+                }
+                if (blocked) {
+                    continue;
+                }
+            }
+            for (int cx = (x - back) >> 4; cx <= (x + front) >> 4; cx++) {
+                for (int cz = zMin >> 4; cz <= zMax >> 4; cz++) {
+                    level.getChunk(cx, cz);                    // generated now, with its trees and grass
+                }
+            }
+            if (pad && structureOn(level, x - back, x + front, zMin, zMax, middle)) {
+                continue;                                      // a village (or any structure) is never cleared for a picture
+            }
+            if (pad) {
+                int y = groundTop(level, x, 0);
+                levelPad(level, x - back, x + front, zMin, zMax, y == Integer.MIN_VALUE ? middle : y);
+            }
+            USED.add(new int[] {x, room});
+            GroundBurst.LOGGER.info("Fx shot: {} on real ground at x {} ({} blocks on, {})", s.name(), x, x - x0,
+                    level.getUncachedNoiseBiome(net.minecraft.core.QuartPos.fromBlock(x), net.minecraft.core.QuartPos.fromBlock(middle), 0)
+                            .unwrapKey().map(k -> k.identifier().getPath()).orElse("?"));
+            return x;
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    /**
+     * A player's bunker for the real world's pictures, built of the cosmetic sets (DESIGN.md §22), its front facing the
+     * camera (west) four blocks past the middle: a reinforced concrete blockhouse, 7 deep, 13 wide and 5 high, its Blast
+     * Door open onto a lantern-lit inside and a Pressure Door shut beside it; a Bunker Hatch over a laddered shaft in the
+     * ground before it; a line of Jersey Barriers with a gap for the way in, two staggered rows of Dragon's Teeth and
+     * three Czech Hedgehogs further out; Ammo Crates (one open) and drums by its wall; a Searchlight on its roof, on.
+     */
+    private static void bunker(ServerLevel level, int x, int y) {
+        var concrete = dev.groundburst.content.launch.GBLaunch.REINFORCED_CONCRETE.block().get().defaultBlockState();
+        var air = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        for (int dx = 4; dx <= 10; dx++) {
+            for (int dz = -6; dz <= 6; dz++) {
+                for (int dy = 4; dy >= 0; dy--) {                    // top down: nothing left standing on what changes
+                    boolean shell = dx == 4 || dx == 10 || dz == -6 || dz == 6 || dy == 4;
+                    level.setBlock(new net.minecraft.core.BlockPos(x + dx, y + dy, dz), shell ? concrete : air, 3);
+                }
+                level.setBlock(new net.minecraft.core.BlockPos(x + dx, y - 1, dz), concrete, 3);
+            }
+        }
+        // Lanterns hung from the roof inside, so the open doorway shows a lit room at night.
+        for (int[] l : new int[][] {{6, -3}, {6, 2}, {8, 0}}) {
+            level.setBlock(new net.minecraft.core.BlockPos(x + l[0], y + 3, l[1]), net.minecraft.world.level.block.Blocks.LANTERN.defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true), 3);
+        }
+        // The Blast Door in the front wall, open: its columns at z -1 and 0 (hinged on the left, it reaches south).
+        var door = dev.groundburst.content.construction.GBConstruction.BLAST_DOOR.block().get();
+        var ds = door.defaultBlockState().setValue(dev.groundburst.content.construction.BlastDoorBlock.FACING, net.minecraft.core.Direction.WEST)
+                .setValue(dev.groundburst.content.construction.BlastDoorBlock.HINGE, net.minecraft.world.level.block.state.properties.DoorHingeSide.LEFT);
+        var across = dev.groundburst.content.construction.BlastDoorBlock.across(ds);
+        var at = new net.minecraft.core.BlockPos(x + 4, y, across == net.minecraft.core.Direction.SOUTH ? -1 : 0);
+        for (int u = 0; u < 2; u++) {
+            for (int v = 0; v < 3; v++) {
+                level.setBlock(at.relative(across, u).above(v), air, 3);
+            }
+        }
+        level.setBlock(at, ds, 3);
+        door.setPlacedBy(level, at, ds, null, net.minecraft.world.item.ItemStack.EMPTY);
+        if (level.getBlockEntity(at) instanceof dev.groundburst.content.construction.BlastDoorBlockEntity be) {
+            be.toggle(level, null);
+        }
+        // A Pressure Door beside it, shut.
+        var pressure = (net.minecraft.world.level.block.DoorBlock) dev.groundburst.content.construction.GBConstruction.PRESSURE_DOOR.block().get();
+        var pd = pressure.defaultBlockState().setValue(net.minecraft.world.level.block.DoorBlock.FACING, net.minecraft.core.Direction.EAST);
+        level.setBlock(new net.minecraft.core.BlockPos(x + 4, y, 3), pd, 2);
+        level.setBlock(new net.minecraft.core.BlockPos(x + 4, y + 1, 3), pd.setValue(net.minecraft.world.level.block.DoorBlock.HALF,
+                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER), 2);
+        // A hatch in the ground before it, over a shaft with a ladder (its own carries on up it).
+        var hatchAt = new net.minecraft.core.BlockPos(x + 1, y - 1, 4);
+        level.setBlock(hatchAt.above(), air, 3);                       // the grass on it first
+        for (int d = 1; d <= 3; d++) {
+            level.setBlock(hatchAt.below(d), net.minecraft.world.level.block.Blocks.LADDER.defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.LadderBlock.FACING, net.minecraft.core.Direction.EAST), 2);
+        }
+        level.setBlock(hatchAt, dev.groundburst.content.construction.GBConstruction.BUNKER_HATCH.block().get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.TrapDoorBlock.FACING, net.minecraft.core.Direction.WEST)
+                .setValue(net.minecraft.world.level.block.TrapDoorBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP), 2);
+        // Jersey Barriers across the way in (a gap at the door), Dragon's Teeth and hedgehogs further out.
+        for (int dz = -8; dz <= 8; dz++) {
+            if (Math.abs(dz) > 1) {
+                level.setBlock(new net.minecraft.core.BlockPos(x - 2, y, dz), dev.groundburst.content.construction.GBConstruction.JERSEY_BARRIER.block().get()
+                        .defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, net.minecraft.core.Direction.WEST), 3);
+            }
+        }
+        for (int row = 0; row < 2; row++) {
+            for (int dz = -9 + row; dz <= 9; dz += 2) {
+                if (Math.abs(dz) > 2) {
+                    level.setBlock(new net.minecraft.core.BlockPos(x - 6 - row, y, dz),
+                            dev.groundburst.content.construction.GBConstruction.DRAGONS_TEETH.block().get().defaultBlockState(), 3);
+                }
+            }
+        }
+        int[][] hedgehogs = {{-10, -6}, {-11, 4}, {-9, 8}};
+        var turns = new net.minecraft.core.Direction[] {net.minecraft.core.Direction.NORTH, net.minecraft.core.Direction.EAST, net.minecraft.core.Direction.WEST};
+        for (int i = 0; i < hedgehogs.length; i++) {
+            var hedgehog = i == 1 ? dev.groundburst.content.construction.GBConstruction.RUSTY_CZECH_HEDGEHOG
+                    : dev.groundburst.content.construction.GBConstruction.CZECH_HEDGEHOG;
+            level.setBlock(new net.minecraft.core.BlockPos(x + hedgehogs[i][0], y, hedgehogs[i][1]), hedgehog.block().get().defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, turns[i]), 3);
+        }
+        // Ammo Crates (one open) and drums by the wall.
+        for (int i = 0; i < 2; i++) {
+            level.setBlock(new net.minecraft.core.BlockPos(x + 3, y, -5 + i), dev.groundburst.content.construction.GBConstruction.AMMO_CRATES.block().get()
+                    .defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, net.minecraft.core.Direction.WEST)
+                    .setValue(dev.groundburst.content.construction.AmmoCratesBlock.OPEN, i == 1), 3);
+        }
+        var drums = List.of(dev.groundburst.content.construction.GBConstruction.OIL_DRUM, dev.groundburst.content.construction.GBConstruction.FUEL_DRUM);
+        for (int i = 0; i < drums.size(); i++) {
+            level.setBlock(new net.minecraft.core.BlockPos(x + 3 - i, y, 5), drums.get(i).block().get().defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, net.minecraft.core.Direction.WEST)
+                    .setValue(dev.groundburst.content.construction.DrumBlock.DRUMS, 4 - i), 3);
+        }
+        // The Searchlight on the roof, switched on.
+        var light = dev.groundburst.content.construction.GBConstruction.SEARCHLIGHT.block().get();
+        var lightAt = new net.minecraft.core.BlockPos(x + 6, y + 5, 4);
+        var ls = light.defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, net.minecraft.core.Direction.WEST)
+                .setValue(dev.groundburst.content.construction.SearchlightBlock.ACTIVE, true)
+                .setValue(dev.groundburst.content.construction.SearchlightBlock.SWITCHED, true);
+        level.setBlock(lightAt, ls, 3);
+        light.setPlacedBy(level, lightAt, ls, null, net.minecraft.world.item.ItemStack.EMPTY);
+        level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(x - 16, y - 6, -16, x + 16, y + 10, 16))
+                .forEach(net.minecraft.world.entity.Entity::discard);
+    }
+
+    /** Whether the world's biome at a place (read from its noise, nothing generated) is {@link #OPEN} country. */
+    private static boolean openAt(ServerLevel level, int x, int y, int z) {
+        var biome = level.getUncachedNoiseBiome(net.minecraft.core.QuartPos.fromBlock(x), net.minecraft.core.QuartPos.fromBlock(y),
+                net.minecraft.core.QuartPos.fromBlock(z));
+        return OPEN.stream().anyMatch(biome::is);
+    }
+
+    /** Whether some structure (a village, a ruin, a well) has a piece on the pad, looked for every 8 blocks over it. */
+    private static boolean structureOn(ServerLevel level, int x0, int x1, int z0, int z1, int y) {
+        var p = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int x = x0; x <= x1; x += 8) {
+            for (int z = z0; z <= z1; z += 8) {
+                for (int dy = 0; dy <= 6; dy += 3) {
+                    if (level.structureManager().getStructureWithPieceAt(p.set(x, y + dy, z), h -> true).isValid()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /** The generator's ground height at (x, z), or MIN_VALUE where it is under water. */
+    private static int groundAt(net.minecraft.world.level.chunk.ChunkGenerator gen, ServerLevel level,
+            net.minecraft.world.level.levelgen.RandomState random, int x, int z) {
+        int surface = gen.getBaseHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG, level, random);
+        int floor = gen.getBaseHeight(x, z, Heightmap.Types.OCEAN_FLOOR_WG, level, random);
+        return surface == floor ? surface : Integer.MIN_VALUE;
+    }
+
+    /**
+     * Ground: what a column's trees, plants and snow stand on (its soil, sand, rock, ice). Soil is 26.x's
+     * {@code substrate_overworld} (dirt, grass blocks, podzol, mycelium, moss, mud): its {@code dirt} tag no longer holds
+     * the grass block, and ground read under it would sink everything set on it by a block.
+     */
+    private static boolean isGround(net.minecraft.world.level.block.state.BlockState s) {
+        return s.is(net.minecraft.tags.BlockTags.SUBSTRATE_OVERWORLD) || s.is(net.minecraft.tags.BlockTags.DIRT)
+                || s.is(net.minecraft.tags.BlockTags.SAND) || s.is(net.minecraft.tags.BlockTags.TERRACOTTA)
+                || s.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD) || s.is(net.minecraft.world.level.block.Blocks.GRAVEL)
+                || s.is(net.minecraft.world.level.block.Blocks.CLAY) || s.is(net.minecraft.world.level.block.Blocks.SNOW_BLOCK)
+                || s.is(net.minecraft.world.level.block.Blocks.SANDSTONE) || s.is(net.minecraft.world.level.block.Blocks.RED_SANDSTONE)
+                || s.is(net.minecraft.world.level.block.Blocks.ICE) || s.is(net.minecraft.world.level.block.Blocks.PACKED_ICE)
+                || s.is(net.minecraft.world.level.block.Blocks.POWDER_SNOW) || s.is(net.minecraft.world.level.block.Blocks.CALCITE);
+    }
+
+    /** The y just above a column's top ground block (under its trees, plants and snow), or MIN_VALUE if none is near. */
+    private static int groundTop(ServerLevel level, int x, int z) {
+        int top = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
+        var p = new net.minecraft.core.BlockPos.MutableBlockPos(x, top, z);
+        for (int y = top; y > top - 64 && y > level.getMinY(); y--) {
+            if (isGround(level.getBlockState(p.setY(y)))) {
+                return y + 1;
+            }
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    /** What may stay on ground that has not moved: grass, ferns, flowers, snow, anything low that does not block the way. */
+    private static boolean lowCover(ServerLevel level, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState s) {
+        if (s.isAir() || !s.getFluidState().isEmpty() || s.getBlock() instanceof net.minecraft.world.level.block.DoublePlantBlock
+                || s.is(net.minecraft.tags.BlockTags.LEAVES) || s.is(net.minecraft.tags.BlockTags.LOGS)) {
+            return false;
+        }
+        return s.is(net.minecraft.world.level.block.Blocks.SNOW) || s.getCollisionShape(level, pos).isEmpty();
+    }
+
+    /**
+     * The pad cleared as a player clears a site: each column's ground set to {@code y} (its top block's top), its outer
+     * five blocks ramping to the natural ground, filled under or cut down with its own top block (grass where a tree
+     * stood); trees standing on it taken away whole, branches over its edge too, and the leaves no log holds any more
+     * after them (they would only fall, and drop saplings); what stood on ground that moved cleared, the grass, flowers
+     * and snow of ground that did not kept. Nothing drops: every block is set without the shape updates that would break
+     * what stands on it, and anything dropped all the same is cleared up.
+     */
+    private static void levelPad(ServerLevel level, int x0, int x1, int z0, int z1, int y) {
+        var p = new net.minecraft.core.BlockPos.MutableBlockPos();
+        var air = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        var dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+        var grass = net.minecraft.world.level.block.Blocks.GRASS_BLOCK.defaultBlockState();
+        var snow = net.minecraft.world.level.block.Blocks.SNOW.defaultBlockState();
+        int flags = net.minecraft.world.level.block.Block.UPDATE_CLIENTS | net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE;
+        final int ramp = 5;
+        int low = y, high = y;
+        // The trees on it first, each whole (its logs, branches over the edge too); their leaves go with the loose ones below.
+        java.util.Set<net.minecraft.core.BlockPos> logs = new java.util.HashSet<>();
+        for (int x = x0 - ramp; x <= x1 + ramp; x++) {
+            for (int z = z0 - ramp; z <= z1 + ramp; z++) {
+                int g = groundTop(level, x, z);
+                if (g != Integer.MIN_VALUE && level.getBlockState(p.set(x, g, z)).is(net.minecraft.tags.BlockTags.LOGS)) {
+                    treeLogs(level, p.immutable(), logs);
+                }
+            }
+        }
+        for (var log : logs) {
+            level.setBlock(log, air, flags);
+            high = Math.max(high, log.getY());
+        }
+        for (int x = x0 - ramp; x <= x1 + ramp; x++) {
+            for (int z = z0 - ramp; z <= z1 + ramp; z++) {
+                // How far inside the pad (negative outside it): the ramp's share of the way from the natural ground.
+                int in = Math.min(Math.min(x - x0, x1 - x), Math.min(z - z0, z1 - z));
+                double share = in >= 0 ? 1.0 : 1.0 + in / (double) ramp;            // 1 on the pad, to 0 at the ramp's foot
+                int g = groundTop(level, x, z);
+                if (share <= 0 || g == Integer.MIN_VALUE) {
+                    continue;
+                }
+                int top = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
+                int target = (int) Math.round(g + (y - g) * share);
+                var surface = level.getBlockState(p.set(x, g - 1, z));
+                boolean snowy = level.getBlockState(p.set(x, g, z)).is(net.minecraft.world.level.block.Blocks.SNOW);
+                low = Math.min(low, Math.min(g, target));
+                high = Math.max(high, top);
+                if (target == g) {
+                    // Ground that stays: only what stands on it goes, its low cover kept (top down, nothing left floating).
+                    for (int yy = top; yy >= g; yy--) {
+                        var here = level.getBlockState(p.set(x, yy, z));
+                        if (!here.isAir() && !(yy == g && lowCover(level, p, here))) {
+                            level.setBlock(p, air, flags);
+                        }
+                    }
+                    if (surface.is(net.minecraft.world.level.block.Blocks.DIRT)) {
+                        level.setBlock(p.set(x, g - 1, z), grass, flags);              // where a tree stood
+                    }
+                    continue;
+                }
+                for (int yy = Math.max(top, target); yy >= Math.min(g, target); yy--) {
+                    level.setBlock(p.set(x, yy, z), air, flags);
+                }
+                for (int yy = Math.min(g, target) - 1; yy < target - 1; yy++) {      // hollows under it filled
+                    var here = level.getBlockState(p.set(x, yy, z));
+                    if (here.isAir() || !here.getFluidState().isEmpty() || yy >= g - 1) {
+                        level.setBlock(p, dirt, flags);
+                    }
+                }
+                for (int yy = target - 2; yy > target - 6; yy--) {                    // nothing hollow under it
+                    var here = level.getBlockState(p.set(x, yy, z));
+                    if (here.isAir() || !here.getFluidState().isEmpty()) {
+                        level.setBlock(p, dirt, flags);
+                    }
+                }
+                level.setBlock(p.set(x, target - 1, z), surface.is(net.minecraft.world.level.block.Blocks.DIRT) || !isGround(surface) ? grass : surface, flags);
+                if (snowy) {
+                    level.setBlock(p.set(x, target, z), snow, flags);
+                }
+            }
+        }
+        looseLeaves(level, x0 - ramp - 8, x1 + ramp + 8, z0 - ramp - 8, z1 + ramp + 8, low - 2, high + 2, flags);
+        var box = new net.minecraft.world.phys.AABB(x0 - 24, low - 8, z0 - 24, x1 + 25, high + 24, z1 + 25);
+        level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).forEach(net.minecraft.world.entity.Entity::discard);
+    }
+
+    /** A tree's logs from its trunk's foot: every log joined to it (diagonally too: an acacia's branches), within 12 across. */
+    private static void treeLogs(ServerLevel level, net.minecraft.core.BlockPos foot, java.util.Set<net.minecraft.core.BlockPos> out) {
+        var queue = new java.util.ArrayDeque<net.minecraft.core.BlockPos>();
+        if (out.add(foot)) {
+            queue.add(foot);
+        }
+        while (!queue.isEmpty() && out.size() < 20_000) {
+            var at = queue.poll();
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        var n = at.offset(dx, dy, dz);
+                        if (Math.abs(n.getX() - foot.getX()) <= 12 && Math.abs(n.getZ() - foot.getZ()) <= 12 && n.getY() >= foot.getY()
+                                && n.getY() <= foot.getY() + 40 && !out.contains(n) && level.getBlockState(n).is(net.minecraft.tags.BlockTags.LOGS)) {
+                            out.add(n);
+                            queue.add(n);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Leaves no log holds any more (as the game counts it: a log within six steps through leaves) taken away, as they
+     * would fall; and what hung on what went (vines, cocoa, bee nests).
+     */
+    private static void looseLeaves(ServerLevel level, int x0, int x1, int z0, int z1, int y0, int y1, int flags) {
+        var air = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        var p = new net.minecraft.core.BlockPos.MutableBlockPos();
+        java.util.Map<net.minecraft.core.BlockPos, Integer> held = new java.util.HashMap<>();
+        var queue = new java.util.ArrayDeque<net.minecraft.core.BlockPos>();
+        final int reach = net.minecraft.world.level.block.LeavesBlock.DECAY_DISTANCE - 1;
+        for (int x = x0 - reach; x <= x1 + reach; x++) {
+            for (int z = z0 - reach; z <= z1 + reach; z++) {
+                for (int yy = y0; yy <= y1; yy++) {
+                    if (level.getBlockState(p.set(x, yy, z)).is(net.minecraft.tags.BlockTags.LOGS)) {
+                        var log = p.immutable();
+                        held.put(log, 0);
+                        queue.add(log);
+                    }
+                }
+            }
+        }
+        while (!queue.isEmpty()) {
+            var at = queue.poll();
+            int d = held.get(at);
+            if (d >= reach) {
+                continue;
+            }
+            for (var dir : net.minecraft.core.Direction.values()) {
+                var n = at.relative(dir);
+                if (!held.containsKey(n) && n.getY() >= y0 && n.getY() <= y1 && level.getBlockState(n).is(net.minecraft.tags.BlockTags.LEAVES)) {
+                    held.put(n, d + 1);
+                    queue.add(n);
+                }
+            }
+        }
+        for (int x = x0; x <= x1; x++) {
+            for (int z = z0; z <= z1; z++) {
+                for (int yy = y1; yy >= y0; yy--) {
+                    var here = level.getBlockState(p.set(x, yy, z));
+                    boolean loose = here.is(net.minecraft.tags.BlockTags.LEAVES) && !held.containsKey(p)
+                            && !(here.hasProperty(net.minecraft.world.level.block.LeavesBlock.PERSISTENT)
+                                    && here.getValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT));
+                    boolean hanging = (here.is(net.minecraft.world.level.block.Blocks.VINE) || here.is(net.minecraft.world.level.block.Blocks.COCOA))
+                            && !here.canSurvive(level, p);
+                    boolean nest = here.is(net.minecraft.world.level.block.Blocks.BEE_NEST) && java.util.Arrays.stream(net.minecraft.core.Direction.values())
+                            .noneMatch(d -> level.getBlockState(p.relative(d)).is(net.minecraft.tags.BlockTags.LOGS));
+                    if (loose || hanging || nest) {
+                        level.setBlock(p, air, flags);
+                    }
+                }
+            }
+        }
     }
 
     /** {@code -PfxWorld=sea}: a flat sea to the horizon (bedrock, stone, sand and 24 of water; ocean), for Distant Horizons. */
@@ -1998,6 +2477,9 @@ public final class FxPhotographer {
     private static void tick() {
         Minecraft mc = Minecraft.getInstance();
         mc.options.pauseOnLostFocus = false;              // another window taking the focus must not pause the shots
+        if (REAL) {
+            mc.gui.getChat().clearMessages(false);     // no server messages ("a SCUD Storm has been detected") in the pictures
+        }
         if (mc.options.tutorialStep != net.minecraft.client.tutorial.TutorialSteps.NONE) {
             mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);    // no "Move with W, A, S and D" toast
         }
@@ -2011,6 +2493,10 @@ public final class FxPhotographer {
                 if ("sea".equals(System.getProperty("groundburst.fxShots.world", ""))) {
                     mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(0L, false, false),
                             FxPhotographer::seaWorld, mc.screen);
+                } else if (REAL) {
+                    long seed = Long.getLong("groundburst.fxShots.seed", 1_230_027_951L);
+                    mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(seed, true, false),
+                            net.minecraft.world.level.levelgen.presets.WorldPresets::createNormalWorldDimensions, mc.screen);
                 } else {
                     mc.createWorldOpenFlows().createFreshLevel(folder, settings,
                             net.minecraft.client.gui.screens.worldselection.SelectWorldScreen.TEST_OPTIONS,
@@ -2042,11 +2528,27 @@ public final class FxPhotographer {
                 mc.options.broadcastOptions();             // the server sends a player only as far as it said it sees when it joined
             }
             Scene s = scene;
-            int x = site * 1200;
+            int x0 = site * 1200;
+            sceneX = x0;
+            siteReady = false;
+            sceneSkipped = false;
             server.execute(() -> {
                 ServerLevel level = server.overworld();
                 server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), "time set " + s.time());
                 server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), "gamerule advance_time false");
+                if (REAL) {                                    // no monsters, phantoms or rain in the pictures
+                    for (String c : List.of("difficulty peaceful", "gamerule spawn_monsters false", "gamerule spawn_phantoms false",
+                            "gamerule spawn_patrols false", "gamerule advance_weather false", "weather clear")) {
+                        server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), c);
+                    }
+                }
+                int x = REAL ? realSite(level, x0, s) : x0;
+                if (x == Integer.MIN_VALUE) {
+                    sceneSkipped = true;
+                    siteReady = true;
+                    return;
+                }
+                sceneX = x;
                 ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                 player.setGameMode(GameType.SPECTATOR);
                 level.getChunk(x >> 4, 0);
@@ -2055,7 +2557,13 @@ public final class FxPhotographer {
                 if (s.profile().startsWith("factory_")) {
                     lift = 7;                                  // over the factories' walls, into their yards
                 }
-                if (s.profile().equals("antimatter_warhead") || s.profile().equals("singularity_warhead")) {
+                if (s.profile().equals("circuit_line")) {      // over the line, steeply down onto it from above, or close
+                    lift = s.name().endsWith("_aerial") ? 14 : s.name().endsWith("_close") ? 2.4 : 6;
+                }
+                if (s.profile().equals("bunker")) {            // a man's height, a little up
+                    lift = 2.4;
+                }
+                if (!REAL && (s.profile().equals("antimatter_warhead") || s.profile().equals("singularity_warhead"))) {
                     antimatterMesa(level, x, ground);          // built now, so the client has it long before the burst
                     if (s.name().endsWith("_aerial")) {
                         lift += ANTIMATTER_MESA;               // over the mesa it lands on
@@ -2063,10 +2571,10 @@ public final class FxPhotographer {
                         lift = ANTIMATTER_MESA + 6;            // level with the mesa's top, to see the hole on it
                     }
                 }
-                if (s.profile().equals("cryogenic_warhead")) {
+                if (!REAL && s.profile().equals("cryogenic_warhead")) {
                     cryoField(level, x, ground);               // laid now: it takes the server a few seconds
                 }
-                if (s.profile().equals("particle_beam")) {
+                if (!REAL && s.profile().equals("particle_beam")) {
                     beamField(level, x, ground);
                 }
                 if (s.profile().equals("msilo")) {             // on the silo's plateau, looking down at it (steeply, into its shaft)
@@ -2076,21 +2584,40 @@ public final class FxPhotographer {
                     sea(level, x, ground);
                     lift = s.name().endsWith("_under") ? SEA - 6 : SEA + 1.6 + (s.pitch() > 10 ? s.distance() * 0.5 : 0);
                 }
+                if (REAL) {                                    // never inside the real ground between
+                    level.getChunk((x - s.distance()) >> 4, 0);
+                    int under = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x - s.distance(), 0);
+                    lift = Math.max(lift, under + 1.6 - ground);
+                }
                 player.teleportTo(level, x - s.distance() + 0.5, ground + lift, 0.5, java.util.Set.of(), -90, s.pitch(), true);
+                siteReady = true;
             });
             return;
         }
         if (step == -1) {
+            if (!siteReady) {
+                clock = 0;                                 // a real world's search may take a while: wait, then let the chunks come
+                return;
+            }
+            if (sceneSkipped) {
+                scene = null;
+                return;
+            }
             if (clock < (scene.name().startsWith("dh_") ? 900 : 100)) {
                 return;                                    // let the chunks round the new site load (Distant Horizons: its far terrain)
             }
             Scene s = scene;
-            int x = site * 1200;
+            int x = sceneX;
             server.execute(() -> {
                 ServerLevel level = server.overworld();
                 level.getChunk(x >> 4, 0);                 // a far scene's middle may have unloaded: its height would read the world's floor
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0);
                 Vec3 at = new Vec3(x + 0.5, ground + 0.5, 0.5);
+                if (REAL) {                                // nothing lying about from before the scene
+                    level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                            new net.minecraft.world.phys.AABB(x - 80, ground - 40, -80, x + 80, ground + 80, 80))
+                            .forEach(net.minecraft.world.entity.Entity::discard);
+                }
                 if (s.profile().startsWith("naval_")) {
                     naval(level, x, ground, s.profile());    // (the ground is the sea's surface now)
                     return;
@@ -2203,6 +2730,21 @@ public final class FxPhotographer {
                 }
                 if (s.profile().startsWith("factory_")) {
                     factorySite(level, x, ground, s.profile().endsWith("arms"));
+                    return;
+                }
+                if (s.profile().equals("bunker")) {
+                    int floorAt = REAL ? groundTop(level, x, 0) : ground;
+                    bunker(level, x, floorAt == Integer.MIN_VALUE ? ground : floorAt);
+                    return;
+                }
+                if (s.profile().equals("circuit_line")) {
+                    // The line's machines along x (the camera's), its middle in front of the camera, on a concrete floor.
+                    int floorAt = REAL ? groundTop(level, x, 0) : ground;    // on the ground itself, not on its snow
+                    // Its aisle along the camera's line (z = 0), the hall's middle (x + 5 of its origin) at the scene's.
+                    var o = new net.minecraft.core.BlockPos(x - 5, floorAt == Integer.MIN_VALUE ? ground : floorAt, -2);
+                    dev.groundburst.gametest.CircuitLine.floor(level, o);
+                    dev.groundburst.gametest.CircuitLine.build(level, o);
+                    lineAt = o;
                     return;
                 }
                 if (s.profile().equals("fission")) {
@@ -2543,7 +3085,7 @@ public final class FxPhotographer {
         }
         if (scene.name().equals("aftermath") && step >= 0 && clock == 60) {
             // Slice 12b: a plume over the camera in a light wind, ash settling and falling, its cloud overhead.
-            int sx = site * 1200;
+            int sx = sceneX;
             server.execute(() -> {
                 ServerLevel level = server.overworld();
                 dev.groundburst.content.fallout.Wind.of(level).hold((float) Math.PI / 2, 0.6f);
@@ -2641,7 +3183,7 @@ public final class FxPhotographer {
             });
         }
         if (scene.profile().equals("particle_beam") && step >= 0 && clock >= 25 && clock < 25 + dev.groundburst.blast.ParticleBeams.BURN) {
-            int x = site * 1200, c = clock;
+            int x = sceneX, c = clock;
             server.execute(() -> {
                 ServerLevel level = server.overworld();
                 double z = Math.min(BEAM_TO_Z, BEAM_FROM_Z + (c - 25) * dev.groundburst.blast.ParticleBeams.SPEED);
@@ -2671,11 +3213,11 @@ public final class FxPhotographer {
             });
         }
         if (scene.profile().equals("howitzer_view") && step >= 0 && clock == 8 && mc.level != null) {
-            int x = site * 1200;
+            int x = sceneX;
             ArtilleryClient.photoView(new Vec3(x + 560.5, mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0), 0.5), 90);
         }
         if (scene.profile().equals("howitzer_edge") && step >= 0 && clock == 8 && mc.level != null) {
-            int x = site * 1200;
+            int x = sceneX;
             ArtilleryClient.photoView(new Vec3(x + 190.5, mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0), 0.5), 48);
         }
         if (scene.profile().equals("howitzer_view") && step >= 0 && clock == 230 && mortarAt != null) {
@@ -2688,7 +3230,7 @@ public final class FxPhotographer {
             });
         }
         if (scene.profile().equals("mortar_impact") && step >= 0 && (clock == 15 || clock == 22 || clock == 30)) {
-            int x = site * 1200, i = clock == 15 ? 0 : clock == 22 ? 1 : 2;
+            int x = sceneX, i = clock == 15 ? 0 : clock == 22 ? 1 : 2;
             server.execute(() -> {
                 ServerLevel level = server.overworld();
                 int[][] spots = {{2, 0}, {12, -8}, {8, 9}};
@@ -2704,7 +3246,7 @@ public final class FxPhotographer {
             });
         }
         if (scene.profile().equals("mortar_view") && step >= 0 && clock == 8 && mc.level != null) {
-            int x = site * 1200;
+            int x = sceneX;
             int y = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x + 70, 0);
             ArtilleryClient.photoView(new Vec3(x + 70.5, y, 0.5), 36);
         }
@@ -2718,7 +3260,7 @@ public final class FxPhotographer {
             });
         }
         if (scene.profile().equals("scud_strike") && step >= 0 && (clock == 25 || clock == 37 || clock == 49)) {
-            int x = site * 1200, i = (clock - 25) / 12;
+            int x = sceneX, i = (clock - 25) / 12;
             server.execute(() -> {
                 ServerLevel level = server.overworld();
                 int[][] spots = {{4, -7}, {11, 6}, {-3, 9}};
@@ -3018,7 +3560,28 @@ public final class FxPhotographer {
                 && SingularityFx.growing()) {
             clock--;   // its server, busy tearing, runs behind this clock: the moments after its life count from its collapse
         }
+        if (REAL && step >= 0 && step < scene.moments().size() && clock == scene.moments().get(step) - 3) {
+            int sx = sceneX;
+            server.execute(() -> server.overworld().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                    new net.minecraft.world.phys.AABB(sx - 120, -64, -120, sx + 120, 320, 120)).forEach(net.minecraft.world.entity.Entity::discard));
+        }
         if (step < scene.moments().size() && clock == scene.moments().get(step)) {
+            var line = lineAt;
+            if (scene.profile().equals("circuit_line") && line != null) {
+                int seconds = clock / 20;
+                server.execute(() -> {
+                    ServerLevel level = server.overworld();
+                    List<String> running = new java.util.ArrayList<>();
+                    dev.groundburst.gametest.CircuitLine.MACHINES.forEach((machine, at) -> {
+                        if (level.getBlockEntity(line.offset(at)) instanceof dev.groundburst.content.machine.MachineBlockEntity m) {
+                            running.add(machine + " " + m.status().name().toLowerCase(java.util.Locale.ROOT));
+                        }
+                    });
+                    GroundBurst.LOGGER.info("Circuit line: {} advanced circuits in its chest after {} s; {}", dev.groundburst.gametest.CircuitLine.count(
+                            level, line.offset(dev.groundburst.gametest.CircuitLine.OUTPUT), dev.groundburst.content.part.GBParts.ADVANCED_CIRCUIT.get()),
+                            seconds, running);
+                });
+            }
             String name = "fx_" + scene.name() + "_" + clock + ".png";
             Screenshot.grab(mc.gameDirectory, name, mc.getMainRenderTarget(), 1,
                     msg -> GroundBurst.LOGGER.info("Fx shot: {}", msg.getString()));

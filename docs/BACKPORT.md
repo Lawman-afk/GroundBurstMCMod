@@ -6,7 +6,11 @@ Main is written for Minecraft 26.3 (NeoForge 26.3). This branch is the same mod 
 - **Why a backport from main** (main's DESIGN.md §30): 26.1.2 is two minor versions before 26.3 and shares most of its
   code (the same rendering by render states and submitted geometry, item model definitions, data components, the same
   GameTest framework); a forward port from the 1.21.1 branch would cross every change from 1.21.2 to 26.1.
-- **Last brought up to:** `main` at `8eb031af` (2026-11-07: 0.10.0, released for all three versions as
+- **Last brought up to:** `main` at `369fcb74` (2026-11-08: pipes and hoppers keep one input slot an ingredient, main's
+  DESIGN.md §6.5; the advanced-circuit line, `gametest/CircuitLine`, and its GameTests; the mod page's pictures and
+  description, main's README, the photographers' real-world modes (`build.gradle` given `-PfxWorld`, `-PfxSeed`,
+  `-PhealWorld`, `-PhealSeed`, `-PshotSize` and the bench's picture options; the chat cleared as `mc.gui.getChat()`,
+  a port substitution). The glowmask pipeline's accessors go (a `FILE_FIXES` entry: `IrisFx` is left out here); before it, at `8eb031af` (2026-11-07: 0.10.0, released for all three versions as
   `groundburst-mc26.1.2-0.10.0.jar`: main's changelog, README and description; before it, at `6fe765f5`: a ladder
   built into the Bunker Hatch, down its front
   under the coaming and climbable as a ladder (NeoForge's `isLadder`, this version's as main's), the extinguisher's
@@ -69,7 +73,7 @@ their lines).
 
 ## Checks
 
-- `gradlew runGameTestServer`: main's GameTests (442 at `6fe765f5`, all passed).
+- `gradlew runGameTestServer`: main's GameTests (444 at `369fcb74`, all passed).
 - `gradlew runPlayBench [-Pjfr=<name>]`, `runBlastBench`, `runFxShots`, `runManualShots`, `runSiteShots`,
   `runHealShots`: main's benches and photographers (`runSiteShots -Psite=doors`: the bunker doors; `room`: the command room; `fittings`: the bunker fittings; `yard`: the yard, with a picture at midnight).
 - `gradlew runShowroom`: main's showroom world (`run/saves/ground_burst_showroom`; `-PshowroomWalk=true`: the timed
