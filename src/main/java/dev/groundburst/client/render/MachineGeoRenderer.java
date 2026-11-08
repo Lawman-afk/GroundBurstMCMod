@@ -67,10 +67,6 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     private boolean standing;
 
     /**
-     * Its model is built standing on its base, pointing up (a Warning Beacon): turned about the block's middle to point
-     * the way the block faces, on a floor, a ceiling or a wall.
-     */
-    /**
      * GeckoLib's pipeline for glowmasks, for Iris to be told how to draw it (client/fx/IrisFx): a shader pack has no
      * program for a pipeline it does not know, and drew the glowing parts' vertices as long streaks across the sky (a
      * warning beacon's light fins, a machine's lamps).
@@ -79,6 +75,10 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         return GlowLayer.pipeline();
     }
 
+    /**
+     * Its model is built standing on its base, pointing up (a Warning Beacon): turned about the block's middle to point
+     * the way the block faces, on a floor, a ceiling or a wall.
+     */
     public MachineGeoRenderer<T> standing() {
         this.standing = true;
         return this;
