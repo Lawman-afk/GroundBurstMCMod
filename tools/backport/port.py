@@ -387,6 +387,12 @@ def drop_method(signature: str):
 SKY = "dev.groundburst.port.SkyColors"
 
 FILE_FIXES: dict[str, list] = {
+    # A site gives way to the rarer ones near it (main's DESIGN.md §22.8), asking them in a generation context of its own
+    # making: this version's has no climate sampler of its own.
+    "src/main/java/dev/groundburst/world/structure/SiteStructure.java": [
+        swap("context.biomeSource(), context.climateSampler(),\n                context.randomState()",
+             "context.biomeSource(),\n                context.randomState()"),
+    ],
     # The glowmasks' pipeline, handed to Iris by IrisFx: with Iris, a copy of GeckoLib 5.5.2's with an alpha cutout.
     # Iris 1.11.4 picks a pack's program for a pipeline by its vertex layout and its cutout, and GeckoLib's, with none,
     # got a sky program: every glowing part was gone under a pack. 26.1.2's pipeline class is blaze3d's (26.3 moved it).

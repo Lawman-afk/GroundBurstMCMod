@@ -6,7 +6,7 @@ Main is written for Minecraft 26.3 (NeoForge 26.3). This branch is the same mod 
 - **Why a backport from main** (main's DESIGN.md §30): 26.1.2 is two minor versions before 26.3 and shares most of its
   code (the same rendering by render states and submitted geometry, item model definitions, data components, the same
   GameTest framework); a forward port from the 1.21.1 branch would cross every change from 1.21.2 to 26.1.
-- **Last brought up to:** `main` at `6dbc3f68` (2026-11-08: the Cold War sites remastered with the cosmetic sets,
+- **Last brought up to:** `main` at `228702cb` (2026-11-08: version 0.11.0, built for all three versions as `groundburst-mc26.1.2-0.11.0.jar`: the remastered sites and the day's fixes in one release; the sites' block-entity marks dropped and each site keeping 7 chunks clear of the rarer kinds, main's DESIGN.md §22.8; the README's and the description's site pictures); before it, at `6dbc3f68` (2026-11-08: the Cold War sites remastered with the cosmetic sets,
   main's DESIGN.md §22.8: the site templates converted as ever, the site tools); before it, at `1a9286d6` (2026-11-08:
   0.10.1, built for all three versions as
   `groundburst-mc26.1.2-0.10.1.jar` but not uploaded: it goes out with the remaster as one release; main's changelog, the CurseForge description's long parts always open; this
