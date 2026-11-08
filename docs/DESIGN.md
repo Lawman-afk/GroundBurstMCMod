@@ -1693,6 +1693,25 @@ the eyes shader a pack made the fire glow white, and the clouds' own shader is o
 show), the glow staying on the eyes shader. Checked with the port check's blast, particle beam and water column under
 Bliss and Complementary Reimagined and without a pack, and with Distant Horizons 3.3.3.
 
+**26.1.2** (the branch's own `FxRenderTypes`; its docs/BACKPORT.md; 2026-11-08): left out when the branch was made and
+not tried under a pack until the user asked whether it was broken. It was, worse than 26.3 had been: with Iris 1.11.4
+and Complementary Reimagined the effects drew nothing at all and the machines' glowing parts were gone. Iris 1.11.4
+draws a pipeline it does not know with that pipeline's own shader ("Missing program ... in override list"), and one it
+is told about (`assignPipeline`) with the pack program of that kind whose vertex layout and alpha test match:
+GeckoLib 5.5.2's glowmask pipeline (on Windows; elsewhere it uses vanilla's eyes), which declares no alpha cutout, got
+a sky program of another layout (`SPS`, "a decent match") even when told. Now as here: main's `IrisFx` ported on
+26.1.2's pipeline class; the branch's `FxRenderTypes` keeps the effects back from the level under a pack (unless "Lit by
+the pack") and with Distant Horizons, and draws them at NeoForge's after-level stage, which 26.1.2 fires from the game
+renderer once the level's drawing (with Iris's last passes) has returned and before the hand's depth is cleared, the
+level's view pushed again and its fog; with Iris installed, the glowmasks are drawn on a copy of GeckoLib's pipeline
+with an alpha cutout of a 255th (`MachineGeoRenderer`'s `GlowLayer`, a port fix), which Iris matches to the pack's
+emissive entity program (`ENTITIES_EYES_TRANS`), as it does the effects' glow. A crash met on the way (the particle
+beam's scene, "Missing sampler Sampler1", from vanilla's item type for dropped items under Iris's item program) was the
+dev runs' own draw checks, which players' games do not make; 26.1.2 names their switch `neoforge.disableGlValidation`.
+Checked with the photographer's shader scenes and the alarm wall under Complementary Reimagined and Bliss, with the
+effects drawn by the pack, without a pack, and with Distant Horizons 3.3.3 on a sea. Under Bliss the warning beacons'
+domes glow but their faint light sweeps did not show, as Complementary shows them (not looked into further).
+
 **Distant Horizons** (3.3.4; the same player: its far water drawn through the cloud). Reproduced without a pack, on a
 flat sea (`-PfxWorld=sea`) with the view at 8 chunks and a nuke 230 blocks off: the cloud's foot cut off flat by a band
 of far sea in DH's fog colour, where without DH the base surge reaches down to the water. DH draws its far terrain
@@ -5707,6 +5726,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-08 | **26.1.2 under shader packs** (§12.3; the user: "if it is broken that is top priority"): the branch had been left without main's `IrisFx` and `DrawnLast`, and with Iris 1.11.4 its effects drew nothing and the glowing parts were gone. Main's `IrisFx` ported, the effects drawn after the level by the branch's own `FxRenderTypes` with the client option, and the glowmasks, with Iris installed, on a copy of GeckoLib's pipeline with an alpha cutout (Iris gave GeckoLib's own a sky program). |
 | 2026-11-08 | **The machines' glowing parts under a shader pack** (§12.3; the user saw it in the real-world shots): GeckoLib's glowmask pipeline, unknown to Iris, drew a beacon's light fins and the machines' lamps as streaks across the sky; `IrisFx` hands it to the pack's emissive entity program. |
 | 2026-11-08 | **One input slot an ingredient for pipes and hoppers** (§6.5), found while building the circuit line the user asked for ("a fully functioning circuit factory with pipes and wires showing the layout"; §8.1): an item goes into a slot that holds it, or an empty one only while no other input slot holds it; by hand anything goes. A Circuit Fabricator fed from one chest filled every slot with copper wire and waited for ever. GameTests `pipes_keep_a_slot_for_each_ingredient` and `circuit_line_makes_advanced_circuits` (the whole line on its own power); 444. |
 | 2026-11-08 | **Pictures for players come from real worlds** (the user's rule: "For photos that are shown to the mod audience they should all be in real worlds, and for structures it should be naturally generated ones"; the user chose to remaster the structures with the new props first and photograph them after). `runFxShots -PfxWorld=real` and `runHealShots -PhealWorld=real` make a normal world (the blast bench's seed). Each scene's site is found from the generator's noise: dry land, never water, anything set up in open country first and never on a structure. The site is cleared as a player clears one: trees go whole, nothing drops, and the ground's own grass and flowers stay where it did not move. Server messages are kept off the screen. The flat-world photographers and the boards stay for reviewing work. |

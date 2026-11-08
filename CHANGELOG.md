@@ -1,14 +1,23 @@
 # Changelog
 
-## Unreleased
+## 0.10.1 — 2026-11-08
+
+Fixes for shader packs and for machines fed by pipes: on 26.1.2 the blast effects and glowing parts now show under a
+shader pack, on 26.3 the glowing parts no longer streak under one, and pipes no longer clog a machine's input slots.
+For Minecraft 26.3, 26.1.2 and 1.21.1.
 
 ### Fixes
 - Pipes and hoppers fill each ingredient into one input slot of a machine. A pipe bringing more of one ingredient than
   a slot holds used to fill the next slots too, until the machine stood waiting with every slot full (a Circuit
   Fabricator fed copper wire, redstone and plastic from one chest filled all four with wire). Filling by hand is as it
   was.
-- With a shader pack on, the glowing parts of machines and alarms (a Warning Beacon's light, a machine's lamps) no longer
-  streak across the sky.
+- Minecraft 26.3 with a shader pack on: the glowing parts of machines and alarms (a Warning Beacon's light, a machine's
+  lamps) no longer streak across the sky.
+- Minecraft 26.1.2 with a shader pack on (Iris): the blast effects (fireballs, smoke, mushroom clouds, beams, water
+  columns) drew nothing at all, and the glowing parts of machines and alarms were missing. Both now show as on 26.3:
+  the effects are drawn over the pack's finished picture, or by the pack itself with the client setting "Effects with
+  shader packs", which 26.1.2 now has too. With Distant Horizons the effects are drawn after its far terrain there as
+  well.
 
 ## 0.10.0 — 2026-11-07
 
