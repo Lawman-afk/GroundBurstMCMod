@@ -1,10 +1,6 @@
 # Changelog
 
-## 0.10.1 — 2026-11-08
-
-Fixes for shader packs and for machines fed by pipes: on 26.1.2 the blast effects and glowing parts now show under a
-shader pack, on 26.3 the glowing parts no longer streak under one, and pipes no longer clog a machine's input slots.
-For Minecraft 26.3, 26.1.2 and 1.21.1.
+## Unreleased
 
 ### Fixes
 - Pipes and hoppers fill each ingredient into one input slot of a machine. A pipe bringing more of one ingredient than
