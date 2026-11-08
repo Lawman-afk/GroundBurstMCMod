@@ -9,6 +9,11 @@
   was.
 - With a shader pack on, the glowing parts of machines and alarms (a Warning Beacon's light, a machine's lamps) no longer
   streak across the sky.
+- Minecraft 26.1.2 with a shader pack on (Iris): the blast effects (fireballs, smoke, mushroom clouds, beams, water
+  columns) drew nothing at all, and the glowing parts of machines and alarms were missing. Both now show as on 26.3:
+  the effects are drawn over the pack's finished picture, or by the pack itself with the client setting "Effects with
+  shader packs", which 26.1.2 now has too. With Distant Horizons the effects are drawn after its far terrain there as
+  well.
 
 ## 0.10.0 — 2026-11-07
 
