@@ -3,12 +3,17 @@ the air-defence stations inland, built to the kit's rules (tools/structure/kit.p
 
 Its landmark is the radar tower in the north-west: concrete, three storeys with band courses and a ring of windows round
 its radar room, a deck oversailing its top on corbels, and on the deck a radome of panels, its weather side blown out.
-Across the yard the search radar's lattice tower stands empty, its antenna (the Wrecked Search Radar) lying in the grass
-south of it. A module train of three corrugated modules on piers, joined by short corridors, runs along the south-east
-(operations, quarters, the generator with its stack); a tropospheric-scatter billboard on lattice legs faces south-west,
-a corner of it fallen. Utility poles carry the wire from the generator to the tower; floodlights on poles at the gate and
-in the yard; chain-link round it all with barbed wire along its top, runs of it fallen; an I-beam gate with a guard hut
-by it; a gravel road in from the gate, its verges grassed over.
+Inside, behind a pressure door, the switchboard's breakers on the ground floor, the crew's bunk bed and locker above,
+the radar room's row of consoles, its tape drives and records at the top, a breaker on each floor still on with its lamp
+lit, and a bunker hatch at the top of the ladder out onto the deck. Across the yard the search radar's lattice tower
+stands empty, its antenna (the Wrecked Search Radar) lying in the grass south of it. A module train of three corrugated
+modules on piers, joined by short corridors, runs along the south-east: operations (its consoles, a desk, the filing
+cabinets and a tape drive), the quarters (bunk beds, lockers), the generator (its stack, drums, the fuel line along the
+wall, an extinguisher); a pressure door into it. A tropospheric-scatter billboard on lattice legs faces south-west, a
+corner of it fallen. Utility poles carry the wire from the generator to the tower; floodlights on poles at the gate and
+in the yard; chain-link round it all with barbed wire along its top, runs of it fallen; an I-beam gate with Jersey
+barriers staggered inside it and a guard hut by it, a searchlight on its roof; rusted hedgehogs by the east fence; a
+gravel road in from the gate, its verges grassed over.
 
 Template: 46 x 26 x 44 (x east, y up, z south); layer 0 the land's top (kit.py).
 """
@@ -88,27 +93,41 @@ def radar_tower(k: Kit) -> None:
     k.set(cx - 1, 1, z1, HAZARD), k.set(cx + 1, 1, z1, HAZARD)
     k.set(cx - 1, 2, z1, HAZARD), k.set(cx + 1, 2, z1, HAZARD), k.set(cx, 3, z1, HAZARD)
     k.set(cx - 1, 3, z1, HAZARD), k.set(cx + 1, 3, z1, HAZARD)
-    k.iron_door(cx, 1, z1, S)
+    k.pressure_door(cx, 1, z1, S)
     k.set(cx, 3, z1 + 1, FLOODLIGHT, {"facing": S})
     k.set(cx + 2, 2, z1 + 1, gb("keep_out_sign"), {"facing": S})
-    # Inside: a ladder up the north-west corner through every floor to the deck hatch.
+    # Inside: a ladder up the north-west corner through every floor to the bunker hatch in the deck, its own ladder down
+    # its north side running on from the one below.
     k.ladder(x0 + 1, 1, DECK_Y - 1, z0 + 1, S)
-    for y in (4, 8, DECK_Y):
+    for y in (4, 8):
         k.set(x0 + 1, y, z0 + 1, AIR)
-    k.set(x0 + 1, DECK_Y, z0 + 1, "iron_trapdoor", {"facing": S, "half": "top", "open": True, "powered": False, "waterlogged": False})
-    # Ground floor: the plant (a switchboard, cable trays); first floor: the crew's room; the radar room's consoles.
+    k.hatch(x0 + 1, DECK_Y, z0 + 1, N)
+    # Ground floor: the plant, the switchboard's panels with their breakers on them (all off: one left on beside the
+    # others would have them look on, `sites.check_power`), the stores' crates; a breaker by the door, its lamp lit (a
+    # block clear of the door: its signal would open it).
     k.fill(x0 + 1, 1, z1 - 1, x0 + 3, 2, z1 - 1, PANEL)
-    k.set(x0 + 2, 2, z1 - 2, "lever", {"face": "wall", "facing": N, "powered": False})
-    k.barrel(x1 - 1, 1, z0 + 1, "up", "radar_outpost")
-    k.bed(x1 - 2, 5, z0 + 1, S, "gray")
+    for x in (x0 + 1, x0 + 2, x0 + 3):
+        k.fuse_box(x, 2, z1 - 2, N)
+    k.crates(x1 - 1, 1, z0 + 1, W, "radar_outpost")
+    k.breaker(cx + 2, 2, z1 - 1, N)
+    # First floor: the crew's room (a bunk bed and a locker, the stove), its breaker by the ladder.
+    k.bunk(x1 - 2, 5, z0 + 1, S)
+    k.locker(x1 - 1, 5, z0 + 1, W)
     k.set(x1 - 1, 5, z1 - 1, "smoker", {"facing": W, "lit": False})
-    for x in range(x0 + 2, x1 - 1):                    # the consoles along the north wall: panels with screens over them
-        k.set(x, 9, z0 + 1, PANEL)
-        k.set(x, 10, z0 + 1, "black_stained_glass" if x % 2 else "gray_stained_glass")
-    k.set(cx, 9, z0 + 2, "lever", {"face": "floor", "facing": S, "powered": False})
-    k.chest(x1 - 1, 9, z1 - 1, W, "radar_outpost")
-    for y in (3, 7, 11):
-        k.lantern(cx, y, cz, hanging=True)
+    k.breaker(x0 + 3, 6, z0 + 1, S)                      # on the wall between its two windows
+    # The radar room: the consoles along the north wall, a chair at every other one; the tape drives and the records by
+    # the south windows; its breaker by the ladder on the west wall.
+    for x in range(x0 + 2, x1 - 1):
+        k.console(x, 9, z0 + 1, S)
+        if x % 2:
+            k.stairs(x, 9, z0 + 2, "spruce_stairs", S)
+    for x in (x0 + 2, x0 + 3):
+        k.tape_computer(x, 9, z1 - 1, N)
+    k.cabinet(x1 - 1, 9, z1 - 1, W, "radar_outpost")
+    k.cabinet(x1 - 1, 9, z1 - 2, W)
+    k.breaker(x0 + 1, 11, z0 + 2, E)
+    for y in (3, 7, DECK_Y - 1):                         # the ceilings' lamps, dead
+        k.bunker_lamp(cx, y, cz)
     # On the deck: the radome, its west (weather) side blown out; inside, the antenna on its pedestal.
     def blown(x, y, z):
         return x <= cx - 2 and y >= DECK_Y + 3 and k.n(x, y, z, 2.2, 41) > 0.42
@@ -183,30 +202,52 @@ def module_train(k: Kit) -> None:
         k.clear(xa, FLOOR + 1, MZ0 + 3, xb, FLOOR + 2, MZ0 + 5)
     # The way in: the west end's door up two steps.
     x0 = MODULES[0][0]
-    k.iron_door(x0, FLOOR + 1, MZ0 + 4, W)
+    k.pressure_door(x0, FLOOR + 1, MZ0 + 4, W)
     k.set(x0 - 1, FLOOR, MZ0 + 4, "smooth_stone_slab", {"type": "top", "waterlogged": False})
     k.set(x0 - 2, 1, MZ0 + 4, "stone_brick_stairs", {"facing": E, "half": "bottom", "shape": "straight", "waterlogged": False})
     k.footing(x0 - 2, MZ0 + 4, "gravel")
     k.set(x0 - 1, FLOOR + 3, MZ0 + 3, FLOODLIGHT, {"facing": W})
-    # Inside: operations (consoles), quarters (bunks, lockers, a table), the generator (its frame and drums).
+    # Inside, the way through along the middle kept clear. Operations: two consoles against the east end, a chair before
+    # them; the filing cabinets on the north wall; the duty desk and its chair, a tape drive and a cabinet at the south end;
+    # a breaker by the door, its lamp lit.
     a0, a1 = MODULES[0]
-    for z in range(MZ0 + 1, MZ0 + 4):
-        k.set(a1 - 1, FLOOR + 1, z, PANEL)
-        k.set(a1 - 1, FLOOR + 2, z, "black_stained_glass")
-    k.set(a1 - 2, FLOOR + 1, MZ0 + 2, "lever", {"face": "floor", "facing": W, "powered": False})
+    for z in (MZ0 + 1, MZ0 + 2):
+        k.console(a1 - 1, FLOOR + 1, z, W)
+    k.stairs(a1 - 2, FLOOR + 1, MZ0 + 1, "spruce_stairs", W)
+    k.cabinet(a0 + 1, FLOOR + 1, MZ0 + 1, S)
+    for x in (a0 + 1, a0 + 2):
+        k.desk(x, FLOOR + 1, MZ1 - 1, N)
+    k.stairs(a0 + 1, FLOOR + 1, MZ1 - 2, "spruce_stairs", N)
+    k.tape_computer(a1 - 1, FLOOR + 1, MZ1 - 1, W)
+    k.cabinet(a1 - 1, FLOOR + 1, MZ1 - 2, W)
+    k.breaker(a0 + 1, FLOOR + 2, MZ0 + 2, E)                    # two clear of the door: its signal would open it
+    k.bunker_lamp(a0 + 2, FLOOR + 3, MZ0 + 4)
+    # Quarters: a bunk bed at each end of the west side (along the module: its column may be a chunk's first), a locker
+    # beside the one and across from the other (the stores in the first), the table between; the breaker on the east end,
+    # clear of the lockers (its signal would stand one open).
     b0, b1 = MODULES[1]
-    for z in (MZ0 + 1, MZ1 - 1):
-        k.bed(b0 + 1, FLOOR + 1, z, E, "gray")
-    k.barrel(b1 - 1, FLOOR + 1, MZ0 + 1, "up", "bunker_stores")
-    k.barrel(b1 - 1, FLOOR + 2, MZ0 + 1, "up")
+    k.bunk(b0 + 1, FLOOR + 1, MZ0 + 1, S)
+    k.bunk(b0 + 1, FLOOR + 1, MZ1 - 1, N)
+    k.locker(b0 + 2, FLOOR + 1, MZ0 + 1, S, "bunker_stores")
+    k.locker(b1 - 1, FLOOR + 1, MZ1 - 1, W)
     k.set(b0 + 2, FLOOR + 1, MZ0 + 4, "spruce_fence")
     k.set(b0 + 2, FLOOR + 2, MZ0 + 4, "spruce_pressure_plate")
+    k.breaker(b1 - 1, FLOOR + 2, MZ0 + 2, W)
+    # The generator: its frame and engine filling the middle; in the corners the stores' crates, its drums and an
+    # extinguisher, the fuel line along the south wall under the roof (a valve on it); a breaker on the west end.
     c0, c1 = MODULES[2]
     k.fill(c0 + 1, FLOOR + 1, MZ0 + 3, c1 - 1, FLOOR + 1, MZ0 + 5, RUSTED_PANEL)
     k.fill(c0 + 1, FLOOR + 2, MZ0 + 3, c1 - 2, FLOOR + 2, MZ0 + 5, "black_concrete")
     k.fill(c0 + 1, FLOOR + 3, MZ0 + 4, c1 - 2, FLOOR + 3, MZ0 + 4, I_BEAM, {"axis": "x"})
-    for z in (MZ0 + 1, MZ1 - 1):
-        k.barrel(c1 - 1, FLOOR + 1, z, "up", "radar_outpost" if z == MZ0 + 1 else None)
+    k.crates(c1 - 1, FLOOR + 1, MZ0 + 1, W, "radar_outpost")
+    k.drums(c1 - 1, FLOOR + 1, MZ1 - 1, "fuel", 3, N)
+    k.drums(c1 - 2, FLOOR + 1, MZ1 - 1, "oil", 2, E)
+    k.extinguisher(c0 + 1, FLOOR + 1, MZ1 - 1, E)
+    k.pipes((c0 + 1, MZ1 - 1), (c1 - 1, MZ1 - 1), FLOOR + 3, N, valves=[(c0 + 2, MZ1 - 1)])
+    k.breaker(c0 + 1, FLOOR + 2, MZ0 + 2, E)
+    # Outside its east end, the drums the generator never burned.
+    k.drums(c1 + 2, 1, MZ0 + 4, "fuel", 2, N)
+    k.drums(c1 + 2, 1, MZ0 + 5, "rusty", 1, E)
     # The generator's stack through its roof, blackened at the top.
     sx, sz = c1 - 1, MZ0 + 2
     for y in range(FLOOR + 4, FLOOR + 9):
@@ -298,8 +339,19 @@ def perimeter(k: Kit) -> None:
     k.clear(hx0 + 1, 1, hz0 + 1, hx1 - 1, 3, hz1 - 1)
     k.fill(hx0 - 1, 4, hz0 - 1, hx1 + 1, 4, hz1 + 1, CORRUGATED_SLAB, {"type": "bottom", "waterlogged": False})
     k.set(hx0, 2, hz0 + 2, "glass_pane")
-    k.iron_door(hx0 + 1, 1, hz0, N)
+    k.pressure_door(hx0 + 1, 1, hz0, N)
     k.set(hx1 - 1, 1, hz1 - 1, "spruce_stairs", {"facing": N, "half": "bottom", "shape": "straight", "waterlogged": False})
+    k.crates(hx0 + 1, 1, hz1 - 1, E)
+    # A searchlight on the hut's roof (on a block of it, not the slab), turned on the gate.
+    k.set(hx1 - 1, 4, hz1 - 1, CORRUGATED)
+    k.searchlight(hx1 - 1, 5, hz1 - 1, S)
+    # Jersey barriers staggered inside the gate, a chicane across the road in; rusted hedgehogs by the east fence.
+    for x in range(19, 22):
+        k.barrier(x, 1, 40, S)
+    for x in range(23, 26):
+        k.barrier(x, 1, 38, S)
+    for x, z, f in ((42, 13, E), (41, 16, N), (42, 19, W)):
+        k.hedgehog(x, 1, z, f, rusty=True)
 
 
 def finish(k: Kit) -> None:

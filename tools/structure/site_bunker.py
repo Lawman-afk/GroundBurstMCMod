@@ -5,17 +5,21 @@ On the surface (`bunker_surface`): an earth berm with a concrete portal in its s
 hazard stripes round the opening, floodlights over it); inside the portal a vestibule whose blast-deflector wall stands
 square in front of the first blast door, and behind that door the stair's head; the guyed radio mast over the radio room
 with its tuning hut; the air intake and exhaust (mushroom caps over louvres) and the generator's stack over the plant
-room; the escape hatch, a copper lid on a plug of gravel; a helipad going back to grass; chain-link and barbed wire round
-it all, the guard post's sandbags inside the gate.
+room; the escape hatch, a bunker hatch over a plug of gravel; a helipad going back to grass; chain-link and barbed wire round
+it all, the guard post's sandbags inside the gate with its searchlight, Jersey barriers across the apron, dragon's teeth
+along the fence.
 
 Underground (`bunker_below`, its top layer just under the ground): the stair down, twelve steps under a stepped ceiling,
 to the second blast door and the decontamination room (white tile, showers over drains, two suits on stands); the main
-corridor (a green dado, chamfered ribs every six blocks, a copper pipe and a cable along its ceiling) with the radio room
-(consoles, the teleprinter, the transmitter racks, the mast's lead down through the roof), the armoury (a chain-link cage,
-the rifle rack, crates) and the plant room (the diesel generator, the fuel tank, the filter bank under the ducts, the
-switchboard) north of it; south of it the dormitory (bunks two high, steel lockers), the washroom, the situation room two
-storeys tall (a continent on its south wall with the strikes marked, the plotting table, the gallery of consoles looking
-down on both), the records room behind it, the mess and its galley, and the escape tube up from the mess's corner.
+corridor (a green dado, chamfered ribs every six blocks, wall pipes with their valves under its ceiling, a cable on the
+other side) with the radio room (consoles, the teleprinter's desk, the transmitter racks, the mast's lead down through the
+roof), the armoury (a chain-link cage, the rifle rack, ammo crates, lockers) and the plant room (the diesel generator, the
+fuel tank and its drums, the filter bank and its ducts up to the vents, the switchboard's breakers, the pipes) north of
+it; south of it the dormitory (bunk beds, steel lockers), the washroom, the situation room two storeys tall (a continent
+on its south wall with the strikes marked, the situation map table, a row of desks before it, the gallery of consoles
+looking down on both), the records room behind it (filing cabinets in rows, tape drives, the officer's desk), the mess and
+its galley, and the escape tube up from the mess's corner. Pressure doors between the rooms; in each room the breaker by
+its door left on, the lamp beside it lit (the rest of the lamps dead).
 
 Both templates 44 x 44 in plan with the site's origin at (22, 22); the surface 27 high, the bunker 12.
 """
@@ -27,6 +31,7 @@ from build import AIR, gb, mc
 from kit import (CHAIN_LINK, CORRUGATED_SLAB, E, FLOODLIGHT, GRATING, GRATING_SLAB, I_BEAM, LATTICE, N, PANEL, RUSTED,
                  RUSTED_PANEL, S, SANDBAG_SLAB, SANDBAGS, W, Kit)
 
+
 SIZE = 44
 SURF_Y, BELOW_Y = 27, 12
 ORIGIN = (22, 22)
@@ -35,7 +40,6 @@ TOP = BELOW_Y - 1                         # the bunker's top layer, just under t
 WALL, DADO, FLOOR, TRIM = "light_gray_concrete", "green_terracotta", "polished_andesite", "smooth_stone"
 CHAMFER = "polished_andesite_stairs"
 HAZARD = gb("hazard_concrete")
-PIPE = "exposed_lightning_rod"            # a copper pipe gone dull
 WALL_POST = {"east": "none", "north": "none", "south": "none", "west": "none", "up": True, "waterlogged": False}
 
 # Rooms (inside: x0, z0, x1, z1); walls one block round each.
@@ -134,19 +138,21 @@ def stair(k: Kit) -> None:
 
 
 def corridor(k: Kit) -> None:
-    """The main corridor: a stripe down its floor, chamfered ribs across its ceiling every six blocks, a copper pipe along
-    one side of the ceiling and a cable along the other, a lamp between ribs (some gone)."""
+    """The main corridor: a stripe down its floor, chamfered ribs every six blocks, the wall pipes along the south wall
+    under the ceiling (a valve every twelve blocks) and a cable along the north; dead lamps between the ribs, and three
+    breakers on the north wall, each with its lamp lit."""
     x0, z0, x1, z1 = CORRIDOR
     for x in range(x0, x1 + 1):
         k.set(x, 0, (z0 + z1) // 2, TRIM)
         if x % 6 == 1:
             k.stairs(x, 3, z0, CHAMFER, N, half="top")
-            k.stairs(x, 3, z1, CHAMFER, S, half="top")
         else:
-            k.set(x, 3, z1, PIPE, {"facing": E, "powered": False, "waterlogged": False})
             k.set(x, 3, z0, "iron_chain", {"axis": "x", "waterlogged": False})
-        if x % 6 == 4 and k.n(x, 3, 10, 4.0, 11) > 0.3:
-            k.lantern(x, 3, (z0 + z1) // 2, hanging=True)
+        if x % 6 == 4:
+            k.bunker_lamp(x, 3, (z0 + z1) // 2)
+    k.pipes((x0, z1), (x1, z1), 3, N, valves=[(11, z1), (23, z1), (35, z1)])
+    for x in (5, 21, 38):
+        k.breaker(x, 2, z0, S)
 
 
 def radio_room(k: Kit) -> None:
@@ -154,29 +160,30 @@ def radio_room(k: Kit) -> None:
     desk, the mast's lead down through the roof to the operating table."""
     x0, z0, x1, z1 = RADIO
     for x in range(x0 + 1, x1 - 1):
-        k.set(x, 1, z0, PANEL)
-        k.set(x, 2, z0, "black_stained_glass" if x % 3 else "gray_stained_glass")
+        k.console(x, 1, z0, S)
         if x % 2 == 0:
-            k.stairs(x, 1, z0 + 2, "spruce_stairs", S)
+            k.stairs(x, 1, z0 + 1, "spruce_stairs", S)
     for z in range(z0 + 1, z1 - 1):
         k.set(x1, 1, z, PANEL)
         k.set(x1, 2, z, "redstone_lamp", {"lit": False})
         k.set(x1, 3, z, PANEL)
-    for z in (z0 + 3, z0 + 4):
-        k.slab(x0, 1, z, "spruce_slab", "top")
-    k.set(x0, 2, z0 + 3, "crafter", {"crafting": False, "orientation": "east_up", "triggered": False})
+    for z in (z0 + 3, z0 + 4):                          # the teleprinter's desk and its chair
+        k.desk(x0, 1, z, E)
+    k.stairs(x0 + 1, 1, z0 + 3, "spruce_stairs", E)
     lx, lz = MAST
     k.set(lx, 1, lz, PANEL)
     k.set(lx, 2, lz, "lever", {"face": "floor", "facing": S, "powered": False})
     for y in range(3, TOP + 1):
         k.set(lx, y, lz, "iron_chain", {"axis": "y", "waterlogged": False})
     k.chest(x1 - 1, 1, z1, N, "bunker_stores")
-    k.lantern(x0 + 3, 3, z0 + 4, hanging=True)
+    k.cabinet(x1 - 2, 1, z1, N)                         # the codebooks
+    k.bunker_lamp(x0 + 3, 3, z0 + 3)
+    k.breaker(4, 2, z1, N)            # clear of the door (its signal would open it) and of the corridor's breaker's wall
 
 
 def armoury(k: Kit) -> None:
-    """A chain-link cage across the back with its gate, the rifle rack and the crates inside it, the chests; a stand by
-    the door."""
+    """A chain-link cage across the back with its gate, the rifle rack and the ammo crates inside it (one of them and the
+    chest holding the armoury's issue); lockers and a stand by the door, an extinguisher."""
     x0, z0, x1, z1 = ARMOURY
     cage, gx = z0 + 3, (x0 + x1) // 2
     for x in range(x0, x1 + 1):
@@ -188,13 +195,15 @@ def armoury(k: Kit) -> None:
         k.trapdoor(x, 2, z0, "spruce_trapdoor", S, half="top")          # the rifle rack's shelf
         k.set(x, 3, z0, "tripwire_hook", {"attached": False, "facing": S, "powered": False})
     k.chest(x0, 1, z0, E, "bunker_armory")
-    k.chest(x1, 1, z0 + 1, W, "bunker_armory")
+    k.crates(x1, 1, z0 + 1, W, "bunker_armory")
     for x in (x0 + 2, x0 + 3, x0 + 4):
-        k.barrel(x, 1, z0, "north")
-    k.barrel(x0 + 3, 1, z0 + 1, "east")
-    k.barrel(x0 + 3, 2, z0 + 1, "east")
+        k.crates(x, 1, z0, S)
+    k.crates(x0 + 3, 1, z0 + 1, S)
+    for z in (z1 - 1, z1):
+        k.locker(x0, 1, z, E)
     k.marker(x1, 1, z1, "stand:bare:west")
-    k.lantern(x0 + 3, 3, z1 - 1, hanging=True)
+    k.extinguisher(x1 - 1, 1, z1, N)
+    k.breaker(x0 + 5, 2, z1, N)                         # two clear of the door
 
 
 def plant_room(k: Kit) -> None:
@@ -221,45 +230,49 @@ def plant_room(k: Kit) -> None:
             k.set(x, dy, tz + dz, RUSTED_PANEL if low else PANEL)
     for x in (30, 35):
         k.set(x, 1, tz, I_BEAM, {"axis": "z"})
-    # The filter bank: housings along the south wall, a grille in each; the ducts up through the roof above them.
+    # The filter bank: housings along the south wall, a grille in each; ducts from it along the ceiling to the intake and
+    # the exhaust, up through the roof behind a grille.
     for x in range(36, x1 + 1):
         for y in (1, 2, 3):
             k.set(x, y, z1, GRATING if y == 2 else PANEL)
     for (dx, dz) in (INTAKE, EXHAUST):
-        k.set(dx, 4, dz, GRATING)
+        k.grille(dx, 4, dz, "up")
+        k.duct(dx, 3, dz, dx, 3, z1 - 1)
         for y in range(5, TOP + 1):
             k.set(dx, y, dz, AIR)
-    # The switchboard on the north wall: panels, levers, a row of dead lamps for its dials.
+    # The switchboard on the north wall: panels, the breakers on them a panel apart (two left on, the dial lamp over each
+    # of those lit by it through the panel; side by side one left on would have the next look on), a row of lamps for
+    # its dials.
     for x in range(36, x1 + 1):
+        on = x % 4 == 0
         k.set(x, 1, z0, PANEL)
         k.set(x, 2, z0, PANEL)
-        k.set(x, 3, z0, "redstone_lamp", {"lit": False})
-        k.set(x, 2, z0 + 1, "lever", {"face": "wall", "facing": S, "powered": x % 3 == 0})
-    for x in range(x0, x1 + 1):
-        if k.name(x, 3, z0 + 1) == AIR:
-            k.set(x, 3, z0 + 1, PIPE, {"facing": E, "powered": False, "waterlogged": False})
+        k.set(x, 3, z0, "redstone_lamp", {"lit": on})
+        if x % 2 == 0:
+            k.fuse_box(x, 2, z0 + 1, S, on=on)
+    # The fuel and coolant lines along the north wall under the ceiling, two valves; the day's drums by the tank.
+    k.pipes((x0, z0), (35, z0), 3, S, valves=[(25, z0), (33, z0)])
+    for x, kind, n in ((x0 + 1, "oil", 2), (x0 + 2, "rusty", 1), (31, "fuel", 3), (32, "fuel", 2), (34, "oil", 1)):
+        k.drums(x, 1, z1 - 1, kind, n, N if x % 2 else E)
+    k.extinguisher(29, 1, z1, N)
+    k.extinguisher(34, 2, z1, N, wall=True)
+    k.breaker(33, 2, z1, N)                             # two clear of the pair of doors
     for x in (24, 33, 39):
         k.set(x, 3, z1 - 1, FLOODLIGHT, {"facing": "down"})
 
 
 def dormitory(k: Kit) -> None:
-    """Bunks two high down both walls (a top slab under the upper bed), steel lockers between them, a table and its
-    chairs (one pushed back askew), the doorway through to the mess."""
+    """Bunk beds: a row with their heads to the west wall, steel lockers between them, two more along the east wall (kept
+    off the column where a chunk's edge may fall: `sites.check_chunks`) and their lockers; a table and its chairs (one
+    pushed back askew), the doorway through to the mess; a breaker by each door, its lamp lit, the ceiling's lamps dead."""
     x0, z0, x1, z1 = DORM
-    def bunk(xf: int, z: int, facing: str, colour: str) -> None:
-        xh = xf - 1 if facing == W else xf + 1
-        k.bed(xf, 1, z, facing, colour)
-        for x in (xf, xh):
-            k.slab(x, 2, z, "spruce_slab", "top")
-        k.bed(xf, 3, z, facing, colour)
-    for i, z in enumerate((z0 + 1, z0 + 3, z0 + 5, z0 + 7, z0 + 9)):
-        bunk(x0 + 1, z, W, ("gray", "green")[i % 2])
-        for y in (1, 2):
-            k.trapdoor(x0, y, z + 1, "iron_trapdoor", E, open_=True)      # the lockers
-    for i, z in enumerate((z0 + 1, z0 + 3, z0 + 5)):
-        bunk(x1 - 1, z, E, ("green", "gray")[i % 2])
-        for y in (1, 2):
-            k.trapdoor(x1, y, z + 1, "iron_trapdoor", W, open_=True)
+    for z in (z0 + 1, z0 + 3, z0 + 5, z0 + 7, z0 + 9):
+        k.bunk(x0 + 1, 1, z, W)
+        k.locker(x0, 1, z + 1, E)
+    for z in (z0 + 3, z0 + 5):
+        k.bunk(x1, 1, z, N)                               # along the wall, its foot to the south
+    for z in (z0 + 6, z0 + 7):
+        k.locker(x1, 1, z, W)
     tx, tz = (x0 + x1) // 2, z1 - 3
     for x in range(tx - 1, tx + 2):
         k.slab(x, 1, tz, "spruce_slab", "top")
@@ -267,7 +280,9 @@ def dormitory(k: Kit) -> None:
         k.stairs(x, 1, tz + 1, "spruce_stairs", S if x != tx else E)
     k.barrel(x1, 1, z1, "up", "bunker_stores")
     for x in (x0 + 4, x1 - 4):
-        k.lantern(x, 4, (z0 + z1) // 2, hanging=True)
+        k.bunker_lamp(x, 4, (z0 + z1) // 2)
+    k.breaker(10, 2, z0, S)                             # two clear of the door
+    k.breaker(9, 2, z1, N)
 
 
 def washroom(k: Kit) -> None:
@@ -276,7 +291,7 @@ def washroom(k: Kit) -> None:
         k.set(x1, 1, z, "cauldron")
     for z in (z1 - 1, z1):
         k.set(x0, 1, z, "hopper", {"enabled": False, "facing": "down"})
-    k.lantern(x0 + 1, 3, z0 + 2, hanging=True)
+    k.breaker(x1, 2, z0 + 1, W)                         # off the dormitory's wall (its locker, its door)
 
 
 def decontamination(k: Kit) -> None:
@@ -298,13 +313,14 @@ def decontamination(k: Kit) -> None:
         k.slab((x0 + x1) // 2, 1, z, "smooth_stone_slab")
     k.marker(x0, 1, z0, "stand:hazmat:south")
     k.marker(x1, 1, z0, "stand:hazmat:south")
-    k.lantern((x0 + x1) // 2, 3, z0 + 2, hanging=True)
+    k.breaker(x0, 2, z1 - 1, E)                         # on the west wall: beside the door its signal opens it
 
 
 def situation_room(k: Kit) -> None:
     """Two storeys: the map of a continent across the south wall (the sea in blue, the land in greens, the strikes marked
-    in red, framed in smooth stone), the plotting table under it, the gallery of consoles along the north wall looking
-    down on both, reached by a stair at its west end; lamps hung from the roof on chains; status boards on the east."""
+    in red, framed in smooth stone), the situation map table before it and a row of desks facing both, the gallery of
+    consoles along the north wall looking down on it all, reached by a stair at its west end; lamps hung from the roof on
+    chains; status boards on the east; a breaker under the gallery by the west door, its lamp lit."""
     x0, z0, x1, z1 = SITUATION
     mx0, mx1, my0, my1 = x0 + 3, x1 - 3, 2, 6
     land = {}
@@ -321,19 +337,12 @@ def situation_room(k: Kit) -> None:
             k.set(x, y, z1 + 1, TRIM if edge else land.get((x, y), "blue_concrete"))
     for x, y in ((mx0 + 2, my0 + 2), (mx0 + 5, my0 + 3), (mx1 - 1, my0 + 1)):
         k.set(x, y, z1 + 1, "red_concrete")                                       # where the strikes would fall
-    # The plotting table: the same map in carpet on a spruce table, its markers; chairs along both sides.
-    tx0, tx1, tz0, tz1 = x0 + 5, x1 - 5, z0 + 7, z0 + 10
-    for x in range(tx0, tx1 + 1):
-        for z in range(tz0, tz1 + 1):
-            k.slab(x, 1, z, "spruce_slab", "top")
-            u, v = (x - tx0) / (tx1 - tx0), (z - tz0) / (tz1 - tz0)
-            on_land = ((u - 0.32) / 0.3) ** 2 + ((v - 0.5) / 0.5) ** 2 < 1.0 or ((u - 0.82) / 0.12) ** 2 + ((v - 0.4) / 0.35) ** 2 < 1.0
-            k.set(x, 2, z, "green_carpet" if on_land else "blue_carpet")
-    for x, z in ((tx0 + 2, tz0 + 1), (tx0 + 4, tz0 + 2), (tx1 - 1, tz0 + 1)):
-        k.set(x, 2, z, "red_carpet")
-    for x in range(tx0, tx1 + 1, 2):
-        k.stairs(x, 1, tz0 - 1, "spruce_stairs", N)
-        k.stairs(x, 1, tz1 + 1, "spruce_stairs", S)
+    # The situation map table before the wall map, and a row of desks facing both, their chairs behind them.
+    k.map_table((x0 + x1) // 2, 1, z1 - 4, N)
+    for x in range(x0 + 4, x1 - 3):
+        k.desk(x, 1, z0 + 5, S)
+        if x % 2:
+            k.stairs(x, 1, z0 + 4, "spruce_stairs", N)
     # The gallery: grating three deep along the north wall at half height, a chain-link rail, consoles facing the map.
     gz0, gz1, gy = z0, z0 + 2, 3
     for x in range(x0, x1 + 1):
@@ -341,8 +350,7 @@ def situation_room(k: Kit) -> None:
             k.slab(x, gy, z, GRATING_SLAB, "top")
         if x > x0 + 1:
             k.set(x, gy + 1, gz1 + 1, CHAIN_LINK)
-        k.set(x, gy + 1, gz0, PANEL)
-        k.set(x, gy + 2, gz0, "black_stained_glass" if (x // 2) % 2 else "gray_stained_glass")
+        k.console(x, gy + 1, gz0, S)
         if x % 2:
             k.stairs(x, gy + 1, gz0 + 1, "spruce_stairs", S)
     for x in range(x0, x0 + 2):
@@ -361,21 +369,24 @@ def situation_room(k: Kit) -> None:
         k.lantern(x, 5, z, hanging=True)
     for x in range(x0 + 2, x1, 5):
         k.set(x, 6, z0, FLOODLIGHT, {"facing": S})
+    k.fuse_box(x0 + 5, 2, z0, S, on=True)                 # under the gallery, clear of the door: its lamp beside it
+    k.bunker_lamp(x0 + 6, 2, z0, S, lit=True)
 
 
 def records(k: Kit) -> None:
-    """Filing cabinets in rows, the officer's desk and his safe."""
+    """Filing cabinets in rows, the tape drives along the north wall, the officer's desk and his safe."""
     x0, z0, x1, z1 = RECORDS
     for x in range(x0 + 1, x1 - 3, 4):
         for z in range(z0, z1 - 1):
-            for y in (1, 2):
-                slots = {f"slot_{i}_occupied": (x + z + y + i) % 3 == 0 for i in range(6)}
-                k.set(x, y, z, "chiseled_bookshelf", {"facing": E, **slots})
-    k.chest(x1, 1, z1, W, "bunker_stores")
+            k.cabinet(x, 1, z, E)
+    for x in range(x1 - 5, x1 - 2):
+        k.tape_computer(x, 1, z0, S)
     for x in (x1 - 3, x1 - 2):
-        k.slab(x, 1, z1 - 1, "spruce_slab", "top")
-    k.stairs(x1 - 2, 1, z1, "spruce_stairs", S)
-    k.lantern((x0 + x1) // 2, 3, (z0 + z1) // 2, hanging=True)
+        k.desk(x, 1, z1 - 1, S)
+    k.stairs(x1 - 3, 1, z1, "spruce_stairs", S)
+    k.chest(x1, 1, z1, W, "bunker_stores")
+    k.bunker_lamp((x0 + x1) // 2, 3, (z0 + z1) // 2)
+    k.breaker(x1, 2, z0 + 1, W)                         # on the east wall, clear of the door
 
 
 def mess(k: Kit) -> None:
@@ -398,35 +409,38 @@ def mess(k: Kit) -> None:
         if z % 2:
             k.trapdoor(x1, 3, z, "spruce_trapdoor", W, half="top")
     k.barrel(x1, 2, z0, "up", "bunker_stores")
+    k.extinguisher(x1, 2, z0 + 1, W, wall=True)
     for x in (x0 + 4, x0 + 10):
-        k.lantern(x, 3, (z0 + z1) // 2, hanging=True)
+        k.bunker_lamp(x, 3, (z0 + z1) // 2)
+    k.breaker(x0 + 11, 2, z0, S)                        # not on the dormitory's breaker's wall block
+    k.breaker(x0 + 8, 2, z1, N)
 
 
 def doors(k: Kit) -> None:
-    """The doors: iron (buttons by each, `Kit.finish`) into the radio room, the armoury, the plant room (a pair), the
-    situation room, the records and the decontamination room; the second blast door a steel leaf with its wicket; wood
-    and an open doorway in the living quarters."""
-    k.iron_door(7, 1, 8, S)
-    k.iron_door(16, 1, 8, S)
-    k.iron_door(30, 1, 8, S, hinge="left")
-    k.iron_door(31, 1, 8, S, hinge="right")
-    k.iron_door(27, 1, 12, N)
-    k.iron_door(39, 1, 12, N)
-    k.iron_door(40, 1, 28, S)
+    """The doors: pressure doors into the radio room, the armoury, the plant room (a pair), the situation room, the
+    records and the decontamination room; the second blast door across the stair's foot, two wide, swinging out onto the
+    landing, a steel jamb beside it in the stair's third lane, hazard stripes round it; wood and an open doorway in the
+    living quarters."""
+    k.pressure_door(7, 1, 8, S)
+    k.pressure_door(16, 1, 8, S)
+    k.pressure_door(30, 1, 8, S, hinge="left")
+    k.pressure_door(31, 1, 8, S, hinge="right")
+    k.pressure_door(27, 1, 12, N)
+    k.pressure_door(39, 1, 12, N)
+    k.pressure_door(40, 1, 28, S)
     for y in (1, 2):
         k.set(20, y, 12, AIR)                                           # through the corridor's wall to the decontamination room's
-    k.iron_door(20, 1, 13, N)
+    k.pressure_door(20, 1, 13, N)
     k.door(8, 1, 12, N, "spruce_door")                                  # the dormitory
-    # The second blast door: a steel leaf across the stair's foot with a wicket in it, hazard-framed.
     xa, xb = STAIR_X
     z = DECON[3] + 1
     for y in (1, 2, 3):
         k.set(xa - 1, y, z, HAZARD)
         k.set(xb + 1, y, z, HAZARD)
-        for x in (xa, xb):
-            k.set(x, y, z, PANEL)
-    k.set(xa + 1, 3, z, PANEL)
-    k.iron_door(xa + 1, 1, z, S)
+        k.set(xb, y, z, PANEL)
+    for x in range(xa - 1, xb + 2):
+        k.set(x, 4, z, HAZARD)
+    k.blast_door(xa, 1, z, S, hinge="left")
     k.door(15, 1, 21, E, "spruce_door")
     for x in (7, 8):
         for y in (1, 2):
@@ -495,7 +509,8 @@ def stair_head(k: Kit) -> None:
 
 def vestibule(k: Kit) -> None:
     """Inside the portal: the deflector wall square in front of the first blast door (a blast would strike it, not the
-    door), a way round it each side; the blast door a steel leaf with its wicket, hazard-framed."""
+    door), a way round it each side, far enough out for the door's leaf to swing open before it; the blast door two wide
+    (a steel jamb in the stair's third lane), hazard-framed; a breaker inside, its lamp lit."""
     x0, x1, z0, z1 = 18, 24, 34, 37
     for x in range(x0 - 1, x1 + 2):
         for z in range(z0 - 1, z1 + 1):
@@ -507,8 +522,8 @@ def vestibule(k: Kit) -> None:
                     k.set(x, y, z, FLOOR if y == 0 else AIR)
     for x in range(x0 + 1, x1):
         for y in (1, 2, 3):
-            k.set(x, y, z0 + 1, WALL)
-    k.set((x0 + x1) // 2, 2, z0 + 2, gb("radiation_sign"), {"facing": S})
+            k.set(x, y, z0 + 2, WALL)
+    k.set((x0 + x1) // 2, 2, z0 + 3, gb("radiation_sign"), {"facing": S})
     xa, xb = STAIR_X
     z = z0 - 1
     for y in (1, 2, 3, 4):
@@ -518,12 +533,9 @@ def vestibule(k: Kit) -> None:
         k.set(x, 4, z, HAZARD)
         k.set(x, 0, z, FLOOR)
     for y in (1, 2, 3):
-        for x in (xa, xb):
-            k.set(x, y, z, PANEL if y > 1 else RUSTED_PANEL)
-    k.set(xa + 1, 3, z, PANEL)
-    k.iron_door(xa + 1, 1, z, S)
-    k.lantern(x0, 3, z1, hanging=True)
-    k.lantern(x1, 3, z0, hanging=True)
+        k.set(xb, y, z, PANEL if y > 1 else RUSTED_PANEL)
+    k.blast_door(xa, 1, z, S, hinge="left")
+    k.breaker(x1, 2, z0, W)
 
 
 def portal(k: Kit) -> None:
@@ -716,11 +728,11 @@ def vents(k: Kit) -> None:
 
 
 def hatch(k: Kit) -> None:
-    """The escape tube's hatch: a concrete collar, its copper lid shut on the gravel."""
+    """The escape tube's hatch: a Bunker Hatch shut in a concrete collar over the plug of gravel, its ladder on the west
+    side as the tube's is."""
     hx, hz = HATCH
     k.fill(hx - 1, 0, hz - 1, hx + 1, 0, hz + 1, WALL)
-    k.ground(hx, hz, "gravel")
-    k.trapdoor(hx, 1, hz, "weathered_copper_trapdoor", N)
+    k.hatch(hx, 0, hz, W)
 
 
 def helipad(k: Kit) -> None:
@@ -745,7 +757,9 @@ def helipad(k: Kit) -> None:
 
 
 def yard(k: Kit) -> None:
-    """The fence round the edge with its gate, the guard post's sandbags inside the gate."""
+    """The fence round the edge with its gate; the guard post's sandbags inside the gate, its searchlight and ammo crates;
+    Jersey barriers staggered across the apron before the portal; dragon's teeth along the fence east of the gate; drums
+    by the day tank and the radio hut; rusted hedgehogs dumped by the north fence."""
     e = SIZE - 1
     gate = lambda x, z: z == e and 16 <= x <= 26
     k.fence(0, 0, e, 0, fallen=0.15, salt=81)
@@ -764,5 +778,17 @@ def yard(k: Kit) -> None:
                 k.set(x, 2, z, SANDBAG_SLAB if k.n(x, 2, z, 1.5, 89) > 0.3 else SANDBAGS)
     k.ground(px0 + 1, pz0 + 1, "coarse_dirt")
     k.ground(px0 + 2, pz0 + 2, "coarse_dirt")
-    k.barrel(px0 + 2, 1, pz0 + 1, "up")
+    k.searchlight(px0 + 2, 1, pz0 + 2, E)
+    k.crates(px0 + 1, 1, pz0 + 2, N)
+    for x in range(16, 20):
+        k.barrier(x, 1, e - 1, S)
+    for x in range(23, 27):
+        k.barrier(x, 1, e - 3, S)
+    for x in range(29, e - 1, 2):
+        k.teeth(x, 1, e - 2)
+        k.teeth(x + 1, 1, e - 1)
+    for x, z, kind, n in ((35, 11, "fuel", 3), (35, 12, "fuel", 2), (34, 14, "rusty", 1), (13, 9, "oil", 2)):
+        k.drums(x, 1, z, kind, n, N if (x + z) % 2 else E)
+    for x, z, f in ((12, 2, E), (19, 3, N), (24, 2, W)):
+        k.hedgehog(x, 1, z, f, rusty=True)
     k.debris((1, 1, 1, SIZE - 2, 1, SIZE - 2), [SANDBAG_SLAB, "gravel", RUSTED, "spruce_trapdoor"], 0.06, salt=91)

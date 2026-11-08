@@ -22,6 +22,11 @@ AIR = "minecraft:air"
 FACINGS = ("north", "east", "south", "west")
 OPPOSITE = {"north": "south", "south": "north", "east": "west", "west": "east", "up": "down", "down": "up"}
 STEP = {"north": (0, -1), "south": (0, 1), "east": (1, 0), "west": (-1, 0)}
+#: The props of the cosmetic sets (DESIGN.md §22.3-22.6, kit.py): fittings and furniture, not walls or floors to build
+#: on (no rubble lands on a console, no cobweb is strung from a locker).
+PROP_WORDS = ("hatch", "console", "command_desk", "filing_cabinet", "tape_computer", "map_table", "wall_pipes", "pipe_valve",
+              "vent_grille", "ventilation_duct", "bunker_lamp", "fuse_box", "extinguisher", "steel_locker", "bunk_bed",
+              "jersey_barrier", "dragons_teeth", "hedgehog", "searchlight", "ammo_crates", "oil_drum", "fuel_drum", "rusty_drum")
 
 
 def mc(name: str) -> str:
@@ -37,6 +42,8 @@ class Build:
         self.t = Template(sx, sy, sz)
         self.size = (sx, sy, sz)
         self.rng = random.Random(seed)
+        #: Places that must stay open (where a door's leaf or a hatch's lid swings): no wear is put there.
+        self.clear_of_wear: set[tuple[int, int, int]] = set()
 
     # --- basics ------------------------------------------------------------------------------------------------------
     def inside(self, x: int, y: int, z: int) -> bool:
@@ -66,7 +73,7 @@ class Build:
             return False
         return not any(k in path for k in ("water", "torch", "lantern", "carpet", "button", "rail", "iron_chain", "bars",
                                            "fence", "ladder", "cobweb", "_wall", "lever", "flower", "fern", "bush",
-                                           "trapdoor", "door", "sign", "candle", "structure_block"))
+                                           "trapdoor", "door", "sign", "candle", "structure_block") + PROP_WORDS)
 
     def unset(self, x: int, y: int, z: int) -> None:
         if self.inside(x, y, z):
@@ -190,7 +197,7 @@ class Build:
     def cobwebs(self, box: tuple, chance: float) -> None:
         """Cobwebs in the air of upper corners (an air block with solid above and on two sides)."""
         for x, y, z in self.each(*box):
-            if self.name(x, y, z) != AIR or not self.solid(x, y + 1, z):
+            if self.name(x, y, z) != AIR or not self.solid(x, y + 1, z) or (x, y, z) in self.clear_of_wear:
                 continue
             sides = sum(self.solid(x + dx, y, z + dz) for dx, dz in STEP.values())
             if sides >= 2 and self.rng.random() < chance:
@@ -199,7 +206,7 @@ class Build:
     def rubble(self, box: tuple, chance: float, blocks: tuple[str, ...] = ("cobblestone", "gravel", "andesite")) -> None:
         """Fallen debris on floors: a share of air blocks resting on something solid gets a rubble block (or a slab)."""
         for x, y, z in self.each(*box):
-            if self.name(x, y, z) == AIR and self.solid(x, y - 1, z) and self.rng.random() < chance:
+            if self.name(x, y, z) == AIR and self.solid(x, y - 1, z) and (x, y, z) not in self.clear_of_wear and self.rng.random() < chance:
                 b = self.rng.choice(blocks)
                 if b.endswith("_slab"):
                     self.slab(x, y, z, b)
@@ -210,7 +217,8 @@ class Build:
         """Moss carpets and a grass tuft on floors of the listed blocks, open above."""
         on = {mc(b) for b in on}
         for x, y, z in self.each(*box):
-            if self.name(x, y, z) in on and self.name(x, y + 1, z) in (AIR, None) and self.rng.random() < chance:
+            if (self.name(x, y, z) in on and self.name(x, y + 1, z) in (AIR, None) and (x, y + 1, z) not in self.clear_of_wear
+                    and self.rng.random() < chance):
                 self.set(x, y + 1, z, self.rng.choice(("moss_carpet", "moss_carpet", "short_grass")))
 
     def flood(self, box: tuple, level: int) -> None:

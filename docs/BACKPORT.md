@@ -4,8 +4,10 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `1a9286d6` (2026-11-08: 0.10.1, released for all three versions as
-  `groundburst-mc1.21.1-0.10.1.jar`: main's changelog, the CurseForge description's long parts always open; this version's
+- **Last brought up to:** `main` at `6dbc3f68` (2026-11-08: the Cold War sites remastered with the cosmetic sets,
+  main's DESIGN.md §22.8: the site templates converted as ever, the site tools); before it, at `1a9286d6` (2026-11-08:
+  0.10.1, built for all three versions as
+  `groundburst-mc1.21.1-0.10.1.jar` but not uploaded: it goes out with the remaster as one release; main's changelog, the CurseForge description's long parts always open; this version's
   fix in it is the pipes' one input slot an ingredient); before it, at `369fcb74` (2026-11-08: pipes and hoppers keep
   one input slot an ingredient, main's
   DESIGN.md §6.5; the advanced-circuit line, `gametest/CircuitLine`, and its GameTests; the mod page's pictures and
