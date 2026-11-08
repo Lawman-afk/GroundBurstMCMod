@@ -19,6 +19,8 @@ public class AutomationView implements ResourceHandler<ItemResource> {
     private final boolean allowExtract;
     /** Which machine slots automation may use right now (the Assembly Bench: the page it is on). */
     private final java.util.function.IntPredicate active;
+    /** Whether automation may put this item into that machine slot now (a recipe machine: one slot an ingredient). */
+    private final java.util.function.BiPredicate<Integer, ItemResource> admits;
 
     public AutomationView(MachineInventory inventory, int[] inputSlots, int[] outputSlots) {
         this(inventory, inputSlots, outputSlots, true, true);
@@ -30,7 +32,13 @@ public class AutomationView implements ResourceHandler<ItemResource> {
 
     public AutomationView(MachineInventory inventory, int[] inputSlots, int[] outputSlots, boolean allowInsert, boolean allowExtract,
             java.util.function.IntPredicate active) {
+        this(inventory, inputSlots, outputSlots, allowInsert, allowExtract, active, (slot, resource) -> true);
+    }
+
+    public AutomationView(MachineInventory inventory, int[] inputSlots, int[] outputSlots, boolean allowInsert, boolean allowExtract,
+            java.util.function.IntPredicate active, java.util.function.BiPredicate<Integer, ItemResource> admits) {
         this.active = active;
+        this.admits = admits;
         this.allowInsert = allowInsert;
         this.allowExtract = allowExtract;
         this.inventory = inventory;
@@ -70,12 +78,13 @@ public class AutomationView implements ResourceHandler<ItemResource> {
 
     @Override
     public boolean isValid(int index, ItemResource resource) {
-        return this.allowInsert && this.insertable[index] && this.active.test(this.slots[index]) && this.inventory.isValid(this.slots[index], resource);
+        return this.allowInsert && this.insertable[index] && this.active.test(this.slots[index]) && this.admits.test(this.slots[index], resource)
+                && this.inventory.isValid(this.slots[index], resource);
     }
 
     @Override
     public int insert(int index, ItemResource resource, int amount, TransactionContext transaction) {
-        return this.allowInsert && this.insertable[index] && this.active.test(this.slots[index])
+        return this.allowInsert && this.insertable[index] && this.active.test(this.slots[index]) && this.admits.test(this.slots[index], resource)
                 ? this.inventory.insert(this.slots[index], resource, amount, transaction) : 0;
     }
 

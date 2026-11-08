@@ -13,10 +13,22 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 /**
  * The client half of the blast bench ({@link BlastBench}): makes a normal creative world (a fixed seed, or
  * {@code -Dgroundburst.blastBench.seed}), keeps the bench told the frame rate, takes pictures at set moments after the
- * burst into {@code run/screenshots/bench_<profile>_<tick>.png}, and quits once the report is written.
+ * burst into {@code run/screenshots/bench_<profile>_<tick>.png}, and quits once the report is written. For the mod page's
+ * pictures: {@code -Dgroundburst.blastBench.moments=0,40,...} the moments, {@code .render=<chunks>} how far it sees (12),
+ * {@code .clean=true} no hand, hotbar or tutorial pop-ups.
  */
 public final class BlastBenchClient {
-    private static final List<Integer> MOMENTS = List.of(0, 20, 100, 300, 600, 1200, 2400, 4800);
+    private static final List<Integer> MOMENTS = moments();
+    private static final int RENDER = Integer.getInteger("groundburst.blastBench.render", 12);
+    private static final boolean CLEAN = Boolean.getBoolean("groundburst.blastBench.clean");
+
+    private static List<Integer> moments() {
+        String m = System.getProperty("groundburst.blastBench.moments", "");
+        if (m.isBlank()) {
+            return List.of(0, 20, 100, 300, 600, 1200, 2400, 4800);
+        }
+        return java.util.Arrays.stream(m.split(",")).map(String::trim).map(Integer::parseInt).sorted().toList();
+    }
     private static boolean worldMade;
     private static int shot;
     private static int finishedFor;
@@ -74,7 +86,15 @@ public final class BlastBenchClient {
         if (mc.level == null || mc.player == null) {
             return;
         }
-        mc.options.renderDistance().set(12);
+        mc.options.renderDistance().set(RENDER);
+        if (CLEAN) {
+            if (!mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();                       // no hand or hotbar in the pictures
+            }
+            if (mc.options.tutorialStep != net.minecraft.client.tutorial.TutorialSteps.NONE) {
+                mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
+            }
+        }
         // Frames as fast as they come (the frame rates benches recorded before were the 30 a second the game slows to
         // when nobody has touched the keys for a minute).
         mc.options.enableVsync().set(false);

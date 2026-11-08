@@ -566,6 +566,12 @@ enriched uranium in your inventory hurts).
   sides draw from the chest or machine they touch (a machine gives only what its side configuration offers, i.e. its
   outputs), machines' auto-eject and hoppers can push in, and the run hands items straight to the inventories on its
   normal sides, round-robin, never back to the source. Pipes hold nothing; there are no travelling item entities.
+- A recipe machine keeps one input slot an ingredient for pipes and hoppers (2026-11-08,
+  `ProcessingBlockEntity.automationAdmits`): an item goes into a slot that holds it, or into an empty one only while no
+  other input slot holds it; by hand anything goes, and a catalyst slot is left alone. Without it a run bringing more of
+  one ingredient than a slot holds filled the next empty slot too, until the slot another ingredient needed was gone (a
+  Circuit Fabricator fed copper wire, redstone and plastic from one chest filled all four slots with wire and waited for
+  ever). No recipe repeats an ingredient or has more of them than its machine has slots, so each always has one.
 - Look: the fluid pipe's shape, but a glass sight-tube in a metal frame with flow chevrons, and an item-slot window
   on the junction box. Iron: pale iron. Steel: gunmetal with yellow fittings. Pneumatic: brass with copper fittings and
   blue glass.
@@ -881,6 +887,22 @@ The machines:
   into.
 
 Then the Vertical Launch Battery (§17.14 notes the MIRVs it replaces).
+
+**A whole line** (2026-11-08, the user asked for "a fully functioning circuit factory with pipes and wires showing the
+layout"): `gametest/CircuitLine` builds one, the GameTest `circuit_line_makes_advanced_circuits` runs it on its own
+power (every machine runs and advanced circuits reach its chest), and the photographer's `circuit_line` scenes show it
+in a real world. `tools/factory/circuit_line.py` works its numbers out from the recipes. It is sized round one Clean
+Room printing without a break: 8 microchips a minute, enough for 4 advanced circuits. The advanced fabricator then runs
+flat out, the basic one two thirds of the time, the puller and the condenser a quarter, the press 6%. It draws 454 FE/t
+on average and 700 at most, from four Diesel Generators (720 FE/t) on Insulated Cable, burning about six buckets of
+synthetic fuel a minute. The stores give a polysilicon, 2 red phosphorus, 6 plastic sheets, 8 each of copper wire,
+redstone and gold wire, 4 rare earths and a quarter of a crucible a minute, with 500 mB each of photoresist and
+hydrofluoric acid. It is laid out as a small factory hall (the user: "make it look neat and not just a line"): two rows
+face each other across a hazard-striped aisle. The north row makes the wafers (condenser, puller, press), then come
+the four generators; the south row makes the circuits (the chemical tanks, the Clean Room, the two fabricators). The
+stores and the fuel tank stand behind the rows, and the cable runs along both rows and bridges the aisle. The Clean
+Room's Item Port has two open faces, its back and its underside: the wafers come in from under it, through a pipe laid
+in the aisle's floor, and the microchips are drawn out of its back.
 
 Hazards: hydrogen chloride is toxic as a gas cloud (as chlorine); trichlorosilane and hydrofluoric acid burn as acids
 do. The new canisters wear real cylinder colours where that helps: hydrogen's is red, as flammable gases' are. A
@@ -5676,6 +5698,8 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-08 | **One input slot an ingredient for pipes and hoppers** (§6.5), found while building the circuit line the user asked for ("a fully functioning circuit factory with pipes and wires showing the layout"; §8.1): an item goes into a slot that holds it, or an empty one only while no other input slot holds it; by hand anything goes. A Circuit Fabricator fed from one chest filled every slot with copper wire and waited for ever. GameTests `pipes_keep_a_slot_for_each_ingredient` and `circuit_line_makes_advanced_circuits` (the whole line on its own power); 444. |
+| 2026-11-08 | **Pictures for players come from real worlds** (the user's rule: "For photos that are shown to the mod audience they should all be in real worlds, and for structures it should be naturally generated ones"; the user chose to remaster the structures with the new props first and photograph them after). `runFxShots -PfxWorld=real` and `runHealShots -PhealWorld=real` make a normal world (the blast bench's seed). Each scene's site is found from the generator's noise: dry land, never water, anything set up in open country first and never on a structure. The site is cleared as a player clears one: trees go whole, nothing drops, and the ground's own grass and flowers stay where it did not move. Server messages are kept off the screen. The flat-world photographers and the boards stay for reviewing work. |
 | 2026-11-07 | **Round tops as polygons** (§4.4), researched at the user's question ("Is there no way to get both a good texture and the perfectly smooth circle?"): each round part's capped end one flat polygon, painted as any face is, drawn by the mod's model loader (block and item models) and by a GeckoLib model that adds Bedrock's poly meshes (GeckoLib draws none); every round part in the mod rebuilt so, the flat one-colour tops gone. With it: the hatch's opening a true octagon (its corners had reached past the lid: the sky showed through from below) and its open lid's knuckles out of its underside's plane; the drums' chimes no longer overlapping their neighbours'; the open crate's lid clear of the box behind it; the extinguisher's handle closed; the superweapons closed underneath (`close_floor`); a Fuse Box not held on by another's signal; the Tape Computer silent; unshaded parts unshaded on 26.3 too. |
 | 2026-11-07 | **A ladder built into the Bunker Hatch** (§22.3, the user: "the player can't place a ladder there"): down its front, opposite its hinges, under the coaming, lined up with a vanilla ladder's rails and rungs, and the hatch climbable as a ladder, open or shut. With it the extinguisher's hose closed at its bend and the open Ammo Crates painted with the shut model's texels (the box behind the lid had changed as they opened). |
 | 2026-11-07 | **After the user's look round the showroom** (§22.7): flicker, gaps and see-through faces fixed at their causes; round parts on a new builder (`warheads.round_section`, `round_ring`; §4.4) with more sides; and, researched at the user's question, flat round tops in every model of the mod: a round part's overlapping caps on one level, painted one even colour and drawn without the corner shade, so nothing can be seen to flicker (before, planks a hair apart left steps round rims and lines across tops); the hatch's open lid a block of its own (clicked, it shuts the hatch); a constant redstone signal holds the props on or open (the containers, the Searchlight, the Tape Computer; the Pipe Valve and Fuse Box only to look at, their own signal still their switch's), the Bunker Lamp lit by redstone alone; a Rusty Czech Hedgehog beside the painted one; the extinguisher hung on a wall; the locker emptied; the bunk's guard rails and ladder moved; the tape reels as the 1960s' (researched; the user's picture), the cabinet's paint smooth; the lag at the doors measured by a scripted walk and not reproduced. |

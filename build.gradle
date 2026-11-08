@@ -72,6 +72,9 @@ tasks.named('jar', Jar) {
 // Mojang ships Java 25 to end users in 26.3, so the mod targets Java 25.
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
+// The photographers' and benches' window, width x height: -PshotSize=1920x1080 for the mod page's gallery pictures.
+def shotSize = (project.findProperty('shotSize') ?: '1280x720').toString().split('x')
+
 neoForge {
     version = project.neo_version
 
@@ -96,9 +99,14 @@ neoForge {
         fxShots {
             client()
             systemProperty 'groundburst.fxShots', 'true'
-            programArguments.addAll '--width', '1280', '--height', '720'
+            programArguments.addAll '--width', shotSize[0], '--height', shotSize[1]
             systemProperty 'groundburst.fxShots.only', (project.findProperty('fxOnly') ?: '').toString()
-            systemProperty 'groundburst.fxShots.world', (project.findProperty('fxWorld') ?: '').toString()   // -PfxWorld=sea
+            // -PfxWorld=sea; -PfxWorld=real: a normally generated world (seed -PfxSeed), each scene on land found for it,
+            // the way the mod page's pictures are taken (real worlds only).
+            systemProperty 'groundburst.fxShots.world', (project.findProperty('fxWorld') ?: '').toString()
+            if (project.findProperty('fxSeed') != null) {
+                systemProperty 'groundburst.fxShots.seed', project.findProperty('fxSeed').toString()
+            }
         }
 
         // Makes a normal world, generates the ground round its spawn, sets a blast off there with the player watching
@@ -106,7 +114,7 @@ neoForge {
         // and .txt, then quits (see BlastBench). -Pbench=<profile> (default the Tsar); -PbenchSeed=<seed>.
         blastBench {
             client()
-            programArguments.addAll '--width', '1280', '--height', '720'
+            programArguments.addAll '--width', shotSize[0], '--height', shotSize[1]
             systemProperty 'groundburst.blastBench', (project.findProperty('bench') ?: 'tsar_warhead').toString()
             // -PbenchHeal=true: healing on, and the record runs on through the crater's healing.
             systemProperty 'groundburst.blastBench.heal', (project.findProperty('benchHeal') ?: 'false').toString()
@@ -116,7 +124,10 @@ neoForge {
             // -PbenchKind=<ChargeKind>: the warhead set off by its own path (its fallout and the special weapons too);
             // -PbenchView=<blocks> watched from that far east (360); -PbenchTail=<seconds> recorded on that long after the
             // blast has finished (2), or after the burst for a weapon that is not a blast; -PbenchRadius=<blocks> generated.
-            ['benchKind': 'kind', 'benchView': 'view', 'benchTail': 'tail', 'benchRadius': 'radius'].each { p, key ->
+            // For the mod page's pictures: -PbenchMoments=0,40,... when to take them, -PbenchRender=<chunks> how far the
+            // player sees (12), -PbenchClean=true no hand, hotbar or tutorial pop-ups.
+            ['benchKind': 'kind', 'benchView': 'view', 'benchTail': 'tail', 'benchRadius': 'radius', 'benchMoments': 'moments',
+             'benchRender': 'render', 'benchClean': 'clean'].each { p, key ->
                 if (project.findProperty(p) != null) {
                     systemProperty "groundburst.blastBench.${key}", project.findProperty(p).toString()
                 }
@@ -129,7 +140,7 @@ neoForge {
         // -Psurvey=census,visits,blast (default all); -PsurveySeed=<seed>.
         worldSurvey {
             client()
-            programArguments.addAll '--width', '1280', '--height', '720'
+            programArguments.addAll '--width', shotSize[0], '--height', shotSize[1]
             systemProperty 'groundburst.worldSurvey', (project.findProperty('survey') ?: 'all').toString()
             if (project.findProperty('surveySeed') != null) {
                 systemProperty 'groundburst.worldSurvey.seed', project.findProperty('surveySeed').toString()
@@ -141,7 +152,7 @@ neoForge {
         // -Psite=radar_outpost,test_site (default all); -PsiteVariant=<n> (default 0).
         siteShots {
             client()
-            programArguments.addAll '--width', '1280', '--height', '720'
+            programArguments.addAll '--width', shotSize[0], '--height', shotSize[1]
             systemProperty 'groundburst.siteShots', (project.findProperty('site') ?: 'all').toString()
             systemProperty 'groundburst.siteShots.variant', (project.findProperty('siteVariant') ?: '0').toString()
         }
@@ -151,7 +162,7 @@ neoForge {
         // saved to copy into an instance's saves (see Showroom).
         showroom {
             client()
-            programArguments.addAll '--width', '1280', '--height', '720'
+            programArguments.addAll '--width', shotSize[0], '--height', shotSize[1]
             systemProperty 'groundburst.showroom', 'true'
             // -PshowroomWalk: a timed walk round the bunker doors instead of the pictures (run/bench/showroom_walk_*.txt).
             systemProperty 'groundburst.showroom.walk', (project.findProperty('showroomWalk') ?: 'false').toString()
@@ -163,8 +174,14 @@ neoForge {
         // quits (see HealPhotographer).
         healShots {
             client()
-            programArguments.addAll '--width', '1280', '--height', '720'
+            programArguments.addAll '--width', shotSize[0], '--height', shotSize[1]
             systemProperty 'groundburst.healShots', 'true'
+            // -PhealWorld=real: a normally generated world (seed -PhealSeed), the nearest village nuked and healed, for the
+            // mod page's pictures (real worlds only).
+            systemProperty 'groundburst.healShots.world', (project.findProperty('healWorld') ?: '').toString()
+            if (project.findProperty('healSeed') != null) {
+                systemProperty 'groundburst.healShots.seed', project.findProperty('healSeed').toString()
+            }
         }
 
         // Makes a normal world seen far (-PplayView=32, -PplaySim=12), finds a forest and plays a script there: a quiet
@@ -173,7 +190,7 @@ neoForge {
         // PlayBench). With -Pjfr=<name> (any run) the JVM records a flight recording into run/jfr/<name>.jfr.
         playBench {
             client()
-            programArguments.addAll '--width', '1280', '--height', '720'
+            programArguments.addAll '--width', shotSize[0], '--height', shotSize[1]
             systemProperty 'groundburst.playBench', 'true'
             systemProperty 'groundburst.playBench.heal', (project.findProperty('playHeal') ?: 'true').toString()
             systemProperty 'groundburst.playBench.view', (project.findProperty('playView') ?: '32').toString()

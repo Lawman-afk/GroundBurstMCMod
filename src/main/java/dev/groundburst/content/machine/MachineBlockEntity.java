@@ -150,7 +150,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         for (SideConfig.ItemMode mode : SideConfig.ItemMode.values()) {
             if (mode != SideConfig.ItemMode.NONE) {
                 this.automation[mode.ordinal()] = new AutomationView(this.inventory, inputSlots, outputSlots, mode.canInsert(), mode.canExtract(),
-                        this::slotAutomated);
+                        this::slotAutomated, this::automationAdmits);
             }
         }
     }
@@ -158,6 +158,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     // --- subclass contract ----------------------------------------------------------------------------------------
     /** Whether pipes, hoppers and auto-eject may use this slot now (the Assembly Bench: only its current page's). */
     protected boolean slotAutomated(int slot) {
+        return true;
+    }
+
+    /** Whether pipes and hoppers may put this item into this input slot now (a recipe machine keeps one slot an ingredient). */
+    protected boolean automationAdmits(int slot, ItemResource resource) {
         return true;
     }
 

@@ -55,9 +55,13 @@ import net.neoforged.neoforge.common.NeoForge;
  * houses with chests, doors, torches, windows, an item frame and an armour stand, trees, a pond, a wheat field, sand),
  * and photographs each before the blast, after it, while it heals
  * and once it has, into {@code run/screenshots/heal_<scene>_<stage>.png}. Then it compares every block of each scene
- * with what it was and writes {@code run/heal/heal_check.txt} (and the log's "Heal check" lines), and quits.
+ * with what it was and writes {@code run/heal/heal_check.txt} (and the log's "Heal check" lines), and quits. With
+ * {@code -PhealWorld=real}: a normally generated world instead, and the nearest village world generation made there,
+ * blown up by a tactical nuke at its middle and healed (the mod page's pictures come from real worlds only).
  */
 public final class HealPhotographer {
+    /** {@code -PhealWorld=real}: a normal world (seed {@code -PhealSeed}, else the blast bench's), a real village. */
+    private static final boolean REAL = "real".equals(System.getProperty("groundburst.healShots.world", ""));
     /** Ticks to wait at least at a camera, the ticks the section builder must have been quiet, the most to wait. */
     private static final int SETTLE = 30, STABLE = 20, MOST = 600;
     /** The longest the healing may take before the check gives up waiting (ticks). */
@@ -129,8 +133,14 @@ public final class HealPhotographer {
                         net.minecraft.world.level.LevelSettings.DifficultySettings.DEFAULT, true,
                         net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
                 String folder = DevWorlds.fresh(mc, "heal_shots");
-                mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(0L, false, false),
-                        HealPhotographer::flat, mc.gui.screen());
+                if (REAL) {
+                    long seed = Long.getLong("groundburst.healShots.seed", 1_230_027_951L);
+                    mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(seed, true, false),
+                            net.minecraft.world.level.levelgen.presets.WorldPresets::createNormalWorldDimensions, mc.gui.screen());
+                } else {
+                    mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(0L, false, false),
+                            HealPhotographer::flat, mc.gui.screen());
+                }
             } catch (IOException e) {
                 GroundBurst.LOGGER.error("Heal shots: could not make a world", e);
             }
@@ -338,6 +348,10 @@ public final class HealPhotographer {
         GBServerConfig.HEAL_LONGEST_SECONDS.set(30);
         GBServerConfig.HEAL_ORDER.set(GBServerConfig.HealOrder.BOTTOM_UP);
         GBServerConfig.HEAL_EFFECTS.set(true);
+        if (REAL) {
+            realVillage(level, commands, source);
+            return;
+        }
         int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0) - 1;
         BlockPos farm = new BlockPos(0, top, 0), town = new BlockPos(1000, top, 0), cottage = new BlockPos(-600, top, 0);
         SCENES.add(new Scene("farmstead", farm, 30, 16, 16, "thermobaric_warhead", new Vec3(farm.getX() + 34, top + 26, farm.getZ() + 34)));
@@ -360,6 +374,35 @@ public final class HealPhotographer {
             BEFORE.put(s.name(), snapshot(level, s));
         }
         GroundBurst.LOGGER.info("Heal check: scenes built ({} blocks)", BEFORE.values().stream().mapToInt(a -> a.length).sum());
+    }
+
+    /**
+     * The real world's scene: the village nearest the spawn as world generation laid it, its middle the found spot on the
+     * ground; a tactical nuke there, the camera 95 out on the diagonal and 70 up, as the built town's.
+     */
+    private static void realVillage(ServerLevel level, net.minecraft.commands.Commands commands, net.minecraft.commands.CommandSourceStack source) {
+        BlockPos found = level.findNearestMapStructure(net.minecraft.tags.StructureTags.VILLAGE, BlockPos.ZERO, 100, false);
+        if (found == null) {
+            GroundBurst.LOGGER.error("Heal shots: no village within reach of the spawn");
+            return;
+        }
+        level.getChunk(found.getX() >> 4, found.getZ() >> 4);
+        int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, found.getX(), found.getZ()) - 1;
+        BlockPos middle = new BlockPos(found.getX(), top, found.getZ());
+        Scene village = new Scene("village", middle, 88, 30, 30, "tactical_nuclear_warhead",
+                new Vec3(middle.getX() + 95, top + 70, middle.getZ() + 95));
+        SCENES.add(village);
+        AABB b = village.box();
+        commands.performPrefixedCommand(source, "forceload add " + (int) b.minX + " " + (int) b.minZ + " " + (int) b.maxX + " " + (int) b.maxZ);
+        for (int cx = (int) b.minX >> 4; cx <= (int) b.maxX >> 4; cx++) {
+            for (int cz = (int) b.minZ >> 4; cz <= (int) b.maxZ >> 4; cz++) {
+                level.getChunk(cx, cz);
+            }
+        }
+        commands.performPrefixedCommand(source, "kill @e[type=!player]");    // its villagers and animals out of the pictures
+        settle(level, village);
+        BEFORE.put(village.name(), snapshot(level, village));
+        GroundBurst.LOGGER.info("Heal check: the village at {} ({} blocks)", middle.toShortString(), BEFORE.get(village.name()).length);
     }
 
     /** A house, its garden, a wheat field, a pond, two trees and a sand bank round {@code c}: the blast's middle is the yard. */
