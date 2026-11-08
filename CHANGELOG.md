@@ -3,7 +3,7 @@
 ## 0.11.0 — 2026-11-08
 
 The world's Cold War sites fitted out with the bunker doors, the command room, the fittings and the yard, and fixes for
-shader packs and for machines fed by pipes. For Minecraft 26.3, 26.1.2 and 1.21.1.
+where the sites generate, for shader packs and for machines fed by pipes. For Minecraft 26.3, 26.1.2 and 1.21.1.
 
 ### The Cold War sites, fitted out
 - All seven of the world's sites are fitted out with the bunker doors, the command room, the bunker fittings and the
