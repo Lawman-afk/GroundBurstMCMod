@@ -23,5 +23,9 @@
   ],
   "placement": "buried",
   "terrain_adaptation": "beard_thin",
-  "depth": 42
+  "depth": 42,
+  "keep_clear_of": [
+    "groundburst:abandoned_silo"
+  ],
+  "keep_clear": 7
 }

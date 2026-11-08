@@ -88,5 +88,9 @@
   ],
   "placement": "surface",
   "terrain_adaptation": "beard_thin",
-  "max_slope": 12
+  "max_slope": 12,
+  "keep_clear_of": [
+    "groundburst:test_site"
+  ],
+  "keep_clear": 7
 }

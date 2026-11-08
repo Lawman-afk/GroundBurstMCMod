@@ -59,7 +59,8 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 - **Superweapons** in homage to *Command & Conquer: Generals – Zero Hour*: the SCUD Storm, the Nuclear Missile Silo
   and the Particle Uplink Cannon. Call any of them down with a Laser Designator, and steer the cannon's beam across the
   ground with it.
-- **Seven abandoned Cold War sites** to explore, with loot:
+- **Seven abandoned Cold War sites** to explore, with loot, each fitted out as it was left (blast doors, consoles, bunk
+  beds, searchlights, a breaker still on in every room):
   - a Titan II missile silo, sometimes flooded or caved in;
   - a command bunker under an earth berm;
   - a radar outpost on high ground;
@@ -124,10 +125,15 @@ What changed in each version is in the [changelog](CHANGELOG.md).
   </tr>
   <tr>
     <td><img src="docs/screenshots/field_manual.jpg" width="380" alt="The Field Manual open at its contents page"><br>The Field Manual</td>
-    <td><img src="docs/screenshots/radar_outpost.jpg" width="380" alt="A radar outpost on a green hill above the sea"><br>A Radar Outpost</td>
+    <td><img src="docs/screenshots/missile_silo.jpg" width="380" alt="A fenced missile silo compound in the savanna: two striped silo doors between a vehicle shed, a support building and a guard shack"><br>A Titan II missile silo</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/research_station.jpg" width="380" alt="A domed research station among chorus plants on an End island"><br>The Exotic Research Station</td>
+    <td><img src="docs/screenshots/command_bunker.jpg" width="380" alt="The situation room of an abandoned command bunker: a wall map, a row of desks and a map table under hanging lamps"><br>The Command Bunker's situation room</td>
+    <td><img src="docs/screenshots/radar_outpost.jpg" width="380" alt="A radar outpost by a river: a radar tower, a white billboard antenna, a long module building and a guard hut inside a fence"><br>A Radar Outpost</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/waste_repository.jpg" width="380" alt="A long underground drift, a ventilation duct along the ceiling, pipes and a valve along the wall, a radiation sign"><br>The waste repository's drift</td>
+    <td><img src="docs/screenshots/research_station.jpg" width="380" alt="A domed research station on an End island among chorus plants"><br>The Exotic Research Station</td>
   </tr>
 </table>
 

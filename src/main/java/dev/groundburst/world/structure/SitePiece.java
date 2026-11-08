@@ -13,9 +13,11 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.TemplateStructurePiece;
@@ -86,8 +88,27 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
     public void postProcess(WorldGenLevel level, StructureManager structures, ChunkGenerator generator, RandomSource random, BoundingBox chunk,
                             ChunkPos chunkPos, BlockPos reference) {
         super.postProcess(level, structures, generator, random, chunk, chunkPos, reference);
+        dropEmptyBlockEntityMarks(level, chunkPos);
         if (this.terrain == TerrainAdjustment.BEARD_THIN) {
             foundation(level, chunk);
+        }
+    }
+
+    /**
+     * World generation marks every block of a block with block entities to get one when its chunk is finished, but a
+     * prop's other parts (a blast door's leaves and frame, a locker's or a tape drive's top, a searchlight's head, a
+     * silo door's panels) never have one: each of their marks only ended in a "failed to load" warning in the log.
+     * Drops those marks.
+     */
+    private void dropEmptyBlockEntityMarks(WorldGenLevel level, ChunkPos chunkPos) {
+        ChunkAccess chunk = level.getChunk(chunkPos.x, chunkPos.z);
+        for (BlockPos pos : chunk.getBlockEntitiesPos()) {
+            CompoundTag mark = chunk.getBlockEntityNbt(pos);
+            BlockState state = chunk.getBlockState(pos);
+            if (mark != null && "DUMMY".equals(dev.groundburst.port.Nbt.getStringOr(mark, "id", "")) && this.boundingBox.isInside(pos)
+                    && state.getBlock() instanceof EntityBlock block && block.newBlockEntity(pos, state) == null) {
+                chunk.removeBlockEntity(pos);
+            }
         }
     }
 

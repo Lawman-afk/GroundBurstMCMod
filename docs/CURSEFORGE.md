@@ -43,6 +43,15 @@ Blast doors whose handwheel draws the bolts, hatches with a ladder built in, a c
 computers, air-raid sirens, searchlights, Jersey barriers and dragon's teeth. One Launch Control Station aims every
 launcher you own, anywhere in the world.
 
+## Cold War sites to explore
+
+![A long underground drift, a ventilation duct along the ceiling, pipes and a valve along the wall, a radiation sign](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/highlight_sites.jpg)
+
+Seven abandoned sites lie out in the world: a Titan II missile silo, a command bunker, a radar outpost, a nuclear test
+site, a crashed missile, a waste repository deep in salt and a research station over the End. Each is fitted out as it
+was left, with blast doors, consoles, bunk beds and searchlights, loot in the crates and lockers, and a breaker still on
+in every room.
+
 ## Industry from the ground up
 
 ![A circuit factory: two rows of machines across a striped aisle, piped and wired](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/highlight_industry.jpg)
@@ -79,8 +88,9 @@ for good.
 - **The aftermath:** craters, fallout, radiation, Geiger counters, hazmat suits and a wasteland biome.
 - **Industry and power:** new ores, processing machines with upgrade chips, fission, fusion and singularity reactors,
   and a chip chain from raw silicon to quantum circuits.
-- **Seven abandoned Cold War sites** to explore, with loot: a Titan II missile silo, a command bunker, a radar outpost,
-  a nuclear test site, a crashed missile, a waste repository deep in salt and a research station over the End.
+- **Seven abandoned Cold War sites** to explore, fitted out and with loot: a Titan II missile silo, a command bunker, a
+  radar outpost, a nuclear test site, a crashed missile, a waste repository deep in salt and a research station over
+  the End.
 - **Building blocks:** bunker doors and hatches, a command room, bunker fittings, barriers and drums for the yard,
   chain-link fencing, barbed wire, sandbags, warning signs, a Large Silo Door and a Search Radar that turns.
 - **Healing**, off until you turn it on, with full control over when, how fast and what grows back.
@@ -224,7 +234,6 @@ You are free to include Ground Burst in any modpack.
 
 ## Planned
 
-- The world's Cold War sites rebuilt with the new bunker doors, command rooms and fittings
 - Contamination that sticks to you and your gear, and more fallout and aftermath protection
 - War room displays
 - Seismographs

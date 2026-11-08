@@ -23,5 +23,12 @@
   ],
   "placement": "surface",
   "terrain_adaptation": "beard_thin",
-  "max_slope": 5
+  "max_slope": 5,
+  "keep_clear_of": [
+    "groundburst:test_site",
+    "groundburst:abandoned_silo",
+    "groundburst:radar_outpost",
+    "groundburst:command_bunker"
+  ],
+  "keep_clear": 7
 }

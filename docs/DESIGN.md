@@ -5289,6 +5289,27 @@ and the research station's radar ladder already across one; both moved.
 The review cameras (`runSiteShots "-Psite=<site>:at:<dx>/<dy>/<dz>/<yaw>/<pitch>;..."`, `SitePhotographer`): pictures from
 inside each room, as the cut-aways seen from the north showed the props too small to judge.
 
+**Block-entity marks** (found by the world survey of the remastered sites): world generation sets a block of a block with
+block entities into a chunk not yet finished with a mark (`"DUMMY"`) to make its block entity when the chunk is, and
+logs a warning when the block's `newBlockEntity` then gives none. A prop's other parts have none (a Blast Door's leaves
+and frame, a locker's, a Tape Computer's and a searchlight's upper half, every panel of a Large Silo Door but its
+middle): a survey of fourteen sites logged 465 such lines, 312 of them the silo doors' since the sites were first built.
+`SitePiece.postProcess` now drops the marks in its piece's box whose block makes no block entity for that state.
+
+**Sites apart** (found by the same survey: a radar outpost built into a missile silo, the two boxes over each other):
+each site's structure set spreads its own sites apart, and vanilla's exclusion zone keeps a set from one other set only
+(here the villages), so two kinds of site could stand together; the census of 237 sites in 20 x 20 km had three pairs
+within three chunks. A site now gives way to the rarer kinds (`keep_clear_of`, `keep_clear` 7 chunks in its structure's
+JSON; `sites.GIVE_WAY`: the test site, the silo, the radar outpost, the bunker and the crashed missile, each clear of
+those before it; the waste storage, 42 blocks down, clear of the silo alone, whose shaft and rooms reach that deep):
+`SiteStructure.crowded` asks each of those sets where its spread puts a place near here and whether its site would
+really stand there (its land and biome, asked as the game asks it), and the census calls such a place CROWDED and
+lists the pairs within 8 chunks of which one gives way to the other. A place a rarer set's own village exclusion
+forbids still counts (the game's state is not in a structure's context): a rare loss. The census after it (the same
+square): of 332 sites in the overworld none within 7 chunks of one it gives way to (two pairs at 8); the places given
+way 6 of the crashed missiles' 90, 1 of the radar outposts' 38 and 2 of the waste storages' 104 (with all five
+sites to clear, 10: the land both want is the same).
+
 ---
 
 ## 23. Multiblock framework and layouts
@@ -5793,6 +5814,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-08 | **Sites keep clear of each other** (§22.8), found by the world survey of the remastered sites (a radar outpost built into a silo; three pairs within three chunks in the census): each site gives way to the rarer kinds within 7 chunks, in the order test site, silo, radar outpost, bunker, crashed missile (the waste storage, underground, to the silo alone), judged by whether the rarer site would really stand there. Vanilla's exclusion zone names one set only and judges by the place alone; by the place alone the test site's places (every 24 chunks, few of them in a desert) would have cleared two fifths of the land of the others (a 15 x 15 chunk window round each). With it, the sites' block-entity marks dropped (§22.8: 465 warnings in the log over fourteen sites). |
 | 2026-11-08 | **The sites remastered with the props** (§22.8; the user's plan, "Remaster the Cold War sites with the new props sounds good"): all seven fitted with the cosmetic sets as a real site would have them, each keeping its character and loot; a breaker left on in each room with its lamp lit, a wall block clear of anything its signal would work (beside a door it held the door open); templates checked for the props' states, for what a signal left on reaches and for blocks across a chunk's edge (`sites.check_states`, `check_power`, `check_chunks`). The pictures of them are taken where world generation placed them. Fixes and remaster go out together in one release (the user: "I will just wait till you finish the remaster and make it a full upload"). |
 | 2026-11-08 | **26.1.2 under shader packs** (§12.3; the user: "if it is broken that is top priority"): the branch had been left without main's `IrisFx` and `DrawnLast`, and with Iris 1.11.4 its effects drew nothing and the glowing parts were gone. Main's `IrisFx` ported, the effects drawn after the level by the branch's own `FxRenderTypes` with the client option, and the glowmasks, with Iris installed, on a copy of GeckoLib's pipeline with an alpha cutout (Iris gave GeckoLib's own a sky program). |
 | 2026-11-08 | **The machines' glowing parts under a shader pack** (§12.3; the user saw it in the real-world shots): GeckoLib's glowmask pipeline, unknown to Iris, drew a beacon's light fins and the machines' lamps as streaks across the sky; `IrisFx` hands it to the pack's emissive entity program. |

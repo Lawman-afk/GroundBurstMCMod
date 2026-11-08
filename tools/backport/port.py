@@ -844,6 +844,12 @@ def drop_method(signature: str):
 
 
 FILE_FIXES: dict[str, list] = {
+    # A site gives way to the rarer ones near it (main's DESIGN.md §22.8), asking them in a generation context of its own
+    # making: this version's has no climate sampler of its own.
+    "src/main/java/dev/groundburst/world/structure/SiteStructure.java": [
+        swap("context.biomeSource(), context.climateSampler(),\n                context.randomState()",
+             "context.biomeSource(),\n                context.randomState()"),
+    ],
     # --- the Steel Locker (main's DESIGN.md §22.5): its lower block's contents dropped as it goes, as the cabinet's -------
     "src/main/java/dev/groundburst/content/construction/SteelLockerBlock.java": [
         swap("{ super.onRemove(state, level_l, pos, newState_, movedByPiston);",

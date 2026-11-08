@@ -10,6 +10,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.ChunkPos;
@@ -17,8 +19,10 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
+import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 /**
@@ -33,6 +37,9 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
  * <li>{@code buried}: {@code depth} blocks under the ground (a cave dug into the rock), under dry land only;</li>
  * <li>{@code floating}: hanging over one of the End's outer islands (never over the bare void).</li>
  * </ul>
+ * A site gives way to the rarer ones ({@code keep_clear_of}, their structure sets): none of them may stand within
+ * {@code keep_clear} chunks of it (each set's own spread only keeps its own sites apart, and vanilla's exclusion zone
+ * names one other set).
  * The rules were checked on generated worlds with the world survey ({@link WorldSurvey}): a pad on a riverbank, a test
  * site ringed by a lake, a bunker buried in a wooded mound were what the first checks found.
  */
@@ -79,19 +86,26 @@ public class SiteStructure extends Structure {
             Variant.CODEC.listOf(1, 16).fieldOf("variants").forGetter(s -> s.variants),
             Placement.CODEC.fieldOf("placement").forGetter(s -> s.placement),
             Codec.intRange(0, 64).optionalFieldOf("max_slope", 6).forGetter(s -> s.maxSlope),
-            Codec.intRange(0, 128).optionalFieldOf("depth", 0).forGetter(s -> s.depth)
+            Codec.intRange(0, 128).optionalFieldOf("depth", 0).forGetter(s -> s.depth),
+            ResourceKey.codec(Registries.STRUCTURE_SET).listOf().optionalFieldOf("keep_clear_of", List.of()).forGetter(s -> s.keepClearOf),
+            Codec.intRange(0, 32).optionalFieldOf("keep_clear", 7).forGetter(s -> s.keepClear)
     ).apply(i, SiteStructure::new));
 
     private final List<Variant> variants;
     private final Placement placement;
     private final int maxSlope, depth;
+    private final List<ResourceKey<StructureSet>> keepClearOf;
+    private final int keepClear;
 
-    public SiteStructure(StructureSettings settings, List<Variant> variants, Placement placement, int maxSlope, int depth) {
+    public SiteStructure(StructureSettings settings, List<Variant> variants, Placement placement, int maxSlope, int depth,
+                         List<ResourceKey<StructureSet>> keepClearOf, int keepClear) {
         super(settings);
         this.variants = variants;
         this.placement = placement;
         this.maxSlope = maxSlope;
         this.depth = depth;
+        this.keepClearOf = keepClearOf;
+        this.keepClear = keepClear;
     }
 
     /** The ground is read on a grid this many columns a side over the footprint (its corners and middle among them). */
@@ -110,6 +124,12 @@ public class SiteStructure extends Structure {
 
     @Override
     public Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
+        Optional<GenerationStub> stub = place(context);
+        return stub.isPresent() && crowded(context) ? Optional.empty() : stub;
+    }
+
+    /** Where the site would stand at the context's chunk, before it gives way to a rarer one near it (the census asks). */
+    Optional<GenerationStub> place(GenerationContext context) {
         ChunkPos chunk = context.chunkPos();
         WorldgenRandom random = context.random();
         Variant variant = pick(random);
@@ -144,6 +164,54 @@ public class SiteStructure extends Structure {
             }
         }
         return Optional.of(stub(templates, variant, rotation, new BlockPos(x, y, z), ground.average()));
+    }
+
+    /**
+     * Whether a site this one gives way to would stand within {@code keep_clear} chunks of the context's chunk: each set
+     * in {@code keep_clear_of} asked where its spread puts its places near here, and its structure whether it would
+     * really stand at one (its land, its biome), as it is asked itself. (A place its set's own exclusion zone forbids
+     * still counts: this site gives way to it all the same.)
+     */
+    boolean crowded(GenerationContext context) {
+        if (this.keepClearOf.isEmpty()) {
+            return false;
+        }
+        ChunkPos here = context.chunkPos();
+        int reach = this.keepClear;
+        for (ResourceKey<StructureSet> key : this.keepClearOf) {
+            StructureSet set = context.registryAccess().registryOrThrow(Registries.STRUCTURE_SET).get(key);
+            if (set == null || !(set.placement() instanceof RandomSpreadStructurePlacement spread)) {
+                continue;
+            }
+            int spacing = spread.spacing();
+            for (int i = Math.floorDiv(here.x - reach, spacing); i <= Math.floorDiv(here.x + reach, spacing); i++) {
+                for (int j = Math.floorDiv(here.z - reach, spacing); j <= Math.floorDiv(here.z + reach, spacing); j++) {
+                    ChunkPos there = spread.getPotentialStructureChunk(context.seed(), i * spacing, j * spacing);
+                    if (Math.abs(there.x - here.x) > reach || Math.abs(there.z - here.z) > reach) {
+                        continue;
+                    }
+                    for (StructureSet.StructureSelectionEntry entry : set.structures()) {
+                        Structure other = entry.structure().value();
+                        if (other.findValidGenerationPoint(contextAt(context, there, other)).isPresent()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Whether this site gives way to the sites of a set ({@code keep_clear_of}). */
+    public boolean givesWayTo(ResourceKey<StructureSet> set) {
+        return this.keepClearOf.contains(set);
+    }
+
+    /** A generation context as {@code context} is, for another structure at another chunk. */
+    static GenerationContext contextAt(GenerationContext context, ChunkPos chunk, Structure structure) {
+        return new GenerationContext(context.registryAccess(), context.chunkGenerator(), context.biomeSource(),
+                context.randomState(), context.structureTemplateManager(), context.seed(), chunk, context.heightAccessor(),
+                structure.biomes()::contains);
     }
 
     /** The ground a site would read at the context's chunk (the world survey's census), with the variant and turn it would pick. */
