@@ -97,6 +97,26 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         return !(this.level instanceof ServerLevel server) || usedByRecipe(server, stack, slot == this.catalystSlot);
     }
 
+    /**
+     * Pipes and hoppers keep one input slot an ingredient: an item goes into a slot that holds it, or into an empty one
+     * only while no other input slot holds it. A pipe bringing more of one ingredient than a slot holds used to fill the
+     * next empty slot too, until the slot another ingredient needed was gone and the machine stood waiting with every
+     * slot full. No recipe repeats an ingredient or has more than the machine's slots, so each always has one. By hand,
+     * anything goes; the catalyst slot is left alone.
+     */
+    @Override
+    protected boolean automationAdmits(int slot, dev.groundburst.port.transfer.item.ItemResource resource) {
+        if (slot >= this.inputCount || !this.inventory.getItem(slot).isEmpty()) {
+            return true;
+        }
+        for (int i = 0; i < this.inputCount; i++) {
+            if (i != slot && resource.matches(this.inventory.getItem(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /** Input tanks only take fluids some recipe of this machine uses (checked on the server, where recipes live). */
     @Override
     protected boolean acceptsFluid(int tank, dev.groundburst.port.transfer.fluid.FluidResource resource) {

@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+- Pipes and hoppers fill each ingredient into one input slot of a machine. A pipe bringing more of one ingredient than
+  a slot holds used to fill the next slots too, until the machine stood waiting with every slot full (a Circuit
+  Fabricator fed copper wire, redstone and plastic from one chest filled all four with wire). Filling by hand is as it
+  was.
+- With a shader pack on, the glowing parts of machines and alarms (a Warning Beacon's light, a machine's lamps) no longer
+  streak across the sky.
+
 ## 0.10.0 — 2026-11-07
 
 Four sets of blocks to build bunkers and bases from: bunker doors and hatches, a command room, bunker fittings, and

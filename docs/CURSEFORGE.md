@@ -1,134 +1,124 @@
-![The Tsar Bomba's mushroom cloud rising over green hills](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/tsar_bomba.jpg)
-
-# Ground Burst
+![Ground Burst: the Tsar Bomba's mushroom cloud rising over cherry groves](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/branding/banner.jpg)
 
 **Assemble it. Launch it. Watch the horizon.**
 
+Build your own arsenal from raw ore, from grenades and landmines to ICBMs and the Tsar Bomba, then watch real mushroom
+clouds, craters and radioactive fallout reshape your world. Hold your ground with radar, interceptors and a bunker of
+your own.
+
+**NeoForge** · Minecraft **26.3**, **26.1.2** and **1.21.1** · singleplayer and servers · shader packs, Distant Horizons
+and JEI · Create on 1.21.1
+
 [![Join the Ground Burst Discord](https://img.shields.io/badge/Discord-Join_the_server-5865F2?logo=discord&logoColor=white)](https://discord.gg/UZd6Sk5mzB)
 
-Mine, refine and assemble your own arsenal, from grenades, mines and mortars to missiles and the Tsar Bomba, then
-watch real craters, mushroom clouds and radioactive fallout reshape the world.
+## Nuclear blasts that change the land
 
-## What's in it
+![A tactical nuke's crater from above, the forest flattened and burning](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/highlight_nuke.jpg)
+
+A flash, a shock front and a mushroom cloud you can see for miles; then a crater cut into the terrain, fires, and
+fallout that drifts with the wind. Measure the radiation with a Geiger counter, put on a hazmat suit, and watch a
+wasteland spread over the scorched ground.
+
+## Missiles that really fly
+
+![A missile climbing from its launch silo on a column of exhaust](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/highlight_launch.jpg)
+
+Assemble a missile part by part, pick one of 24 warheads and launch it from a silo, a launch complex or a cruise
+launcher. It climbs, stages, re-enters and lands where you aimed, up to 30,000 blocks away. Radar tracks it, and
+interceptors can shoot it down.
+
+## Superweapons
+
+![The Particle Uplink Cannon firing its beam into the sky](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/highlight_superweapons.jpg)
+
+The SCUD Storm, the Nuclear Missile Silo and the Particle Uplink Cannon, a homage to *Command & Conquer: Generals – Zero
+Hour*. Call them down with a Laser Designator and steer the cannon's beam across the ground. Or build something
+stranger: antimatter, a black hole, a supercell storm or a deep freeze.
+
+## A base worth defending
+
+![A concrete bunker in the snow, its blast door open, Jersey barriers in front](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/highlight_bunker.jpg)
+
+Blast doors whose handwheel draws the bolts, hatches with a ladder built in, a command room with consoles and tape
+computers, air-raid sirens, searchlights, Jersey barriers and dragon's teeth. One Launch Control Station aims every
+launcher you own, anywhere in the world.
+
+## Industry from the ground up
+
+![A circuit factory: two rows of machines across a striped aisle, piped and wired](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/highlight_industry.jpg)
+
+Mine uranium and refine it in gas centrifuges, grow silicon crystals and print microchips in a Clean Room. Fission,
+fusion and singularity reactors power the machines that build your arsenal, and Auto Assemble keeps a production line
+running.
+
+## Healing for forever worlds
+
+![A village before a nuclear blast, wrecked, and healed back as it was](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/highlight_healing.jpg)
+
+Turn healing on and the damage grows back over time, block for block as it was: chests with their contents, machines
+with their settings, other mods' blocks too. Creepers' and TNT's holes can heal as well. War, without wrecking the map
+for good.
+
+## Everything in it
 
 - **Explosives:** grenades, Molotov cocktails, placed charges with a remote detonator, landmines, bouncing mines and
   claymores.
-- **At sea:** the classic horned sea mine, moored on its chain to the bottom or set adrift, and depth charges set to
-  fire at a depth, thrown or rolled off a ship's stern by a Depth Charge Rack that you load by hand, hopper or pipe.
-  Charges under water throw up towering columns of spray instead of blowing holes in the sea.
-- **Artillery:** an 81 mm mortar and a towed 155 mm howitzer that reaches 600 blocks, both crewed and aimed from a
-  strategic view over the battlefield, as artillery is aimed in *World of Tanks*: an aiming circle on the ground that
-  blooms as the gun fires and turns and settles as you wait. HE, smoke, incendiary, chemical, cryo and EMP shells for the
-  mortar; HE and incendiary for the howitzer.
-- **24 warheads and the missiles to carry them**, assembled from parts and launched from silos, a launch complex, a
-  cruise missile launcher and a Vertical Launch Battery sunk into the ground that ripples sixteen missiles out of its
-  cells onto one area. Missiles fly for real, with staging and re-entry, and a radar array tracks them.
-- **A Laser Designator** to call fire onto a target from up to 1,024 blocks away: arm and launch from its sight, and
-  laser-guided missiles follow your beam all the way in, onto a moving target or another one.
-- **Exotic weapons**, built whole into intercontinental missiles at the Special Weapons Assembler: an antimatter sphere
-  that erases everything in it, a black hole that feeds and then implodes, a supercell storm over a whole region, and a
-  deep freeze: a wall of frozen air rolling over the land, spires of ice at its heart and a cold snap after.
-- **A Launch Control Station** that networks your launchers across the whole world: link them with Launch Codes,
-  aim them on a map of the dimension, fire salvos in patterns or timed to land together, and launchers far away
-  wake up to fire.
-- **Anti-missile defence:** an Interceptor Battery and the multiblock Interceptor Complex, which shoot down incoming
-  missiles, guided by a Radar Array.
-- **An alarm system for your base:** a missile warning receiver that listens to the radar, air-raid sirens with
-  turning horns, klaxons, bells, rotating beacons, emergency lights, alert displays and wireless redstone relays, linked
-  over alarm channels.
-- **Nuclear weapons and their aftermath:** mushroom clouds, craters, fallout drifting with the wind, radiation you can
-  measure, hazmat suits, and a wasteland biome over the scorched ground.
-- **Healing, if you want it** (off by default): turn it on in the server config and the damage grows back over time,
-  block for block as it was: chests with their contents, machines with their settings, cables and pipes that carry
-  again, other mods' blocks too, at a speed and on a schedule you choose. Creepers' and TNT's holes and other mods'
-  explosions heal too, if you like. For forever worlds that still want their wars.
-- **Industry and power:** new ores, processing machines on FE power with upgrade chips for speed and efficiency, and
-  multiblock fission, fusion and singularity reactors.
-- **Chips made the hard way:** silicon purified and grown into crystals in a Crystal Puller, sapphire for
-  military-grade chips, and microchips printed in a Clean Room. Every advanced, military and quantum circuit waits on
-  the chain, and assemblers with Auto Assemble keep a piped production line building.
-- **Superweapons** in homage to *Command & Conquer: Generals – Zero Hour*: the SCUD Storm, the Nuclear Missile Silo
-  and the Particle Uplink Cannon. Call any of them down with a Laser Designator, and steer the cannon's beam across the
-  ground with it.
+- **24 warheads**, from high explosive, napalm and cluster to neutron, cobalt and the Tsar Bomba, and the missiles to
+  carry them.
+- **Launchers:** launch silos, a launch complex, a cruise missile launcher and a Vertical Launch Battery that ripples
+  sixteen missiles onto one area.
+- **A Launch Control Station** that networks every launcher you own: aim on a map of the world, fire salvos timed to
+  land together.
+- **A Laser Designator** to call fire from up to 1,024 blocks away; laser-guided missiles follow your beam.
+- **Artillery:** an 81 mm mortar and a 155 mm howitzer, aimed from a strategic view over the battlefield.
+- **At sea:** horned sea mines, moored or adrift, and depth charges thrown or rolled off a stern rack.
+- **Exotic weapons:** antimatter, a black hole, a supercell storm and a deep freeze, built whole into ICBMs.
+- **Superweapons:** the SCUD Storm, the Nuclear Missile Silo and the Particle Uplink Cannon.
+- **Defence:** a Radar Array, an Interceptor Battery and the Interceptor Complex; a missile warning receiver, air-raid
+  sirens, klaxons, bells and rotating beacons.
+- **The aftermath:** craters, fallout, radiation, Geiger counters, hazmat suits and a wasteland biome.
+- **Industry and power:** new ores, processing machines with upgrade chips, fission, fusion and singularity reactors,
+  and a chip chain from raw silicon to quantum circuits.
 - **Seven abandoned Cold War sites** to explore, with loot: a Titan II missile silo, a command bunker, a radar outpost,
-  a nuclear test site, a crashed missile, a waste repository deep in salt, and a research station floating over the
-  End's islands.
-- **Construction blocks** for building your own: chain-link fencing, barbed wire, corrugated steel, I-beams, radome
-  panels, floodlights, sandbags, warning signs, a Large Silo Door whose leaves slide apart, and a Search Radar that turns.
-- **Bunker doors:** a two-by-three Blast Door whose handwheel turns and draws its bolts before the heavy leaf swings out,
-  a round Bunker Hatch whose lid lifts up out of the floor, a ladder built in to climb up through it, and a Pressure
-  Door with a porthole you can see through; all three open by hand or by redstone, each with its own sounds.
-- **A command room:** consoles with blinking lamps, a desk with a scrolling CRT and a red telephone, a filing cabinet
-  that stores items, tape computers whose reels spin, and a situation map table.
-- **Bunker fittings:** wall pipes and a valve that gives a redstone signal, vent grilles and ducts that join up, caged
-  lamps, a fuse box whose breaker is a switch, a fire extinguisher that puts out fires, a steel locker that stores items,
-  and a bunk bed two players can sleep in.
-- **The yard:** Jersey barriers and dragon's teeth as tough as reinforced concrete, Czech hedgehogs, a searchlight that
-  sweeps the night sky with its beam, ammo crates on a pallet that store items, and oil, fuel and rusty drums.
-- **Create and Create Aeronautics** (Minecraft 1.21.1, optional): missile launchers on trains, bearings and airships,
-  every machine working on Create's moving contraptions and Create Aeronautics' ships, and weapons that hit them (more
-  below).
-- **Shader packs:** fireballs, smoke and mushroom clouds draw right with Iris shader packs and look the same in every
-  pack (tried with Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas and MakeUp Ultra Fast), and stand
-  in front of Distant Horizons' far terrain, on Minecraft 26.3 and 1.21.1.
+  a nuclear test site, a crashed missile, a waste repository deep in salt and a research station over the End.
+- **Building blocks:** bunker doors and hatches, a command room, bunker fittings, barriers and drums for the yard,
+  chain-link fencing, barbed wire, sandbags, warning signs, a Large Silo Door and a Search Radar that turns.
+- **Healing**, off until you turn it on, with full control over when, how fast and what grows back.
 - **The Field Manual**, an in-game guide to all of it.
 
-## Screenshots
+More pictures in the **Images** tab.
 
-![The Particle Uplink Cannon firing its uplink beam into the sky from its pit](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/particle_cannon.jpg)
-*The Particle Uplink Cannon fires*
+## Built with its players
 
-![The particle beam burning down through the night onto a meadow, fires round its foot](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/particle_beam.jpg)
-*The particle beam, steered across a meadow at night*
-
-![A 155 mm howitzer on its split trails firing a shell high over the desert](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/howitzer.jpg)
-*The 155 mm Howitzer fires*
-
-![A mortar's strategic view over a hut struck by its shell, the aiming readout below](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/mortar.jpg)
-*The mortar's strategic view: a shell lands on target*
-
-![Spires of ice standing over snowed-over trees after a Cryo ICBM](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/cryo_icbm.jpg)
-*Spires of ice after a Cryo ICBM*
-
-![A missile lifting off from its launch silo in a cloud of exhaust](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/launch.jpg)
-*Lift-off from a Launch Silo*
-
-![Missiles climbing out of a Vertical Launch Battery's cells in a column of smoke](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/vertical_launch_battery.jpg)
-*The Vertical Launch Battery's ripple*
-
-![The Laser Designator's sight on a target, its range and coordinates shown](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/laser_designator.jpg)
-*Calling fire with the Laser Designator*
-
-![A Launch Control Station console with two missile silos behind it](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/launch_control_station.jpg)
-*The Launch Control Station*
-
-![A wall of alarm devices at night with rotating beacons on top](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/alarms.jpg)
-*The alarm system at night*
-
-![A SCUD strike throwing up fire, smoke and blocks of sand](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/scud_strike.jpg)
-*The SCUD Storm strikes*
-
-![Seven nuclear missiles standing in a row on sand](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/missiles.jpg)
-*The nuclear missiles, from tactical to Tsar*
-
-![Smoke rising from a fresh crater ringed with fires](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/crater.jpg)
-*A tactical nuclear warhead's crater*
-
-![A cut-away view of an abandoned silo with its missile in the shaft](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/silo_cutaway.jpg)
-*An abandoned silo, cut away*
-
-More in the **Images** tab.
+Ideas from the comments and the Discord ship quickly: healing for vanilla explosions and shader-pack support both came
+from players' requests. Tell us what you want next.
 
 ## Getting started
 
-Every player gets the **Field Manual** the first time they join (or craft one from a book and gunpowder). Open it to
-find any block, item or machine, how to build it and what it does. With JEI installed, R on any item shows how it is
-made.
+1. Install NeoForge and GeckoLib for your Minecraft version, then Ground Burst, on the server and on every player's
+   game.
+2. Every player gets the **Field Manual** the first time they join (or craft one from a book and gunpowder). It shows
+   every block, item and machine, how to build it and what it does.
+3. With JEI installed, press R on any item to see how it is made.
 
-## Create and Create Aeronautics (Minecraft 1.21.1)
+## For servers
 
-Both are optional. With either installed, Ground Burst's machines work on the structures they move, and its weapons hit
-them.
+- Big blasts are worked through a little each tick, so the server keeps running through a nuke.
+- Settings for how big blasts are and what they may destroy (or nothing at all), radiation, fallout, missile range and
+  the superweapons.
+- Healing puts a war-torn map back the way it was, on the schedule you choose.
+
+## Works with
+
+- **Shader packs (Iris):** fireballs, smoke and mushroom clouds draw right and look the same in every pack (tried with
+  Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas and MakeUp Ultra Fast). On 26.3 and 1.21.1.
+- **Distant Horizons:** blast effects stand in front of its far terrain. On 26.3 and 1.21.1.
+- **JEI:** every recipe, every machine.
+- **Create and Create Aeronautics** (Minecraft 1.21.1, optional): launchers on trains, bearings and airships, every
+  machine working on moving contraptions and ships, and weapons that hit them.
+
+<details>
+<summary>Create and Create Aeronautics in detail</summary>
 
 - **Every machine rides along:** Create's moving contraptions (trains, mechanical bearings, pistons, gantries, pulleys
   and minecart contraptions) carry launchers, missile assemblers, Launch Computers, Launch Control Stations, Radar
@@ -164,11 +154,28 @@ them.
 
 Made and tested with Create 6.0.10, Create Aeronautics 1.3.2 and Sable 2.0.6.
 
+</details>
+
+## FAQ
+
+- **Forge or Fabric?** NeoForge only.
+- **Minecraft 1.20.1?** Not at the moment: 26.3, 26.1.2 and 1.21.1.
+- **Will a nuke lag my game?** Big blasts are spread over many ticks, and the settings can make them smaller or keep
+  them from breaking blocks at all.
+- **Can I stop explosions wrecking my builds?** Yes: limit what blasts may destroy, or turn on healing.
+- **Can I use it in a modpack?** Yes, freely.
+- **Bedrock or Pocket Edition?** No, Java Edition only.
+- **Does the server need it?** Yes, the server and every player.
+- **Where do I start?** Open the Field Manual.
+
 ## Settings
 
 Ground Burst can be tuned to your world: how big blasts are and how much they may destroy (or that they destroy
-nothing at all), radiation and fallout, missile range, the superweapons, your own effects (flash, camera shake, quality),
-and **healing**, which makes the damage grow back over time. Healing is **off** until you turn it on.
+nothing at all), radiation and fallout, missile range, the superweapons, your own effects (flash, camera shake,
+quality), and **healing**, which makes the damage grow back over time. Healing is **off** until you turn it on.
+
+<details>
+<summary>How to change the settings</summary>
 
 **In game:** open **Mods**, choose **Ground Burst**, then **Config**. Hover over any setting to see what it does.
 - Minecraft 26.3: the world settings are under **Synced Settings**. Change them from the title screen or in a
@@ -185,6 +192,11 @@ edit one of these in any text editor. Every setting has a note above it saying w
 
 Save the file, then start the game (or the server) again.
 
+</details>
+
+<details>
+<summary>Healing in detail</summary>
+
 **Healing in short:** under `[healing]`, set `enabled = true` (in game: **Healing**, then **Heal damage over time**). By
 default an area starts to grow back 5 minutes after the last blast near it and takes at most 5 minutes to heal, with
 everything just as it was: chests and their contents, machines and their settings, cables and pipes working again, other
@@ -194,6 +206,8 @@ blocks players have built in a crater. The game's own explosions heal too (creep
 fireballs, the Wither, beds and respawn anchors), and other mods' explosions that use the game's explosion code, each
 with a switch under **Other explosions**. Operators also have `/groundburst heal now`, `/groundburst heal forget` and
 `/groundburst heal status`. Only damage done while healing is on comes back, so turn it on before the war starts.
+
+</details>
 
 ## Requirements
 
@@ -213,8 +227,13 @@ Ground Burst comes in three files, one for each version of Minecraft; take the o
 
 Install it on the server and on every player's game: it adds blocks and items, so both sides need it.
 
+## Modpacks
+
+You are free to include Ground Burst in any modpack.
+
 ## Planned
 
+- The world's Cold War sites rebuilt with the new bunker doors, command rooms and fittings
 - Contamination that sticks to you and your gear, and more fallout and aftermath protection
 - War room displays
 - Seismographs
