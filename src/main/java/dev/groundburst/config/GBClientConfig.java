@@ -80,6 +80,12 @@ public final class GBClientConfig {
             .translation(GBLang.config("fx.farClouds", "Distant clouds"))
             .define("farClouds", true);
 
+    public static final ModConfigSpec.EnumValue<PackFx> SHADER_PACK_FX = B
+            .comment("With a shader pack on (Iris): draw blast effects over the pack's finished picture, as they look without "
+                    + "shaders and the same in every pack, or have the pack draw them, lit and fogged like the world round them "
+                    + "(some packs then draw smoke dark or lose far clouds).")
+            .translation(GBLang.config("fx.shaderPackFx", "Effects with shader packs"))
+            .defineEnum("shaderPackFx", PackFx.OVER);
 
     static {
         B.pop();

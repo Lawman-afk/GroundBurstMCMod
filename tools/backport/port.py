@@ -40,9 +40,10 @@ DROP = [re.compile(p) for p in (
     r"src/main/java/dev/groundburst/world/structure/WorldSurvey\.java",
     r"src/generated/resources/\.cache/.*",
     r"docs/BACKPORT\.md", r"tools/backport/.*",
-    # The blast effects handed to a shader pack and drawn after the level (main's DESIGN.md §12.3): built on 26.3's
-    # renderer and Iris's API for it. This branch keeps its own FxRenderTypes (drawn after the translucent terrain).
-    r"src/main/java/dev/groundburst/client/fx/(IrisFx|DrawnLast)\.java",
+    # The blast effects drawn after the level under a shader pack or with Distant Horizons (main's DESIGN.md §12.3): built
+    # on 26.3's renderer. This branch's own FxRenderTypes draws them after the level itself; main's IrisFx (the pipelines
+    # handed to a pack's programs) comes over, on 26.1.2's pipeline class (FILE_FIXES).
+    r"src/main/java/dev/groundburst/client/fx/DrawnLast\.java",
 )]
 # Main's paths that are this branch's own (build files changed here by hand): never overwritten.
 OWN = {"build.gradle", "gradle.properties"}
@@ -386,25 +387,71 @@ def drop_method(signature: str):
 SKY = "dev.groundburst.port.SkyColors"
 
 FILE_FIXES: dict[str, list] = {
-    # GeckoLib's glowmask pipeline handed to Iris (main's client/fx/IrisFx, left out here, on 26.3's renderer package): its
-    # accessors go with it.
+    # The glowmasks' pipeline, handed to Iris by IrisFx: with Iris, a copy of GeckoLib 5.5.2's with an alpha cutout.
+    # Iris 1.11.4 picks a pack's program for a pipeline by its vertex layout and its cutout, and GeckoLib's, with none,
+    # got a sky program: every glowing part was gone under a pack. 26.1.2's pipeline class is blaze3d's (26.3 moved it).
     "src/main/java/dev/groundburst/client/render/MachineGeoRenderer.java": [
         swap("""    /**
      * GeckoLib's pipeline for glowmasks, for Iris to be told how to draw it (client/fx/IrisFx): a shader pack has no
      * program for a pipeline it does not know, and drew the glowing parts' vertices as long streaks across the sky (a
      * warning beacon's light fins, a machine's lamps).
      */
-    public static com.mojang.renderpearl.api.pipeline.RenderPipeline glowPipeline() {
-        return GlowLayer.pipeline();
-    }
-
-""", ""),
+""", """    /**
+     * The glowmasks' pipeline with Iris (a copy of GeckoLib's with an alpha cutout, {@code GlowLayer.GLOWMASK}), for Iris
+     * to be told how to draw it (client/fx/IrisFx): a shader pack has no program for a pipeline it does not know.
+     */
+"""),
         swap("""
         /** GeckoLib's own pipeline for the glowmasks (one for every model that has one, other mods' too). */
         static com.mojang.renderpearl.api.pipeline.RenderPipeline pipeline() {
             return RENDER_PIPELINE;
         }
-""", ""),
+""", """
+        /**
+         * The glowmasks' pipeline with Iris: GeckoLib 5.5.2's own with an alpha cutout of a 255th (nothing anyone sees).
+         * Iris 1.11.4 picks a shader pack's program for a pipeline it is told about by its vertex layout and its cutout:
+         * GeckoLib's, which has none, got a sky program, and every glowing part was gone under a pack.
+         */
+        private static final com.mojang.blaze3d.pipeline.RenderPipeline GLOWMASK = com.mojang.blaze3d.pipeline.RenderPipeline
+                .builder(net.minecraft.client.renderer.RenderPipelines.MATRICES_FOG_LIGHT_DIR_SNIPPET)
+                .withLocation(dev.groundburst.GroundBurst.id("pipeline/glowmask"))
+                .withVertexShader("core/entity")
+                .withFragmentShader("core/entity")
+                .withShaderDefine("EMISSIVE")
+                .withShaderDefine("NO_OVERLAY")
+                .withShaderDefine("NO_CARDINAL_LIGHTING")
+                .withShaderDefine("ALPHA_CUTOUT", 1.0F / 255)
+                .withSampler("Sampler0")
+                .withColorTargetState(new com.mojang.blaze3d.pipeline.ColorTargetState(com.mojang.blaze3d.pipeline.BlendFunction.TRANSLUCENT))
+                .withDepthStencilState(new com.mojang.blaze3d.pipeline.DepthStencilState(com.mojang.blaze3d.platform.CompareOp.LESS_THAN_OR_EQUAL, false))
+                .withCull(false)
+                .withVertexFormat(com.mojang.blaze3d.vertex.DefaultVertexFormat.ENTITY, com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS)
+                .build();
+        private static final boolean IRIS = net.neoforged.fml.ModList.get().isLoaded("iris");
+        private static final java.util.function.Function<net.minecraft.resources.Identifier, net.minecraft.client.renderer.rendertype.RenderType>
+                GLOWMASKS = net.minecraft.util.Util.memoize(texture -> net.minecraft.client.renderer.rendertype.RenderType.create("groundburst_glowmask",
+                        net.minecraft.client.renderer.rendertype.RenderSetup.builder(GLOWMASK).withTexture("Sampler0", texture)
+                                .setLayeringTransform(net.minecraft.client.renderer.rendertype.LayeringTransform.NO_LAYERING)
+                                .setOutline(net.minecraft.client.renderer.rendertype.RenderSetup.OutlineProperty.NONE).sortOnUpload().createRenderSetup()));
+
+        /** The glowmasks' pipeline with Iris ({@link #GLOWMASK}). */
+        static com.mojang.blaze3d.pipeline.RenderPipeline pipeline() {
+            return GLOWMASK;
+        }
+
+        /** With Iris installed, the glowmasks are drawn on {@link #GLOWMASK}; without it, as GeckoLib draws them. */
+        @Override
+        protected net.minecraft.client.renderer.rendertype.RenderType getRenderType(R renderState) {
+            return IRIS ? GLOWMASKS.apply(getTextureResource(renderState)) : super.getRenderType(renderState);
+        }
+"""),
+        resub(r"com\.mojang\.renderpearl\.api\.pipeline\.RenderPipeline", "com.mojang.blaze3d.pipeline.RenderPipeline"),
+    ],
+    # The blast effects' and the glowmasks' pipelines handed to a shader pack's programs (main's DESIGN.md §12.3), on
+    # 26.1.2's pipeline class; drawn after the level by this branch's own FxRenderTypes (main's DrawnLast is left out).
+    "src/main/java/dev/groundburst/client/fx/IrisFx.java": [
+        swap("import com.mojang.renderpearl.api.pipeline.RenderPipeline;\n", "import com.mojang.blaze3d.pipeline.RenderPipeline;\n"),
+        swap("({@link DrawnLast})", "({@link FxRenderTypes#drawnLast})"),
     ],
     # Main's polygon loader: 26.1.2's quad baker shades a quad or not (26.3 names the way it is shaded).
     "src/main/java/dev/groundburst/client/render/PolygonModels.java": [
@@ -443,11 +490,6 @@ FILE_FIXES: dict[str, list] = {
               "\n    @Override\n    protected RenderShape getRenderShape(BlockState state) {\n"
               "        return RenderShape.MODEL;                            // its own model, not a bed's block entity\n    }\n"
               "\n    @Override\n    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {\n        return null;\n    }\n"),
-    ],
-    # The way under a shader pack (main's DESIGN.md §12.3) has no place here (no IrisFx, no DrawnLast): its option goes.
-    "src/main/java/dev/groundburst/config/GBClientConfig.java": [
-        resub(r'\n    public static final ModConfigSpec\.EnumValue<PackFx> SHADER_PACK_FX = B\n(?:.*\n)*?            \.defineEnum\("shaderPackFx", PackFx\.OVER\);\n',
-              "\n", 1),
     ],
     # Fuel: 26.1.2 has its fuel values (26.3 reads the item's cooking-fuel component through a loot context).
     "src/main/java/dev/groundburst/content/power/CombustionGeneratorBlockEntity.java": [

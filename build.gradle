@@ -42,6 +42,19 @@ repositories {
             includeGroup 'net.mezzdev.config'
         }
     }
+    // Iris and Sodium, as released (compile against Iris's API; run both with -PwithIris), and the shader packs the
+    // dev runs test with.
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter {
+            includeGroup 'maven.modrinth'
+        }
+    }
 }
 
 base {
@@ -202,6 +215,17 @@ neoForge {
 
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
+            if (providers.gradleProperty('withIris').isPresent()) {
+                // Dev runs check every draw strictly (players' games do not), and Iris's own programs fail that check
+                // (its item program reads an overlay texture that vanilla's item types do not bind): off with Iris.
+                systemProperty 'neoforge.disableGlValidation', 'true'
+                if (project.findProperty('irisFx') != null) {   // -PirisFx=glow:EMISSIVE_ENTITIES,cloud:ENTITIES_TRANSLUCENT
+                    systemProperty 'groundburst.irisFx', project.findProperty('irisFx').toString()
+                }
+                if (project.findProperty('packFx') != null) {   // -PpackFx=over|in: over the pack, or by its programs
+                    systemProperty 'groundburst.packFx', project.findProperty('packFx').toString()
+                }
+            }
             if (project.findProperty('jfr') != null) {
                 def jfrDir = file('run/jfr')
                 jfrDir.mkdirs()
@@ -231,6 +255,86 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+
+    // Shader packs (optional at runtime): the effects tell Iris which of a pack's programs draws them (compile against
+    // its API); -PwithIris runs Iris and Sodium in the dev client too.
+    compileOnly "maven.modrinth:iris:${iris_version}"
+    if (providers.gradleProperty('withIris').isPresent()) {
+        localRuntime "maven.modrinth:iris:${iris_version}"
+        localRuntime "maven.modrinth:sodium:${sodium_version}"
+    }
+    // Distant Horizons (optional at runtime): -PwithDH runs it in the dev client, its far terrain drawn round the effects.
+    if (providers.gradleProperty('withDH').isPresent()) {
+        localRuntime "maven.modrinth:distanthorizons:${dh_version}"
+    }
+}
+
+// The shader packs the dev runs test with (-PwithIris; -PirisPack=complementary|unbound|bsl|bliss|photon|solas|makeup|off
+// picks one, Complementary by default): put in run/shaderpacks, and Iris's config pointed at the one picked.
+configurations {
+    shaderPacks {
+        canBeConsumed = false
+        transitive = false
+    }
+}
+dependencies {
+    shaderPacks "maven.modrinth:complementary-reimagined:${complementary_version}@zip"
+    shaderPacks "maven.modrinth:bsl-shaders:${bsl_version}@zip"
+    shaderPacks "maven.modrinth:bliss-shader:${bliss_version}@zip"
+    shaderPacks "maven.modrinth:photon-shader:${photon_version}@zip"
+    shaderPacks "maven.modrinth:solas-shader:${solas_version}@zip"
+    shaderPacks "maven.modrinth:makeup-ultra-fast-shaders:${makeup_version}@zip"
+    shaderPacks "maven.modrinth:complementary-unbound:${unbound_version}@zip"
+}
+var installShaderPacks = tasks.register('installShaderPacks') {
+    group = 'development'
+    description = 'Puts the test shader packs in run/shaderpacks and sets Iris to the one -PirisPack names.'
+    var packs = configurations.shaderPacks
+    var pick = (project.findProperty('irisPack') ?: 'complementary').toString()
+    var runDir = file('run')
+    inputs.files(packs)
+    outputs.upToDateWhen { false }
+    doLast {
+        var dir = new File(runDir, 'shaderpacks')
+        dir.mkdirs()
+        // Each pack's file by the name -PirisPack picks it by.
+        var names = ['complementary-reimagined': 'complementary', 'complementary-unbound': 'unbound', 'bsl-shaders': 'bsl',
+                     'bliss-shader': 'bliss', 'photon-shader': 'photon', 'solas-shader': 'solas', 'makeup-ultra-fast-shaders': 'makeup']
+        String chosen = null
+        var wanted = packs.files.collect { f -> var key = names.keySet().find { f.name.startsWith(it) }; key != null ? names[key] + '.zip' : f.name }
+        dir.listFiles().findAll { it.name.endsWith('.zip') && !wanted.contains(it.name) }.each { it.delete() }   // packs named otherwise before
+        packs.files.each { f ->
+            var key = names.keySet().find { f.name.startsWith(it) }
+            var name = key != null ? names[key] + '.zip' : f.name
+            java.nio.file.Files.copy(f.toPath(), new File(dir, name).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            if (key != null && names[key] == pick.toLowerCase()) {
+                chosen = name
+            }
+        }
+        var config = new File(runDir, 'config/iris.properties')
+        config.parentFile.mkdirs()
+        var props = new Properties()
+        if (config.exists()) {
+            config.withInputStream { props.load(it) }
+        }
+        props.setProperty('enableShaders', (pick != 'off' && chosen != null).toString())
+        if (chosen != null) {
+            props.setProperty('shaderPack', chosen)
+        }
+        config.withOutputStream { props.store(it, 'Set by gradle installShaderPacks') }
+        // Iris's own metadata warns as it loads, and NeoForge's warning screen would hold the photographers and
+        // benches before the title screen: the dev runs with Iris skip it.
+        var neo = new File(runDir, 'config/neoforge-client.toml')
+        if (neo.exists()) {
+            neo.text = neo.text.replaceAll(/(?m)^showLoadWarnings\s*=\s*true/, 'showLoadWarnings = false')
+        } else {
+            neo.text = 'showLoadWarnings = false\n'
+        }
+        logger.lifecycle("Shader packs in ${dir}; Iris set to ${pick == 'off' ? 'no pack' : chosen}")
+    }
+}
+if (providers.gradleProperty('withIris').isPresent()) {
+    tasks.matching { it.name.startsWith('run') && it.name != 'runData' }.configureEach { it.dependsOn installShaderPacks }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

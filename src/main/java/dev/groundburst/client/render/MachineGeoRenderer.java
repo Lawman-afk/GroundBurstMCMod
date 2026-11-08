@@ -67,6 +67,14 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     private boolean standing;
 
     /**
+     * The glowmasks' pipeline with Iris (a copy of GeckoLib's with an alpha cutout, {@code GlowLayer.GLOWMASK}), for Iris
+     * to be told how to draw it (client/fx/IrisFx): a shader pack has no program for a pipeline it does not know.
+     */
+    public static com.mojang.blaze3d.pipeline.RenderPipeline glowPipeline() {
+        return GlowLayer.pipeline();
+    }
+
+    /**
      * Its model is built standing on its base, pointing up (a Warning Beacon): turned about the block's middle to point
      * the way the block faces, on a floor, a ceiling or a wall.
      */
@@ -190,6 +198,44 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
         GlowLayer(com.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
             super(renderer);
+        }
+
+        /**
+         * The glowmasks' pipeline with Iris: GeckoLib 5.5.2's own with an alpha cutout of a 255th (nothing anyone sees).
+         * Iris 1.11.4 picks a shader pack's program for a pipeline it is told about by its vertex layout and its cutout:
+         * GeckoLib's, which has none, got a sky program, and every glowing part was gone under a pack.
+         */
+        private static final com.mojang.blaze3d.pipeline.RenderPipeline GLOWMASK = com.mojang.blaze3d.pipeline.RenderPipeline
+                .builder(net.minecraft.client.renderer.RenderPipelines.MATRICES_FOG_LIGHT_DIR_SNIPPET)
+                .withLocation(dev.groundburst.GroundBurst.id("pipeline/glowmask"))
+                .withVertexShader("core/entity")
+                .withFragmentShader("core/entity")
+                .withShaderDefine("EMISSIVE")
+                .withShaderDefine("NO_OVERLAY")
+                .withShaderDefine("NO_CARDINAL_LIGHTING")
+                .withShaderDefine("ALPHA_CUTOUT", 1.0F / 255)
+                .withSampler("Sampler0")
+                .withColorTargetState(new com.mojang.blaze3d.pipeline.ColorTargetState(com.mojang.blaze3d.pipeline.BlendFunction.TRANSLUCENT))
+                .withDepthStencilState(new com.mojang.blaze3d.pipeline.DepthStencilState(com.mojang.blaze3d.platform.CompareOp.LESS_THAN_OR_EQUAL, false))
+                .withCull(false)
+                .withVertexFormat(com.mojang.blaze3d.vertex.DefaultVertexFormat.ENTITY, com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS)
+                .build();
+        private static final boolean IRIS = net.neoforged.fml.ModList.get().isLoaded("iris");
+        private static final java.util.function.Function<net.minecraft.resources.Identifier, net.minecraft.client.renderer.rendertype.RenderType>
+                GLOWMASKS = net.minecraft.util.Util.memoize(texture -> net.minecraft.client.renderer.rendertype.RenderType.create("groundburst_glowmask",
+                        net.minecraft.client.renderer.rendertype.RenderSetup.builder(GLOWMASK).withTexture("Sampler0", texture)
+                                .setLayeringTransform(net.minecraft.client.renderer.rendertype.LayeringTransform.NO_LAYERING)
+                                .setOutline(net.minecraft.client.renderer.rendertype.RenderSetup.OutlineProperty.NONE).sortOnUpload().createRenderSetup()));
+
+        /** The glowmasks' pipeline with Iris ({@link #GLOWMASK}). */
+        static com.mojang.blaze3d.pipeline.RenderPipeline pipeline() {
+            return GLOWMASK;
+        }
+
+        /** With Iris installed, the glowmasks are drawn on {@link #GLOWMASK}; without it, as GeckoLib draws them. */
+        @Override
+        protected net.minecraft.client.renderer.rendertype.RenderType getRenderType(R renderState) {
+            return IRIS ? GLOWMASKS.apply(getTextureResource(renderState)) : super.getRenderType(renderState);
         }
 
         @Override
