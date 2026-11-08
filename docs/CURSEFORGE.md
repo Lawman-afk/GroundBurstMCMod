@@ -117,9 +117,9 @@ from players' requests. Tell us what you want next.
 - **Create and Create Aeronautics** (Minecraft 1.21.1, optional): launchers on trains, bearings and airships, every
   machine working on moving contraptions and ships, and weapons that hit them.
 
-<details>
-<summary>Create and Create Aeronautics in detail</summary>
+**Create and Create Aeronautics in detail**
 
+:::spoiler
 - **Every machine rides along:** Create's moving contraptions (trains, mechanical bearings, pistons, gantries, pulleys
   and minecart contraptions) carry launchers, missile assemblers, Launch Computers, Launch Control Stations, Radar
   Arrays, generators, capacitor banks and the processing machines. Glue or attach any part of a formed structure and the
@@ -153,8 +153,7 @@ from players' requests. Tell us what you want next.
   blocks round it.
 
 Made and tested with Create 6.0.10, Create Aeronautics 1.3.2 and Sable 2.0.6.
-
-</details>
+:::
 
 ## FAQ
 
@@ -174,9 +173,9 @@ Ground Burst can be tuned to your world: how big blasts are and how much they ma
 nothing at all), radiation and fallout, missile range, the superweapons, your own effects (flash, camera shake,
 quality), and **healing**, which makes the damage grow back over time. Healing is **off** until you turn it on.
 
-<details>
-<summary>How to change the settings</summary>
+**How to change the settings**
 
+:::spoiler
 **In game:** open **Mods**, choose **Ground Burst**, then **Config**. Hover over any setting to see what it does.
 - Minecraft 26.3: the world settings are under **Synced Settings**. Change them from the title screen or in a
   single-player world.
@@ -191,12 +190,11 @@ edit one of these in any text editor. Every setting has a note above it saying w
 - `groundburst-client.toml`: your own effects and the HUD
 
 Save the file, then start the game (or the server) again.
+:::
 
-</details>
+**Healing in detail**
 
-<details>
-<summary>Healing in detail</summary>
-
+:::spoiler
 **Healing in short:** under `[healing]`, set `enabled = true` (in game: **Healing**, then **Heal damage over time**). By
 default an area starts to grow back 5 minutes after the last blast near it and takes at most 5 minutes to heal, with
 everything just as it was: chests and their contents, machines and their settings, cables and pipes working again, other
@@ -206,8 +204,7 @@ blocks players have built in a crater. The game's own explosions heal too (creep
 fireballs, the Wither, beds and respawn anchors), and other mods' explosions that use the game's explosion code, each
 with a switch under **Other explosions**. Operators also have `/groundburst heal now`, `/groundburst heal forget` and
 `/groundburst heal status`. Only damage done while healing is on comes back, so turn it on before the war starts.
-
-</details>
+:::
 
 ## Requirements
 
@@ -257,9 +254,9 @@ You are free to include Ground Burst in any modpack.
   Electronic Arts.
 - Ground Burst is released under the [MIT licence](https://github.com/Lawman-afk/GroundBurstMCMod/blob/main/LICENSE).
 
-<details>
-<summary>Sound credits</summary>
+**Sound credits**
 
+:::spoiler
 Some of the mod's sounds are made from recordings shared on [Freesound](https://freesound.org). Each was changed: cut,
 cleaned of background noise, filtered, slowed or layered with others and with synthesized sound.
 
@@ -275,5 +272,4 @@ joneekemp, julujanus, Kinoton, klangfabrik, kyles, megashroom, modusmogulus, noo
 parabolix, pedrgloria, pyer75, qubodup, Rudmer_Rotteveel, RytmenPinnen, sevenbsb, Sheyvan, sidohzen, sirkhandijoan, SpaceJoe,
 SpooksJH, squashy555, ThabzMalik, TiesWijnen, unfa and Yoyodaman234. Each recording, with its link, is listed in
 [CREDITS.txt](https://github.com/Lawman-afk/GroundBurstMCMod/blob/main/src/main/resources/assets/groundburst/sounds/CREDITS.txt).
-
-</details>
+:::
