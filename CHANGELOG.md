@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.11.0 — 2026-11-08
+
+The world's Cold War sites fitted out with the bunker doors, the command room, the fittings and the yard, and fixes for
+shader packs and for machines fed by pipes. For Minecraft 26.3, 26.1.2 and 1.21.1.
 
 ### The Cold War sites, fitted out
 - All seven of the world's sites are fitted out with the bunker doors, the command room, the bunker fittings and the
@@ -25,7 +28,12 @@
 ### Fixes
 - The Research Station's laboratory and crew module have floors where they stand out past the deck: the laboratory's
   had a hole onto the void.
+- Two sites could generate on top of each other (a radar outpost built into a missile silo, say); the sites on the
+  surface now keep at least eight chunks apart, and the waste storage keeps clear of the missile silos.
 - A Radar Outpost's beds and a Research Station's radar ladder could go missing where a chunk's edge ran beside them.
+- The sites no longer fill the game's log with warnings of block entities that failed to load as they generate (one
+  for every panel of a missile silo's door but its middle, and now for the other parts of blast doors, lockers, tape
+  drives and searchlights).
 - Pipes and hoppers fill each ingredient into one input slot of a machine. A pipe bringing more of one ingredient than
   a slot holds used to fill the next slots too, until the machine stood waiting with every slot full (a Circuit
   Fabricator fed copper wire, redstone and plastic from one chest filled all four with wire). Filling by hand is as it

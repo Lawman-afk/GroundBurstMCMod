@@ -107,6 +107,15 @@ STRUCTURES = {
 }
 
 
+#: The order the sites on the surface give way in (DESIGN.md §22.8): each keeps KEEP_CLEAR chunks clear of every site
+#: before it, the rarest first (its spread keeps its own sites apart; vanilla's exclusion zone names one other set). The
+#: census found three pairs of sites within three chunks of each other, a radar outpost built into a silo among them.
+#: The waste storage, 42 blocks under the ground, gives way to the silo alone: only its shaft and rooms reach that deep.
+GIVE_WAY = ["test_site", "abandoned_silo", "radar_outpost", "command_bunker", "crashed_missile"]
+UNDERGROUND_GIVES_WAY = {"waste_storage": ["abandoned_silo"]}
+KEEP_CLEAR = 7
+
+
 def site_variants(name: str) -> list[dict]:
     if name == "abandoned_silo":
         # The origin is the shaft's axis at grade, (20, ., 18) in both templates; the complex's top layer just under it.
@@ -270,6 +279,10 @@ def main() -> None:
             structure["max_slope"] = s["max_slope"]
         if "depth" in s:
             structure["depth"] = s["depth"]
+        clear_of = GIVE_WAY[:GIVE_WAY.index(name)] if name in GIVE_WAY else UNDERGROUND_GIVES_WAY.get(name, [])
+        if clear_of:
+            structure["keep_clear_of"] = [f"groundburst:{n}" for n in clear_of]
+            structure["keep_clear"] = KEEP_CLEAR
         path = DATA / "worldgen" / "structure" / f"{name}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(structure, indent=2) + "\n", encoding="utf-8")

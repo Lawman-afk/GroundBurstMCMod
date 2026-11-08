@@ -198,6 +198,7 @@ public final class WorldSurvey {
             }
             TASKS.add(s -> {
                 vanilla(s);
+                apart(s);
                 return true;
             });
         }
@@ -207,6 +208,7 @@ public final class WorldSurvey {
                     for (String name : GBStructures.NAMES) {
                         census(s, name);                       // the visits need the census's sites
                     }
+                    apart(s);
                 }
                 planVisits();
                 return true;
@@ -219,7 +221,7 @@ public final class WorldSurvey {
     }
 
     // --- census -----------------------------------------------------------------------------------------------------------
-    enum Verdict { SITE, BIOME, WATER, SLOPE, DEPTH, VOID, PLACEMENT }
+    enum Verdict { SITE, BIOME, WATER, SLOPE, DEPTH, VOID, PLACEMENT, CROWDED }
 
     /** A site the census found: where, its biome, variant and turn, how far from the centre, and how much the land under it rises and falls. */
     record Found(String name, ResourceKey<Level> dimension, ChunkPos chunk, BlockPos origin, String biome, String variant, String rotation,
@@ -313,6 +315,8 @@ public final class WorldSurvey {
                             v = Verdict.BIOME;
                             rejected.merge(b, 1, Integer::sum);
                         }
+                    } else if (site.place(context(level, c, site)).isPresent()) {
+                        v = Verdict.CROWDED;                    // it gives way to a rarer site near it
                     } else {
                         int x = c.getMiddleBlockX(), z = c.getMiddleBlockZ();
                         int top = generator.getFirstOccupiedHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG, level, random);
@@ -380,6 +384,40 @@ public final class WorldSurvey {
     }
 
     private static final Map<Long, Boolean> VILLAGES = new HashMap<>();
+
+    /**
+     * How close the overworld's sites stand to those they give way to (SiteStructure's keep_clear_of): the pairs within 8
+     * chunks of each other, by distance.
+     */
+    private static void apart(MinecraftServer server) {
+        List<Found> all = new ArrayList<>();
+        FOUND.values().forEach(f -> f.stream().filter(s -> s.dimension() == Level.OVERWORLD).forEach(all::add));
+        var structures = server.overworld().registryAccess().lookupOrThrow(Registries.STRUCTURE);
+        int[] within = new int[9];
+        StringBuilder pairs = new StringBuilder();
+        for (int a = 0; a < all.size(); a++) {
+            for (int b = a + 1; b < all.size(); b++) {
+                Found p = all.get(a), q = all.get(b);
+                SiteStructure ps = (SiteStructure) structures.getValue(GBStructures.structure(p.name()));
+                SiteStructure qs = (SiteStructure) structures.getValue(GBStructures.structure(q.name()));
+                if (!ps.givesWayTo(GBStructures.set(q.name())) && !qs.givesWayTo(GBStructures.set(p.name()))) {
+                    continue;
+                }
+                int d = Math.max(Math.abs(p.chunk().x() - q.chunk().x()), Math.abs(p.chunk().z() - q.chunk().z()));
+                if (d <= 8) {
+                    within[d]++;
+                    pairs.append(String.format(Locale.ROOT, " %s at %d,%d and %s at %d,%d (%d);", p.name(), p.origin().getX(),
+                            p.origin().getZ(), q.name(), q.origin().getX(), q.origin().getZ(), d));
+                }
+            }
+        }
+        line("");
+        line("== the sites apart: of " + all.size() + " in the overworld, pairs (one giving way to the other) within d chunks (d: pairs) "
+                + java.util.stream.IntStream.rangeClosed(0, 8).mapToObj(d -> d + ":" + within[d]).collect(java.util.stream.Collectors.joining(" ")));
+        if (!pairs.isEmpty()) {
+            line("  " + pairs);
+        }
+    }
 
     /** How many of the sites have a village standing within 4, 6, 8 and 10 chunks of their own chunk. */
     private static String villagesNear(ServerLevel level, List<Found> found) {
