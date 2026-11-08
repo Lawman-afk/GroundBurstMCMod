@@ -30,6 +30,10 @@ import net.neoforged.neoforge.common.NeoForge;
  * {@code room} the command room ({@link CommandRoomBoard}), {@code fittings} the bunker fittings ({@link FittingsBoard}),
  * {@code yard} the outdoor defences and the yard ({@link YardBoard}), {@code chips} the semiconductor chain running
  * ({@link ChipsBoard}). A picture whose name ends "_night" is taken at midnight (the searchlight's beam).
+ * {@code <site>:cut:<dz>} cuts a site open north of a plane to show what is underground; {@code
+ * <site>:at:<dx>/<dy>/<dz>/<yaw>/<pitch>[;...]} places it whole and takes a picture from each camera at those offsets from
+ * its origin (the camera's feet; yaw 0 south, 90 west), {@code site_<name>_<variant>_at<n>.png}: its rooms from inside
+ * (DESIGN.md §22.8).
  */
 public final class SitePhotographer {
     /** Every site there is, in the order they are photographed with {@code all}. */
@@ -199,8 +203,11 @@ public final class SitePhotographer {
                 }
             }
             int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0) - 1;     // the land's top block, as generation reads it
+            // <site>:at:<dx>/<dy>/<dz>/<yaw>/<pitch>[;...]: the site placed as below, seen from cameras at those offsets from
+            // its origin (indoors, for what stands in its rooms).
+            String site = name.contains(":at:") ? name.substring(0, name.indexOf(":at:")) : name;
             // The land the site stands on where it generates: sand for the test site, grass elsewhere.
-            var land = (name.equals("test_site") ? net.minecraft.world.level.block.Blocks.SAND
+            var land = (site.equals("test_site") ? net.minecraft.world.level.block.Blocks.SAND
                     : net.minecraft.world.level.block.Blocks.GRASS_BLOCK).defaultBlockState();
             for (BlockPos p : BlockPos.betweenClosed(x - 96, top, -96, x + 96, top, 96)) {
                 level.setBlock(p, land, 2);
@@ -208,7 +215,7 @@ public final class SitePhotographer {
             // The biome too, so the grass and water are the colour they are where the site generates.
             commands.performPrefixedCommand(source, "gamerule max_block_modifications 4000000");
             commands.performPrefixedCommand(source, "fillbiome " + (x - 96) + " " + (top - 8) + " -96 " + (x + 96) + " " + (top + 64)
-                    + " 96 minecraft:" + (name.equals("test_site") ? "desert" : "plains"));
+                    + " 96 minecraft:" + (site.equals("test_site") ? "desert" : "plains"));
             BlockPos origin = new BlockPos(x, top, 0);
             if (name.contains(":cut")) {
                 // <site>:cut:<dz>: what is underground, raised into a block of stone (the flat world is too thin for it)
@@ -225,8 +232,19 @@ public final class SitePhotographer {
                 SHOTS.add(new Shot(base + "_close.png", new Vec3(cx + 8, cy + 4, cut - 26), 0, 8, BlockPos.containing(cx, cy, cut + 6)));
                 return;
             }
-            if (name.equals("exotic_research_station")) {
+            if (site.equals("exotic_research_station")) {
                 origin = origin.above(14);                 // it floats over an island in the End
+            }
+            if (!site.equals(name)) {
+                GBStructures.preview(level, site, variant, origin, false, null);
+                String[] cameras = name.substring(name.indexOf(":at:") + 4).split(";");
+                for (int i = 0; i < cameras.length; i++) {
+                    String[] v = cameras[i].split("/");
+                    Vec3 at = Vec3.atBottomCenterOf(origin).add(Double.parseDouble(v[0]), Double.parseDouble(v[1]), Double.parseDouble(v[2]));
+                    SHOTS.add(new Shot("site_" + site + "_" + variant + "_at" + i + ".png", at, Float.parseFloat(v[3]),
+                            Float.parseFloat(v[4]), BlockPos.containing(at)));
+                }
+                return;
             }
             BoundingBox box = name.equals("board") ? ConstructionBoard.build(level, origin)
                     : name.equals("doors") ? BunkerDoorBoard.build(level, origin)

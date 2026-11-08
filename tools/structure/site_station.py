@@ -6,10 +6,12 @@ A floating rock of end stone, a teardrop with its point down, veined with voidst
 sides and chorus on its rim, carries an octagonal deck of concrete edged in hazard stripes, railed. On it the
 containment hall: a round steel drum under a white radome (the kit's, smoothed with its stairs and slabs), blown open on
 its east side where the containment failed, the breach ragged, crystals erupting through it; inside, the broken
-containment ring round a scorched pit full of crystals. North of it the laboratory and west of it the crew's module,
-each joined to the hall by a covered way, steel with windows in rows, solar panels and railings on their roofs; the
-Search Radar (stopped) on its lattice tower at the deck's south-east corner, the station's mark from afar; a cargo
-corner of crates; and what the failure threw out, hanging in the void east of it: radome panels, steel, rock.
+containment ring round a scorched pit full of crystals. North of it the laboratory (its benches, the tape drives and
+consoles that logged the matter, the records) and west of it the crew's module (bunk beds, steel lockers), each joined
+to the hall by a covered way, steel with windows in rows, solar panels and railings on their roofs, pressure doors at
+both ends, a breaker on in each with its lamp lit; the Search Radar (stopped) on its lattice tower at the deck's
+south-east corner, the station's mark from afar; a cargo corner of crates and fuel drums; and what the failure threw
+out, hanging in the void east of it: radome panels, steel, rock.
 
 One template, 44 x 30 x 44, the deck at y 12 (the rock under it); the origin is the hall's middle on the deck.
 """
@@ -187,8 +189,9 @@ def hall(k: Kit) -> None:
         if k.name(C, y, C) in (None, AIR):
             k.set(C, y, C, "iron_chain", {"axis": "y", "waterlogged": False})
     k.set(C, D + 6, C, gb("floodlight"), {"facing": "down"})
-    k.iron_door(C, D + 1, C - 7, N)                                                        # from the lab's covered way
-    k.iron_door(C - 7, D + 1, C, W)                                                        # from the crew's
+    k.pressure_door(C, D + 1, C - 7, N)                                                    # from the lab's covered way
+    k.pressure_door(C - 7, D + 1, C, W)                                                    # from the crew's
+    k.breaker(C - 2, D + 2, C - 6, S)                                  # inside the north door, two clear of it (its signal)
 
 
 # --- the modules ----------------------------------------------------------------------------------------------------------------
@@ -199,6 +202,7 @@ def module(k: Kit, box: tuple, door: tuple, name: str) -> None:
     for x in range(x0, x1 + 1):
         for z in range(z0, z1 + 1):
             ring = x in (x0, x1) or z in (z0, z1)
+            k.set(x, D, z, PANEL)                 # its own floor: its ends stand out past the deck's edge, over rock and void
             for y in range(D + 1, D + 5):
                 if ring:
                     k.set(x, y, z, RUSTED_PANEL if y == D + 1 and k.n(x, y, z, 2.0, 51) > 0.45 else PANEL)
@@ -216,28 +220,37 @@ def module(k: Kit, box: tuple, door: tuple, name: str) -> None:
         k.windows(W, x0, z0, x0, z1, D + 3, every=2)
         k.windows(E, x1, z0, x1, z1, D + 3, every=2)
     dx_, dz_, face = door
-    k.iron_door(dx_, D + 1, dz_, face)
+    k.pressure_door(dx_, D + 1, dz_, face)
     if name == "lab":
-        # The laboratory: benches of machine casings along the back, the containment cell under study on one, the
-        # notes' lectern, a chest of samples; a light.
+        # The laboratory: benches of machine casings along the back, the containment cell under study on one; along the
+        # front the chest of samples, the consoles and tape drives that logged the matter, the notes' lectern and the
+        # records cabinet; its breaker by the door (between two windows, beside the low consoles: its signal would run a
+        # tape drive), its lamp lit; the lamp in the roof dead.
         for x in range(x0 + 1, x1):
             if x != (x0 + x1) // 2:
                 k.set(x, D + 1, z0 + 1, CASING, {"formed": False})
         k.set(x0 + 3, D + 2, z0 + 1, gb("reactor_glass"), {"formed": False})
         k.set(x0 + 3, D + 3, z0 + 1, CRYSTALS[2], {"facing": "up", "waterlogged": False})
-        k.set(x1 - 2, D + 1, z1 - 1, "lectern", {"facing": N, "has_book": False, "powered": False})
         k.chest(x0 + 1, D + 1, z1 - 1, E, "research_station")
-        k.set((x0 + x1) // 2, D + 4, (z0 + z1) // 2, "end_rod", {"facing": "down"})
+        for x in (x0 + 2, x0 + 3):
+            k.console(x, D + 1, z1 - 1, N)
+        for x in (dx_ + 2, dx_ + 3):
+            k.tape_computer(x, D + 1, z1 - 1, N)
+        k.set(x1 - 2, D + 1, z1 - 1, "lectern", {"facing": N, "has_book": False, "powered": False})
+        k.cabinet(x1 - 1, D + 1, z1 - 1, W)
+        k.breaker(dx_ - 2, D + 2, z1 - 1, N)
+        k.bunker_lamp((x0 + x1) // 2, D + 4, (z0 + z1) // 2)
     else:
-        # The crew's module: bunks, lockers, a table; the second chest.
+        # The crew's module: bunk beds along the west wall, steel lockers (the second store in the last), a table, an
+        # extinguisher; its breaker by the door, its lamp lit; the lamp in the roof dead.
         for z in (z0 + 1, z0 + 4):
-            k.bed(x0 + 2, D + 1, z, W, "light_gray")
+            k.bunk(x0 + 2, D + 1, z, W)
         for z in range(z0 + 6, z1):
-            k.trapdoor(x0 + 1, D + 1, z, "iron_trapdoor", E, open_=True)
-            k.trapdoor(x0 + 1, D + 2, z, "iron_trapdoor", E, open_=True)
+            k.locker(x0 + 1, D + 1, z, E, "research_station" if z == z1 - 1 else None)
         k.slab(x1 - 2, D + 1, z0 + 7, "smooth_stone_slab", "top")
-        k.chest(x1 - 1, D + 1, z1 - 1, W, "research_station")
-        k.set((x0 + x1) // 2, D + 4, (z0 + z1) // 2, "end_rod", {"facing": "down"})
+        k.extinguisher(x1 - 1, D + 1, z1 - 1, W)
+        k.breaker(x1 - 1, D + 2, dz_ - 3, W)                     # clear of the door (its signal), between two windows
+        k.bunker_lamp((x0 + x1) // 2, D + 4, (z0 + z1) // 2)
 
 
 def covered_way(k: Kit, box: tuple) -> None:
@@ -256,23 +269,28 @@ def covered_way(k: Kit, box: tuple) -> None:
 # --- the radar, the cargo corner, the drift ------------------------------------------------------------------------------------
 def radar(k: Kit) -> None:
     """The Search Radar, stopped, on a lattice tower at the deck's south-east corner (its reflector out over the
-    void): the station's mark from afar; a ladder up the tower, its cable down."""
+    void): the station's mark from afar; a ladder up the tower's south face (its west face stands on a column where a
+    chunk's edge may fall: `sites.check_chunks`), its cable down."""
     x, z = 32, 31
     k.lattice_tower(x - 1, z - 1, 2, 2, D + 1, D + 7, ladder=False)
     k.set(x, D + 8, z, gb("search_radar"), {"facing": S, "active": False})
-    k.ladder(x - 2, D + 1, D + 7, z, W)
+    k.ladder(x - 1, D + 1, D + 7, z + 1, S)
     for y in range(D + 1, D + 8):
         k.set(x + 1, y, z - 1, "iron_chain", {"axis": "y", "waterlogged": False})
 
 
 def cargo(k: Kit) -> None:
-    """Crates where the supply craft unloaded, in the deck's south-west corner: a stack under a tarp, a drum, a
-    floodlight on the hall's side turned on them."""
+    """Crates where the supply craft unloaded, in the deck's south-west corner: a stack under a tarp, ammo crates beside
+    it, fuel drums, a waste drum."""
     for x, z, h in ((12, 29, 2), (13, 29, 1), (12, 30, 1), (15, 30, 1)):
         for y in range(D + 1, D + 1 + h):
             k.barrel(x, y, z, "up")
         k.set(x, D + 1 + h, z, "purple_carpet")
     k.set(14, D + 1, 31, gb("waste_drum"))
+    k.crates(16, D + 1, 29, W)
+    k.crates(16, D + 1, 30, N)
+    k.drums(12, D + 1, 31, "fuel", 3, N)
+    k.drums(13, D + 1, 31, "fuel", 1, E)
 
 
 def drift(k: Kit) -> None:

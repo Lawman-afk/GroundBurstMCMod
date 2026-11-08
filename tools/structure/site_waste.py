@@ -4,12 +4,15 @@ roof under magnesium-oxide sacks, full rooms closed with bulkheads, salt creepin
 kit's rules (tools/structure/kit.py).
 
 The salt in bands (halite white, clay seams pink-brown, greyer beds), not a speckle. The main drift east from the waste
-shaft's station (its hoist cage at the foot of the shaft, sealed above by a concrete plug): a milled floor worn darker
-along the wheel tracks, roof bolts in a grid, strip lights along one rib and the cable along the other. Rooms off it:
+shaft's station (its hoist cage at the foot of the shaft, sealed above by a concrete plug, the hoist's breakers on the
+wall): a milled floor worn darker along the wheel tracks, roof bolts in a grid, strip lights along one rib under the
+ventilation duct and its grilles, the cable and the water line (wall pipes, their valves) along the other. Rooms off it:
 north, a full room closed by a bulkhead (steel frame, mesh, curtain, signs), the working room (drums at the back, the
-forklift with a drum on its forks), a newly mined room standing empty, a room fallen in on its drums; south, the
-decontamination room (showers, lockers, the suits), the lead-lined hot cell behind its window and manipulator arms, the
-control room (monitors, the logbook, the shift supervisor's desk), and a full room the salt is squeezing shut.
+forklift with a drum on its forks), a newly mined room standing empty, a room fallen in on its drums; south, behind
+pressure doors, the decontamination room (showers, steel lockers, the suits, a crate of spare kit), the lead-lined hot
+cell behind its window and manipulator arms (the operators' desks before it), the control room (its consoles under the
+air monitors, the logbook, the shift supervisor's desk, the first-aid locker), each with its breaker on by the door and
+its lamp lit; and a full room the salt is squeezing shut.
 
 One template, 44 x 9 x 40, the floor at y 1, the rooms four high; a solid block of salt round them.
 """
@@ -90,8 +93,10 @@ def carve(k: Kit, room: tuple, roof: int = ROOF) -> None:
 
 # --- the drift and the shaft --------------------------------------------------------------------------------------------------
 def drift(k: Kit) -> None:
-    """The main drift: five wide, four high; the milled floor worn darker along the wheel tracks; roof bolts; strip lights
-    along the north rib, the power cable and a water line along the south."""
+    """The main drift: five wide, four high; the milled floor worn darker along the wheel tracks; roof bolts; along the
+    north rib the ventilation duct under the roof, a grille down out of it every six blocks, the strip lights under it;
+    the power cable along the south, and the water line under it (wall pipes on the rib, a valve every ten blocks; not
+    across the open mouth of the last room)."""
     x0, z0, x1, z1 = DRIFT
     carve(k, DRIFT)
     for x in range(x0, x1 + 1):
@@ -100,9 +105,13 @@ def drift(k: Kit) -> None:
                 k.set(x, F, z, "andesite" if k.n(x, 2, z, 1.5, 17) > 0.5 else "tuff")      # the tracks
         if x % 6 == 3:
             k.set(x, ROOF - 2, z0, "end_rod", {"facing": E})                              # a strip light
+        elif x % 6 == 0:
+            k.grille(x, ROOF - 2, z0, "down")
         k.set(x, ROOF - 1, z1, "iron_chain", {"axis": "x", "waterlogged": False})        # the cable
-        if k.name(x, ROOF - 2, z1) == AIR:
-            k.set(x, ROOF - 2, z1, "weathered_lightning_rod", {"facing": E, "powered": False, "waterlogged": False})
+    k.duct(x0, ROOF - 1, z0, x1 - 1, ROOF - 1, z0)
+    open_mouth = range(NORTH[3][0], NORTH[3][1] + 1)                                      # the creeping room's
+    k.pipes((x0, z1), (open_mouth[0] - 1, z1), ROOF - 2, N, valves=[(x, z1) for x in range(x0 + 4, open_mouth[0], 10)])
+    k.pipes((open_mouth[-1] + 1, z1), (x1 - 1, z1), ROOF - 2, N, valves=[(open_mouth[-1] + 2, z1)])
 
 
 def shaft(k: Kit) -> None:
@@ -128,6 +137,11 @@ def shaft(k: Kit) -> None:
         for y in range(F + 5, SIZE[1] - 2):
             k.set(x, y, z, "iron_chain", {"axis": "y", "waterlogged": False})
     k.set(5, F + 2, 15, gb("radiation_sign"), {"facing": S})
+    # The hoist's breakers on the south wall, a block apart (one left on beside another would have it look on), the hoist's
+    # own on, the lamp over it lit; an extinguisher on the north wall.
+    k.fuse_box(cx0, F + 2, 23, N)
+    k.breaker(cx1, F + 2, 23, N)
+    k.extinguisher(cx0, F + 2, 15, S, wall=True)
 
 
 # --- the rooms -----------------------------------------------------------------------------------------------------------------
@@ -234,24 +248,26 @@ def fallen_room(k: Kit, room: tuple) -> None:
 
 
 def decontamination(k: Kit, room: tuple) -> None:
-    """Lined in concrete: the door from the drift, showers over drains, lockers, the bench, the suits on their stands
-    (two hazmat, one lead-lined), a crate of spare kit (the store's chest)."""
+    """Lined in concrete: the pressure door from the drift, showers over drains, steel lockers, the bench, the suits on
+    their stands (two hazmat, one lead-lined), a crate of spare kit (the store's); the breaker by the door, its lamp lit,
+    an extinguisher on the wall."""
     x0, z0, x1, z1 = room
     lining(k, room)
-    k.iron_door((x0 + x1) // 2, F + 1, z0, N)
+    k.pressure_door((x0 + x1) // 2, F + 1, z0, N)
     for z in (z0 + 3, z0 + 6):
         k.set(x0 + 1, ROOF - 1, z, "lightning_rod", {"facing": "down", "powered": False, "waterlogged": False})
         k.set(x0 + 1, F, z, GRATING)
     for z in range(z0 + 2, z0 + 8):
         k.slab(x1 - 1, F + 1, z, "smooth_stone_slab")
     for z in range(z0 + 9, z1):
-        for y in (F + 1, F + 2):
-            k.trapdoor(x0 + 1, y, z, "iron_trapdoor", E, open_=True)                          # the lockers
+        k.locker(x0 + 1, F + 1, z, E)
     k.marker(x1 - 1, F + 1, z0 + 8, "stand:hazmat:west")
     k.marker(x1 - 1, F + 1, z0 + 9, "stand:hazmat:west")
     k.marker(x1 - 1, F + 1, z0 + 10, "stand:lead:west")
-    k.chest((x0 + x1) // 2, F + 1, z1 - 1, N, "waste_storage")
-    k.lantern((x0 + x1) // 2, ROOF - 1, z0 + 5, hanging=True)
+    k.crates((x0 + x1) // 2, F + 1, z1 - 1, N, "waste_storage")
+    k.breaker(x0 + 1, F + 2, z0 + 2, E)                  # on the side wall: beside the door its signal opens it
+    k.extinguisher(x1 - 1, F + 2, z0 + 1, S, wall=True)
+    k.bunker_lamp((x0 + x1) // 2, ROOF - 1, z0 + 5)
 
 
 def lining(k: Kit, room: tuple) -> None:
@@ -271,11 +287,11 @@ def lining(k: Kit, room: tuple) -> None:
 
 def hot_cell(k: Kit, room: tuple) -> None:
     """The hot cell: an operating gallery off the drift, the cell behind a lead wall two blocks thick with a window of
-    reactor glass, the manipulators' arms through the wall over it and their handles before it; inside, a waste drum
-    opened on the bench, the store's second chest."""
+    reactor glass, the manipulators' arms through the wall over it and their handles before it, the operators' desks;
+    inside, a waste drum opened on the bench, the store's second crate; pressure doors, the gallery's breaker on."""
     x0, z0, x1, z1 = room
     lining(k, room)
-    k.iron_door((x0 + x1) // 2, F + 1, z0, N)
+    k.pressure_door((x0 + x1) // 2, F + 1, z0, N)
     wall = z0 + 4
     for x in range(x0 + 1, x1):
         for y in range(F + 1, ROOF):
@@ -290,41 +306,46 @@ def hot_cell(k: Kit, room: tuple) -> None:
         k.set(x, F + 4, wall + 1, "lightning_rod", {"facing": S, "powered": False, "waterlogged": False})
         k.set(x, F + 4, wall - 1, "lever", {"face": "wall", "facing": N, "powered": False})
     for x in range(x0 + 1, x1 - 1):
-        k.set(x, F + 1, wall - 1, PANEL)                                                  # the operators' desk
-    # The cell: its own door from the gallery round the side (lead), the bench and the drum on it, the chest.
+        k.desk(x, F + 1, wall - 1, N)                                                     # the operators' desks
+    k.breaker(x0 + 1, F + 2, z0 + 2, E)                  # on the side wall, clear of the door
+    # The cell: its own door from the gallery round the side (lead), the bench and the drum on it, the crate.
     for y in (F + 1, F + 2):
         k.set(x1 - 1, y, wall, AIR)
         k.set(x1 - 1, y, wall + 1, AIR)
-    k.iron_door(x1 - 1, F + 1, wall, S)
+    k.pressure_door(x1 - 1, F + 1, wall, S)
     k.set(x1 - 1, F + 1, wall + 1, AIR)
     for x in range(x0 + 1, x1 - 1):
         k.set(x, F + 1, wall + 3, RUSTED_PANEL)
     k.set(x0 + 2, F + 2, wall + 3, DRUM)
-    k.chest(x0 + 1, F + 1, z1 - 1, E, "waste_storage")
-    k.lantern((x0 + x1) // 2, ROOF - 1, z0 + 2, hanging=True)
+    k.crates(x0 + 1, F + 1, z1 - 1, E, "waste_storage")
+    k.bunker_lamp((x0 + x1) // 2, ROOF - 1, z0 + 2)
     k.set((x0 + x1) // 2, ROOF - 1, wall + 4, "end_rod", {"facing": "down"})
 
 
 def control_room(k: Kit, room: tuple) -> None:
-    """The control room (and refuge): the air monitors' panels and their dead lamps along the back, the logbook on its
-    lectern, the supervisor's desk and chair, the oxygen bottles racked, a first-aid locker."""
+    """The control room (and refuge): the consoles along the back under the air monitors' dead lamps, the logbook on its
+    lectern, the supervisor's desk and chair, the records cabinet and the tape drive, the oxygen bottles racked, the
+    first-aid locker; the breaker by the door, its lamp lit."""
     x0, z0, x1, z1 = room
     lining(k, room)
-    k.iron_door((x0 + x1) // 2, F + 1, z0, N)
+    k.pressure_door((x0 + x1) // 2, F + 1, z0, N)
     for x in range(x0 + 1, x1):
-        k.set(x, F + 1, z1 - 1, PANEL)
+        k.console(x, F + 1, z1 - 1, N)
         k.set(x, F + 2, z1 - 1, "redstone_lamp" if x % 2 else "black_stained_glass", {"lit": False} if x % 2 else None)
         k.set(x, F + 3, z1 - 1, PANEL)
     k.set(x0 + 1, F + 1, z0 + 5, "lectern", {"facing": E, "has_book": False, "powered": False})
-    k.slab(x1 - 1, F + 1, z0 + 4, "spruce_slab", "top")
-    k.slab(x1 - 1, F + 1, z0 + 5, "spruce_slab", "top")
+    for z in (z0 + 4, z0 + 5):
+        k.desk(x1 - 1, F + 1, z, W)
     k.stairs(x1 - 2, F + 1, z0 + 4, "spruce_stairs", W)
     for z in (z0 + 7, z0 + 8):
         for y in (F + 1, F + 2):
             k.set(x0 + 1, y, z, "iron_chain", {"axis": "y", "waterlogged": False})       # oxygen bottles in their rack
         k.set(x0 + 1, F + 3, z, "lightning_rod", {"facing": "up", "powered": False, "waterlogged": False})
-    k.barrel(x1 - 1, F + 1, z1 - 3, "west")
-    k.lantern((x0 + x1) // 2, ROOF - 1, z0 + 5, hanging=True)
+    k.locker(x1 - 1, F + 1, z1 - 3, W)                                                    # the first-aid locker
+    k.cabinet(x1 - 1, F + 1, z0 + 2, W)
+    k.tape_computer(x1 - 1, F + 1, z0 + 1, W)
+    k.breaker(x0 + 1, F + 2, z0 + 2, E)                  # on the side wall, clear of the door
+    k.bunker_lamp((x0 + x1) // 2, ROOF - 1, z0 + 5)
 
 
 def creeping_room(k: Kit, room: tuple) -> None:

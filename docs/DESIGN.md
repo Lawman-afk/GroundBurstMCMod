@@ -5222,6 +5222,73 @@ The user walked the four sets in the showroom world and listed what to fix:
   The doors' code and models are cheap; the spike was not reproduced. The rejected clicks (and standing on the lid, which
   the server found to be air) are gone with the lid's own block.
 
+### 22.8 The sites remastered with the props (2026-11-08)
+
+The user's plan since the sets were made: the seven Cold War sites fitted with them, then photographed as world
+generation places them (the pictures-for-players rule, §30). Each site keeps its character and its loot (the same
+containers, some of them props now: crates, cabinets, lockers with the same loot tables).
+
+**How they are laid** (`tools/structure/kit.py`): one helper a prop, laying every block of it in the states its own
+placing gives them (a Blast Door's six blocks and its open state in its block entity, a Situation Map Table's four, a
+Tape Computer's or a locker's two halves, a bunk's four). Where a door's leaf or a hatch's lid swings is kept clear
+(`keep_clear`): no wear lands there, and `finish` stops the build if anything solid stands there; a door may be built
+jammed (the silo's collapsed lock: the cave-in against it, it opens once dug clear). Props are not walls or floors to the
+wear (`build.PROP_WORDS`: no rubble on a console, no cobweb strung from a locker). `finish` joins the wall pipes end to end,
+duct to duct and to the grilles on it, as placing by hand would. In every room one breaker is left on by its door with
+its lamp lit over it (`Kit.breaker`), the other lamps dead: a light still burning in an abandoned place, put out with a
+click.
+
+**Three new checks** in `sites.py`, on every template as it is saved. `check_power`: a breaker left on gives a signal to
+every block round it and a strong one to the wall it hangs on, which gives it on to the blocks round that, as a lever's
+does; a door or a hatch there opens, a locker, a cabinet or crates stand open, a tape drive or a searchlight runs, a fuse
+box or a valve looks on (§22.7). The review pictures found it: the test site's control bunker's blast door stood open,
+its breaker on the wall beside it, and the first "breaker by its door" in every room held its pressure door open; the
+breakers now hang a wall block clear of what they would work, the switchboards' a panel apart. `check_states`, every
+block of the mod's in a state its blockstate knows (a misspelt property would leave it in its default without a word);
+and `check_chunks`. A site's
+origin is a chunk's middle block, so whichever way it is turned a chunk's edge runs beside every column 8 (mod 16) from
+the origin; each chunk is generated on its own, and a block checked against a neighbour as it is placed goes if that
+neighbour's chunk is not yet the site's: a bed's head or foot without the other, a wall-hung extinguisher, a ladder, a
+wall lever or button. None may stand in such a column, nor the wall it hangs on. It found the radar outpost's two beds
+and the research station's radar ladder already across one; both moved.
+
+**The sites:**
+- **Command Bunker:** blast doors at the vestibule and the stair's foot (two wide), pressure doors between the rooms, a
+  hatch over the escape tube; consoles, the teleprinter's desk, the situation map table and its row of desks, filing
+  cabinets and tape drives in the records room, lockers, bunk beds (two along the east wall, off a chunk's edge), ammo
+  crates, drums by the generator, wall pipes and valves along the corridor and the plant room, ducts from the filter
+  bank to the vents' grilles, the switchboard's breakers; outside a searchlight at the guard post, Jersey barriers
+  across the apron, dragon's teeth along the fence, rusted hedgehogs.
+- **Missile Silo:** a hatch over the portal's ladder and another in the control centre's floor, the lock's two blast doors
+  swinging out of it, pressure doors; the consoles, the commander's desks, bunk beds, lockers, breakers; the support
+  building's drums; a searchlight on the guard shack's roof, Jersey barriers inside the gate, rusted hedgehogs.
+- **Radar Outpost:** pressure doors; a hatch at the top of the tower's ladder onto the radar deck; the switchboard's
+  breakers, a bunk and a locker, the radar room's consoles, tape drives and records; in the module train the operations
+  consoles, desk, cabinets and tape drive, bunk beds (along the module: the column x 31 is a chunk's edge for beds across
+  it) and lockers, the generator's drums, fuel line and extinguisher; a searchlight on the guard hut, Jersey barriers
+  staggered inside the gate as a chicane, rusted hedgehogs, drums.
+- **Test Site:** the shot tower's cab reached through a hatch in the deck, a pressure door, the firing console under its
+  arming switches, the crew's crates, a breaker; the control bunker's blast door (its cut through the sand bank widened
+  to two and opened to the sky: sand over the old covered cut would have fallen into the door's swing at the first block
+  update and jammed it), the consoles under the slit, the tape drives that recorded the shots, the records cabinet;
+  Jersey barriers across the road in, drums and crates by the pad, rusted drums by the old shot's bleachers.
+- **Crashed Missile:** the recovery team's searchlight on its sandbag wall (its head is the lower half of its upper
+  block: behind the wall it would have been hidden), the drums of fuel for its generator, ammo crates of decontamination
+  kit and an extinguisher; the stores under the tarp stay barrels (the crates' shape is 12.5 px high, and a carpet on
+  them would float).
+- **Waste Storage:** the drift's ventilation duct under the roof with grilles down out of it, the water line as wall
+  pipes and valves (not across the open mouth of the room the salt is closing), the hoist's breakers; pressure doors into
+  the lined rooms, steel lockers, crates for the stores, the hot cell's operators' desks, the control room's consoles
+  under the air monitors, the supervisor's desk, a cabinet, a tape drive and the first-aid locker.
+- **Research Station:** pressure doors at both ends of the covered ways; the laboratory's consoles, tape drives and
+  records cabinet, the crew's bunk beds and lockers, breakers; crates and fuel drums in the cargo corner; the radar's
+  ladder on its tower's south face. The modules have floors of their own now: both stand out past the deck's octagon,
+  and the review pictures showed the laboratory's back row over the void and the crew's bunks on the deck's edge stripe
+  and bare rock.
+
+The review cameras (`runSiteShots "-Psite=<site>:at:<dx>/<dy>/<dz>/<yaw>/<pitch>;..."`, `SitePhotographer`): pictures from
+inside each room, as the cut-aways seen from the north showed the props too small to judge.
+
 ---
 
 ## 23. Multiblock framework and layouts
@@ -5726,6 +5793,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-08 | **The sites remastered with the props** (§22.8; the user's plan, "Remaster the Cold War sites with the new props sounds good"): all seven fitted with the cosmetic sets as a real site would have them, each keeping its character and loot; a breaker left on in each room with its lamp lit, a wall block clear of anything its signal would work (beside a door it held the door open); templates checked for the props' states, for what a signal left on reaches and for blocks across a chunk's edge (`sites.check_states`, `check_power`, `check_chunks`). The pictures of them are taken where world generation placed them. Fixes and remaster go out together in one release (the user: "I will just wait till you finish the remaster and make it a full upload"). |
 | 2026-11-08 | **26.1.2 under shader packs** (§12.3; the user: "if it is broken that is top priority"): the branch had been left without main's `IrisFx` and `DrawnLast`, and with Iris 1.11.4 its effects drew nothing and the glowing parts were gone. Main's `IrisFx` ported, the effects drawn after the level by the branch's own `FxRenderTypes` with the client option, and the glowmasks, with Iris installed, on a copy of GeckoLib's pipeline with an alpha cutout (Iris gave GeckoLib's own a sky program). |
 | 2026-11-08 | **The machines' glowing parts under a shader pack** (§12.3; the user saw it in the real-world shots): GeckoLib's glowmask pipeline, unknown to Iris, drew a beacon's light fins and the machines' lamps as streaks across the sky; `IrisFx` hands it to the pack's emissive entity program. |
 | 2026-11-08 | **One input slot an ingredient for pipes and hoppers** (§6.5), found while building the circuit line the user asked for ("a fully functioning circuit factory with pipes and wires showing the layout"; §8.1): an item goes into a slot that holds it, or an empty one only while no other input slot holds it; by hand anything goes. A Circuit Fabricator fed from one chest filled every slot with copper wire and waited for ever. GameTests `pipes_keep_a_slot_for_each_ingredient` and `circuit_line_makes_advanced_circuits` (the whole line on its own power); 444. |

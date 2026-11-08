@@ -4,18 +4,20 @@ sites, in three variants (intact, flooded, collapsed), built to the kit's rules 
 On the surface (`silo_surface_<variant>`): a gravel hardstand in its fence, the grass taking it back at its edges; over
 the shaft the Rusted Large Silo Door on its rails, stuck where it rusted (an inch ajar on an intact silo, half open on a
 flooded one over black water; on a collapsed one gone into the shaft, its rails and winch houses torn away, wreckage at
-the shaft's mouth); the two exhaust vents beside it with their grilles; the access portal's blockhouse over the ladder
-down; the antenna mast; the corrugated support building; floodlight poles at the door's ends; chain-link with barbed wire,
-a double gate, the guard shack and the road in.
+the shaft's mouth); the two exhaust vents beside it with their grilles; the access portal's blockhouse, a bunker hatch
+over the ladder down; the antenna mast; the corrugated support building, its generator's drums; floodlight poles at the
+door's ends; chain-link with barbed wire, a double gate, Jersey barriers inside it, the guard shack with a searchlight on
+its roof and the road in.
 
 Underground (`silo_below_<variant>`, its top layer just under the ground): the shaft, reinforced concrete under the
 door's opening, with work platforms folded against its walls, cable runs and lamps, the missile in it (white, a dark
 band at the stage joint, the dark re-entry vehicle at its top, its engines over the flame deflector's W); a corrugated
-cableway from the shaft to the blast lock under the portal (two blast doors), and the launch control centre north of
-it, two storeys: the consoles, the two key panels far apart, the status board and the commander's desk below, bunks,
-lockers and the galley above. Flooded: black water to the cableway, glow lichen above it. Collapsed: the door's leaves
-and rubble down the shaft, the missile broken off at its stage joint and its top lying in the rubble, the cableway
-caved in at one end.
+cableway from the shaft to the blast lock under the portal (two blast doors, each swinging out of it), and the launch
+control centre north of it, two storeys: the row of consoles, the two key panels far apart, the status board and the
+commander's desks below, a hatch up through the floor to the bunk beds, lockers and the galley above, a breaker on each
+floor with its lamp lit. Flooded: black water to the cableway, glow lichen above it. Collapsed: the door's leaves and
+rubble down the shaft, the missile broken off at its stage joint and its top lying in the rubble, the cableway caved in
+at one end, against the blast door to it (dig it clear and it opens).
 
 Both templates 41 x 37 in plan with the shaft's axis at (20, 18); the surface 20 high, the complex 34.
 """
@@ -121,23 +123,22 @@ def vents(k: Kit) -> None:
 
 
 def portal(k: Kit) -> None:
-    """The access portal's blockhouse over the ladder down to the blast lock: concrete, hazard-framed steel door, the
-    ladder's hole in its floor; a stair rail of iron round the hole."""
+    """The access portal's blockhouse over the ladder down to the blast lock: concrete, a hazard-framed pressure door, the
+    bunker hatch over the ladder in its floor; a rail of iron round the hatch."""
     x0, x1, z0, z1 = PORTAL
     k.pad(x0 - 1, z0 - 1, x1 + 1, z1 + 1, CONCRETE, cracked="andesite", salt=31)
     k.walls(x0, 1, z0, x1, 4, z1, CONCRETE)
     k.fill(x0, 5, z0, x1, 5, z1, "smooth_stone")
     k.fill(x0 + 1, 1, z0 + 1, x1 - 1, 4, z1 - 1, AIR)
     ring(k, x0 - 1, z0 - 1, x1 + 1, z1 + 1, lambda x, z: k.set(x, 5, z, "smooth_stone_slab", {"type": "bottom", "waterlogged": False}))
-    k.iron_door((x0 + x1) // 2, 1, z1, S)
+    k.pressure_door((x0 + x1) // 2, 1, z1, S)
     for y in (1, 2, 3):
         k.set((x0 + x1) // 2 - 1, y, z1, gb("hazard_concrete"))
         k.set((x0 + x1) // 2 + 1, y, z1, gb("hazard_concrete"))
     k.set((x0 + x1) // 2, 3, z1, gb("hazard_concrete"))
     lx, lz = LADDER
-    k.ground(lx, lz, AIR)
     k.set(lx, 0, lz + 1, CONCRETE)
-    k.set(lx, 0, lz, "ladder", {"facing": N, "waterlogged": False})
+    k.hatch(lx, 0, lz, S)                               # its ladder down the south side, as the shaft's is
     for x, z in ((lx - 1, lz), (lx + 1, lz), (lx - 1, lz - 1), (lx, lz - 1), (lx + 1, lz - 1)):
         k.set(x, 1, z, "iron_bars")
     k.set((x0 + x1) // 2 + 2, 2, z1 + 1, gb("keep_out_sign"), {"facing": S})
@@ -163,12 +164,19 @@ def support_building(k: Kit) -> None:
                       {"facing": S if z < mid else N, "half": "bottom", "shape": "straight", "waterlogged": False})
                 if d <= 2:
                     k.set(x, 4, z, CORRUGATED)
-    k.iron_door(x0 + 2, 1, z1, S)
+    k.pressure_door(x0 + 2, 1, z1, S)
     k.set(x1, 2, z0 + 3, "glass_pane" if k.n(x1, 2, z0 + 3, 2.0, 45) > 0.4 else AIR)
     k.fill(x0 + 4, 1, z0 + 2, x1 - 1, 1, z0 + 4, RUSTED_PANEL)
     k.fill(x0 + 4, 2, z0 + 2, x1 - 2, 2, z0 + 4, "black_concrete")
     k.barrel(x0 + 1, 1, z0 + 1, "up", "silo_control")
     k.barrel(x0 + 1, 2, z0 + 1, "up")
+    # What the generator left: its drums, the breaker on the wall, an extinguisher.
+    k.drums(x1 - 2, 1, z1 - 1, "fuel", 3, E)
+    k.drums(x1 - 1, 1, z1 - 1, "oil", 2, N)
+    k.fuse_box(x0 + 1, 2, z0 + 3, E)
+    k.extinguisher(x0 + 1, 1, z0 + 4, E)
+    k.drums(x1 + 1, 1, z0 + 2, "oil", 2, E)
+    k.drums(x1 + 1, 1, z0 + 4, "rusty", 1, N)
 
 
 def perimeter(k: Kit) -> None:
@@ -191,8 +199,17 @@ def perimeter(k: Kit) -> None:
     k.clad(sx0, 1, sz0, sx0 + 3, 3, sz0 + 3, salt=59, rust_courses=1.0)
     k.clear(sx0 + 1, 1, sz0 + 1, sx0 + 2, 3, sz0 + 2)
     k.fill(sx0 - 1, 4, sz0 - 1, sx0 + 4, 4, sz0 + 4, CORRUGATED_SLAB, {"type": "bottom", "waterlogged": False})
-    k.iron_door(sx0, 1, sz0 + 1, W)
+    k.pressure_door(sx0, 1, sz0 + 1, W)
     k.set(sx0 + 1, 2, sz0 + 3, "glass_pane")
+    k.crates(sx0 + 2, 1, sz0 + 2, W)
+    # A searchlight on the shack's roof (on a block of it, not the slab), turned on the gate.
+    k.set(sx0 + 2, 4, sz0 + 2, CORRUGATED)
+    k.searchlight(sx0 + 2, 5, sz0 + 2, S)
+    # Jersey barriers narrowing the way in from the gate; old hedgehogs by the north fence.
+    for x in range(AX - 5, AX - 2):
+        k.barrier(x, 1, 31, S)
+    for x, z, f in ((8, 4, E), (31, 3, N), (36, 15, W)):
+        k.hedgehog(x, 1, z, f, rusty=True)
 
 
 def ring(k: Kit, x0: int, z0: int, x1: int, z1: int, put) -> None:
@@ -209,7 +226,7 @@ def silo_below(variant: str) -> Kit:
     shaft(k, variant)
     missile(k, variant)
     cableway(k, variant)
-    blast_lock(k)
+    blast_lock(k, variant)
     control_centre(k)
     if variant == "flooded":
         flood(k)
@@ -356,9 +373,10 @@ def cableway(k: Kit, variant: str) -> None:
                     k.set(x, y, z, "gravel" if (x + y + z) % 2 else "cobblestone")
 
 
-def blast_lock(k: Kit) -> None:
-    """Under the portal: the lock between two blast doors (east to the cableway, north to the control centre), the
-    ladder down from the portal into it."""
+def blast_lock(k: Kit, variant: str) -> None:
+    """Under the portal: the lock between two blast doors, each swinging out of it (east into the cableway, north into
+    the passage to the control centre), hazard-framed; the ladder down from the portal into it. On a collapsed silo the
+    cableway's cave-in is heaped against the east door: it opens once that is dug away."""
     x0, x1, z0, z1 = PORTAL
     for x in range(x0, x1 + 1):
         for z in range(z0, z1 + 1):
@@ -367,11 +385,18 @@ def blast_lock(k: Kit) -> None:
                     concrete_wall(k, x, y, z, salt=73)
                 else:
                     k.set(x, y, z, AIR)
-    k.iron_door(x1, FLOOR + 1, AZ, E)
+    hazard = gb("hazard_concrete")
     for y in (FLOOR + 1, FLOOR + 2, FLOOR + 3):
-        k.set(x1, y, AZ - 1, gb("hazard_concrete")), k.set(x1, y, AZ + 1, gb("hazard_concrete"))
-    k.set(x1, FLOOR + 3, AZ, gb("hazard_concrete"))
-    k.iron_door((x0 + x1) // 2, FLOOR + 1, z0, N)
+        k.set(x1, y, AZ - 2, hazard)
+        k.set(x1, y, AZ + 1, hazard)
+        k.set((x0 + x1) // 2 - 1, y, z0, hazard)
+        k.set((x0 + x1) // 2 + 2, y, z0, hazard)
+    for z in range(AZ - 2, AZ + 2):
+        k.set(x1, FLOOR + 4, z, hazard)
+    for x in range((x0 + x1) // 2 - 1, (x0 + x1) // 2 + 3):
+        k.set(x, FLOOR + 4, z0, hazard)
+    k.blast_door(x1, FLOOR + 1, AZ - 1, E, hinge="right", jammed=variant == "collapsed")
+    k.blast_door((x0 + x1) // 2, FLOOR + 1, z0, N, hinge="right")
     # The ladder from the portal down the column above the lock.
     lx, lz = LADDER
     for y in range(FLOOR + 1, TOP + 1):
@@ -401,38 +426,46 @@ def control_centre(k: Kit) -> None:
                     k.set(x, y, z, "smooth_stone")
                 else:
                     k.set(x, y, z, AIR)
-    # The way in from the lock.
+    # The way in from the lock: two wide and three high, for the blast door at its end.
     cx = (PORTAL[0] + PORTAL[1]) // 2
     for z in range(z1, PORTAL[2]):
-        for y in (FLOOR + 1, FLOOR + 2):
-            k.set(cx, y, z, AIR)
-        for x in (cx - 1, cx + 1):
-            for y in range(FLOOR + 1, FLOOR + 3):
+        for x in (cx, cx + 1):
+            for y in (FLOOR + 1, FLOOR + 2, FLOOR + 3):
+                k.set(x, y, z, AIR)
+            k.set(x, FLOOR + 4, z, CONCRETE)
+        for x in (cx - 1, cx + 2):
+            for y in range(FLOOR + 1, FLOOR + 4):
                 concrete_wall(k, x, y, z, salt=79)
-        k.set(cx, FLOOR + 3, z, CONCRETE)
-    # Below: the consoles along the north wall, the two key panels far apart, the status board, the commander's desk.
+    # Below: the row of consoles along the north wall, the two key panels far apart, the status board, the commander's
+    # desks.
     for x in range(x0 + 2, x1 - 1):
-        k.set(x, FLOOR + 1, z0 + 2, PANEL)
-        k.set(x, FLOOR + 2, z0 + 2, "black_stained_glass" if x % 2 else "gray_stained_glass")
+        k.console(x, FLOOR + 1, z0 + 1, S)
     for x in (x0 + 2, x1 - 2):
         k.set(x, FLOOR + 1, z0 + 5, PANEL)
         k.set(x, FLOOR + 2, z0 + 5, "lever", {"face": "floor", "facing": S, "powered": False})
     for z in range(z0 + 3, z1 - 2):
         k.set(x0 + 1, FLOOR + 2, z, "redstone_lamp", {"lit": False})
         k.set(x0 + 1, FLOOR + 3, z, "black_concrete")
-    k.set(x1 - 3, FLOOR + 1, z1 - 3, "spruce_stairs", {"facing": N, "half": "bottom", "shape": "straight", "waterlogged": False})
-    k.fill(x1 - 4, FLOOR + 1, z1 - 4, x1 - 2, FLOOR + 1, z1 - 4, "spruce_slab", {"type": "top", "waterlogged": False})
+    for x in range(x1 - 4, x1 - 1):
+        k.desk(x, FLOOR + 1, z1 - 4, S)
+    k.set(x1 - 3, FLOOR + 1, z1 - 3, "spruce_stairs", {"facing": S, "half": "bottom", "shape": "straight", "waterlogged": False})
     k.chest(x1 - 2, FLOOR + 1, z0 + 3, W, "silo_control")
-    k.ladder(x1 - 1, FLOOR + 1, FLOOR + 5, z1 - 3, W)       # up the east wall through the floor
-    # Above: bunks, lockers, the galley.
+    k.hatch(x1 - 3, FLOOR + 5, z1 - 1, S, ladder_from=FLOOR + 1)    # up through the floor, its ladder on the south wall
+    k.fuse_box(x1 - 4, FLOOR + 2, z1 - 1, N, on=True)
+    k.bunker_lamp(x1 - 4, FLOOR + 3, z1 - 1, N, lit=True)
+    for x in (x0 + 4, x1 - 4):
+        k.bunker_lamp(x, FLOOR + 4, (z0 + z1) // 2)
+    # Above: bunk beds, lockers (the stores in one), the galley, an extinguisher; its breaker on the east wall.
     for z in (z0 + 2, z0 + 5):
-        k.bed(x0 + 2, FLOOR + 6, z, E, "gray")
+        k.bunk(x0 + 2, FLOOR + 6, z, E)
     for x in range(x0 + 5, x0 + 8):
-        k.barrel(x, FLOOR + 6, z0 + 2, "up", "bunker_stores" if x == x0 + 6 else None)
+        k.locker(x, FLOOR + 6, z0 + 1, S, "bunker_stores" if x == x0 + 6 else None)
     k.set(x1 - 3, FLOOR + 6, z0 + 2, "smoker", {"facing": S, "lit": False})
     k.set(x1 - 2, FLOOR + 6, z0 + 2, "cauldron")
-    for y in (FLOOR + 4, FLOOR + 8):
-        k.lantern((x0 + x1) // 2, y, (z0 + z1) // 2, hanging=True)
+    k.extinguisher(x1 - 1, FLOOR + 6, z0 + 3, W)
+    k.fuse_box(x1 - 1, FLOOR + 7, z0 + 6, W, on=True)
+    k.bunker_lamp(x1 - 1, FLOOR + 8, z0 + 6, W, lit=True)
+    k.bunker_lamp((x0 + x1) // 2, FLOOR + 8, (z0 + z1) // 2)
     k.cobwebs((x0 + 1, FLOOR + 1, z0 + 1, x1 - 1, FLOOR + 8, z1 - 1), 0.05)
 
 

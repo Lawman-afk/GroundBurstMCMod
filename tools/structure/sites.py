@@ -27,7 +27,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from build import Build  # noqa: E402
+from build import STEP, Build  # noqa: E402
 import site_radar  # noqa: E402
 import site_test  # noqa: E402
 import site_silo  # noqa: E402
@@ -152,13 +152,111 @@ def check(name: str, b: Build) -> None:
         raise SystemExit(f"{name}: unknown blocks {sorted(missing)}")
 
 
+def check_states(name: str, b: Build) -> None:
+    """The mod's blocks' states as their blockstates know them (the properties in their variant keys): a property misspelt
+    or a value it cannot take would leave the block in its default state without a word. What a template leaves out takes
+    the default, as placing it would."""
+    seen, bad = {}, set()
+    for _, block, props in b.t.blocks():
+        ns, _, n = block.partition(":")
+        if ns != "groundburst" or not props:
+            continue
+        if n not in seen:
+            path = paths.ASSETS / "blockstates" / f"{n}.json"
+            data = json.loads(path.read_text(encoding="utf-8"))
+            seen[n] = [dict(kv.split("=") for kv in key.split(",")) if key else {} for key in data.get("variants", {})]
+        keys = seen[n]
+        if not keys:
+            continue                                     # a multipart model: its conditions are not every property
+        known = set().union(*(key.keys() for key in keys))
+        shown = {k: v for k, v in props.items() if k in known}
+        if not any(all(key.get(k) == v for k, v in shown.items()) for key in keys) or set(props) - known - {"waterlogged", "powered"}:
+            bad.add(f"{n} {sorted(props.items())}")
+    if bad:
+        raise SystemExit(f"{name}: states no variant matches: {sorted(bad)[:6]}")
+
+
+def offsets() -> dict[str, set[tuple[int, int]]]:
+    """Where each template's corner lies from its site's origin (x, z), over every variant."""
+    out: dict[str, set[tuple[int, int]]] = {}
+    for site in STRUCTURES:
+        for variant in site_variants(site):
+            for p in variant["parts"]:
+                out.setdefault(p["template"].split("/")[-1], set()).add((p["offset"][0], p["offset"][2]))
+    return out
+
+
+def check_chunks(name: str, b: Build, corners: set[tuple[int, int]]) -> None:
+    """A site's origin is always a chunk's middle block (SiteStructure), so whichever way it is turned, a chunk's edge runs
+    beside every block whose x or z from the origin is 8 (mod 16): the column 8 is the first of a chunk, its border on one
+    side or the other as the site turns. Each chunk is generated on its own, and a block whose state is checked against its
+    neighbour as it is placed goes if that neighbour is in a chunk not yet generated: a bed's head or foot without the
+    other, a wall-hung extinguisher, a ladder, a button or a lever without its wall (where the land there is not yet the
+    site's: air over the ground or the void). So none may stand in such a column, nor the wall it hangs on."""
+    bad = []
+    for (x, y, z), block, props in b.t.blocks():
+        path = block.split(":", 1)[-1]
+        facing = props.get("facing")
+        if path.endswith("_bed"):
+            cells = [(x, z)]
+        elif (path == "fire_extinguisher" and props.get("wall") == "true" or path in ("ladder", "tripwire_hook")
+              or (path.endswith("_button") or path == "lever") and props.get("face") == "wall"):
+            dx, dz = STEP[facing]
+            cells = [(x, z), (x - dx, z - dz)]
+        else:
+            continue
+        axis = 0 if facing in ("east", "west") else 1
+        for ox, oz in corners:
+            if any(((c[0] + ox, c[1] + oz)[axis]) % 16 == 8 for c in cells):
+                bad.append(f"{path} at ({x}, {y}, {z})")
+                break
+    if bad:
+        raise SystemExit(f"{name}: across a chunk's edge in some turn of the site: {bad[:8]}")
+
+
+#: What a redstone signal works on (DESIGN.md §22.7): doors and hatches open, the lockers, cabinets and crates stand open,
+#: the searchlight and the tape drives run, a fuse box or a valve looks on. The lamps are what a breaker is left on for.
+POWERED_BY = ("door", "hatch", "filing_cabinet", "steel_locker", "ammo_crates", "searchlight", "tape_computer", "pipe_valve",
+              "fuse_box", "tnt", "piston", "dispenser", "dropper", "note_block", "bell", "powered_rail", "activator_rail", "hopper")
+
+
+def check_power(name: str, b: Build) -> None:
+    """A breaker left on (a Fuse Box) or a lever thrown gives a signal to every block round it, and a strong one to the
+    block it hangs on, which gives it on to the blocks round that: a door or a hatch there opens, a locker, a cabinet or
+    crates stand open, a tape drive or a searchlight runs, a fuse box or a valve looks on. Only the lamps it is left on for
+    may stand there (a blast door beside a breaker's wall stood open in the test site's control bunker)."""
+    sides = ((1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1))
+    bad = []
+    for (x, y, z), block, props in b.t.blocks():
+        path = block.split(":", 1)[-1]
+        if path not in ("fuse_box", "lever") or str(props.get("powered")).lower() != "true":
+            continue
+        if path == "lever" and props.get("face") != "wall":
+            wall = (x, y - 1 if props.get("face") == "floor" else y + 1, z)
+        else:
+            dx, dz = STEP[props["facing"]]
+            wall = (x - dx, y, z - dz)
+        reached = {(x + a, y + c, z + d) for a, c, d in sides} | {(wall[0] + a, wall[1] + c, wall[2] + d) for a, c, d in sides}
+        for p in sorted(reached - {(x, y, z), wall}):
+            got = b.t.get(*p)
+            if got and any(w in got[0].split(":", 1)[-1] for w in POWERED_BY):
+                bad.append(f"{path} at ({x}, {y}, {z}) reaches the {got[0].split(':', 1)[-1]} at {p}")
+    if bad:
+        raise SystemExit(f"{name}: a signal left on works what stands by it: {bad[:8]}")
+
+
 def main() -> None:
     out = DATA / "structure" / "site"
+    corners = offsets()
     for name, make in TEMPLATES.items():
         b = make()
         if hasattr(b, "finish"):
-            b.finish()                                   # what waits for the walls: buttons by the iron doors
+            b.finish()                                   # what waits for the walls: buttons by the iron doors, the props' joins
         check(name, b)
+        check_states(name, b)
+        check_power(name, b)
+        if name in corners:
+            check_chunks(name, b, corners[name])
         b.save(out / f"{name}.nbt")
         print("template", name)
     for name, s in STRUCTURES.items():

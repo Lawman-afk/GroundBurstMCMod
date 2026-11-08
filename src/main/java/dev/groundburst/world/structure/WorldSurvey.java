@@ -47,6 +47,8 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -62,6 +64,7 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -101,6 +104,24 @@ public final class WorldSurvey {
     /** Sites of each kind visited (the silo: one of each variant). */
     static final int VISITS = 2;
     static final String BLAST = "tactical_nuclear_warhead";
+    /**
+     * Each site's rooms, the cameras its visits take them from (DESIGN.md §22.8): {dx, dy, dz, yaw, pitch} from its origin
+     * as it stands unturned, the camera's feet (yaw 0 south, 90 west); the site photographer's :at: cameras that framed them.
+     */
+    static final Map<String, List<double[]>> INSIDE = Map.of(
+            "command_bunker", List.of(new double[] {11, -11, -7, 0, 5}, new double[] {-16, -11, -12, 270, 5},
+                    new double[] {-16, -11, -16, 180, 5}, new double[] {6, -11, -17, 270, 10}, new double[] {-14, -11, -2, 180, 5},
+                    new double[] {-1, -11, -1, 180, 5}),
+            "abandoned_silo", List.of(new double[] {-13, -10, -9, 180, 10}, new double[] {-13, -10, -14, 0, 10},
+                    new double[] {-13, -5, -9, 180, 10}),
+            "radar_outpost", List.of(new double[] {-16, 9, -13, 180, 15}, new double[] {-16, 5, -13, 180, 10},
+                    new double[] {3, 3, 5, 180, 10}, new double[] {9, 3, 4, 180, 10}, new double[] {-1, 2, 13, 0, 10}),
+            "test_site", List.of(new double[] {13, 1, 18, 180, 10}, new double[] {13, 1, 16, 0, 10}, new double[] {0, 30, 0, 0, 30},
+                    new double[] {12, 2, -4, 270, 10}),
+            "crashed_missile", List.of(new double[] {4, 1, 6, 315, 15}, new double[] {12, 1, 17, 135, 10}),
+            "waste_storage", List.of(new double[] {-14, 2, 0, 270, 5}, new double[] {-4, 2, 4, 0, 5}, new double[] {4, 2, 6, 0, 5}),
+            "exotic_research_station", List.of(new double[] {0, 1, -15, 0, 10}, new double[] {-14, 1, 2, 180, 10},
+                    new double[] {-3, 1, 9, 90, 10}, new double[] {9, 2, 14, 180, -10}));
 
     private static final String what = System.getProperty("groundburst.worldSurvey", "");
     private static final ArrayDeque<Task> TASKS = new ArrayDeque<>();
@@ -805,6 +826,20 @@ public final class WorldSurvey {
                 int lx = Mth.floor(look.x + 0.95 * d), lz = Mth.floor(look.z - 0.3 * d);
                 int ly = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, lx, lz);
                 this.pictures.add(new Picture(this.tag + "_low", dim, new Vec3(lx + 0.5, ly + 2.6, lz + 0.5), look.add(0, -1, 0)));
+                double near = span * 0.5 + 8;                  // closer, over a corner: the site filling the picture
+                this.pictures.add(new Picture(this.tag + "_near", dim, look.add(-0.6 * near, 0.42 * near, 0.62 * near), look));
+            }
+            // Its rooms from inside (DESIGN.md §22.8): cameras at offsets from its origin as it stands unturned (as the site
+            // photographer's :at: cameras), turned with it as it was placed.
+            Rotation turn = this.start.getPieces().isEmpty() ? Rotation.NONE : this.start.getPieces().getFirst().getRotation();
+            List<double[]> inside = INSIDE.getOrDefault(this.site.name(), List.of());
+            for (int i = 0; i < inside.size(); i++) {
+                double[] c = inside.get(i);
+                Vec3 at = Vec3.atLowerCornerOf(o).add(StructureTemplate.transform(new Vec3(c[0] + 0.5, c[1], c[2] + 0.5), Mirror.NONE, turn,
+                        BlockPos.ZERO));
+                double yaw = Math.toRadians(c[3] + 90 * turn.ordinal()), pitch = Math.toRadians(c[4]);
+                Vec3 ahead = new Vec3(-Math.sin(yaw) * Math.cos(pitch), -Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
+                this.pictures.add(new Picture(this.tag + "_in" + i, dim, at, at.add(ahead.scale(10))));     // (its angles from the feet)
             }
             // A part underground, through the rock (a spectator inside stone sees the hollows round it).
             for (StructurePiece piece : this.start.getPieces()) {

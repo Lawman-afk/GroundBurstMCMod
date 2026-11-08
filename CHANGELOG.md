@@ -2,7 +2,30 @@
 
 ## Unreleased
 
+### The Cold War sites, fitted out
+- All seven of the world's sites are fitted out with the bunker doors, the command room, the bunker fittings and the
+  yard: blast doors and pressure doors, hatches with their ladders, consoles, command desks, filing cabinets, tape drives
+  and the situation map table, bunk beds and steel lockers, wall pipes and valves, ventilation ducts and grilles, fire
+  extinguishers, Jersey barriers, dragon's teeth, Czech hedgehogs, searchlights, ammo crates and drums, each where a
+  real site would have it.
+  - **Command Bunker:** a blast door at the entrance and another at the foot of the stair, pressure doors between the
+    rooms, the situation room's map table and its row of desks, the records room's cabinets and tape drives.
+  - **Missile Silo:** its blast lock's two blast doors (on a collapsed silo, dig the cave-in clear and the door opens),
+    hatches over its ladders.
+  - **Radar Outpost:** a hatch onto the radar deck, the radar room's consoles, the module train's operations room,
+    quarters and generator.
+  - **Test Site:** a blast door on the control bunker, the firing console in the shot tower's cab.
+  - **Crashed Missile:** the recovery team's searchlight on its sandbag wall.
+  - **Waste Storage:** the drift's ventilation duct and water line, the control room's consoles.
+  - **Research Station:** the laboratory's consoles and tape drives, the crew's bunk beds and lockers.
+- In every room one breaker is still on, its lamp lit; click it and the light goes out.
+- Some of each site's loot is in ammo crates, filing cabinets and lockers now.
+- Sites already generated in a world stay as they were; the fitted-out ones appear in newly explored land.
+
 ### Fixes
+- The Research Station's laboratory and crew module have floors where they stand out past the deck: the laboratory's
+  had a hole onto the void.
+- A Radar Outpost's beds and a Research Station's radar ladder could go missing where a chunk's edge ran beside them.
 - Pipes and hoppers fill each ingredient into one input slot of a machine. A pipe bringing more of one ingredient than
   a slot holds used to fill the next slots too, until the machine stood waiting with every slot full (a Circuit
   Fabricator fed copper wire, redstone and plastic from one chest filled all four with wire). Filling by hand is as it
