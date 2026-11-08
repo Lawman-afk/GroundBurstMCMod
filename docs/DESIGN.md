@@ -1717,6 +1717,15 @@ was drawn. With Iris the dev runs turn off two things players never meet: the ga
 Iris's depth-of-field sampler fails one, `neoforge.disableBlaze3DValidation`) and NeoForge's load-warning screen (Iris's
 metadata warns, and the screen held the photographers).
 
+**The machines' glowing parts** (2026-11-08, the user, seeing the real-world shots: "There appears to be some sort of
+shader problem"): under Complementary, a warning beacon's light fins and a machine's lamps were drawn as long streaks of
+colour across the sky. They are GeckoLib's glowmask layer, drawn with GeckoLib's own pipeline, which Iris has no program
+for, so the pack misread its vertices. `IrisFx` now hands that pipeline (`MachineGeoRenderer.glowPipeline`, GeckoLib's
+`AutoGlowingGeoLayer.RENDER_PIPELINE`, read through the mod's subclass of the layer) to the pack's emissive entity
+program, as spider eyes are drawn. It is one pipeline for every GeckoLib model with a glowmask, other mods' too. Checked
+on the alarms and the machines at night (`runFxShots -PfxWorld=real -PwithIris -PfxOnly=alarms$`): the beacons glow in
+their colours and nothing streaks.
+
 ## 13. Sound system
 
 - Every sound is made by `tools/sound`: synthesised (layered noise, filtered sweeps, convolution reverb, saturation) or,
@@ -5698,6 +5707,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-08 | **The machines' glowing parts under a shader pack** (§12.3; the user saw it in the real-world shots): GeckoLib's glowmask pipeline, unknown to Iris, drew a beacon's light fins and the machines' lamps as streaks across the sky; `IrisFx` hands it to the pack's emissive entity program. |
 | 2026-11-08 | **One input slot an ingredient for pipes and hoppers** (§6.5), found while building the circuit line the user asked for ("a fully functioning circuit factory with pipes and wires showing the layout"; §8.1): an item goes into a slot that holds it, or an empty one only while no other input slot holds it; by hand anything goes. A Circuit Fabricator fed from one chest filled every slot with copper wire and waited for ever. GameTests `pipes_keep_a_slot_for_each_ingredient` and `circuit_line_makes_advanced_circuits` (the whole line on its own power); 444. |
 | 2026-11-08 | **Pictures for players come from real worlds** (the user's rule: "For photos that are shown to the mod audience they should all be in real worlds, and for structures it should be naturally generated ones"; the user chose to remaster the structures with the new props first and photograph them after). `runFxShots -PfxWorld=real` and `runHealShots -PhealWorld=real` make a normal world (the blast bench's seed). Each scene's site is found from the generator's noise: dry land, never water, anything set up in open country first and never on a structure. The site is cleared as a player clears one: trees go whole, nothing drops, and the ground's own grass and flowers stay where it did not move. Server messages are kept off the screen. The flat-world photographers and the boards stay for reviewing work. |
 | 2026-11-07 | **Round tops as polygons** (§4.4), researched at the user's question ("Is there no way to get both a good texture and the perfectly smooth circle?"): each round part's capped end one flat polygon, painted as any face is, drawn by the mod's model loader (block and item models) and by a GeckoLib model that adds Bedrock's poly meshes (GeckoLib draws none); every round part in the mod rebuilt so, the flat one-colour tops gone. With it: the hatch's opening a true octagon (its corners had reached past the lid: the sky showed through from below) and its open lid's knuckles out of its underside's plane; the drums' chimes no longer overlapping their neighbours'; the open crate's lid clear of the box behind it; the extinguisher's handle closed; the superweapons closed underneath (`close_floor`); a Fuse Box not held on by another's signal; the Tape Computer silent; unshaded parts unshaded on 26.3 too. |

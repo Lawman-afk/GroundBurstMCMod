@@ -282,6 +282,13 @@ public final class HealPhotographer {
             return false;
         }
         there++;
+        var server = mc.getSingleplayerServer();
+        if (REAL && there == 1 && server != null) {            // nothing lying about in a real world's pictures (a chest's spill)
+            Vec3 look = Vec3.atCenterOf(s.look());
+            server.execute(() -> server.overworld().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                    new net.minecraft.world.phys.AABB(look.x - 96, look.y - 48, look.z - 96, look.x + 96, look.y + 64, look.z + 96))
+                    .forEach(net.minecraft.world.entity.Entity::discard));
+        }
         int cx = s.look().getX() >> 4, cz = s.look().getZ() >> 4;
         boolean arrived = true;
         for (int x = -3; x <= 3 && arrived; x++) {

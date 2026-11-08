@@ -70,6 +70,15 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
      * Its model is built standing on its base, pointing up (a Warning Beacon): turned about the block's middle to point
      * the way the block faces, on a floor, a ceiling or a wall.
      */
+    /**
+     * GeckoLib's pipeline for glowmasks, for Iris to be told how to draw it (client/fx/IrisFx): a shader pack has no
+     * program for a pipeline it does not know, and drew the glowing parts' vertices as long streaks across the sky (a
+     * warning beacon's light fins, a machine's lamps).
+     */
+    public static com.mojang.renderpearl.api.pipeline.RenderPipeline glowPipeline() {
+        return GlowLayer.pipeline();
+    }
+
     public MachineGeoRenderer<T> standing() {
         this.standing = true;
         return this;
@@ -190,6 +199,11 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
         GlowLayer(com.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
             super(renderer);
+        }
+
+        /** GeckoLib's own pipeline for the glowmasks (one for every model that has one, other mods' too). */
+        static com.mojang.renderpearl.api.pipeline.RenderPipeline pipeline() {
+            return RENDER_PIPELINE;
         }
 
         @Override

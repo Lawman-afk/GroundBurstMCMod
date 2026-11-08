@@ -244,10 +244,10 @@ public final class FxPhotographer {
                 // An advanced-circuit line laid out as a factory hall, every machine piped and wired (gametest/CircuitLine,
                 // its numbers in tools/factory/circuit_line.py): down its aisle from above the west end; its layout from
                 // overhead; in the aisle; at night. What it has made is logged at each picture (the last four minutes in).
-                new Scene("circuit_line", "circuit_line", 17, 16, List.of(400, 1200, 4800)),
+                new Scene("circuit_line", "circuit_line", 11, 19, List.of(400, 1200, 4800)),
                 new Scene("circuit_line_aerial", "circuit_line", 4, 72, List.of(400)),
                 new Scene("circuit_line_close", "circuit_line", 9, 7, List.of(400)),
-                new Scene("circuit_line_night", "circuit_line", 17, 16, List.of(400), "midnight"),
+                new Scene("circuit_line_night", "circuit_line", 11, 19, List.of(400), "midnight"),
                 // A player's bunker built of the cosmetic sets (DESIGN.md §22): a concrete blockhouse, its Blast Door open, a
                 // Pressure Door and a hatch; barriers, teeth and hedgehogs before it, crates and drums by it, a searchlight on
                 // its roof; by day, close, and at night (the searchlight's beam, lanterns in the doorway).
