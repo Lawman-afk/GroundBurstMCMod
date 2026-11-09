@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "D": {
+      "item": "groundburst:crt_display"
+    },
+    "G": {
+      "tag": "c:glass_panes/colorless"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    }
+  },
+  "pattern": [
+    "PGP",
+    "GDG",
+    "PGP"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundburst:display_panel"
+  }
+}

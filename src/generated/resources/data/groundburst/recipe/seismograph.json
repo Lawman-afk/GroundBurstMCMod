@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": {
+      "item": "groundburst:advanced_circuit"
+    },
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "M": {
+      "item": "groundburst:electric_motor"
+    },
+    "N": {
+      "item": "groundburst:neodymium_magnet"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    },
+    "R": {
+      "item": "minecraft:paper"
+    },
+    "W": {
+      "tag": "c:wires/copper"
+    }
+  },
+  "pattern": [
+    "PWP",
+    "NDM",
+    "RCR"
+  ],
+  "result": {
+    "id": "groundburst:seismograph"
+  }
+}

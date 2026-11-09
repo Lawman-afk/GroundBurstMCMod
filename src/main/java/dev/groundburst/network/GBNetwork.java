@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GBNetwork {
-    public static final String PROTOCOL_VERSION = "21";
+    public static final String PROTOCOL_VERSION = "22";
 
     private GBNetwork() {}
 
@@ -103,6 +103,19 @@ public final class GBNetwork {
                 (payload, context) -> dev.groundburst.content.launch.DesignatorPayloads.beamHook.accept(payload));
         registrar.playToClient(dev.groundburst.content.launch.StationPayloads.Scope.TYPE, dev.groundburst.content.launch.StationPayloads.Scope.CODEC,
                 (payload, context) -> dev.groundburst.content.launch.StationPayloads.scopeHook.accept(payload));
+        // The war room (DESIGN.md §17.17): the Seismograph's record, the War Room Display's board, the Dead Hand's console.
+        registrar.playToClient(dev.groundburst.content.command.SeismographPayloads.View.TYPE, dev.groundburst.content.command.SeismographPayloads.View.CODEC,
+                (payload, context) -> dev.groundburst.content.command.SeismographPayloads.viewHook.accept(payload));
+        registrar.playToServer(dev.groundburst.content.command.SeismographPayloads.Settings.TYPE,
+                dev.groundburst.content.command.SeismographPayloads.Settings.CODEC, dev.groundburst.content.command.SeismographPayloads.Settings::handle);
+        registrar.playToClient(dev.groundburst.content.command.WarRoomPayloads.Board.TYPE, dev.groundburst.content.command.WarRoomPayloads.Board.CODEC,
+                (payload, context) -> dev.groundburst.content.command.WarRoomPayloads.boardHook.accept(payload));
+        registrar.playToServer(dev.groundburst.content.command.WarRoomPayloads.Settings.TYPE, dev.groundburst.content.command.WarRoomPayloads.Settings.CODEC,
+                dev.groundburst.content.command.WarRoomPayloads.Settings::handle);
+        registrar.playToClient(dev.groundburst.content.command.DeadHandPayloads.Scope.TYPE, dev.groundburst.content.command.DeadHandPayloads.Scope.CODEC,
+                (payload, context) -> dev.groundburst.content.command.DeadHandPayloads.scopeHook.accept(payload));
+        registrar.playToServer(dev.groundburst.content.command.DeadHandPayloads.Order.TYPE, dev.groundburst.content.command.DeadHandPayloads.Order.CODEC,
+                dev.groundburst.content.command.DeadHandPayloads.Order::handle);
         registrar.playToServer(dev.groundburst.content.launch.LaunchPayloads.MapRequest.TYPE,
                 dev.groundburst.content.launch.LaunchPayloads.MapRequest.CODEC, dev.groundburst.content.launch.LaunchPayloads.MapRequest::handle);
         registrar.playToClient(dev.groundburst.content.launch.LaunchPayloads.MapTile.TYPE, dev.groundburst.content.launch.LaunchPayloads.MapTile.CODEC,

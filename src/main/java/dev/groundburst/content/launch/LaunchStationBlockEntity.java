@@ -311,60 +311,13 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
     private void sendScope(ServerLevel level, ServerPlayer player) {
         LaunchNetwork.Network n = isFormed() ? network(level) : null;
         long now = level.getGameTime();
-        List<StationPayloads.MemberView> members = new ArrayList<>();
-        List<StationPayloads.ContactView> contacts = new ArrayList<>();
-        List<LaunchNetwork.Event> log = List.of();
-        List<StationPayloads.SpotView> spots = new ArrayList<>();
-        String code = "";
-        if (n != null) {
-            if (this.powered) {                                  // its designators' laser spots
-                for (Designators.Spot s : Designators.spots(level, n.id)) {
-                    var who = level.getPlayerByUUID(s.player());
-                    spots.add(new StationPayloads.SpotView((int) Math.floor(s.pos().x), (int) Math.floor(s.pos().y), (int) Math.floor(s.pos().z),
-                            who == null ? "" : who.getName().getString()));
-                }
-            }
-            code = n.code();
-            log = n.log();
-            Map<UUID, Flights.Flight> flying = flying(level);
-            Set<UUID> shown = new HashSet<>();
-            for (LaunchNetwork.Member m : n.members()) {
-                int soonest = -1;
-                for (UUID id : m.flights()) {
-                    Flights.Flight f = flying.get(id);
-                    if (f != null) {
-                        soonest = soonest < 0 ? f.ticksToImpact() : Math.min(soonest, f.ticksToImpact());
-                        if (this.powered && shown.add(id)) {
-                            contacts.add(contact(f, true));
-                        }
-                    }
-                }
-                members.add(StationPayloads.MemberView.of(m, now, soonest));
-            }
-            // What its working radars track (anyone's missiles).
-            if (this.powered) {
-                for (LaunchNetwork.Member m : n.members()) {
-                    if (m.role != LaunchNetwork.Role.RADAR || m.lost() || !m.inContact(now) || !m.report().working()) {
-                        continue;
-                    }
-                    for (Flights.Flight f : flying.values()) {
-                        Vec3 p = f.position();
-                        if (Math.abs(p.x - m.at().getX() - 0.5) <= RadarArrayBlockEntity.RANGE && Math.abs(p.z - m.at().getZ() - 0.5) <= RadarArrayBlockEntity.RANGE
-                                && shown.add(f.id())) {
-                            contacts.add(contact(f, false));
-                        }
-                    }
-                }
-            }
-        }
+        String code = n == null ? "" : n.code();
+        List<LaunchNetwork.Event> log = n == null ? List.of() : n.log();
+        StationPayloads.Picture pic = n == null ? new StationPayloads.Picture(List.of(), List.of(), List.of(), List.of())
+                : StationPayloads.picture(level, n, this.powered);
         PacketDistributor.sendToPlayer(player, new StationPayloads.Scope(this.worldPosition, worldBlockPos(), isFormed(), this.powered && !isEmpDisabled(),
-                (int) ((long) this.energy.stored() * 100 / Math.max(1, this.energy.capacity())), code, now, members, contacts, log, spots));
-    }
-
-    private static StationPayloads.ContactView contact(Flights.Flight f, boolean own) {
-        Vec3 p = f.position();
-        return new StationPayloads.ContactView(f.trackId(), (int) Math.floor(p.x), (int) Math.floor(p.y), (int) Math.floor(p.z), f.heading(),
-                (int) Math.floor(f.target().x), (int) Math.floor(f.target().z), f.ticksToImpact(), own);
+                (int) ((long) this.energy.stored() * 100 / Math.max(1, this.energy.capacity())), code, now, pic.members(), pic.contacts(), log,
+                pic.spots(), pic.blasts()));
     }
 
     // --- what the model shows ---------------------------------------------------------------------------------------------

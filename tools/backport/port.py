@@ -30,6 +30,8 @@ DROP = [re.compile(p) for p in (
     r"src/main/java/dev/groundburst/datagen/.*",
     r"src/main/java/dev/groundburst/client/fx/(FxPhotographer|SitePhotographer|HealPhotographer|BlastBenchClient|WorldSurveyClient|DevWorlds|Showroom|ShowroomWalk)\.java",
     r"src/main/java/dev/groundburst/client/manual/ManualPhotographer\.java",
+    # Main's test worlds' builders (the War Room range: a 26.3 world, built by main's dev run).
+    r"src/main/java/dev/groundburst/devworld/.*",
     # Main's model loader for polygons (26.x's model API): this branch's FreeRotationModels bakes them.
     r"src/main/java/dev/groundburst/client/render/PolygonModels\.java",
     r"src/main/java/dev/groundburst/blast/BlastBench\.java",
@@ -329,10 +331,13 @@ RULES = [
     sub(r"\b(?:net\.minecraft\.client\.)?Minecraft\.getInstance\(\)\.has(Shift|Control|Alt)Down\(\)", r"net.minecraft.client.gui.screens.Screen.has\1Down()"),
     sub(r"\b(?:this\.)?minecraft\.has(Shift|Control|Alt)Down\(\)", r"net.minecraft.client.gui.screens.Screen.has\1Down()"),
     sub(r"\bnew DynamicTexture\(\(\) -> \"[^\"]*\", ", "new DynamicTexture("),
+    # 26.3 tells the overworld's clock apart from a level's own time; this version has the one.
+    sub(r"\.getOverworldClockTime\(\)", ".getDayTime()"),
     # 26.x's images take ARGB colours, 1.21.1's ABGR.
     sub(r"\.setPixel\(((?:[^,()]|\([^()]*\))+), ((?:[^,()]|\([^()]*\))+), ((?:[^()]|\((?:[^()]|\([^()]*\))*\))+)\)",
         r".setPixelRGBA(\1, \2, dev.groundburst.port.ARGB.toABGR(\3))"),
-    sub(r"(\b\w+)\.getPixel\(((?:[^()]|\([^()]*\))*)\)", r"dev.groundburst.port.ARGB.toABGR(\1.getPixelRGBA(\2))"),
+    # (A field read through this. keeps its this.: this.base.getPixel(...) must not become this.ARGB.toABGR(base...).)
+    sub(r"(\b(?:this\.)?\w+)\.getPixel\(((?:[^()]|\([^()]*\))*)\)", r"dev.groundburst.port.ARGB.toABGR(\1.getPixelRGBA(\2))"),
     sub(r"\.isViewBlocking\(\((\w+), (\w+), (\w+), \w+\) -> ", r".isViewBlocking((\1, \2, \3) -> "),
     sub(r"\.emissiveRendering\((\w+) -> ", r".emissiveRendering((\1, level_, pos_) -> "),
     sub(r"\.coldEnoughToSnow\(((?:[^,()]|\([^()]*\))+), (?:[^()]|\([^()]*\))+\)", r".coldEnoughToSnow(\1)"),

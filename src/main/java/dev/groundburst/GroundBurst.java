@@ -12,6 +12,7 @@ import dev.groundburst.content.multiblock.GBMultiblocks;
 import dev.groundburst.content.part.GBParts;
 import dev.groundburst.content.recipe.GBRecipes;
 import dev.groundburst.content.resource.GBResources;
+import dev.groundburst.gametest.GBGameTests;
 import dev.groundburst.network.GBNetwork;
 import dev.groundburst.registry.GBBlockEntities;
 import dev.groundburst.registry.GBBlocks;
@@ -48,6 +49,7 @@ public class GroundBurst {
         dev.groundburst.content.launch.GBLaunch.init();
         dev.groundburst.content.defence.GBDefence.init();
         dev.groundburst.content.alarm.GBAlarms.init();
+        dev.groundburst.content.command.GBCommand.init();
         dev.groundburst.content.assembly.GBAssembly.init();
         dev.groundburst.content.strategic.GBStrategic.init();
         dev.groundburst.content.assembler.GBAssemblers.init();
@@ -91,6 +93,7 @@ public class GroundBurst {
         GBNetwork.register(modBus);
         dev.groundburst.blast.GBBlast.register(modBus);
         dev.groundburst.heal.GBHeal.register(modBus);
+        GBGameTests.register(modBus);
 
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(dev.groundburst.content.machine.MachineFluidInteraction::onRightClickBlock);
 

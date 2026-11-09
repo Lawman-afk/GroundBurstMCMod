@@ -57,7 +57,7 @@ public class LaunchStationScreen extends Screen {
     private static final String T_MEMBERS = GBLang.add(P + "members", "Network (%s)");
     private static final String T_LOG = GBLang.add(P + "log", "Log");
     private static final String T_EMPTY = GBLang.add(P + "empty",
-            "Nothing linked yet. Take Launch Codes from this station, then use them on your launchers and Radar Arrays.");
+            "Nothing linked yet. Take Launch Codes from this station, then use them on your launchers, Radar Arrays, Seismographs and Dead Hand.");
     private static final String T_NO_LOG = GBLang.add(P + "no_log", "Nothing to report");
     private static final String T_SET = GBLang.add(P + "set", "Set");
     private static final String T_ARM = GBLang.add(P + "arm", "ARM");
@@ -127,10 +127,29 @@ public class LaunchStationScreen extends Screen {
                 case NEW_CODES -> "New codes issued";
                 case FIRE_CALLED -> "%s: fire called on %s, %s";
                 case DESIGNATED -> "%s designated on %s, %s";
+                case BLAST -> "%s: blast, magnitude %s, at %s, %s";
+                case DEAD_HAND_ARMED -> "%s armed: watching %s blocks round";
+                case DEAD_HAND_SAFE -> "%s made safe";
+                case DEAD_HAND_ALERT -> "%s ALERT: strike at %s, %s; fires in %s s";
+                case DEAD_HAND_FIRED -> "%s FIRED: %s launchers ordered";
+                case DEAD_HAND_STOOD_DOWN -> "%s stood down%s";
             }));
         }
     }
     private static final String T_LASER = GBLang.add(P + "laser", "Laser");
+    private static final String T_ANSWERED = GBLang.add(P + "event.answered", ": the command answered");
+    // The war room's members (DESIGN.md §17.17).
+    private static final String T_LISTENING = GBLang.add(P + "state.listening", "Listening");
+    private static final String T_LAST_BLAST = GBLang.add(P + "state.last_blast", "Listening, last M %s");
+    private static final String T_SAFE = GBLang.add(P + "state.safe", "SAFE");
+    private static final String T_WATCHING = GBLang.add(P + "state.watching", "WATCHING %s m");
+    private static final String T_ALERT = GBLang.add(P + "state.alert", "ALERT T-%s");
+    private static final String T_FIRING = GBLang.add(P + "state.firing", "FIRING");
+    private static final String T_NO_ROCKET = GBLang.add(P + "state.no_rocket", "No rocket");
+    private static final String T_SEISMO_SEES = GBLang.add(P + "seismo_sees", "Feels blasts; its last: magnitude %s");
+    private static final String T_SEISMO_NONE = GBLang.add(P + "seismo_none", "Feels blasts; none recorded yet");
+    private static final String T_HAND_ROCKET = GBLang.add(P + "hand_rocket", "Command rocket loaded; watches %s blocks round");
+    private static final String T_HAND_NONE = GBLang.add(P + "hand_none", "No command rocket loaded");
     private static final String T_NO_ANSWER = GBLang.add(P + "event.no_answer", "no answer");
     private static final String T_GONE = GBLang.add(P + "gone", "%s at %s, %s");
     /** Short names for the members' kinds (by their controller's id); others go by their block's own name. */
@@ -142,7 +161,9 @@ public class LaunchStationScreen extends Screen {
             "radar_array", GBLang.add(P + "kind.radar_array", "Radar Array"),
             "particle_uplink_cannon", GBLang.add(P + "kind.particle_uplink_cannon", "Particle Cannon"),
             "scud_storm", GBLang.add(P + "kind.scud_storm", "SCUD Storm"),
-            "nuclear_missile_silo", GBLang.add(P + "kind.nuclear_missile_silo", "Nuclear Missile"));
+            "nuclear_missile_silo", GBLang.add(P + "kind.nuclear_missile_silo", "Nuclear Missile"),
+            "seismograph", GBLang.add(P + "kind.seismograph", "Seismograph"),
+            "dead_hand", GBLang.add(P + "kind.dead_hand", "Dead Hand"));
 
     private static final int W = 420, H = 236, MAP = 196;
     private static final int COL = MAP + 18, CW = W - COL - 8, ROW = 10, ROWS = 7;
@@ -358,7 +379,7 @@ public class LaunchStationScreen extends Screen {
     }
 
     private List<BlockPos> pickedLaunchers() {
-        return pickedMembers().stream().filter(m -> !m.radar() && !m.lost()).map(StationPayloads.MemberView::pos).toList();
+        return pickedMembers().stream().filter(m -> m.launcher() && !m.lost()).map(StationPayloads.MemberView::pos).toList();
     }
 
     private void sendTarget() {
@@ -389,7 +410,7 @@ public class LaunchStationScreen extends Screen {
     }
 
     private void toggleArm() {
-        List<StationPayloads.MemberView> ms = pickedMembers().stream().filter(m -> !m.radar()).toList();
+        List<StationPayloads.MemberView> ms = pickedMembers().stream().filter(StationPayloads.MemberView::launcher).toList();
         if (!ms.isEmpty()) {
             PacketDistributor.sendToServer(new StationPayloads.Arm(this.pos, ms.stream().map(StationPayloads.MemberView::pos).toList(),
                     !anyArmed(ms)));
@@ -421,7 +442,7 @@ public class LaunchStationScreen extends Screen {
 
     /** Whether a member can be armed at its aim (ready, the aim in its reach), as the screen knows it. */
     private static boolean canArm(StationPayloads.MemberView m) {
-        return !m.radar() && !m.lost() && m.hasTarget() && m.readiness() == LaunchSiloBlockEntity.Readiness.READY.ordinal()
+        return m.launcher() && !m.lost() && m.hasTarget() && m.readiness() == LaunchSiloBlockEntity.Readiness.READY.ordinal()
                 && distance(m) <= m.range();
     }
 
@@ -455,8 +476,8 @@ public class LaunchStationScreen extends Screen {
         if (on && this.map != null) {
             this.map.request(this.pos, here(), this.viewX, this.viewZ, zoom());
         }
-        int armed = (int) ms.stream().filter(m -> !m.radar() && !m.lost() && m.willBeArmed() && m.launchAt() < 0).count();
-        List<StationPayloads.MemberView> launchers = picks.stream().filter(m -> !m.radar()).toList();
+        int armed = (int) ms.stream().filter(m -> m.launcher() && !m.lost() && m.willBeArmed() && m.launchAt() < 0).count();
+        List<StationPayloads.MemberView> launchers = picks.stream().filter(StationPayloads.MemberView::launcher).toList();
         if (this.setButton != null) {
             this.setButton.active = on && launchers.stream().anyMatch(m -> !counting(m) && !m.lost());
             if (this.laserButton != null) {
@@ -644,6 +665,32 @@ public class LaunchStationScreen extends Screen {
             }
             return Component.translatable(T_TRACKING, tracked(m, contacts));
         }
+        if (m.seismograph()) {                                      // its report's reach: its last blast's magnitude, tenths
+            if (!m.contact()) {
+                return Component.translatable(T_NOT_LOADED);
+            }
+            if (!m.working()) {
+                return Component.translatable(T_STATE[Mth.clamp(m.readiness(), 0, T_STATE.length - 1)], 0);
+            }
+            return m.range() > 0 ? Component.translatable(T_LAST_BLAST, String.format(Locale.ROOT, "%.1f", m.range() / 10.0))
+                    : Component.translatable(T_LISTENING);
+        }
+        if (m.deadHand()) {
+            int r = m.readiness();
+            if (r == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal()) {
+                return m.countdown() > 0 ? Component.translatable(T_ALERT, (m.countdown() + 19) / 20) : Component.translatable(T_FIRING);
+            }
+            if (m.armed()) {
+                return Component.translatable(T_WATCHING, m.range());
+            }
+            if (r == LaunchSiloBlockEntity.Readiness.NO_MISSILE.ordinal()) {
+                return Component.translatable(T_NO_ROCKET);
+            }
+            if (r == LaunchSiloBlockEntity.Readiness.READY.ordinal()) {
+                return Component.translatable(T_SAFE);
+            }
+            return Component.translatable(T_STATE[Mth.clamp(r, 0, T_STATE.length - 1)], 0);
+        }
         if (m.launchAt() >= 0) {
             return Component.translatable(T_HELD, clock((int) Math.max(0, m.launchAt() - now())));
         }
@@ -671,8 +718,12 @@ public class LaunchStationScreen extends Screen {
         if (m.lost()) {
             return RED;
         }
-        if (m.radar()) {
+        if (m.radar() || m.seismograph()) {
             return m.contact() && m.working() ? BRIGHT : DIM;
+        }
+        if (m.deadHand()) {
+            boolean alert = m.readiness() == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
+            return alert ? (this.ticks % 20 < 12 ? RED : DIM_RED) : m.armed() ? AMBER : m.working() ? BRIGHT : DIM;
         }
         int r = m.readiness();
         boolean busy = m.launchAt() >= 0 || counting(m) || m.inFlight() >= 0;
@@ -692,14 +743,24 @@ public class LaunchStationScreen extends Screen {
     }
 
     /** A member named in the log: "#2 Missile Silo" while it is on the network, otherwise its kind and where it was. */
-    private Component named(BlockPos member, String memberKind) {
-        int n = number(member);
+    private static Component named(BlockPos member, String memberKind, List<StationPayloads.MemberView> members) {
+        int n = 0;
+        for (int i = 0; i < members.size(); i++) {
+            if (members.get(i).pos().equals(member)) {
+                n = i + 1;
+            }
+        }
         return n > 0 ? Component.literal("#" + n + " ").append(kind(memberKind))
                 : Component.translatable(T_GONE, kind(memberKind), member.getX(), member.getZ());
     }
 
     private Component event(LaunchNetwork.Event e) {
-        Component who = named(e.member(), e.memberKind());
+        return describe(e, members());
+    }
+
+    /** A log line in words, its members numbered as in {@code members} (the station's list; the War Room Display's ticker). */
+    public static Component describe(LaunchNetwork.Event e, List<StationPayloads.MemberView> members) {
+        Component who = named(e.member(), e.memberKind(), members);
         String key = T_EVENT.get(e.kind());
         return switch (e.kind()) {
             case IMPACT, LOST -> Component.translatable(key, who, e.x(), e.z());
@@ -707,6 +768,10 @@ public class LaunchStationScreen extends Screen {
                     : Component.translatable(T_STATE[Mth.clamp(e.detail(), 0, T_STATE.length - 1)], 0));
             case NEW_CODES -> Component.translatable(key);
             case FIRE_CALLED, DESIGNATED -> Component.translatable(key, who, e.x(), e.z());
+            case BLAST -> Component.translatable(key, who, String.format(Locale.ROOT, "%.1f", e.detail() / 10.0), e.x(), e.z());
+            case DEAD_HAND_ARMED, DEAD_HAND_FIRED -> Component.translatable(key, who, e.detail());
+            case DEAD_HAND_ALERT -> Component.translatable(key, who, e.x(), e.z(), e.detail());
+            case DEAD_HAND_STOOD_DOWN -> Component.translatable(key, who, e.detail() == 1 ? Component.translatable(T_ANSWERED) : Component.empty());
             default -> Component.translatable(key, who);
         };
     }
@@ -753,14 +818,29 @@ public class LaunchStationScreen extends Screen {
         for (int pass = 0; pass < 2; pass++) {
             for (StationPayloads.MemberView m : s.members()) {
                 boolean picked = this.picked.contains(m.pos());
-                if ((pass == 1) == picked && !m.radar() && m.hasTarget() && m.strike().reach() > 0
+                if ((pass == 1) == picked && m.launcher() && m.hasTarget() && m.strike().reach() > 0
                         && (m.willBeArmed() || counting(m) || m.launchAt() >= 0)) {
                     drawStrike(g, m, picked, x0, y0, x1, y1);
                 }
             }
         }
         // The pattern the picks would take round the cursor.
-        List<StationPayloads.MemberView> launchers = pickedMembers().stream().filter(m -> !m.radar() && !m.lost()).toList();
+        // The Dead Hand's radius (dashed; red in alert), and the blasts its seismographs felt (DESIGN.md §17.17).
+        for (StationPayloads.MemberView m : s.members()) {
+            if (m.deadHand() && !m.lost() && m.armed() && m.range() > 0) {
+                boolean alert = m.readiness() == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
+                int r = Math.max(2, (int) Math.round(m.range() / (double) zoom()));
+                Phosphor.ellipse(g, screenX(m.at().getX() + 0.5), screenY(m.at().getZ() + 0.5), r, r, 1, 0,
+                        alert ? (this.ticks % 20 < 12 ? RED : DIM_RED) : 0x99FFB040, 4);
+                if (alert && m.hasTarget()) {
+                    Phosphor.cross(g, screenX(m.targetX() + 0.5), screenY(m.targetZ() + 0.5), 4, RED);
+                }
+            }
+        }
+        for (StationPayloads.BlastView b : s.blasts()) {
+            drawBlast(g, b);
+        }
+        List<StationPayloads.MemberView> launchers = pickedMembers().stream().filter(m -> m.launcher() && !m.lost()).toList();
         if (inMap(mouseX, mouseY) && !this.panning && launchers.size() > 1) {
             int cx = (int) Math.floor(worldX(mouseX)), cz = (int) Math.floor(worldZ(mouseY));
             for (int[] p : LaunchNetwork.points(launchers.stream().map(StationPayloads.MemberView::pos).toList(), cx, cz,
@@ -776,7 +856,7 @@ public class LaunchStationScreen extends Screen {
         for (StationPayloads.MemberView m : s.members()) {
             boolean picked = this.picked.contains(m.pos());
             int sx = screenX(m.at().getX() + 0.5), sz = screenY(m.at().getZ() + 0.5);
-            if (!m.radar() && m.hasTarget()) {
+            if (m.launcher() && m.hasTarget()) {
                 int tx = screenX(m.targetX() + 0.5), tz = screenY(m.targetZ() + 0.5);
                 boolean armed = m.willBeArmed() || m.launchAt() >= 0;
                 if (armed || picked) {
@@ -789,6 +869,14 @@ public class LaunchStationScreen extends Screen {
             int color = m.lost() ? (blink ? RED : DIM_RED) : picked ? WHITE : stateColor(m);
             if (m.radar()) {
                 Phosphor.ring(g, sx, sz, 3, color);
+            } else if (m.seismograph()) {                            // a diamond
+                Phosphor.line(g, sx - 3, sz, sx, sz - 3, color, 0);
+                Phosphor.line(g, sx, sz - 3, sx + 3, sz, color, 0);
+                Phosphor.line(g, sx + 3, sz, sx, sz + 3, color, 0);
+                Phosphor.line(g, sx, sz + 3, sx - 3, sz, color, 0);
+            } else if (m.deadHand()) {                               // a square with a cross in it
+                g.outline(sx - 3, sz - 3, 7, 7, color);
+                Phosphor.cross(g, sx, sz, 2, color);
             } else {
                 g.fill(sx - 2, sz - 2, sx + 3, sz + 3, color);
             }
@@ -822,6 +910,44 @@ public class LaunchStationScreen extends Screen {
         }
         Phosphor.scanlines(g, x0, y0, x1, y1);
         g.disableScissor();
+    }
+
+    /**
+     * A blast its seismographs felt: fixed (two or more), a ring as big as it was strong and its magnitude beside it;
+     * from one station alone, the arc it may lie in (its bearing and distance give or take). Both fade over ten minutes.
+     */
+    private void drawBlast(GuiGraphicsExtractor g, StationPayloads.BlastView b) {
+        int alpha = (int) Mth.clamp(255 - b.age() / 12000.0 * 200, 55, 255);
+        int col = alpha << 24 | 0xFFB040;
+        if (b.fixed()) {
+            int x = screenX(b.x() + 0.5), z = screenY(b.z() + 0.5);
+            Phosphor.ring(g, x, z, Math.max(2, Math.round(b.magnitude() * 1.4f)), col);
+            label(g, String.format(Locale.ROOT, "M%.1f", b.magnitude()), x + 5, z - 3, col);
+            return;
+        }
+        double near = Math.max(0, b.distance() - b.distanceSpread()), far = b.distance() + b.distanceSpread();
+        double a0 = Math.toRadians(b.bearing() - b.bearingSpread()), a1 = Math.toRadians(b.bearing() + b.bearingSpread());
+        int steps = 10;
+        int lastNx = 0, lastNz = 0, lastFx = 0, lastFz = 0;
+        for (int i = 0; i <= steps; i++) {
+            double a = a0 + (a1 - a0) * i / steps;
+            int nx = screenX(b.fromX() + Math.sin(a) * near), nz = screenY(b.fromZ() - Math.cos(a) * near);
+            int fx = screenX(b.fromX() + Math.sin(a) * far), fz = screenY(b.fromZ() - Math.cos(a) * far);
+            if (i > 0) {
+                Phosphor.line(g, lastNx, lastNz, nx, nz, col, 0);
+                Phosphor.line(g, lastFx, lastFz, fx, fz, col, 0);
+            } else {
+                Phosphor.line(g, nx, nz, fx, fz, col, 2);
+            }
+            if (i == steps) {
+                Phosphor.line(g, nx, nz, fx, fz, col, 2);
+            }
+            lastNx = nx;
+            lastNz = nz;
+            lastFx = fx;
+            lastFz = fz;
+        }
+        label(g, String.format(Locale.ROOT, "M%.1f?", b.magnitude()), lastFx + 3, lastFz - 3, col);
     }
 
     /** Small type (as the list's), drawn on whole screen pixels. */
@@ -886,7 +1012,7 @@ public class LaunchStationScreen extends Screen {
             if (this.picked.contains(m.pos())) {
                 g.fill(x, ry, x + CW - (bar ? 4 : 0), ry + ROW, SELECTED_BG);
             }
-            String right = m.radar() ? "" : m.hasTarget() ? (int) distance(m) + "m" : Component.translatable(T_NO_TARGET).getString();
+            String right = !m.launcher() ? "" : m.hasTarget() ? (int) distance(m) + "m" : Component.translatable(T_NO_TARGET).getString();
             int rightW = this.font.width(right);
             String label = (this.scroll + i + 1) + ". " + kind(m.kind()).getString() + "  " + state(m, contacts).getString();
             int color = stateColor(m);
@@ -896,7 +1022,7 @@ public class LaunchStationScreen extends Screen {
             g.pose().pushMatrix();
             g.pose().translate(x + 3, Math.round((ry + (ROW - 8 * scale) / 2f) * gs) / (float) gs);
             g.pose().scale(scale, scale);
-            g.text(this.font, right, room - rightW, 0, m.hasTarget() && !m.radar() && m.range() > 0 && distance(m) > m.range() ? RED : DIM, false);
+            g.text(this.font, right, room - rightW, 0, m.hasTarget() && m.launcher() && m.range() > 0 && distance(m) > m.range() ? RED : DIM, false);
             g.text(this.font, this.font.plainSubstrByWidth(label, room - rightW - 6), 0, 0, color, false);
             g.pose().popMatrix();
         }
@@ -935,9 +1061,9 @@ public class LaunchStationScreen extends Screen {
             String ago = Component.translatable(T_AGO, clock((int) Math.max(0, now() - e.time()))).getString();
             int agoW = this.font.width(ago);
             int color = switch (e.kind()) {
-                case LAUNCHED -> AMBER;
+                case LAUNCHED, BLAST, DEAD_HAND_ARMED -> AMBER;
                 case IMPACT -> BRIGHT;
-                case LOST, NO_CONTACT, FAILED -> RED;
+                case LOST, NO_CONTACT, FAILED, DEAD_HAND_ALERT, DEAD_HAND_FIRED -> RED;
                 default -> TEXT;
             };
             g.pose().pushMatrix();
@@ -983,11 +1109,14 @@ public class LaunchStationScreen extends Screen {
             Component head = Component.translatable(T_AT, number(one.pos()), kind(one.kind()), one.pos().getX(), one.pos().getZ());
             g.text(this.font, this.font.plainSubstrByWidth(head.getString(), textW), x, t + DETAIL_Y + 1, TEXT, false);
             Component what = one.radar() ? Component.translatable(T_RADAR_SEES, tracked(one, contacts), RadarArrayBlockEntity.RANGE)
+                    : one.seismograph() ? (one.range() > 0 ? Component.translatable(T_SEISMO_SEES, String.format(Locale.ROOT, "%.1f", one.range() / 10.0))
+                            : Component.translatable(T_SEISMO_NONE))
+                    : one.deadHand() ? (one.shown().isEmpty() ? Component.translatable(T_HAND_NONE) : Component.translatable(T_HAND_ROCKET, one.range()))
                     : dev.groundburst.content.superweapon.ParticleCannonBlockEntity.KIND.equals(one.kind()) ? Component.translatable(T_BEAM)
                     : one.shown().isEmpty() ? Component.translatable(T_NOTHING)
                     : one.shown().getCount() > 1 ? one.shown().getHoverName().copy().append(" x" + one.shown().getCount()) : one.shown().getHoverName();
             g.text(this.font, this.font.plainSubstrByWidth(what.getString(), CW), x, t + DETAIL_Y + 11, DIM, false);
-            if (!one.radar() && one.hasTarget()) {
+            if (one.launcher() && one.hasTarget()) {
                 double d = distance(one);
                 Component line = one.range() > 0 && d > one.range() ? Component.translatable(T_TOO_FAR, one.range())
                         : Component.translatable(T_RANGE, (int) d, clock(one.timing().toImpact(one.targetX(), one.targetZ())));
@@ -1000,7 +1129,7 @@ public class LaunchStationScreen extends Screen {
             g.text(this.font, this.font.plainSubstrByWidth(pattern.getString(), CW), x, t + DETAIL_Y + 11, DIM, false);
             int last = -1;
             for (StationPayloads.MemberView m : picks) {
-                if (!m.radar() && m.hasTarget()) {
+                if (m.launcher() && m.hasTarget()) {
                     last = Math.max(last, m.timing().toImpact(m.targetX(), m.targetZ()));
                 }
             }

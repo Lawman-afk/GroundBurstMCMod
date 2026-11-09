@@ -4,7 +4,7 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `228702cb` (2026-11-08: version 0.11.0, built for all three versions as `groundburst-mc1.21.1-0.11.0.jar`: the remastered sites and the day's fixes in one release; the sites' block-entity marks dropped and each site keeping 7 chunks clear of the rarer kinds, main's DESIGN.md §22.8; the README's and the description's site pictures); before it, at `6dbc3f68` (2026-11-08: the Cold War sites remastered with the cosmetic sets,
+- **Last brought up to:** `main` at `83927f20` (2026-11-09: the war room, main's DESIGN.md §17.17 and §17.18: the Seismograph, the War Room Display and the Dead Hand. Its three text renderers are this branch's own (`manual.txt`: GeckoLib 4's `postRender`, the pose already turned, main's drawing through `port/render/SubmitNodeCollector`); `port.py` widened twice: a pixel read through `this.` (`this.base.getPixel(...)` had become `this.ARGB...`), and 26.3's `getOverworldClockTime()` as this version's `getDayTime()`; main's War Room range (`devworld/`, a 26.3 world) dropped; main's tests run alone (`GBGameTests.testAlone`) each get a batch of their own here (`GameTestRegistration`: a batch name each; main gives each an environment of its own). 466 GameTests passed (459 of main's beside the seven; a hull scorch test, `blast_scorches_a_hull_deck_seen_at_a_slant`, failed once at 6 of 10 and passed on the rerun: flaky); `runPortCheck` builds the war room and checks it OK); before it, at `228702cb` (2026-11-08: version 0.11.0, built for all three versions as `groundburst-mc1.21.1-0.11.0.jar`: the remastered sites and the day's fixes in one release; the sites' block-entity marks dropped and each site keeping 7 chunks clear of the rarer kinds, main's DESIGN.md §22.8; the README's and the description's site pictures); before it, at `6dbc3f68` (2026-11-08: the Cold War sites remastered with the cosmetic sets,
   main's DESIGN.md §22.8: the site templates converted as ever, the site tools); before it, at `1a9286d6` (2026-11-08:
   0.10.1, built for all three versions as
   `groundburst-mc1.21.1-0.10.1.jar` but not uploaded: it goes out with the remaster as one release; main's changelog, the CurseForge description's long parts always open; this version's
@@ -121,7 +121,10 @@ by a lever, a bunk bed, an extinguisher; the log saying whether the pipes joined
 locker holds 27 with its door open and the lamp is lit), sets the yard out on grass (barriers, dragon's teeth and
 hedgehogs, whose parts turn about
 three axes, the searchlight on, crates, drums; the log saying whether the light stands two high and lit, the crates
-hold 27 and four drums stand in a block), screenshots each into
+hold 27 and four drums stand in a block), builds the war room on concrete (a station, a War Room Display showing its
+network, a Seismograph, the Dead Hand armed to fire on any strike, Creative Capacitor Banks; a strike of magnitude 4.5
+put into the ground's record; the log saying whether the board lit at ATTACK, the strike was recorded and the Dead Hand
+fired: its board, readout, console, alert, lid and rocket photographed), screenshots each into
 `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it
 keeps the game from pausing when its window is behind another).
 

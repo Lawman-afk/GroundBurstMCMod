@@ -56,6 +56,8 @@ public final class Blasts {
         }
         BlastJob job = new BlastJob(level, java.util.UUID.randomUUID(), key.location(), level.getGameTime(), center, profile,
                 level.getRandom().nextLong(), source, terrain, spawn, spawnRadius);
+        // The ground carries it: the seismographs and the Dead Hand feel it (DESIGN.md §17.17).
+        dev.groundburst.content.command.Seismic.blast(level, center, key, found.get(), profile);
         // Sound and visuals are the clients' (ClientBlasts, Spectacle), from the blast_start packet.
         BlastManager.of(level).add(job);
         return job;

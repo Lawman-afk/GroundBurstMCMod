@@ -531,6 +531,19 @@ public final class Flights extends SavedData {
             return this.pos;
         }
 
+        /** Where it was fired from (its tail on the pad, or the foot of its silo's shaft). */
+        public Vec3 start() {
+            return this.start;
+        }
+
+        /**
+         * Whether it carries no warhead (the Dead Hand's command rocket, DESIGN.md §17.17): it comes down harmlessly, so
+         * warning receivers and interceptors pass it by.
+         */
+        public boolean harmless() {
+            return this.warhead.isEmpty();
+        }
+
         public Vec3 target() {
             return this.target;
         }
@@ -569,6 +582,7 @@ public final class Flights extends SavedData {
                 return false;
             }
             Entity by = this.owner == null ? null : level.getEntity(this.owner);
+            dev.groundburst.content.command.Seismic.impact(level, at, this);     // its blasts are its (DESIGN.md §17.17)
             Charges.scaled(this.scale, () -> Charges.burst(level, bomb.kind, at, by));
             finish(level);
             return true;
@@ -884,6 +898,7 @@ public final class Flights extends SavedData {
                 level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, at.x, at.y + 0.5, at.z, 20, 0.6, 0.4, 0.6, 0.05);
                 level.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 2f, 0.5f);
             } else if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
+                dev.groundburst.content.command.Seismic.impact(level, at, this); // its blasts are its (DESIGN.md §17.17)
                 Charges.scaled(this.scale, () -> Charges.impact(level, bomb.kind, BlockPos.containing(at.add(0, 0.5, 0)), by));
             }
             finish(level);

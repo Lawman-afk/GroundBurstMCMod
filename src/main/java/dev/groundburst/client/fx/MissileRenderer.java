@@ -24,11 +24,17 @@ import net.minecraft.world.item.ItemStack;
 public class MissileRenderer extends dev.groundburst.port.render.StateEntityRenderer<MissileEntity, MissileRenderer.State> {
     /** The item model is 2 blocks tall; the missile is 6. */
     private static final float SCALE = 4;
+    /**
+     * A missile with no warhead is the Dead Hand's command rocket (DESIGN.md §17.17): drawn to fit its launch tube (the
+     * plain model is 9 pixels across; the tube's bore about 10), about 2 blocks long, so it climbs out of the tube clear
+     * of the module round it.
+     */
+    private static final float COMMAND_SCALE = 1.1f;
     private static final int FULL_BRIGHT = 15728880;
 
     public static class State extends EntityRenderState {
         public final ItemStackRenderState item = new ItemStackRenderState();
-        public float yaw, tilt;
+        public float yaw, tilt, scale = SCALE;
         /** How far (blocks, before scaling) to lift the item model to stand it on its tail. */
         public float lift = 0.5f;
     }
@@ -67,6 +73,7 @@ public class MissileRenderer extends dev.groundburst.port.render.StateEntityRend
         this.items.updateForNonLiving(state.item, look, ItemDisplayContext.NONE, entity);
         state.yaw = entity.getViewYRot(partialTicks);
         state.tilt = entity.tilt(partialTicks);
+        state.scale = entity.look().isEmpty() ? COMMAND_SCALE : SCALE;
     }
 
     @Override
@@ -74,7 +81,7 @@ public class MissileRenderer extends dev.groundburst.port.render.StateEntityRend
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(state.tilt));
-        poseStack.scale(SCALE, SCALE, SCALE);
+        poseStack.scale(state.scale, state.scale, state.scale);
         poseStack.translate(0, state.lift, 0);          // the item model is drawn about its middle; stand it on its tail
         state.item.submit(poseStack, collector, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, state.outlineColor);
         poseStack.popPose();

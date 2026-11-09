@@ -35,7 +35,7 @@ public class LaunchCodesItem extends Item {
     private static final String TIP_CODE = GBLang.add(GroundBurst.MODID + ".tooltip.codes", "Network %s");
     private static final String TIP_BLANK = GBLang.add(GroundBurst.MODID + ".tooltip.codes_blank", "Blank: use on a Launch Control Station");
     private static final String TIP_USE = GBLang.add(GroundBurst.MODID + ".tooltip.codes_use",
-            "Use on a launcher or Radar Array to link it; sneak to unlink it");
+            "Use on a launcher, Radar Array, Seismograph or Dead Hand to link it (sneak to unlink it), or on a War Room Display to show the network");
     private static final String TIP_JOIN = GBLang.add(GroundBurst.MODID + ".tooltip.codes_join", "Sneak-use on another station to make it join");
     private static final String TAKEN = GBLang.add(GroundBurst.MODID + ".codes.taken", "Launch codes for network %s");
     private static final String SAME = GBLang.add(GroundBurst.MODID + ".codes.same", "These are this station's codes (%s)");
@@ -51,6 +51,8 @@ public class LaunchCodesItem extends Item {
     private static final String FULL = GBLang.add(GroundBurst.MODID + ".codes.full", "Network %s is full (%s)");
     private static final String UNLINKED = GBLang.add(GroundBurst.MODID + ".codes.unlinked", "Unlinked from network %s");
     private static final String NOT_ON = GBLang.add(GroundBurst.MODID + ".codes.not_on", "Not on network %s");
+    private static final String SHOWS = GBLang.add(GroundBurst.MODID + ".codes.shows", "This display shows network %s");
+    private static final String SHOWS_NONE = GBLang.add(GroundBurst.MODID + ".codes.shows_none", "This display shows no network now");
 
     public LaunchCodesItem(Properties properties) {
         super(properties);
@@ -61,20 +63,27 @@ public class LaunchCodesItem extends Item {
         return stack.getOrDefault(GBDataComponents.LAUNCH_CODES.get(), "");
     }
 
-    /** What a click on {@code pos} reaches: the controller's block entity (of a formed part's structure too), or the block's own. */
+    /**
+     * What a click on {@code pos} reaches: the controller's block entity (of a formed part's structure too), or the block's
+     * own: a launcher, a Radar Array, a station, a Seismograph or the Dead Hand (DESIGN.md §17.17), a War Room Display.
+     */
     public static @Nullable BlockEntity target(Level level, BlockPos pos) {
         BlockEntity be = level.getBlockEntity(pos);
-        if (be instanceof LaunchSite || be instanceof RadarArrayBlockEntity || be instanceof LaunchStationBlockEntity) {
+        if (takes(be)) {
             return be;
         }
         MultiblockController c = Multiblocks.formedControllerOf(level, pos);
         if (c != null) {
             BlockEntity owner = level.getBlockEntity(c.controllerPos());
-            if (owner instanceof LaunchSite || owner instanceof RadarArrayBlockEntity || owner instanceof LaunchStationBlockEntity) {
+            if (takes(owner)) {
                 return owner;
             }
         }
         return null;
+    }
+
+    private static boolean takes(@Nullable BlockEntity be) {
+        return be instanceof LaunchStationBlockEntity || be instanceof NetworkDisplay || LaunchNetwork.roleOf(be) != null;
     }
 
     /** Before the block itself is used (a launcher would open its screen): link, unlink, take codes, join. */
@@ -122,6 +131,17 @@ public class LaunchCodesItem extends Item {
         }
         if (code.isEmpty()) {
             return Component.translatable(BLANK).withStyle(ChatFormatting.GRAY);
+        }
+        if (be instanceof NetworkDisplay display) {                 // it shows the network; it is no member of it
+            if (sneaking) {
+                display.show(level, 0);
+                return Component.translatable(SHOWS_NONE).withStyle(ChatFormatting.YELLOW);
+            }
+            if (card == null) {
+                return Component.translatable(VOID).withStyle(ChatFormatting.RED);
+            }
+            display.show(level, card.id);
+            return Component.translatable(SHOWS, card.code()).withStyle(ChatFormatting.GREEN);
         }
         if (card == null) {
             for (ServerLevel other : level.getServer().getAllLevels()) {

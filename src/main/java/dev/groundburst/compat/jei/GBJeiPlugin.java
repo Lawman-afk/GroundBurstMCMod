@@ -139,6 +139,12 @@ public final class GBJeiPlugin implements IModPlugin {
         // The Launch Control Station and its codes (DESIGN.md §17.12).
         info(registration, dev.groundburst.content.launch.GBLaunch.INFO_STATION, dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item().get(),
                 dev.groundburst.content.launch.GBLaunch.LAUNCH_CODES.get(), dev.groundburst.content.launch.GBLaunch.STATION_SPAWNER.get());
+        // The war room (DESIGN.md §17.17).
+        info(registration, dev.groundburst.content.command.GBCommand.INFO_SEISMOGRAPH, dev.groundburst.content.command.GBCommand.SEISMOGRAPH.item().get());
+        info(registration, dev.groundburst.content.command.GBCommand.INFO_WAR_ROOM, dev.groundburst.content.command.GBCommand.WAR_ROOM_CONTROLLER.item().get(),
+                dev.groundburst.content.command.GBCommand.DISPLAY_PANEL.item().get(), dev.groundburst.content.command.GBCommand.WAR_ROOM_SPAWNER.get());
+        info(registration, dev.groundburst.content.command.GBCommand.INFO_DEAD_HAND, dev.groundburst.content.command.GBCommand.DEAD_HAND_CONTROLLER.item().get(),
+                dev.groundburst.content.command.GBCommand.COMMAND_ROCKET.get(), dev.groundburst.content.command.GBCommand.DEAD_HAND_SPAWNER.get());
         // The Laser Designator and the guidance that homes on it (DESIGN.md §17.13).
         info(registration, dev.groundburst.content.launch.GBLaunch.INFO_DESIGNATOR, dev.groundburst.content.launch.GBLaunch.LASER_DESIGNATOR.get(),
                 dev.groundburst.content.assembly.GBAssembly.LASER_GUIDANCE.get());

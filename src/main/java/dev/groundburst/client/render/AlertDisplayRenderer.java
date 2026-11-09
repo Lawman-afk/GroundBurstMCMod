@@ -37,6 +37,9 @@ public class AlertDisplayRenderer extends dev.groundburst.port.render.StateBlock
     private static final String T_GAS_LEVEL = GBLang.add(GroundBurst.MODID + ".display.gas_level", "%s%% IN AIR");
     private static final String T_ALARM = GBLang.add(GroundBurst.MODID + ".display.alarm", "ALARM");
     private static final String T_COVER = GBLang.add(GroundBurst.MODID + ".display.cover", "TAKE COVER");
+    private static final String T_BLAST = GBLang.add(GroundBurst.MODID + ".display.blast", "BLAST");
+    private static final String T_MAGNITUDE = GBLang.add(GroundBurst.MODID + ".display.magnitude", "MAGNITUDE %s");
+    private static final String T_AWAY = GBLang.add(GroundBurst.MODID + ".display.away", "%s M AWAY");
 
     /** The screen's face (3 px out from the wall: 5 px from the block's middle) and its middle (8 px up); text scales. */
     private static final float FACE = -(5f - 0.06f) / 16f, MIDDLE_Y = 0.5f, SCALE = 0.0105f, TITLE = 1.3f;
@@ -78,7 +81,7 @@ public class AlertDisplayRenderer extends dev.groundburst.port.render.StateBlock
             state.lineColor = DIM_GREEN;
             return;
         }
-        Alarms.Kind k = Alarms.Kind.values()[kind];
+        Alarms.Kind k = Alarms.Kind.values()[Math.clamp(kind, 0, Alarms.Kind.values().length - 1)];
         switch (k) {
             case ATTACK -> {
                 state.title = Component.translatable(T_ATTACK);
@@ -102,6 +105,15 @@ public class AlertDisplayRenderer extends dev.groundburst.port.render.StateBlock
                 state.titleColor = bright ? GAS_GREEN : 0xFF6A8020;
                 state.line1 = Component.translatable(T_GAS_LEVEL, String.format("%.0f", be.reading()));
                 state.lineColor = GAS_GREEN;
+            }
+            case BLAST -> {                                       // a blast felt (DESIGN.md §17.17): how big, how far
+                state.title = Component.translatable(T_BLAST);
+                state.titleColor = bright ? RED : DARK_RED;
+                state.line1 = Component.translatable(T_MAGNITUDE, String.format(java.util.Locale.ROOT, "%.1f", be.reading()));
+                if (be.count() > 0) {
+                    state.line2 = Component.translatable(T_AWAY, String.format(java.util.Locale.ROOT, "%,d", be.count()));
+                }
+                state.lineColor = AMBER;
             }
             default -> {
                 state.title = Component.translatable(T_ALARM);
