@@ -87,6 +87,11 @@ public class GBBlockLoot extends BlockLootSubProvider {
         dropSelf(dev.groundburst.content.launch.GBLaunch.COMPUTER_CONTROLLER.block().get());
         dropSelf(dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.block().get());
         dropSelf(dev.groundburst.content.launch.GBLaunch.RADAR_CONTROLLER.block().get());
+        // The war room (DESIGN.md §17.17).
+        dropSelf(dev.groundburst.content.command.GBCommand.SEISMOGRAPH.block().get());
+        dropSelf(dev.groundburst.content.command.GBCommand.DISPLAY_PANEL.block().get());
+        dropSelf(dev.groundburst.content.command.GBCommand.WAR_ROOM_CONTROLLER.block().get());
+        dropSelf(dev.groundburst.content.command.GBCommand.DEAD_HAND_CONTROLLER.block().get());
         dropSelf(dev.groundburst.content.strategic.GBStrategic.CRANE_RAIL.block().get());
         dropSelf(dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.block().get());
         dropSelf(dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.block().get());

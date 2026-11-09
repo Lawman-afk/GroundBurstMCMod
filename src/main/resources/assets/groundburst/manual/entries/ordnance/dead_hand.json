@@ -1,0 +1,39 @@
+{
+  "title": "Dead Hand",
+  "icon": "groundburst:dead_hand",
+  "order": 26,
+  "items": [
+    "groundburst:dead_hand",
+    "groundburst:command_rocket",
+    "groundburst:dead_hand_spawner"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Dead Hand** strikes back when no one is left to give the order. After the Soviet *Perimeter* system: a hardened concrete module with a console, a launch tube for its **Command Rocket** and a sensor mast. Armed, it watches the ground round it for a **strike**; if one lands, and its network's command is silent when its countdown runs out, it fires its rocket, and the rocket orders every launcher of the network to fire."
+    },
+    {
+      "type": "structure",
+      "structure": "groundburst:dead_hand",
+      "text": "Three wide, two deep and two high, of Hazard Concrete: the controller in the middle of the front, an Energy Port in the middle of the back row's bottom, two Missile Canisters one on the other in the back-right column (its launch tube), and an Antenna on the roof's front-left corner (its sensor mast)."
+    },
+    {
+      "type": "text",
+      "text": "**Setting it up.** Link it to a [Launch Control Station](ordnance/launch_control_station)'s network with Launch Codes, load a **Command Rocket** into it (use the rocket on it) and give it power (80 FE a tick). Then **arm** it at its console: press **ARM** twice within three seconds, its two keys. It shows **WATCHING**.\n\n**A strike** is a blast of its set magnitude or more (3, 4 or 5) within its **radius** (128 to 2048 blocks) that its own network did not fire: it feels them through the ground, as a [Seismograph](ordnance/seismograph) does. Then it goes into **ALERT**: its countdown starts (30, 60 or 120 seconds), its buzzer sounds each second, its alarm channel raises a **Blast** alert, and the network's log and the [War Room Display](ordnance/war_room_display) show it. **HOLD** on its console, or a redstone signal into any of its blocks, stops the countdown: it goes back to watching. **SAFE** disarms it."
+    },
+    {
+      "type": "text",
+      "text": "**At zero** it checks its link: if a Launch Control Station of its network answers (loaded, built, powered and not knocked out by an EMP), the command lives and it stands down by itself. If none answers, or if it is set to **fire on any strike**, it **fires**: its tube's lid swings open, the Command Rocket climbs out and away (it carries no warhead), and as it transmits, every launcher of the network that can fire is armed and launched at once, far ones woken to take the order. Each fires at its own aim (**the war plan**) or, set to **return fire**, back at where the strike was launched from, when it came by missile (those in reach of it; the rest at their own aim). Then it is spent until a new rocket is loaded.\n\n**DRILL** runs an alert with nothing at its end: the countdown, the buzzer and an Alarm on its channel. Its console shows its state, the strike (where, how big, how far), the countdown, its rocket, its settings and its own log. It is **hardened**: an EMP does not stop it. Breaking it drops its rocket."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:dead_hand",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:command_rocket",
+      "text": ""
+    }
+  ]
+}

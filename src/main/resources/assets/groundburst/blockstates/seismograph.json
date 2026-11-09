@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/seismograph"
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/seismograph"
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/seismograph"
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/seismograph"
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/seismograph"
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/seismograph"
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/seismograph"
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/seismograph"
+    }
+  }
+}

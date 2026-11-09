@@ -158,12 +158,25 @@ public final class StationPayloads {
             return this.role == LaunchNetwork.Role.RADAR.ordinal();
         }
 
+        /** A launcher (aimed, armed and launched from the station); the others are radars, seismographs, the Dead Hand. */
+        public boolean launcher() {
+            return this.role == LaunchNetwork.Role.LAUNCHER.ordinal();
+        }
+
+        public boolean seismograph() {
+            return this.role == LaunchNetwork.Role.SEISMOGRAPH.ordinal();
+        }
+
+        public boolean deadHand() {
+            return this.role == LaunchNetwork.Role.DEAD_HAND.ordinal();
+        }
+
         /** Armed, or about to be. */
         public boolean willBeArmed() {
             return this.pendingArm >= 0 ? this.pendingArm == 1 : this.armed;
         }
 
-        static final StreamCodec<RegistryFriendlyByteBuf, MemberView> CODEC = StreamCodec.of((buf, m) -> {
+        public static final StreamCodec<RegistryFriendlyByteBuf, MemberView> CODEC = StreamCodec.of((buf, m) -> {
             buf.writeBlockPos(m.pos());
             buf.writeBlockPos(m.at());
             buf.writeVarInt(m.role());
@@ -202,7 +215,7 @@ public final class StationPayloads {
 
     /** A missile in the air: its id, where, which way (radians, 0 = south), where it is coming down, when, and whether it is the network's. */
     public record ContactView(int id, int x, int y, int z, float heading, int targetX, int targetZ, int eta, boolean own) {
-        static final StreamCodec<RegistryFriendlyByteBuf, ContactView> CODEC = StreamCodec.of((buf, c) -> {
+        public static final StreamCodec<RegistryFriendlyByteBuf, ContactView> CODEC = StreamCodec.of((buf, c) -> {
             buf.writeInt(c.id());
             buf.writeVarInt(c.x());
             buf.writeVarInt(c.y());
@@ -218,7 +231,7 @@ public final class StationPayloads {
 
     /** A laser spot one of the network's designators lases now (DESIGN.md §17.13): where, and who lases it. */
     public record SpotView(int x, int y, int z, String who) {
-        static final StreamCodec<RegistryFriendlyByteBuf, SpotView> CODEC = StreamCodec.of((buf, s) -> {
+        public static final StreamCodec<RegistryFriendlyByteBuf, SpotView> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeVarInt(s.x());
             buf.writeVarInt(s.y());
             buf.writeVarInt(s.z());
@@ -226,7 +239,102 @@ public final class StationPayloads {
         }, buf -> new SpotView(buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readUtf()));
     }
 
-    private static final StreamCodec<RegistryFriendlyByteBuf, LaunchNetwork.Event> EVENT = StreamCodec.of((buf, e) -> {
+    /**
+     * A blast the network's seismographs felt (DESIGN.md §17.17): where they make it out to be, its magnitude, whether two
+     * or more fixed it there; else the one station's place, its bearing (degrees clockwise from north) and distance and how
+     * far each may be off (the arc it may be in); how long ago it went off (ticks).
+     */
+    public record BlastView(int x, int z, float magnitude, boolean fixed, int fromX, int fromZ, float bearing, float bearingSpread, int distance,
+            int distanceSpread, int age) {
+        public static final StreamCodec<RegistryFriendlyByteBuf, BlastView> CODEC = StreamCodec.of((buf, b) -> {
+            buf.writeVarInt(b.x());
+            buf.writeVarInt(b.z());
+            buf.writeFloat(b.magnitude());
+            buf.writeBoolean(b.fixed());
+            buf.writeVarInt(b.fromX());
+            buf.writeVarInt(b.fromZ());
+            buf.writeFloat(b.bearing());
+            buf.writeFloat(b.bearingSpread());
+            buf.writeVarInt(b.distance());
+            buf.writeVarInt(b.distanceSpread());
+            buf.writeVarInt(b.age());
+        }, buf -> new BlastView(buf.readVarInt(), buf.readVarInt(), buf.readFloat(), buf.readBoolean(), buf.readVarInt(), buf.readVarInt(),
+                buf.readFloat(), buf.readFloat(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
+
+        static BlastView of(LaunchNetwork.Blast b, long now) {
+            return new BlastView((int) Math.floor(b.x()), (int) Math.floor(b.z()), b.magnitude(), b.fixed(), (int) Math.floor(b.fromX()),
+                    (int) Math.floor(b.fromZ()), (float) b.bearing(), (float) b.bearingSpread(), (int) Math.round(b.distance()),
+                    (int) Math.round(b.distanceSpread()), (int) Math.max(0, now - b.time));
+        }
+    }
+
+    /**
+     * What a network's screens show (the station's, the War Room Display's): its members, every missile its launchers
+     * fired and every one its working radars track, its designators' laser spots, the blasts its seismographs felt.
+     * Unpowered, only the members.
+     */
+    public record Picture(List<MemberView> members, List<ContactView> contacts, List<SpotView> spots, List<BlastView> blasts) {}
+
+    /** {@code n}'s picture now ({@code powered}: what only a working screen sees). */
+    public static Picture picture(ServerLevel level, LaunchNetwork.Network n, boolean powered) {
+        long now = level.getGameTime();
+        List<MemberView> members = new java.util.ArrayList<>();
+        List<ContactView> contacts = new java.util.ArrayList<>();
+        List<SpotView> spots = new java.util.ArrayList<>();
+        List<BlastView> blasts = new java.util.ArrayList<>();
+        if (powered) {                                          // its designators' laser spots
+            for (Designators.Spot s : Designators.spots(level, n.id)) {
+                var who = level.getPlayerByUUID(s.player());
+                spots.add(new SpotView((int) Math.floor(s.pos().x), (int) Math.floor(s.pos().y), (int) Math.floor(s.pos().z),
+                        who == null ? "" : who.getName().getString()));
+            }
+            for (LaunchNetwork.Blast b : n.blasts()) {
+                blasts.add(BlastView.of(b, now));
+            }
+        }
+        java.util.Map<java.util.UUID, Flights.Flight> flying = new java.util.HashMap<>();
+        for (Flights.Flight f : Flights.of(level).all()) {
+            flying.put(f.id(), f);
+        }
+        java.util.Set<java.util.UUID> shown = new java.util.HashSet<>();
+        for (LaunchNetwork.Member m : n.members()) {
+            int soonest = -1;
+            for (java.util.UUID id : m.flights()) {
+                Flights.Flight f = flying.get(id);
+                if (f != null) {
+                    soonest = soonest < 0 ? f.ticksToImpact() : Math.min(soonest, f.ticksToImpact());
+                    if (powered && shown.add(id)) {
+                        contacts.add(contact(f, true));
+                    }
+                }
+            }
+            members.add(MemberView.of(m, now, soonest));
+        }
+        // What its working radars track (anyone's missiles).
+        if (powered) {
+            for (LaunchNetwork.Member m : n.members()) {
+                if (m.role != LaunchNetwork.Role.RADAR || m.lost() || !m.inContact(now) || !m.report().working()) {
+                    continue;
+                }
+                for (Flights.Flight f : flying.values()) {
+                    net.minecraft.world.phys.Vec3 p = f.position();
+                    if (Math.abs(p.x - m.at().getX() - 0.5) <= RadarArrayBlockEntity.RANGE && Math.abs(p.z - m.at().getZ() - 0.5) <= RadarArrayBlockEntity.RANGE
+                            && shown.add(f.id())) {
+                        contacts.add(contact(f, false));
+                    }
+                }
+            }
+        }
+        return new Picture(members, contacts, spots, blasts);
+    }
+
+    private static ContactView contact(Flights.Flight f, boolean own) {
+        net.minecraft.world.phys.Vec3 p = f.position();
+        return new ContactView(f.trackId(), (int) Math.floor(p.x), (int) Math.floor(p.y), (int) Math.floor(p.z), f.heading(),
+                (int) Math.floor(f.target().x), (int) Math.floor(f.target().z), f.ticksToImpact(), own);
+    }
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, LaunchNetwork.Event> EVENT = StreamCodec.of((buf, e) -> {
         buf.writeVarLong(e.time());
         buf.writeVarInt(e.kind().ordinal());
         buf.writeBlockPos(e.member());
@@ -239,7 +347,7 @@ public final class StationPayloads {
 
     /** The station's state for its screen, sent while it is open: its network's members, the missiles in the air, its log. */
     public record Scope(BlockPos pos, BlockPos at, boolean formed, boolean powered, int energy, String code, long now, List<MemberView> members,
-            List<ContactView> contacts, List<LaunchNetwork.Event> log, List<SpotView> spots) implements CustomPacketPayload {
+            List<ContactView> contacts, List<LaunchNetwork.Event> log, List<SpotView> spots, List<BlastView> blasts) implements CustomPacketPayload {
         public static final Type<Scope> TYPE = GBNetwork.type("station_scope");
         public static final StreamCodec<RegistryFriendlyByteBuf, Scope> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeBlockPos(s.pos());
@@ -253,9 +361,11 @@ public final class StationPayloads {
             ContactView.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.contacts());
             EVENT.apply(ByteBufCodecs.list()).encode(buf, s.log());
             SpotView.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.spots());
+            BlastView.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.blasts());
         }, buf -> new Scope(buf.readBlockPos(), buf.readBlockPos(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(), buf.readUtf(), buf.readVarLong(),
                 MemberView.CODEC.apply(ByteBufCodecs.list()).decode(buf), ContactView.CODEC.apply(ByteBufCodecs.list()).decode(buf),
-                EVENT.apply(ByteBufCodecs.list()).decode(buf), SpotView.CODEC.apply(ByteBufCodecs.list()).decode(buf)));
+                EVENT.apply(ByteBufCodecs.list()).decode(buf), SpotView.CODEC.apply(ByteBufCodecs.list()).decode(buf),
+                BlastView.CODEC.apply(ByteBufCodecs.list()).decode(buf)));
 
         @Override
         public Type<Scope> type() {

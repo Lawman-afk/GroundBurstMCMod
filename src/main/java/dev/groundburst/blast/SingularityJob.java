@@ -140,6 +140,8 @@ final class SingularityJob {
             // Its life over, it implodes: clients are told, to draw it (no blast: what is left is the hole it ate).
             this.phase = Phase.IMPLODE;
             PacketDistributor.sendToPlayersInDimension(this.level, new SingularityPayloads.Collapse(this.netId, this.reach));
+            // Its collapse: the sharp shock the seismographs feel after its long tremor (DESIGN.md §17.17).
+            dev.groundburst.content.command.Seismic.tremor(this.level, this.center, Math.min(5.7f, 4.2f + this.reach / 60f), 0);
         }
         if (this.phase == Phase.GROW) {
             this.reach = Singularities.reach(this.seed, this.feed, this.mass, age, this.life, this.max);

@@ -61,6 +61,11 @@ public class GroundBurstClient {
         dev.groundburst.client.screen.LaunchStationScreen.register();
         dev.groundburst.client.screen.RadarArrayScreen.register();
         dev.groundburst.client.screen.AlarmScreen.register();
+        // The war room (DESIGN.md §17.17): the Seismograph's record, the War Room Display's board and settings, the Dead Hand's console.
+        dev.groundburst.client.screen.SeismographScreen.register();
+        dev.groundburst.client.render.WarRoomBoard.register();
+        dev.groundburst.client.screen.WarRoomScreen.register();
+        dev.groundburst.client.screen.DeadHandScreen.register();
         dev.groundburst.client.sound.AlarmSounds.register();
         dev.groundburst.client.radiation.RadiationClient.register(modBus);
         dev.groundburst.client.fallout.FalloutClient.register(modBus);
@@ -208,6 +213,12 @@ public class GroundBurstClient {
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.RADAR_ENTITY.get(), 7, 2));
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.STATION_ENTITY.get(),
                 dev.groundburst.client.render.LaunchStationRenderer::new);
+        event.registerBlockEntityRenderer(dev.groundburst.content.command.GBCommand.SEISMOGRAPH_ENTITY.get(),
+                dev.groundburst.client.render.SeismographRenderer::new);
+        event.registerBlockEntityRenderer(dev.groundburst.content.command.GBCommand.WAR_ROOM_ENTITY.get(),
+                dev.groundburst.client.render.WarRoomRenderer::new);
+        event.registerBlockEntityRenderer(dev.groundburst.content.command.GBCommand.DEAD_HAND_ENTITY.get(),
+                dev.groundburst.client.render.DeadHandRenderer::new);
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.COMPUTER_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.COMPUTER_ENTITY.get(), 4, 1));
         event.registerBlockEntityRenderer(GBBlockEntities.ORE_CRUSHER.get(), ctx -> new MachineGeoRenderer<>(ctx, GBBlockEntities.ORE_CRUSHER.get(), 1));

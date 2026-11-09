@@ -191,8 +191,8 @@ public class InterceptorComplexBlockEntity extends MachineBlockEntity implements
         this.radar = Interception.tracked(level, middle);
         int seen = 0, fired = 0;
         for (Flights.Flight f : Flights.of(level).all()) {
-            if (f.progress() <= 0 || f.ticksToImpact() <= 1 || this.testFilter != null && !this.testFilter.test(f)) {
-                continue;                                          // still on its pad, or down already
+            if (f.progress() <= 0 || f.ticksToImpact() <= 1 || f.harmless() || this.testFilter != null && !this.testFilter.test(f)) {
+                continue;                                          // still on its pad, down already, or no warhead (DESIGN.md §17.17)
             }
             double reach = Interception.tracked(level, f.position()) ? Interception.COMPLEX_RADAR_RANGE : Interception.COMPLEX_OWN_RANGE;
             Vec3 t = f.target();

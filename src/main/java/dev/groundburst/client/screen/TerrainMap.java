@@ -67,8 +67,8 @@ public final class TerrainMap {
     private final int w, h;
     /** Whether the map stops at the survey round its source (a computer's; a station's maps the whole dimension). */
     private final boolean bounded;
-    private final DynamicTexture texture;
-    private final Identifier id;
+    private final @Nullable DynamicTexture texture;
+    private final @Nullable Identifier id;
     private double drawnX = Double.NaN, drawnZ;
     private int drawnZoom, drawnGeneration = -1;
 
@@ -85,8 +85,47 @@ public final class TerrainMap {
         Minecraft.getInstance().getTextureManager().register(this.id, this.texture);
     }
 
+    /** A map with no texture of its own: it asks for tiles and paints them into another's picture ({@link #paintInto}). */
+    public TerrainMap(int w, int h, boolean bounded) {
+        this.w = w;
+        this.h = h;
+        this.bounded = bounded;
+        this.texture = null;
+        this.id = null;
+    }
+
     public void close() {
-        Minecraft.getInstance().getTextureManager().release(this.id);
+        if (this.id != null) {
+            Minecraft.getInstance().getTextureManager().release(this.id);
+        }
+    }
+
+    /** The tiles' generation: it rises each time a tile arrives (a picture painted from them may be out of date). */
+    public static int generation() {
+        return generation;
+    }
+
+    /**
+     * Paints the view centred on x/z at {@code zoom} blocks a pixel into {@code img} (from its top left, this map's size):
+     * the terrain in phosphor green, as {@link #draw} does into its own texture (the War Room Display's board, DESIGN.md
+     * §17.17).
+     */
+    public void paintInto(NativeImage img, BlockPos at, double cx, double cz, int zoom) {
+        sameLevel(Minecraft.getInstance().level);
+        int span = TerrainSurvey.TILE * zoom;
+        for (int j = 0; j < this.h; j++) {
+            for (int i = 0; i < this.w; i++) {
+                int wx = (int) Math.floor(cx + (i - this.w / 2.0) * zoom), wz = (int) Math.floor(cz + (j - this.h / 2.0) * zoom);
+                boolean inSurvey = !this.bounded || Math.abs(wx - at.getX()) <= TerrainSurvey.RANGE && Math.abs(wz - at.getZ()) <= TerrainSurvey.RANGE;
+                int packed = 0;
+                Tile tile = TILES.get(new Key(zoom, Math.floorDiv(wx, span), Math.floorDiv(wz, span)));
+                if (tile != null && tile.colours().length > 0) {
+                    int si = Math.floorMod(wx, span) / zoom, sj = Math.floorMod(wz, span) / zoom;
+                    packed = tile.colours()[sj * TerrainSurvey.TILE + si] & 0xFF;
+                }
+                img.setPixel(i, j, phosphor(packed, inSurvey, wx, wz, j));
+            }
+        }
     }
 
     /**
@@ -127,6 +166,9 @@ public final class TerrainMap {
      * {@code at}: where the computer is in the world, the middle of its survey.
      */
     public void draw(GuiGraphicsExtractor g, int x0, int y0, BlockPos at, double x, double z, int zoom) {
+        if (this.id == null) {
+            return;
+        }
         if (x != this.drawnX || z != this.drawnZ || zoom != this.drawnZoom || generation != this.drawnGeneration || !at.equals(this.drawnAt)) {
             this.drawnAt = at.immutable();
             redraw(at, x, z, zoom);
@@ -142,7 +184,7 @@ public final class TerrainMap {
         this.drawnZ = cz;
         this.drawnZoom = zoom;
         this.drawnGeneration = generation;
-        NativeImage img = this.texture.getPixels();
+        NativeImage img = this.texture == null ? null : this.texture.getPixels();
         if (img == null) {
             return;
         }

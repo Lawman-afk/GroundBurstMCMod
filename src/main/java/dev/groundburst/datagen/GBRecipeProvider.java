@@ -621,6 +621,38 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(Items.PAPER).requires(Tags.Items.NUGGETS_GOLD).requires(Tags.Items.DYES_RED)
                 .unlockedBy(getHasName(dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item()),
                         has(dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item())).save(output);
+        // The war room (DESIGN.md §17.17). The Seismograph: a seismometer's coil and magnet round its mass (dense steel), the
+        // amplifier's circuit, and the drum's motor and paper, in a steel case; a Display Panel (four): a CRT's tube behind
+        // panes in a steel bezel; the War Room Display: a casing with a military and an advanced circuit, a CRT, the clock on
+        // its header and a lamp for its condition; the Dead Hand: a casing round two military circuits, its screen, a sensor
+        // array, lead and dense steel for its shell and a tripwire hook for each of its two keys; the Command Rocket: a
+        // tactical body on a solid motor, carrying hardened electronics and an antenna for its transmitter.
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.command.GBCommand.SEISMOGRAPH.item(), 1)
+                .define('P', GBTags.commonItem("plates/steel")).define('W', GBTags.commonItem("wires/copper"))
+                .define('N', GBParts.NEODYMIUM_MAGNET).define('D', GBParts.DENSE_STEEL_PLATE).define('M', GBParts.ELECTRIC_MOTOR)
+                .define('R', Items.PAPER).define('C', GBParts.ADVANCED_CIRCUIT)
+                .pattern("PWP").pattern("NDM").pattern("RCR")
+                .unlockedBy(getHasName(GBParts.ADVANCED_CIRCUIT), has(GBParts.ADVANCED_CIRCUIT)).save(output);
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.command.GBCommand.DISPLAY_PANEL.item(), 4)
+                .define('P', GBTags.commonItem("plates/steel")).define('G', Tags.Items.GLASS_PANES_COLORLESS).define('D', GBParts.CRT_DISPLAY)
+                .pattern("PGP").pattern("GDG").pattern("PGP")
+                .unlockedBy(getHasName(GBParts.CRT_DISPLAY), has(GBParts.CRT_DISPLAY)).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.command.GBCommand.WAR_ROOM_CONTROLLER.item(), 1)
+                .requires(GBMultiblocks.MACHINE_CASING.item()).requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.ADVANCED_CIRCUIT)
+                .requires(GBParts.CRT_DISPLAY).requires(Items.CLOCK).requires(Items.REDSTONE_LAMP)
+                .unlockedBy(getHasName(dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item()),
+                        has(dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item())).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.command.GBCommand.DEAD_HAND_CONTROLLER.item(), 1)
+                .requires(GBMultiblocks.MACHINE_CASING.item()).requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.MILITARY_CIRCUIT)
+                .requires(GBParts.CRT_DISPLAY).requires(GBParts.SENSOR_ARRAY).requires(GBParts.LEAD_PLATE).requires(GBParts.DENSE_STEEL_PLATE)
+                .requires(Items.TRIPWIRE_HOOK).requires(Items.TRIPWIRE_HOOK)
+                .unlockedBy(getHasName(dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item()),
+                        has(dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item())).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.command.GBCommand.COMMAND_ROCKET.get(), 1)
+                .requires(dev.groundburst.content.assembly.GBAssembly.TACTICAL_BODY.get()).requires(dev.groundburst.content.assembly.GBAssembly.SRM_I.get())
+                .requires(dev.groundburst.content.assembly.GBAssembly.HARDENED_ELECTRONICS.get()).requires(l.antenna)
+                .unlockedBy(getHasName(dev.groundburst.content.command.GBCommand.DEAD_HAND_CONTROLLER.item()),
+                        has(dev.groundburst.content.command.GBCommand.DEAD_HAND_CONTROLLER.item())).save(output);
         // The Laser Designator (DESIGN.md §17.13, §26).
         shaped(RecipeCategory.COMBAT, dev.groundburst.content.launch.GBLaunch.LASER_DESIGNATOR.get(), 1)
                 .pattern("GSR").pattern("PCP").pattern(" B ")

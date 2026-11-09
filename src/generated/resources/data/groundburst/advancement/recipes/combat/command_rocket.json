@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_dead_hand": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:dead_hand"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:command_rocket"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_dead_hand"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:command_rocket"
+    ]
+  }
+}
