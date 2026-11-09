@@ -30,7 +30,6 @@ public class DeadHandRenderer extends MachineGeoRenderer<DeadHandBlockEntity> {
     private static final String T_ALERT = GBLang.add(P + "alert", "T-%s");
     private static final String T_FIRED = GBLang.add(P + "fired", "FIRED");
     private static final String T_NO_ROCKET = GBLang.add(P + "no_rocket", "NO ROCKET");
-    /** The console's screen (model pixels from the controller's middle: its middle's height, its face's z) and the type's size. */
     /**
      * The console's screen (tools/assets/dead_hand.py's SCREEN: x -4.5 to 4.5, y 19 to 25, its front at z -9.8): its
      * middle's height, the plane just in front of it (model pixels from the controller's middle), and the type's size

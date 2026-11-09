@@ -50,6 +50,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
@@ -420,11 +421,11 @@ public final class WarRoomRange {
         void outside() {
             // The ENEMY COMMAND booth: red concrete, open to the south, the enemy's Launch Control Station inside.
             int bx = BOOTH.getX(), bz = BOOTH.getZ();
-            fill(bx - 3, 0, bz - 3, bx + 3, 0, bz + 3, Blocks.CONCRETE.pick(net.minecraft.world.item.DyeColor.RED).defaultBlockState());
-            fill(bx - 3, 1, bz - 3, bx + 3, 4, bz - 3, Blocks.CONCRETE.pick(net.minecraft.world.item.DyeColor.RED).defaultBlockState());
-            fill(bx - 3, 1, bz - 2, bx - 3, 4, bz + 2, Blocks.CONCRETE.pick(net.minecraft.world.item.DyeColor.RED).defaultBlockState());
-            fill(bx + 3, 1, bz - 2, bx + 3, 4, bz + 2, Blocks.CONCRETE.pick(net.minecraft.world.item.DyeColor.RED).defaultBlockState());
-            fill(bx - 3, 5, bz - 3, bx + 3, 5, bz + 2, Blocks.CONCRETE.pick(net.minecraft.world.item.DyeColor.RED).defaultBlockState());
+            fill(bx - 3, 0, bz - 3, bx + 3, 0, bz + 3, Blocks.CONCRETE.pick(DyeColor.RED).defaultBlockState());
+            fill(bx - 3, 1, bz - 3, bx + 3, 4, bz - 3, Blocks.CONCRETE.pick(DyeColor.RED).defaultBlockState());
+            fill(bx - 3, 1, bz - 2, bx - 3, 4, bz + 2, Blocks.CONCRETE.pick(DyeColor.RED).defaultBlockState());
+            fill(bx + 3, 1, bz - 2, bx + 3, 4, bz + 2, Blocks.CONCRETE.pick(DyeColor.RED).defaultBlockState());
+            fill(bx - 3, 5, bz - 3, bx + 3, 5, bz + 2, Blocks.CONCRETE.pick(DyeColor.RED).defaultBlockState());
             fill(bx - 2, 1, bz - 2, bx + 2, 4, bz + 2, Blocks.AIR.defaultBlockState());
             BlockPos booth = at(BOOTH);
             place(GBLaunch.STATION_CONTROLLER.block().get(), GBLaunch.STATION, booth, Direction.SOUTH);
