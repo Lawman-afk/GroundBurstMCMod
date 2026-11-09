@@ -18,12 +18,30 @@ import net.minecraft.server.level.ServerLevel;
  * dimension. Not saved: senders raise their channels again as they tick.
  */
 public final class Alarms {
-    /** What a channel is raised for, most pressing first: a missile coming, radiation, poison gas, an alarm by hand. */
-    public enum Kind { ATTACK, RADIATION, GAS, ALARM }
+    /**
+     * What a channel is raised for: a missile coming, radiation, poison gas, an alarm by hand, a blast felt (a
+     * Seismograph's or the Dead Hand's, DESIGN.md §17.17; added last so the others keep their numbers). How pressing
+     * each is: {@link #rank}.
+     */
+    public enum Kind {
+        ATTACK, RADIATION, GAS, ALARM, BLAST;
+
+        /** Most pressing first: an attack, a blast, radiation, gas, an alarm by hand. */
+        public int rank() {
+            return switch (this) {
+                case ATTACK -> 0;
+                case BLAST -> 1;
+                case RADIATION -> 2;
+                case GAS -> 3;
+                case ALARM -> 4;
+            };
+        }
+    }
 
     /**
      * A sender's alert: what, and for an attack how many missiles and when the first comes down (game time; -1 none), for
-     * radiation the dose rate (RAD/h) and for gas the concentration (percent).
+     * radiation the dose rate (RAD/h), for gas the concentration (percent), for a blast its magnitude ({@code reading})
+     * and how far off it was ({@code count}, blocks).
      */
     public record Alert(Kind kind, int count, long impactAt, float reading) {
         public static Alert of(Kind kind) {
@@ -85,8 +103,10 @@ public final class Alarms {
                 continue;
             }
             Alert a = r.alert();
-            if (best == null || a.kind().ordinal() < best.kind().ordinal()) {
+            if (best == null || a.kind().rank() < best.kind().rank()) {
                 best = a;
+            } else if (a.kind() == Kind.BLAST && best.kind() == Kind.BLAST) {
+                best = a.reading() > best.reading() ? a : best;     // the biggest blast felt
             } else if (a.kind() == best.kind()) {
                 long impact = best.impactAt() < 0 ? a.impactAt() : a.impactAt() < 0 ? best.impactAt() : Math.min(best.impactAt(), a.impactAt());
                 best = new Alert(a.kind(), Math.max(best.count(), a.count()), impact, Math.max(best.reading(), a.reading()));

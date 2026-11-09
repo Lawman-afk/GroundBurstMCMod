@@ -10,7 +10,7 @@
     {
       "type": "spotlight",
       "item": "groundburst:alert_display",
-      "text": "A screen for the wall. **ALL CLEAR** in green, with its channel; in an alert, flashing: **ATTACK**, how many are inbound and the time to impact; **RADIATION** and the dose rate; **POISON GAS** and how much; or **ALARM, TAKE COVER**."
+      "text": "A screen for the wall. **ALL CLEAR** in green, with its channel; in an alert, flashing: **ATTACK**, how many are inbound and the time to impact; **RADIATION** and the dose rate; **POISON GAS** and how much; **BLAST**, its magnitude and how far off; or **ALARM, TAKE COVER**."
     },
     {
       "type": "spotlight",

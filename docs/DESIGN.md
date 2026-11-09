@@ -3539,6 +3539,195 @@ beam or freeze cannot reach it).
   blocks off chars a wooden ship, sets it alight on top and throws it, and no server tick takes over a second (the
   slowest 50 ms). 49 of 49, pictures in run/screenshots/create_*.png.
 
+### 17.17 The war room: the Seismograph, the War Room Display and the Dead Hand (2026-11-09; the user's plan)
+The user's plan since 2026-10-31 (PROGRESS, Phase 18): "war room displays (every missile, impact and radar contact on a
+big screen)", "seismographs (every blast in the dimension: its size, distance and direction)" and "the Dead Hand
+(automatic retaliation from linked launchers when a strike lands)", each with a world built ready to test it in ("making
+a world for me already equipped with the neccasary multiblocks built and ready for me to test", §30), all three built
+together ("Just build all 3 at once please so I can just come back after your done"). A first design (a creative item
+calling strikes down, wall panels that joined up with their own linking) was turned down: these are built on the mod's
+own systems, the Launch Control Station's network (§17.12) above all.
+
+**Research.**
+- *War rooms.* NORAD's Combat Operations Center under Cheyenne Mountain (1966) and SAC's underground command post at
+  Offutt ran the air battle from a wall of large displays: a map of the continent with every track (aircraft and
+  missiles) as a symbol with its heading, predicted impact points, the forces' readiness on status boards, clocks for
+  the time zones, the alert condition (DEFCON) lit over it all; projected first (Iconorama), then big CRT projectors.
+  Popular culture's "big board" (Dr. Strangelove) is the same picture: the world, the flights' lines across it.
+- *Seismographs.* The Cold War listened to every test: Vela Uniform (1959) and the World-Wide Standardized Seismograph
+  Network (1961), the Large Aperture Seismic Array in Montana (1965). A station's drum recorder (the Helicorder) turns a
+  paper-wrapped drum once a period while a pen traces the ground's motion on it, its carriage stepping along the drum's
+  length so the record is a spiral of lines, with minute marks; a blast is a sharp onset (the P wave, about 6 km/s),
+  a bigger arrival after it (the S wave, about 3.5 km/s) and a fading coda. The time between them gives the distance,
+  the first motion's direction on a three-component station a rough bearing, several stations a fix. An explosion's
+  body-wave magnitude follows its yield: mb ≈ 4.45 + 0.75 log10 Y (kilotons, well coupled); an airburst couples little
+  of its energy into the ground.
+- *The Dead Hand.* The Soviet Perimeter system (operational from 1985): switched on by the high command in a crisis, it
+  watched seismic, radiation, overpressure and light-flash sensors for nuclear detonations and checked its link to the
+  General Staff; with a strike detected and the link silent, it handed launch authority to its duty officers or launched
+  command rockets (the 15A11, a modified UR-100UTTKh) whose payloads broadcast the launch order to the silos as they
+  flew over them. A "fail-deadly" deterrent: the attacker cannot hope to win by striking the command first.
+
+**Blasts the ground carries** (`content/command/Seismic`, shared by all three). Every blast is an event in its
+dimension (`SeismicEvents`, saved; the last 128): where, when, its **magnitude**, how long it lasts (a blast at once, a
+tremor over seconds), and, when a missile delivered it, the network that fired it and where it was fired from (a blast
+within 48 blocks and 10 s of a missile coming down is that missile's). The magnitude comes from the blast's energy in
+tonnes of TNT, M = 2.2 + 0.75 log10(tonnes) (the formula above, 1 kt making 4.45): a profile blast's TNT figure from its
+crater as the stats screen gives it (half a kilogram times the crater radius cubed: the Massive Ordnance Warhead's 11 t,
+M 3.0), a nuclear warhead's from its design yield (the Tactical's 300 t M 4.1, Fission 15 kt M 5.3, Thermonuclear 1.2 Mt
+M 6.8, the Tsar's 50 Mt M 8.0), scaled with the blast's radii; an airburst (higher over the ground than its crater is
+wide: interceptors' bursts, barometric fuzes) 1.5 less; the game's own and other mods' explosions from their radius (a
+block of TNT M 1.1); the exotic weapons as tremors (antimatter M 6.7 at once; a singularity's growth M 4.4 over its minute
+and its collapse up to M 5.7; the cryogenic front M 4.5 over 10 s; the particle beam M 3.8 while it burns; a storm's strikes
+are blasts). Every place a blast is set off is covered by `Blasts.detonate`, `Charges.exotic`, `ParticleBeams.start`
+and NeoForge's explosion event.
+
+A blast is **felt** at distance d (blocks) as M - 2 log10(d / 100) (no closer than 30): each tenfold distance takes two
+off. A seismograph at its usual setting records what it feels at 1 or more: a grenade within about 50 blocks, a block of
+TNT within 110, the Massive Ordnance Warhead within a kilometre, a tactical nuke within 3.4 km, a fission warhead within
+15 km, anything thermonuclear anywhere a world goes. It arrives at 300 blocks a tick (6 km/s).
+
+**The Seismograph** (`seismograph`, a machine, one block; 10 FE/t). A Cold War station's recorder on its cabinet: a
+paper drum turning under a clear cover, the pen on its carriage stepping along the drum, a meter and switches below, an
+amber readout of the last event's magnitude. It records every blast it feels (as above), with what one station can
+tell: the magnitude, the distance (from the S-P time: to within a few per cent for a strong one, 15% for a faint one) and
+the bearing (to within 2 degrees for a strong one, 14 for a faint one), the yield worked back from the magnitude; its
+screen is the drum's paper, a line a minute, the last twelve minutes as the pen drew them (each blast's onset, its
+bigger second arrival and its coda), and the list of what it recorded (time, magnitude, distance, bearing, estimated
+yield), with its settings: what it records ("Every tremor" felt 0, "Sensitive" 1, the default, "Normal" 2, "Strong only"
+3), an alarm (off, or at magnitude 2, 3, 4 or 5: it raises its **alarm channel** (§18.6) for 30 s as a **Blast** alert,
+whose displays show the magnitude and distance), its channel. A comparator reads the last arrival's magnitude (twice it,
+to 15) for two seconds. Unloaded, it catches up when it loads (the drum kept turning): what arrived while it was away is
+recorded without alarms. With no power or in an EMP field, it records nothing. Linked to a network (Launch Codes, as a
+radar is: a new member kind), it reports what it records to it: the network fixes a blast felt by two or more of its
+seismographs where it was, and from one alone where that one makes it (the Launch Control Station's map and the War
+Room Display draw the one as a point, the other as the arc of where it may be); a blast of magnitude 2 or more goes in
+the network's log ("Blast M 5.3 at x, z").
+
+**The War Room Display** (`war_room_display`, a multiblock; 60 FE/t). A wall screen 7 blocks wide: a bottom row of
+Machine Casing with the controller in its middle and an Energy Port two to its right (as you face it), three rows of
+seven **Display Panels** over it, a row of Machine Casing on top; one block deep, set against a wall. Formed, one model:
+a steel bezel round a single big screen 7 by 3 blocks, a header over it with the alert condition (five lamps, NORMAL to
+ATTACK) and a clock showing the world's time, a cabinet below with vents and the controller's panel. Linked to a
+network with Launch Codes (used on any of its blocks; it shows that network, it is not a member of it), it draws that
+network's whole picture on its screen in the green phosphor of the station's map, for everyone in the room to see (to
+players within 64 blocks): the terrain as the station maps it, the network's members (launchers by their state,
+radars with their reach, seismographs, the Dead Hand), every missile in the air its launchers fired (amber, its line to
+its target) and every one its radars track (red, with its predicted impact and the time to it), impacts as rings that
+fade over two minutes, the blasts its seismographs fixed with their magnitudes, its designators' laser spots; along the
+top the network's code and its counts (linked, armed, in flight, incoming) and the soonest impact (flashing red); along
+the bottom the last lines of the network's log. The alert condition: 5 NORMAL, 4 ARMED (any launcher armed), 3 MISSILES IN
+FLIGHT (its own), 2 INCOMING (a tracked missile coming down within 512 blocks of a member), 1 ATTACK (a blast its
+seismographs felt within 512 blocks of a member in the last two minutes, or the Dead Hand in alert). Its screen (a click
+on it): the view (fit everything in, or centred on the display at a set scale) and what it draws. No power or an EMP:
+dark. A new contact sounds a short two-tone.
+
+**The Dead Hand** (`dead_hand`, a multiblock; 80 FE/t, hardened). The command module of an automatic retaliation
+system: 3 wide, 2 deep, 2 high of Hazard Concrete (blast-proof as Reinforced Concrete), the controller in the middle of
+the front, an Energy Port in the middle of the back row's bottom, two Missile Canisters standing in the back-right
+column (the command rocket's tube), an Antenna on the roof's front-left corner (the sensor mast). Formed, one model: a
+squat concrete module with a steel console set into its front (its status lamps, the two arming keys under their guard),
+the sensor mast on its roof (an optical flash sensor's dome, a radiation probe, an overpressure sensor, the command
+link's whip antenna) and the command rocket's tube in its back corner, its lid on the roof. It is hardened: an EMP does
+not stop it. Linked to a network with Launch Codes (a new member kind), loaded with a **Command Rocket** (used on it),
+and armed at its console (both keys: two clicks of ARM), it watches its radius (128, 256, 512 by default, 1024 or 2048
+blocks round it) for a strike: a blast of the set magnitude or more (3, 4 by default: a tactical nuke, or 5) that its
+own network did not fire. Then it goes into **alert**: its console and the station show the countdown (30 s by default,
+60 or 120), it raises its alarm channel (a Blast alert) and the network's log says so; HOLD on its screen (or a redstone
+signal into it) stops the countdown and stands it down to watching. At zero, if its network's command is silent (no
+Launch Control Station of its network working: the default, as the real system's link check; or "on any strike"), it
+fires: the tube's lid swings open and the command rocket climbs out (a missile with no warhead: radars see it, it comes
+down harmlessly 120 blocks off, and neither interceptors nor warning receivers count it); three seconds after, as it
+transmits, every launcher of the network that can fire is ordered to: aimed where it already was (the **war plan**, set
+beforehand at the station), or (**return fire**) at where the strike was launched from, when a missile delivered it,
+every launcher that reaches it; each is armed and launched at once, far ones woken to take the order. Its log line:
+"Dead Hand fired: 4 launchers". Then it is spent until a new rocket is loaded and it is armed again. If a station
+answers at zero, it stands down ("Command answered"). A DRILL runs the alert and its alarms without firing. A comparator
+reads its state (0 safe, 5 watching, 10 in alert, 15 fired).
+
+**Testing** (§30, 2026-11-09): `gradlew runWarRoom` builds "Ground Burst War Room", a flat world deep enough for the
+craters, with a base at the spawn and an enemy launch site 900 blocks north. The base: a command bunker (the cosmetic
+sets) with the Launch Control Station, the War Room Display on its wall, a Seismograph and the alarms (an Alert Display,
+a Klaxon, a Warning Beacon, the Air-Raid Siren outside, a Missile Warning Receiver at 512 blocks), a Radar Array, two
+more Seismographs a hundred blocks either side, the Dead Hand armed with its rocket, and the base's launchers loaded with
+missiles and aimed at the enemy site (the war plan), all linked, powered by Creative Capacitor Banks. The enemy's
+launchers (loaded, on their own network, aimed at a field and a mock town near the base) are run from an ENEMY COMMAND
+booth at the base: a second Launch Control Station on the enemy's network. Signs say what to do; the player starts with
+both networks' codes and a Field Manual. The builder (`devworld/WarRoomRange`) is left out of the released jar.
+
+### 17.18 As built: the war room (2026-11-09)
+All three built together on the launch network (§17.12), as §17.17 has them; what follows is where each part lives and
+what the building settled.
+- **The ground** (`content/command/Seismic`, saved as `seismic_events.dat`): its hooks are `Blasts.detonate` (a
+  profile's TNT figure or a nuke's design yield, scaled with the blast's radii; an airburst 1.5 less, judged on the
+  ground's height where it is loaded), `Charges.exotic` (antimatter M 6.7 at once; a singularity M 4.4 over its minute;
+  the cryogenic front M 4.5 over 10 s; each less for a scaled bomb), `ParticleBeamJob` (M 3.8 while the beam burns),
+  `SingularityJob`'s collapse (M 4.2 and more with its reach, up to 5.7) and NeoForge's explosion event (`GBCommand.init`:
+  the game's own and other mods', TNT of their radius). `Flights` notes a missile's impact just before its warhead goes
+  off, so the blasts within 48 blocks and 10 s of it are its (the network that fired it and its launch point, for the
+  Dead Hand's own-network test and return fire). A flight with no warhead is `harmless()`: Missile Warning Receivers
+  and both interceptors pass it by.
+- **On the network** (`launch/NetworkMember`, `NetworkDisplay`): two new roles, SEISMOGRAPH and DEAD_HAND, report
+  through the same records as launchers and radars; `LaunchNetwork.felt` keeps the network's blasts (the last 32, ten
+  minutes): one seismograph's pick where it makes it (its bearing and distance and how far each may be off), two or more
+  fixed where it was, magnitudes averaged; the log's new lines (BLAST at M 2 and up, the Dead Hand's ARMED, SAFE, ALERT,
+  FIRED, STOOD DOWN); `stationAnswers` (a station of the network loaded, formed, powered and not in an EMP);
+  `retaliate` (each launcher that can fire aimed back where the strike came from if it reaches, armed, launched at once,
+  far ones woken). Launch Codes link the new members as they link a radar, and set what a display shows (sneaking: none).
+  The station's screen (`LaunchStationScreen`) draws seismographs as diamonds, the Dead Hand as a crossed box with its
+  radius ring (red in alert, with the strike's cross), and each blast: a fixed one as a ring with its magnitude, one
+  station's as the arc of where it may be, "M4.1?"; its map reaches a display's room (`MapSource.mapReach`), and
+  `TerrainMap.paintInto` paints the same terrain into the display's board.
+- **The Seismograph** (`SeismographBlock`, `SeismographBlockEntity`, `Trace`, `SeismographPayloads`; `SeismographScreen`,
+  `SeismographRenderer`): the last 16 records, listening every 5 ticks; one station's estimate of each (bearing within
+  2 to 14 degrees, distance within 3 to 15%, magnitude within 0.05 to 0.3, the stronger felt the closer, the same each
+  time for one blast at one place); its paper twelve lines of a minute each, `Trace` drawing a blast's onset (P), its
+  bigger S arrival and the coda from the record; the drum turning, the pen swinging with the trace and the carriage
+  stepping along (`tools/assets/seismograph.py`; the readout's amber magnitude drawn over the model). Sounds
+  `machine/seismograph_loop` (a plotter idling for the drum's motor, a pen's slowed strokes for its whisper) and
+  `machine/seismograph_event` (a relay's click and the pen thrashing: a pen plotter hatching, a pen scrawling, dying away
+  over two seconds).
+- **The War Room Display** (`WarRoomDisplayBlock`, `WarRoomDisplayBlockEntity`, `WarRoomPayloads`, the Display Panel;
+  `WarRoomBoard`, `WarRoomRenderer`, `WarRoomScreen`): the board sent every half second to players within 64 blocks
+  (the network's picture as the station's map has it, impacts kept two minutes, the last four lines of the log); on the
+  client a 424 by 168 texture painted from the station's terrain map with the overlays, drawn on the screen's face with
+  the header's counts and condition; the condition worked out every half second whether anyone is there or not (its
+  lamps right when someone comes in); the clock's hands on the world's time of day (`tools/assets/war_room.py`). Sound
+  `launch/war_room_contact` (the annunciator's relay, two notes rising, twice).
+- **The Dead Hand** (`DeadHandBlock`, `DeadHandBlockEntity`, `DeadHandPayloads`, `CommandRocketItem`; `DeadHandScreen`,
+  `DeadHandRenderer`): its states SAFE, WATCHING, ALERT, FIRING, SPENT; the two keys (ARM twice within 3 s); its own log of
+  eight lines on its console; the lid swinging open over 2 s (eased in and out), the rocket out of the tube two blocks
+  deep and away 120 blocks behind the module (a harmless missile, drawn by `MissileRenderer` at its tube's size: a
+  missile with no warhead at 1.1 times the plain model, not the 4 every other missile flies at), its order sent 3 s after; hardened (its
+  `isEmpDisabled` always false); the comparator 0, 5, 10, 15 (`tools/assets/dead_hand.py`: the concrete module, the
+  console with its keys under their guard and its lamps, the tube's lid on its hinge and the rocket's nose under it,
+  the sensor mast). Sounds `launch/dead_hand_alert` (one buzz of a Western Electric key telephone's buzzer, each second
+  of the countdown, higher in its last ten) and `launch/dead_hand_lid` (a hydraulic pump, the rams' whine, the hinges'
+  groan and the clank onto the stop).
+- **Recordings** (`tools/sound/command.py`): four added to the ledger, all CC0: a pen plotter drawing (shimisuel), a
+  plotter starting up (aerror), a pen on paper (khenshom), a telephone buzzer (tt_runscript).
+- **Recipes**: the Seismograph (a magnet and coil round a dense steel mass, an advanced circuit, the drum's motor and
+  paper), Display Panels (four: a CRT behind panes in a steel bezel), the War Room Display (a casing, a military and an
+  advanced circuit, a CRT, a clock and a lamp), the Dead Hand (a casing, two military circuits, a CRT, a sensor array,
+  lead and dense steel, two tripwire hooks for its keys; an iron pickaxe), the Command Rocket (a tactical body, a Solid
+  Rocket Motor I, hardened electronics, an antenna). Field Manual entries (`ordnance/seismograph`,
+  `ordnance/war_room_display`, `ordnance/dead_hand`, with a table of what is felt how far) and JEI pages.
+- **Tests** (`CommandTests`, 16; 460 in all): the ground's model and what it hears; the Seismograph's record, setting,
+  alarm, comparator and deafness unpowered; two seismographs' fix; the display in every facing, shown a network, its
+  condition; the Dead Hand's keys, alert (not its own network's strike, not one outside its radius), HOLD and redstone,
+  standing down when the command answers, firing on the war plan and in return fire, the drill, the EMP; a harmless
+  rocket and a receiver. The ground carries every test's blasts to every other: the first run failed six, each set off
+  by another test's strike, so the tests that any blast would disturb run alone (`GBGameTests.testAlone`: an environment
+  of their own, so a batch of their own).
+- **The test world** (`devworld/WarRoomRange`, left out of the jar by build.gradle's jar task): `gradlew runWarRoom`
+  builds "Ground Burst War Room" (§17.17's plan: the bunker, the radar, three seismographs, the Dead Hand armed and set
+  to fire on any strike, the base's two silos and a complex on the war plan; the enemy's two silos and a complex 900
+  blocks north aimed at the town and the field, run from the ENEMY COMMAND booth; Creative Capacitor Banks, signs, the
+  player's codes, a spare rocket and the Field Manual), photographs it (`war_room_*.png`) and quits.
+  `-PwarRoomDemo=true` plays the attack through in a throwaway world instead, each step waiting for the world (the
+  silos' countdowns, the flights, the Dead Hand's thirty seconds), photographed (`war_room_demo_*.png`) and checked in
+  the log ("War room check: ... OK/WRONG").
+
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
   from its middle, a **Large Radar Dish** on top (one item placing a 3×3 dish: a middle block that draws it all and
@@ -5814,6 +6003,10 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-09 | **The war room built** (§17.17, §17.18; the user: "Just build all 3 at once please so I can just come back after your done"): the Seismograph, the War Room Display and the Dead Hand on the launch network's records, the ground's blasts their shared source (`Seismic`), every blast hook covered; four CC0 recordings added for their sounds (a pen plotter, a plotter idling, a pen on paper, a key telephone's buzzer); the test world `runWarRoom`, its builder left out of the jar, and a played-through attack (`-PwarRoomDemo=true`, 19 checks) as its in-game check. |
+| 2026-11-09 | **Tests that hear every blast run alone** (§17.18): the ground carries every GameTest's blasts to every other test running beside it (the first run: six failures, each another test's strike), so a test any blast would disturb runs in a batch of its own (`GBGameTests.testAlone`: an environment of its own); the rest check their own strikes by their own figures. |
+| 2026-11-09 | **Testing the war room displays, seismographs and the Dead Hand** (the user, on a first design that tested them with a creative item calling a strike down: "Nooo to the strike simulator. When the summary said an easy way to test, it meant making a world for me already equipped with the neccasary multiblocks built and ready for me to test"): each comes with a test world built by a dev run, as the Showroom (§22.7) and the 1.21.1 build's Test Range are: everything built, formed, powered, linked and loaded, and where a feature has to be fired upon, an opposing launch site built and aimed at the base; the builder kept out of the released jar. The design itself to be drawn again on the mod's own systems (the Launch Control Station's network and map, the radar's tracks, the alarm channels, the multiblock framework) before anything is built. |
+| 2026-11-08 | **A 1.20.1 Forge port pinned for much later** (the user, after its size: "we will put a large pin in that for way later"). The promotion plan named 1.20.1 on Forge as the largest modpack audience. Sized from the 1.21.1 port (compiling in about 2¼ hours, a playable release in 4½, with a port tool, 86 stand-in classes and 31 hand-kept files): 1.20.1 lies before item data components (52 files), payload networking (32), saving with registry lookups (49), NeoForge's capabilities (12) and Java 21 (64 files use its methods; 1.20.1 runs Java 17), and its data has the old folders, recipes and `forge:` tags. About 8–12 hours to a first build, 6–10 more tested as the others are (GameTests, the port check, a survey of the sites), 5–10 for Create and shader packs (Oculus, Embeddium); then a fourth version to bring up with every release. |
 | 2026-11-08 | **Sites keep clear of each other** (§22.8), found by the world survey of the remastered sites (a radar outpost built into a silo; three pairs within three chunks in the census): each site gives way to the rarer kinds within 7 chunks, in the order test site, silo, radar outpost, bunker, crashed missile (the waste storage, underground, to the silo alone), judged by whether the rarer site would really stand there. Vanilla's exclusion zone names one set only and judges by the place alone; by the place alone the test site's places (every 24 chunks, few of them in a desert) would have cleared two fifths of the land of the others (a 15 x 15 chunk window round each). With it, the sites' block-entity marks dropped (§22.8: 465 warnings in the log over fourteen sites). |
 | 2026-11-08 | **The sites remastered with the props** (§22.8; the user's plan, "Remaster the Cold War sites with the new props sounds good"): all seven fitted with the cosmetic sets as a real site would have them, each keeping its character and loot; a breaker left on in each room with its lamp lit, a wall block clear of anything its signal would work (beside a door it held the door open); templates checked for the props' states, for what a signal left on reaches and for blocks across a chunk's edge (`sites.check_states`, `check_power`, `check_chunks`). The pictures of them are taken where world generation placed them. Fixes and remaster go out together in one release (the user: "I will just wait till you finish the remaster and make it a full upload"). |
 | 2026-11-08 | **26.1.2 under shader packs** (§12.3; the user: "if it is broken that is top priority"): the branch had been left without main's `IrisFx` and `DrawnLast`, and with Iris 1.11.4 its effects drew nothing and the glowing parts were gone. Main's `IrisFx` ported, the effects drawn after the level by the branch's own `FxRenderTypes` with the client option, and the glowmasks, with Iris installed, on a copy of GeckoLib's pipeline with an alpha cutout (Iris gave GeckoLib's own a sky program). |

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "groundburst:block/war_room_display_front",
+    "side": "groundburst:block/war_room_display_side",
+    "top": "groundburst:block/war_room_display_top"
+  }
+}

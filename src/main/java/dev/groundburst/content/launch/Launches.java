@@ -72,11 +72,11 @@ public final class Launches {
      * A Launch Computer (or anything else that maps the ground round itself) at {@code pos}, {@code at} where it is in the
      * world (on a ship, DESIGN.md §17.16).
      */
-    static void trackMapper(ServerLevel level, BlockPos pos, BlockPos at) {
+    public static void trackMapper(ServerLevel level, BlockPos pos, BlockPos at) {
         MAPPERS.computeIfAbsent(level.dimension(), k -> new Long2LongOpenHashMap()).put(pos.asLong(), at.asLong());
     }
 
-    static void untrackMapper(ServerLevel level, BlockPos pos) {
+    public static void untrackMapper(ServerLevel level, BlockPos pos) {
         Long2LongOpenHashMap map = MAPPERS.get(level.dimension());
         if (map != null) {
             map.remove(pos.asLong());

@@ -475,6 +475,16 @@ FILE_FIXES: dict[str, list] = {
              "            sign.setText(text, true);\n"),
         swap("import net.minecraft.world.level.block.entity.SignTextSlot;\n", ""),
     ],
+    # --- the War Room range (main's DESIGN.md §17.17): its signs, as the showroom's.
+    "src/main/java/dev/groundburst/devworld/WarRoomRange.java": [
+        swap("                SignText.Mutable text = sign.getText(SignTextSlot.FRONT).asMutable();\n",
+             "                SignText text = sign.getText(true);\n"),
+        swap("                    text.setLine(i, Component.literal(lines[i]));\n",
+             "                    text = text.setMessage(i, Component.literal(lines[i]));\n"),
+        swap("                sign.setText(text.asImmutable(), SignTextSlot.FRONT);\n",
+             "                sign.setText(text, true);\n"),
+        swap("import net.minecraft.world.level.block.entity.SignTextSlot;\n", ""),
+    ],
     # --- the Bunk Bed (main's DESIGN.md §22.5): this version's bed has a block entity and puts its sleeper at a height of
     # its own (no sleep height, no "destroy on use" of a bed rule): drawn by its blockstate's model, no block entity, the
     # bed's own way of blowing up where beds do.

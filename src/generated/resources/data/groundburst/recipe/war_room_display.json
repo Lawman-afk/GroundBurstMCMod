@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:machine_casing",
+    "groundburst:military_circuit",
+    "groundburst:advanced_circuit",
+    "groundburst:crt_display",
+    "minecraft:clock",
+    "minecraft:redstone_lamp"
+  ],
+  "result": {
+    "id": "groundburst:war_room_display"
+  }
+}

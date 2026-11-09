@@ -16,6 +16,7 @@
     "groundburst:voidstone",
     "groundburst:reinforced_concrete",
     "groundburst:hazard_concrete",
-    "groundburst:silo_hatch"
+    "groundburst:silo_hatch",
+    "groundburst:dead_hand"
   ]
 }

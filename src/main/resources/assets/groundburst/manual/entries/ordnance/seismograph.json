@@ -1,0 +1,70 @@
+{
+  "title": "Seismograph",
+  "icon": "groundburst:seismograph",
+  "order": 24,
+  "items": [
+    "groundburst:seismograph"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "A **Seismograph** feels every blast through the ground: yours or anyone's, a creeper's or a Tsar's, near or far, loaded or not. The shaking spreads out from a blast at 300 blocks a tick, so even one a few kilometres off reaches it in a moment. As each arrives its pen swings, its drum's paper takes the trace, and it works out what one instrument can: the blast's **magnitude**, how far off it was and which way, and the **yield** that magnitude stands for, in tonnes or kilotons of TNT.\n\n**How far a blast is felt.** Ten times the yield is three quarters of a magnitude more, and the farther off, the fainter it is felt. An airburst, high over the ground, is felt a magnitude and a half less."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Creeper",
+          "M0.8: 80 blocks"
+        ],
+        [
+          "TNT",
+          "M1.1: 110 blocks"
+        ],
+        [
+          "HE Warhead",
+          "M1.5: 170 blocks"
+        ],
+        [
+          "Heavy HE Warhead",
+          "M2.2: 380 blocks"
+        ],
+        [
+          "Massive Ordnance",
+          "M3.0: 980 blocks"
+        ],
+        [
+          "Tactical nuke",
+          "M4.1: 3.4 km"
+        ],
+        [
+          "Fission Warhead",
+          "M5.3: 15 km"
+        ],
+        [
+          "Thermonuclear",
+          "M6.8: 76 km"
+        ],
+        [
+          "Tsar Warhead",
+          "M8.0: 300 km"
+        ]
+      ],
+      "text": "",
+      "title": "Recorded within"
+    },
+    {
+      "type": "text",
+      "text": "**Its screen** is the drum's paper: each arrival a trace, its first shaking (the P wave) and, a moment later, the second (the S wave). The farther the blast, the longer between them: that gap is how it knows the distance. Beside it is its record of the last sixteen: when, the magnitude, the yield, how far and which way, each to within what it can tell. A blast felt hard is read close (its bearing within 2 degrees, its distance within 3%, its magnitude within 0.05); one felt faintly, only roughly (14 degrees, 15%, 0.3).\n\n**Settings.** **Records**: everything it feels, or only what it feels at 1, 2 or 3 and up (to keep a busy range's small blasts off its paper). **Alarm**: off, or at magnitude 2, 3, 4 or 5 and up: a **Blast** alert on its [alarm channel](safety/alarms) for thirty seconds (an [Alert Display](safety/alert_display) shows BLAST, the magnitude and how far off). A comparator by it reads twice the last arrival's magnitude (up to 15) for two seconds."
+    },
+    {
+      "type": "text",
+      "text": "**On a network.** Link it to a [Launch Control Station](ordnance/launch_control_station) with Launch Codes. A blast one seismograph feels shows on the station's map, and on a [War Room Display](ordnance/war_room_display), as the patch of ground it could have come from, its magnitude with a question mark; when two or more feel it, the network **fixes** it: a ring where it was. The network's log notes every blast of magnitude 2 and up. The farther apart your seismographs stand, the better they fix a blast between them.\n\nIt feels the special weapons too: antimatter at once, a singularity's grinding and its collapse, the ground cracking under a cryo burst, a particle beam's burn. It needs 10 FE a tick; with no power, or in an EMP, it records nothing that arrives meanwhile. Unloaded, it catches up as it loads, recording what came (without its alarm)."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:seismograph",
+      "text": ""
+    }
+  ]
+}

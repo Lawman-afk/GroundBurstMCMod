@@ -39,9 +39,11 @@ final class GameTestRegistration {
     }
 
     private static void registerTests(RegisterGameTestsEvent event) {
-        Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(GroundBurst.id("default"));
+        Holder<TestEnvironmentDefinition<?>> shared = event.registerEnvironment(GroundBurst.id("default"));
         for (Registered r : REGISTERED) {
             GBGameTests.TestSpec spec = r.spec();
+            // A test run alone has an environment of its own: tests are batched by environment, one batch after another.
+            Holder<TestEnvironmentDefinition<?>> environment = spec.alone() ? event.registerEnvironment(GroundBurst.id("alone/" + spec.name())) : shared;
             TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(environment, spec.structure(), spec.maxTicks(), 0, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, spec.sky(), 0);
             event.registerTest(r.function().getId(), new FunctionGameTestInstance(r.function().getKey(), data));
         }
