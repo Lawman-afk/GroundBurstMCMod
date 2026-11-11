@@ -373,6 +373,12 @@ public class DepthChargeRackBlockEntity extends MachineBlockEntity implements An
         return false;
     }
 
+    /** Its model has no working animation (its trap and charges move by their own bones): at work it holds its rest pose. */
+    @Override
+    public software.bernie.geckolib.animation.RawAnimation workingAnimation() {
+        return idleAnimation();
+    }
+
     @Override
     protected void onSlotChanged(int slot) {
         super.onSlotChanged(slot);

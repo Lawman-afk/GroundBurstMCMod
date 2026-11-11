@@ -490,12 +490,25 @@ public final class CreateCheck {
             case 1088 -> onServer(mc, level -> level.setBlockAndUpdate(WRECK_HUB.below(2), Blocks.AIR.defaultBlockState()));   // the bearing stops
             case 1130 -> onServer(mc, level -> {
                 int items = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, WRECK_AREA).size();
+                // The platform's own blocks (its stone, or stone a blast scorched), and none of those broken out of it put
+                // back. What the blasts laid themselves is not the platform's: rubble or a fire on the bearing's top, in the
+                // hole where the hub was blown out (the bearing is the world's), is named but not counted.
                 int placed = 0;
+                boolean putBack = false;
+                List<String> laid = new java.util.ArrayList<>();
                 for (BlockPos p : BlockPos.betweenClosed(WRECK_HUB.offset(-5, 0, -5), WRECK_HUB.offset(5, 2, 5))) {
-                    placed += level.getBlockState(p).isAir() ? 0 : 1;
+                    BlockState s = level.getBlockState(p);
+                    if (s.is(Blocks.STONE) || s.is(dev.groundburst.content.fallout.GBFallout.SCORCHED_STONE.block().get())) {
+                        placed++;
+                    } else if (s.is(Blocks.CHEST) || s.is(block("groundburst:combustion_generator").getBlock())) {
+                        putBack = true;
+                    } else if (!s.isAir()) {
+                        laid.add(BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath() + " at " + p.toShortString());
+                    }
                 }
-                check(items == 0 && placed == wreckBlocks, "set down with just the blocks it had left, none where blocks were broken ("
-                        + placed + " of " + wreckBlocks + "; " + items + " items on the ground)");
+                check(items == 0 && placed == wreckBlocks && !putBack, "set down with just the blocks it had left, none where blocks were broken ("
+                        + placed + " of " + wreckBlocks + "; " + items + " items on the ground"
+                        + (laid.isEmpty() ? "" : "; laid by the blasts: " + String.join(", ", laid)) + ")");
             });
             case 1135 -> shot(mc, "wreck_set_down");
             // --- a ship hit: a blast beside a Sable ship, then a shell into it -----------------------------------------------

@@ -166,8 +166,17 @@ final class ShipCheck {
         long t0 = System.nanoTime();
         Designators.Hit hit = Designators.trace(level, player, eye, new Vec3(1, 0, 0), 64);
         long ms = (System.nanoTime() - t0) / 1_000_000;
-        CreateCheck.check(hit != null && box.inflate(0.6).contains(hit.pos()) && Math.abs(hit.pos().x - box.minX) < 0.6 && ms < 50,
+        boolean landed = hit != null && box.inflate(0.6).contains(hit.pos()) && Math.abs(hit.pos().x - box.minX) < 0.6;
+        CreateCheck.check(landed && ms < 50,
                 "a Laser Designator's beam on a ship lands on its near side where it is seen (" + (hit == null ? "nothing" : hit.pos()) + ", " + ms + " ms)");
+        if (!landed) {
+            // What the beam struck instead: a creature, or a block of the world's or of another ship.
+            var struck = level.clip(new net.minecraft.world.level.ClipContext(eye, eye.add(64, 0, 0), net.minecraft.world.level.ClipContext.Block.VISUAL,
+                    net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+            GroundBurst.LOGGER.info("Create check: the beam struck {} at {} ({}); a creature: {}", level.getBlockState(struck.getBlockPos()),
+                    struck.getBlockPos(), dev.groundburst.content.machine.Frames.at(level, struck.getBlockPos()).isWorld() ? "the world's" : "a ship's",
+                    hit == null || hit.entity() == null ? "none" : hit.entity());
+        }
         level.setBlockAndUpdate(MORTAR, block("groundburst:mortar"));             // (it turns all round)
         if (!(level.getBlockEntity(MORTAR) instanceof GunBlockEntity gun)) {
             CreateCheck.check(false, "a mortar to lay on the ship");

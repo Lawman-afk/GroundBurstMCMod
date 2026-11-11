@@ -182,6 +182,39 @@ neoForge {
     }
 }
 
+// The test runs leave the person at the computer their mouse and their ears (the user's wishes, 2026-11-11): their window
+// opens behind the other windows without the focus and never grabs the mouse (dev.groundburst.port.DevRuns, set by
+// groundburst.keepMouse; the runs turn the camera themselves), NeoForge's early loading window (made before any mod code
+// runs) turned off for them in run/config/fml.toml; and every client run is muted (master volume 0 in run/options.txt;
+// -Psound=on keeps it).
+def testRunNames = ['runPortCheck', 'runCreateCheck', 'runTestRange', 'runPlayBench']
+def fmlConfig = file('run/config/fml.toml')
+def clientOptions = file('run/options.txt')
+def withSound = providers.gradleProperty('sound').isPresent()
+neoForge.runs.matching { ('run' + it.name.capitalize()) in testRunNames }.configureEach {
+    systemProperty 'groundburst.keepMouse', 'true'
+}
+tasks.matching { it.name in testRunNames }.configureEach {
+    doFirst {
+        fmlConfig.parentFile.mkdirs()
+        String text = fmlConfig.exists() ? fmlConfig.text : ''
+        fmlConfig.text = text =~ /(?m)^earlyWindowControl\s*=/
+                ? text.replaceAll(/(?m)^earlyWindowControl\s*=.*$/, 'earlyWindowControl = false')
+                : text + 'earlyWindowControl = false\n'
+    }
+}
+tasks.matching { it.name.startsWith('run') && !(it.name in ['runGameTestServer', 'runServer', 'runData']) }.configureEach {
+    doFirst {
+        if (!withSound) {
+            String text = clientOptions.exists() ? clientOptions.text : ''
+            clientOptions.parentFile.mkdirs()
+            clientOptions.text = text =~ /(?m)^soundCategory_master:/
+                    ? text.replaceAll(/(?m)^soundCategory_master:.*$/, 'soundCategory_master:0.0')
+                    : text + (text.isEmpty() || text.endsWith('\n') ? '' : '\n') + 'soundCategory_master:0.0\n'
+        }
+    }
+}
+
 // Runtime-only dependencies for dev testing that must not leak into the published metadata.
 configurations {
     runtimeClasspath.extendsFrom localRuntime
