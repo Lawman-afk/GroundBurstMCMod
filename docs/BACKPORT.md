@@ -137,7 +137,14 @@ out: `tools/backport/prod_client.py <game dir> <jar> portCheck|siteCheck <GeckoL
 jar and the mods given, offline, muted and behind the other windows, with the check the jar carries switched on, and the
 check quits it (its log in the folder's logs/latest.log, its pictures in screenshots/). A dedicated server cannot stand
 in: Forge 1.20.1's asks for the EULA's acceptance before it loads a mod. 0.11.1 (2026-11-11), with GeckoLib 4.8.4 and
-JEI 15.56: the port check 6 OK of 6, 28 pictures, no errors; the site check as in the dev runs.
+JEI 15.56: the port check 6 OK of 6, 28 pictures, no errors; the site check as in the dev runs. `PROD_JAVA=<java.exe>`
+runs it on another Java, `PROD_VERSION=<installed version id>` on another loader's game (`neoforge-21.1.265` for the
+1.21.1 build's jar).
+
+**Java**: Minecraft 1.20.1's own is Java 17, which the CurseForge app and the game's launcher pick by themselves; the
+jar is Java 17's. 0.11.1's port check also passed, every check OK and no errors, on Java 21 and on Java 25 (Forge
+47.4.28), and the 1.21.1 build's 0.11.1 on Java 21 and 25 (NeoForge 21.1.265); on 25 the JVM warns of Forge's and
+LWJGL's own restricted calls, nothing of the mod's. Players are told the launcher's own: 17 here, 21 for 1.21.1.
 
 ## Shader packs and Distant Horizons
 

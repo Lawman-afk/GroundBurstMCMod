@@ -7,6 +7,8 @@ its pictures in screenshots/.
     python tools/backport/prod_client.py <game dir> <release jar> <check: portCheck|siteCheck> [<mod jar> ...]
 
 The game folder is made afresh each time. GeckoLib (4.8.4 or later for Forge 1.20.1) must be among the mods.
+PROD_JAVA (a java.exe) runs it on another Java than Gradle's JDK 17; PROD_VERSION (an installed version id, such as
+neoforge-21.1.265) starts another loader's game, the 1.21.1 build's jar on NeoForge say.
 """
 import json
 import os
@@ -16,11 +18,13 @@ import sys
 from pathlib import Path
 
 INSTALL = Path(os.path.expanduser("~")) / "curseforge" / "minecraft" / "Install"
-FORGE = "forge-47.4.28"
+FORGE = os.environ.get("PROD_VERSION", "forge-47.4.28")
 LIBS = INSTALL / "libraries"
 
 
 def java17() -> Path:
+    if os.environ.get("PROD_JAVA"):
+        return Path(os.environ["PROD_JAVA"])
     for d in sorted((Path(os.path.expanduser("~")) / ".gradle" / "jdks").glob("eclipse_adoptium-17-amd64-windows*")):
         if (d / "bin" / "java.exe").exists():
             return d / "bin" / "java.exe"
