@@ -67,10 +67,15 @@ public final class LaunchNetwork extends SavedData {
     /**
      * A log line's kind. BLAST: one of its seismographs felt a blast (where it was made out to be; detail its magnitude
      * times ten); the Dead Hand's: armed, made safe, in alert (where the strike was; detail the countdown, seconds),
-     * fired (detail how many launchers it ordered), stood down (detail 1: a station answered) (DESIGN.md §17.17).
+     * fired (its command rocket away; detail how many launchers stand by), stood down (detail 1: a station answered), its
+     * rocket down (where; detail how many launchers it reached) (DESIGN.md §17.17, §17.19). A FAILED order's detail -2: a
+     * launcher the command rocket's signal never reached.
      */
     public enum EventKind { LAUNCHED, IMPACT, LOST, NO_CONTACT, FAILED, LINKED, UNLINKED, NEW_CODES, FIRE_CALLED, DESIGNATED,
-        BLAST, DEAD_HAND_ARMED, DEAD_HAND_SAFE, DEAD_HAND_ALERT, DEAD_HAND_FIRED, DEAD_HAND_STOOD_DOWN }
+        BLAST, DEAD_HAND_ARMED, DEAD_HAND_SAFE, DEAD_HAND_ALERT, DEAD_HAND_FIRED, DEAD_HAND_STOOD_DOWN, DEAD_HAND_ROCKET_DOWN }
+
+    /** A FAILED order's detail: no answer from the member (woken and never there); out of the command rocket's reach. */
+    public static final int NO_ANSWER_DETAIL = -1, OUT_OF_REACH = -2;
 
     // --- records -----------------------------------------------------------------------------------------------------------
     private static final Codec<LaunchSite.Strike> STRIKE_CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -114,18 +119,26 @@ public final class LaunchNetwork extends SavedData {
                 net.minecraft.core.Direction.CODEC.fieldOf("face").forGetter(Mark::face)).apply(i, Mark::new));
     }
 
-    /** What the network has told a member to do and it has not done yet (-1: nothing). */
-    public record Orders(Optional<BlockPos> aim, int arm, long launchAt, Optional<UUID> by) {
-        static final Orders NONE = new Orders(Optional.empty(), -1, -1, Optional.empty());
+    /**
+     * What the network has told a member to do and it has not done yet (-1: nothing). {@code hold} (DESIGN.md §17.19):
+     * {@link #STAND_BY} the launch at {@code launchAt} is to stand by at its countdown's last tick for the Dead Hand's
+     * command rocket; {@link #RELEASE} a launch standing by is let go; {@link #SCRUB} one is stood down.
+     */
+    public record Orders(Optional<BlockPos> aim, int arm, long launchAt, Optional<UUID> by, int hold) {
+        static final Orders NONE = new Orders(Optional.empty(), -1, -1, Optional.empty(), 0);
         static final Codec<Orders> CODEC = RecordCodecBuilder.create(i -> i.group(
                 BlockPos.CODEC.optionalFieldOf("aim").forGetter(Orders::aim), Codec.INT.fieldOf("arm").forGetter(Orders::arm),
-                Codec.LONG.fieldOf("launch_at").forGetter(Orders::launchAt), UUIDUtil.CODEC.optionalFieldOf("by").forGetter(Orders::by))
+                Codec.LONG.fieldOf("launch_at").forGetter(Orders::launchAt), UUIDUtil.CODEC.optionalFieldOf("by").forGetter(Orders::by),
+                Codec.INT.optionalFieldOf("hold", 0).forGetter(Orders::hold))
                 .apply(i, Orders::new));
 
         boolean any() {
-            return this.aim.isPresent() || this.arm >= 0 || this.launchAt >= 0;
+            return this.aim.isPresent() || this.arm >= 0 || this.launchAt >= 0 || this.hold == RELEASE || this.hold == SCRUB;
         }
     }
+
+    /** {@link Orders#hold}: none, a launch standing by, a stand-by let go, one stood down. */
+    public static final int NO_HOLD = 0, STAND_BY = 1, RELEASE = 2, SCRUB = 3;
 
     /** One launcher or radar on a network. */
     public static final class Member {
@@ -136,14 +149,18 @@ public final class LaunchNetwork extends SavedData {
                 Codec.INT.listOf().fieldOf("box").forGetter(m -> List.of(m.minCX, m.minCZ, m.maxCX, m.maxCZ)),
                 UUIDUtil.CODEC.listOf().fieldOf("flights").forGetter(m -> List.copyOf(m.flights)),
                 Mark.CODEC.optionalFieldOf("mark").forGetter(m -> Optional.ofNullable(m.mark)),
-                BlockPos.CODEC.optionalFieldOf("at").forGetter(m -> m.at.equals(m.pos) ? Optional.empty() : Optional.of(m.at)))
-                .apply(i, (pos, role, kind, report, orders, lost, box, flights, mark, at) -> {
+                BlockPos.CODEC.optionalFieldOf("at").forGetter(m -> m.at.equals(m.pos) ? Optional.empty() : Optional.of(m.at)),
+                BlockPos.CODEC.optionalFieldOf("standing_by").forGetter(m -> Optional.ofNullable(m.standingBy)),
+                Codec.LONG.optionalFieldOf("standing_zero", -1L).forGetter(m -> m.standingZero))
+                .apply(i, (pos, role, kind, report, orders, lost, box, flights, mark, at, standingBy, standingZero) -> {
                     Member m = new Member(pos, Role.valueOf(role), kind);
                     m.report = report;
                     m.orders = orders;
                     m.lost = lost;
                     m.mark = mark.orElse(null);
                     m.at = at.orElse(pos).immutable();
+                    m.standingBy = standingBy.orElse(null);
+                    m.standingZero = standingZero;
                     if (box.size() == 4) {
                         m.minCX = box.get(0);
                         m.minCZ = box.get(1);
@@ -171,6 +188,12 @@ public final class LaunchNetwork extends SavedData {
         final List<UUID> flights = new ArrayList<>();
         /** Where a designator designated it (null: it was aimed some other way). */
         @Nullable Mark mark;
+        /**
+         * The Dead Hand it stands by for (DESIGN.md §17.19: readied in its alert, waiting for its command rocket's signal;
+         * null: none), and when that Dead Hand was to fire (game time).
+         */
+        @Nullable BlockPos standingBy;
+        long standingZero = -1;
         // Not saved: chunk tickets are dropped as the world loads and set again for orders still waiting.
         boolean awake;
         long keepUntil, wokeAt;
@@ -191,12 +214,19 @@ public final class LaunchNetwork extends SavedData {
             m.orders = this.orders;
             m.lost = this.lost;
             m.mark = this.mark;
+            m.standingBy = this.standingBy;
+            m.standingZero = this.standingZero;
             m.flights.addAll(this.flights);
             return m;
         }
 
         public Report report() {
             return this.report;
+        }
+
+        /** The Dead Hand it stands by for (DESIGN.md §17.19; null: none). */
+        public @Nullable BlockPos standingBy() {
+            return this.standingBy;
         }
 
         /** Where it is in the world, as it last reported (DESIGN.md §17.16). */
@@ -681,6 +711,9 @@ public final class LaunchNetwork extends SavedData {
         Member m = memberAt(be.getBlockPos());
         if (m != null && ((level.getGameTime() + be.getBlockPos().hashCode()) % REPORT == 0 || m.lost)) {
             report(level, m, be);
+            if (m.role == Role.DEAD_HAND && m.report.readiness == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal()) {
+                wake(level, m);                            // in alert or firing: it keeps itself loaded (DESIGN.md §17.19)
+            }
         }
     }
 
@@ -734,7 +767,9 @@ public final class LaunchNetwork extends SavedData {
         flight.seekerNetwork(n.id);                      // a laser-guided missile answers its network's designators
         net.lastSeen.put(flight.id(), flight.position());
         net.lastEta.put(flight.id(), flight.ticksToImpact());
-        net.log(level, n, EventKind.LAUNCHED, launcher, m.kind, (int) Math.floor(flight.target().x), (int) Math.floor(flight.target().z), 0);
+        if (m.role != Role.DEAD_HAND) {                  // (the Dead Hand's command rocket: its own FIRED line)
+            net.log(level, n, EventKind.LAUNCHED, launcher, m.kind, (int) Math.floor(flight.target().x), (int) Math.floor(flight.target().z), 0);
+        }
         net.setDirty();
     }
 
@@ -766,10 +801,10 @@ public final class LaunchNetwork extends SavedData {
                 continue;                                  // counting down: its target is set
             }
             int[] p = points.get(i);
-            m.orders = new Orders(Optional.of(new BlockPos(p[0], m.at.getY(), p[1])), m.orders.arm, m.orders.launchAt, m.orders.by);
+            m.orders = new Orders(Optional.of(new BlockPos(p[0], m.at.getY(), p[1])), m.orders.arm, m.orders.launchAt, m.orders.by, m.orders.hold);
             // Out of reach of its new aim: it will not stay armed.
             if (m.willBeArmed() && !m.canArm(m.orders.aim.get())) {
-                m.orders = new Orders(m.orders.aim, 0, m.orders.launchAt, m.orders.by);
+                m.orders = new Orders(m.orders.aim, 0, m.orders.launchAt, m.orders.by, m.orders.hold);
             }
             orderNow(level, m);
         }
@@ -840,7 +875,12 @@ public final class LaunchNetwork extends SavedData {
             if (on && !m.canArm(m.aim().orElse(null))) {
                 continue;
             }
-            m.orders = new Orders(m.orders.aim, on ? 1 : 0, on ? m.orders.launchAt : -1, m.orders.by);
+            if (!on && m.standingBy != null) {
+                scrubMember(level, m);                     // made safe: taken out of the Dead Hand's stand-by (DESIGN.md §17.19)
+                done++;
+                continue;
+            }
+            m.orders = new Orders(m.orders.aim, on ? 1 : 0, on ? m.orders.launchAt : -1, m.orders.by, on ? m.orders.hold : NO_HOLD);
             orderNow(level, m);
             done++;
         }
@@ -882,7 +922,7 @@ public final class LaunchNetwork extends SavedData {
         Optional<UUID> who = Optional.ofNullable(by == null ? null : by.getUUID());
         for (Member m : armed) {
             long at = together ? base + (longest - eta.get(m)) : now;
-            m.orders = new Orders(m.orders.aim, m.orders.arm, at, who);
+            m.orders = new Orders(m.orders.aim, m.orders.arm, at, who, NO_HOLD);
             orderNow(level, m);
         }
         setDirty();
@@ -972,7 +1012,7 @@ public final class LaunchNetwork extends SavedData {
             return false;
         }
         m.mark = mark;
-        m.orders = new Orders(Optional.of(aim), 1, -1, m.orders.by);
+        m.orders = new Orders(Optional.of(aim), 1, -1, m.orders.by, NO_HOLD);
         orderNow(level, m);
         log(level, n, EventKind.DESIGNATED, m.pos, m.kind, spot.getX(), spot.getZ(), 1);
         setDirty();
@@ -988,7 +1028,7 @@ public final class LaunchNetwork extends SavedData {
         if (n == null || !designatable(m) || firing(m) || !m.willBeArmed() || m.aim().isEmpty()) {
             return false;
         }
-        m.orders = new Orders(m.orders.aim, m.orders.arm, level.getGameTime(), Optional.ofNullable(by == null ? null : by.getUUID()));
+        m.orders = new Orders(m.orders.aim, m.orders.arm, level.getGameTime(), Optional.ofNullable(by == null ? null : by.getUUID()), NO_HOLD);
         orderNow(level, m);
         BlockPos at = m.aim().get();
         log(level, n, EventKind.FIRE_CALLED, m.pos, m.kind, at.getX(), at.getZ(), 1);
@@ -1053,6 +1093,15 @@ public final class LaunchNetwork extends SavedData {
         Optional<BlockPos> aim = o.aim;
         int arm = o.arm;
         long launchAt = o.launchAt;
+        int hold = o.hold;
+        if (hold == SCRUB) {
+            // Stood down (DESIGN.md §17.19): a launch still to come is called off, one counting is scrubbed, made safe.
+            site.scrub();
+            aim = Optional.empty();
+            arm = -1;
+            launchAt = -1;
+            hold = NO_HOLD;
+        }
         if (aim.isPresent()) {
             if (!site.setTarget(aim.get().getX(), aim.get().getZ()) && n != null) {
                 log(level, n, EventKind.FAILED, m.pos, m.kind, aim.get().getX(), aim.get().getZ(), site.readiness().ordinal());
@@ -1070,14 +1119,29 @@ public final class LaunchNetwork extends SavedData {
         }
         if (launchAt >= 0 && level.getGameTime() >= launchAt) {
             Entity by = o.by.map(level::getEntity).orElse(null);
-            if (!site.launchArmed(level, by) && n != null) {
+            boolean ok = hold == STAND_BY ? site.launchHeld(level, by) : site.launchArmed(level, by);
+            if (!ok && n != null) {
                 BlockPos t = site.target();
                 log(level, n, EventKind.FAILED, m.pos, m.kind, t == null ? 0 : t.getX(), t == null ? 0 : t.getZ(), site.readiness().ordinal());
             }
+            if (!ok) {
+                m.standingBy = null;                       // nothing to stand by: it did not launch
+                m.standingZero = -1;
+            }
             launchAt = -1;
+            hold = NO_HOLD;
             m.keepUntil = level.getGameTime() + GRACE;
         }
-        m.orders = new Orders(aim, arm, launchAt, launchAt >= 0 ? o.by : Optional.empty());
+        if (hold == RELEASE && launchAt < 0) {
+            site.release();                                // the command rocket's signal: a launch standing by goes
+            hold = NO_HOLD;
+        }
+        if (hold == STAND_BY && launchAt < 0) {
+            hold = NO_HOLD;                                // its launch called off: it could not be armed
+            m.standingBy = null;
+            m.standingZero = -1;
+        }
+        m.orders = new Orders(aim, arm, launchAt, launchAt >= 0 ? o.by : Optional.empty(), hold);
         if (site instanceof BlockEntity be) {
             report(level, m, be);
         }
@@ -1208,31 +1272,172 @@ public final class LaunchNetwork extends SavedData {
         return false;
     }
 
+    // --- the Dead Hand's command (DESIGN.md §17.19) ----------------------------------------------------------------------
+    /** A stand-by's launch is ordered this many ticks earlier than it must be (its countdown is surely over by zero). */
+    private static final int STAND_BY_EARLY = 10;
+    /** A launcher still standing by this long after its Dead Hand was to fire stands down by itself, ticks. */
+    public static final int STAND_BY_LAPSE = 6000;
+
     /**
-     * The Dead Hand fires (DESIGN.md §17.17): every launcher of the network that can fire is aimed where it already was
-     * (the war plan), or at {@code origin} (return fire: those it is in reach of), armed, and launched at once (far ones
-     * woken to take the order). Returns how many were ordered to fire.
+     * The Dead Hand in alert: every launcher of the network that can fire is aimed where it already is (the war plan), or
+     * at {@code origin} where it reaches it (return fire), armed, and ordered to launch standing by: its countdown timed to
+     * be over by {@code zero} (from its timing: its countdown and its missile's ignition; at once if there is not that
+     * long), then held at its last tick for the command rocket's signal. Far ones are woken in time. Returns how many
+     * stand by for {@code hand}.
      */
-    public int retaliate(ServerLevel level, long id, @Nullable BlockPos origin) {
+    public int standBy(ServerLevel level, long id, BlockPos hand, @Nullable BlockPos origin, long zero) {
         Network n = this.networks.get(id);
         if (n == null) {
             return 0;
         }
+        long now = level.getGameTime();
+        int count = 0;
         for (Member m : n.members.values()) {
-            if (m.role != Role.LAUNCHER || m.lost || firing(m)) {
+            if (m.role != Role.LAUNCHER || m.lost || m.standingBy != null || firing(m)) {
                 continue;
             }
             BlockPos back = origin == null ? null : new BlockPos(origin.getX(), m.at.getY(), origin.getZ());
             if (back != null && m.canArm(back)) {
-                m.orders = new Orders(Optional.of(back), m.orders.arm, m.orders.launchAt, m.orders.by);
+                m.orders = new Orders(Optional.of(back), m.orders.arm, m.orders.launchAt, m.orders.by, m.orders.hold);
             }
-            if (m.canArm(m.aim().orElse(null))) {
-                m.orders = new Orders(m.orders.aim, 1, m.orders.launchAt, m.orders.by);
-                orderNow(level, m);
+            if (!m.canArm(m.aim().orElse(null))) {
+                continue;
             }
+            long at = Math.max(now, zero - m.report.timing.delay() - STAND_BY_EARLY);
+            m.orders = new Orders(m.orders.aim, 1, at, Optional.empty(), STAND_BY);
+            m.standingBy = hand.immutable();
+            m.standingZero = zero;
+            orderNow(level, m);
+            count++;
         }
         setDirty();
-        return launch(level, id, false, null);
+        return count;
+    }
+
+    /** The Dead Hand at {@code hand} stood down: every launcher standing by for it is stood down. Returns how many. */
+    public int standDown(ServerLevel level, long id, BlockPos hand) {
+        Network n = this.networks.get(id);
+        if (n == null) {
+            return 0;
+        }
+        int count = 0;
+        for (Member m : n.members.values()) {
+            if (hand.equals(m.standingBy)) {
+                scrubMember(level, m);
+                count++;
+            }
+        }
+        if (count > 0) {
+            setDirty();
+        }
+        return count;
+    }
+
+    /** How many of the network's launchers stand by for the Dead Hand at {@code hand}. */
+    public int standingFor(long id, BlockPos hand) {
+        Network n = this.networks.get(id);
+        if (n == null) {
+            return 0;
+        }
+        int count = 0;
+        for (Member m : n.members.values()) {
+            count += hand.equals(m.standingBy) ? 1 : 0;
+        }
+        return count;
+    }
+
+    /**
+     * Where the command rocket must reach: every launcher of the network standing by, or ready and aimed (where each is
+     * in the world).
+     */
+    public List<BlockPos> commandable(long id) {
+        Network n = this.networks.get(id);
+        List<BlockPos> out = new ArrayList<>();
+        if (n != null) {
+            for (Member m : n.members.values()) {
+                if (m.role == Role.LAUNCHER && !m.lost && (m.standingBy != null || !firing(m) && m.canArm(m.aim().orElse(null)))) {
+                    out.add(m.at);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** A member's stand-by called off: a launch still to start forgotten, one counting scrubbed, made safe. */
+    private void scrubMember(ServerLevel level, Member m) {
+        m.standingBy = null;
+        m.standingZero = -1;
+        m.orders = new Orders(Optional.empty(), -1, -1, Optional.empty(), SCRUB);
+        orderNow(level, m);
+    }
+
+    /** How many launchers each command rocket in the air has reached (not saved: a count for the log). */
+    private final Map<UUID, Integer> reachedBy = new HashMap<>();
+
+    /** How many launchers the command rocket {@code rocket} has reached so far. */
+    public int reachedBy(UUID rocket) {
+        return this.reachedBy.getOrDefault(rocket, 0);
+    }
+
+    /**
+     * The command rocket's signal, heard {@code reach} blocks round {@code at}: every launcher of the network in reach
+     * takes the order. Standing by, it is let go (at its last tick it fires at once; still counting, at its countdown's
+     * end; its launch not started yet, it starts now with nothing to wait for); not readied but ready and aimed, it is
+     * armed and launched now on its own countdown. Returns how many took it.
+     */
+    private int broadcast(ServerLevel level, Network n, UUID rocket, Vec3 at, double reach) {
+        long now = level.getGameTime();
+        int took = 0;
+        for (Member m : n.members.values()) {
+            if (m.role != Role.LAUNCHER || m.lost || Math.hypot(m.at.getX() + 0.5 - at.x, m.at.getZ() + 0.5 - at.z) > reach) {
+                continue;
+            }
+            if (m.standingBy != null) {
+                m.standingBy = null;
+                m.standingZero = -1;
+                m.orders = m.orders.launchAt >= 0 ? new Orders(m.orders.aim, m.orders.arm, now, m.orders.by, NO_HOLD)
+                        : new Orders(m.orders.aim, m.orders.arm, -1, m.orders.by, RELEASE);
+            } else if (!firing(m) && m.canArm(m.aim().orElse(null))) {
+                m.orders = new Orders(m.orders.aim, 1, now, Optional.empty(), NO_HOLD);
+            } else {
+                continue;
+            }
+            orderNow(level, m);
+            took++;
+        }
+        if (took > 0) {
+            this.reachedBy.merge(rocket, took, Integer::sum);
+            setDirty();
+        }
+        return took;
+    }
+
+    /** The Dead Hand's rocket just lit (in its tube): its signal goes out at once, the launchers by it take the order now. */
+    public void commandRocketAway(ServerLevel level, BlockPos hand, Flights.Flight rocket) {
+        Network n = networkOf(hand);
+        if (n != null) {
+            this.reachedBy.put(rocket.id(), 0);
+            broadcast(level, n, rocket.id(), rocket.position(), dev.groundburst.content.command.CommandRocket.reach(hand, 0));
+        }
+    }
+
+    /**
+     * A command rocket down (or gone): the launchers still standing by for its Dead Hand were out of its reach: each is
+     * stood down, logged. Returns how many it had reached.
+     */
+    private int rocketDown(ServerLevel level, Network n, Member hand, UUID rocket, @Nullable Vec3 at) {
+        for (Member m : List.copyOf(n.members.values())) {
+            if (hand.pos.equals(m.standingBy)) {
+                log(level, n, EventKind.FAILED, m.pos, m.kind, m.at.getX(), m.at.getZ(), OUT_OF_REACH);
+                scrubMember(level, m);
+            }
+        }
+        int reached = this.reachedBy.getOrDefault(rocket, 0);
+        this.reachedBy.remove(rocket);
+        log(level, n, EventKind.DEAD_HAND_ROCKET_DOWN, hand.pos, hand.kind, at == null ? hand.at.getX() : (int) Math.floor(at.x),
+                at == null ? hand.at.getZ() : (int) Math.floor(at.z), reached);
+        setDirty();
+        return reached;
     }
 
     // --- the tick ----------------------------------------------------------------------------------------------------------
@@ -1252,7 +1457,7 @@ public final class LaunchNetwork extends SavedData {
                         apply(level, m, site);
                     } else if (m.awake && be == null && now - m.wokeAt > NO_ANSWER && m.orders.launchAt >= 0 && now > m.orders.launchAt) {
                         // Woken and never there: it does not answer (its orders fail, it is let go).
-                        log(level, n, EventKind.FAILED, m.pos, m.kind, m.at.getX(), m.at.getZ(), -1);
+                        log(level, n, EventKind.FAILED, m.pos, m.kind, m.at.getX(), m.at.getZ(), NO_ANSWER_DETAIL);
                         m.orders = Orders.NONE;
                         sleep(level, m);
                     } else {
@@ -1293,14 +1498,30 @@ public final class LaunchNetwork extends SavedData {
                         if (f != null) {
                             this.lastSeen.put(id, f.position());
                             this.lastEta.put(id, f.ticksToImpact());
+                            if (m.role == Role.DEAD_HAND) {
+                                // The command rocket transmits as it flies (DESIGN.md §17.19): what it reaches fires.
+                                broadcast(level, n, id, f.position(), dev.groundburst.content.command.CommandRocket.reach(m.pos, f.position().y - f.start().y));
+                            }
                             continue;
                         }
                         m.flights.remove(id);
                         Vec3 at = this.lastSeen.remove(id);
                         Integer eta = this.lastEta.remove(id);
+                        if (m.role == Role.DEAD_HAND) {
+                            rocketDown(level, n, m, id, at);
+                            continue;
+                        }
                         boolean down = eta == null || eta <= LANDED;
                         int x = at == null ? m.at.getX() : Mth.floor(at.x), z = at == null ? m.at.getZ() : Mth.floor(at.z);
                         log(level, n, down ? EventKind.IMPACT : EventKind.LOST, m.pos, m.kind, x, z, 0);
+                        setDirty();
+                    }
+                }
+                // Standing by with no word: its Dead Hand gone from the network or out of contact past the lapse.
+                if (check && m.standingBy != null) {
+                    Member hand = n.members.get(m.standingBy.asLong());
+                    if (hand == null || hand.lost || now > m.standingZero + STAND_BY_LAPSE) {
+                        scrubMember(level, m);
                         setDirty();
                     }
                 }

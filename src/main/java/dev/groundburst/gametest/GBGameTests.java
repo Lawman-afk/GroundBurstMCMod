@@ -94,6 +94,7 @@ public final class GBGameTests {
         VlsTests.register();
         StationTests.register();
         CommandTests.register();
+        StandByTests.register();
         DesignatorTests.register();
         SemiconductorTests.register();
         FactoryTests.register();

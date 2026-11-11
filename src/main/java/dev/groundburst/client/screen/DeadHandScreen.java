@@ -33,7 +33,7 @@ public final class DeadHandScreen extends Screen {
     private static final String T_WATCHING = GBLang.add(P + "state.watching", "WATCHING");
     private static final String T_ALERT = GBLang.add(P + "state.alert", "ALERT  T-%s");
     private static final String T_DRILL = GBLang.add(P + "state.drill", "DRILL  T-%s");
-    private static final String T_FIRING = GBLang.add(P + "state.firing", "FIRING");
+    private static final String T_FIRING = GBLang.add(P + "state.firing", "TRANSMITTING");
     private static final String T_SPENT = GBLang.add(P + "state.spent", "FIRED: load a new rocket");
     private static final String T_DARK = GBLang.add(P + "state.dark", "NO POWER");
     private static final String T_WATCH_LINE = GBLang.add(P + "watch_line", "Watching %s blocks round for strikes of magnitude %s+");
@@ -41,6 +41,12 @@ public final class DeadHandScreen extends Screen {
     private static final String T_FROM = GBLang.add(P + "from", "Fired from where it was launched: known");
     private static final String T_FROM_NONE = GBLang.add(P + "from_none", "Where it was launched from: unknown");
     private static final String T_HOLD_HINT = GBLang.add(P + "hold_hint", "HOLD (or redstone into it) stands it down");
+    // Its command rocket's course and signal (DESIGN.md §17.19).
+    private static final String T_COURSE = GBLang.add(P + "course", "Its rocket's course reaches %s of %s launchers");
+    private static final String T_COURSE_NONE = GBLang.add(P + "course_none", "No launcher on its network to order");
+    private static final String T_STANDING = GBLang.add(P + "standing", "%s launchers standing by for its rocket");
+    private static final String T_SENT = GBLang.add(P + "sent", "%s launchers have the order");
+    private static final String T_SENT_HOW = GBLang.add(P + "sent_how", "Each fires as its signal reaches it");
     private static final String T_NETWORK = GBLang.add(P + "network", "Network %s");
     private static final String T_NO_NETWORK = GBLang.add(P + "no_network", "No network");
     private static final String T_ROCKET = GBLang.add(P + "rocket", "Command rocket loaded");
@@ -76,11 +82,12 @@ public final class DeadHandScreen extends Screen {
                 case ALERT -> "ALERT: a strike of magnitude %1$s, %2$s m off";
                 case STOOD_DOWN -> "Held: stood down";
                 case ANSWERED -> "A station answered: stood down";
-                case FIRED -> "FIRED: %2$s launchers ordered";
+                case FIRED -> "FIRED: rocket away, %2$s standing by";
                 case DRILL -> "Drill: %2$s s";
                 case DRILL_ENDED -> "Drill over";
                 case LOADED -> "Command rocket loaded";
                 case NO_NETWORK -> "No network to order: stood down";
+                case ROCKET_DOWN -> "Rocket down: %2$s had the order";
             });
         }
     }
@@ -297,14 +304,25 @@ public final class DeadHandScreen extends Screen {
         g.text(this.font, big, 0, 0, col, false);
         g.pose().popMatrix();
         List<Component> lines = new ArrayList<>();
-        lines.add(Component.translatable(T_WATCH_LINE, DeadHandBlockEntity.RADII[Mth.clamp(s.radius(), 0, DeadHandBlockEntity.RADII.length - 1)],
-                (int) DeadHandBlockEntity.THRESHOLDS[Mth.clamp(s.threshold(), 0, DeadHandBlockEntity.THRESHOLDS.length - 1)]));
+        Component watch = Component.translatable(T_WATCH_LINE, DeadHandBlockEntity.RADII[Mth.clamp(s.radius(), 0, DeadHandBlockEntity.RADII.length - 1)],
+                (int) DeadHandBlockEntity.THRESHOLDS[Mth.clamp(s.threshold(), 0, DeadHandBlockEntity.THRESHOLDS.length - 1)]);
+        Component course = s.network().isEmpty() ? null : s.launchers() == 0 ? Component.translatable(T_COURSE_NONE)
+                : Component.translatable(T_COURSE, s.reaches(), s.launchers());
         if (state == DeadHandBlockEntity.State.ALERT && !s.drill()) {
             lines.add(Component.translatable(T_STRIKE, String.format(Locale.ROOT, "%.1f", s.strikeMagnitude()), s.strikeDistance(), s.strikeX(), s.strikeZ()));
             lines.add(Component.translatable(s.origin() ? T_FROM : T_FROM_NONE));
+            lines.add(Component.translatable(T_STANDING, s.standing()));
             lines.add(Component.translatable(T_HOLD_HINT));
+        } else if (state == DeadHandBlockEntity.State.FIRING) {
+            lines.add(watch);
+            lines.add(Component.translatable(T_SENT, s.sent()));
+            lines.add(Component.translatable(T_SENT_HOW));
         } else {
+            lines.add(watch);
             lines.add(Component.translatable(s.rocket() ? T_ROCKET : T_NO_ROCKET));
+            if (course != null && state != DeadHandBlockEntity.State.SPENT) {
+                lines.add(course);
+            }
             if (state == DeadHandBlockEntity.State.SAFE && !s.cannot().isEmpty()) {
                 lines.add(Component.translatable(T_CANNOT, Component.translatable(switch (s.cannot()) {
                     case "formed" -> T_NEED_FORMED;
@@ -333,7 +351,7 @@ public final class DeadHandScreen extends Screen {
             Component text = Component.translatable(T_LINE[e.line().ordinal()], String.format(Locale.ROOT, "%.1f", e.a() / 10.0), e.b());
             int c = switch (e.line()) {
                 case ALERT, FIRED -> RED;
-                case ARMED, DRILL -> AMBER;
+                case ARMED, DRILL, ROCKET_DOWN -> AMBER;
                 default -> TEXT;
             };
             g.text(this.font, when, x + 12, gy, DIM, false);

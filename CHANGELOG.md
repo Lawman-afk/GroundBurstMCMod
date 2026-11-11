@@ -16,11 +16,18 @@ wall, and the Dead Hand, which fires the network back when a strike lands and no
   to everyone in the room: its launchers, radars, seismographs and Dead Hand, every missile it fired and every one its
   radars track, impacts, the blasts its seismographs felt, laser spots, the counts and the network's log, with the alert
   condition (NORMAL to ATTACK) and a clock on its header. Launch Codes used on it choose the network it shows.
+  - Click it to watch its board up close: drag the map to look round and scroll to zoom, as on the Launch Control
+    Station; the counts, the alert condition and the soonest impact across the top, the network's members and its log at
+    the side. **Show on the wall** puts the view you are looking at up on the wall for the room.
 - **Dead Hand** (a hardened concrete module with a launch tube, 80 FE/t), after the Soviet *Perimeter* system: link it,
-  load a **Command Rocket** and arm it with both keys. A strike of its set magnitude within its radius puts it in alert;
-  if no Launch Control Station of its network answers when its countdown ends (or on any strike, as set), its lid opens,
-  the rocket climbs out and every launcher of the network fires: at its own aim, or back where the strike came from.
-  HOLD or a redstone signal stands it down, a drill tests it, and an EMP does not stop it.
+  load a **Command Rocket** and arm it with both keys. A strike of its set magnitude within its radius puts it in alert,
+  and every launcher of its network stands by: aimed (at its own aim, or back where the strike came from), armed, its
+  countdown run in the alert so it waits at its last second. If no Launch Control Station of its network answers when
+  the countdown ends (or on any strike, as set), its lid has opened and the rocket leaves its tube at zero. Like the
+  real one it carries no warhead: it flies a course over your own launchers, broadcasting the launch order, and each
+  launcher fires the moment the signal reaches it (256 blocks round the rocket as it lifts off, farther as it climbs, up
+  to 480), so the ones beside it go at zero and far ones as it passes over. HOLD or a redstone signal stands it and its
+  launchers down, a drill tests it, and an EMP does not stop it.
 - Two or more seismographs on a network fix a blast where it was; the Launch Control Station's map shows the blasts,
   the seismographs and the Dead Hand, and its log notes blasts and the Dead Hand's alerts.
 - Alert Displays show **BLAST** alerts with the magnitude and distance.

@@ -37,11 +37,12 @@ public final class WarRoomPayloads {
     /**
      * Its whole picture: where it is in the world, the time, whether it is lit, its network's code (empty: none linked),
      * the alert condition (5 normal to 1 attack), the network's members, missiles in the air, blasts, impacts, laser
-     * spots and the last lines of its log, and how it is set to draw them (its view and layers).
+     * spots and its log (the wall shows the last lines, its screen all), and how it is set to draw them (its view and
+     * layers; a view set from its screen, its middle and scale: DESIGN.md §17.19).
      */
     public record Board(BlockPos pos, BlockPos at, long now, boolean powered, String code, int condition, List<StationPayloads.MemberView> members,
             List<StationPayloads.ContactView> contacts, List<StationPayloads.BlastView> blasts, List<ImpactView> impacts, List<StationPayloads.SpotView> spots,
-            List<LaunchNetwork.Event> log, int view, int layers) implements CustomPacketPayload {
+            List<LaunchNetwork.Event> log, int view, int layers, int viewX, int viewZ, int viewZoom) implements CustomPacketPayload {
         public static final Type<Board> TYPE = GBNetwork.type("war_room_board");
         public static final StreamCodec<RegistryFriendlyByteBuf, Board> CODEC = StreamCodec.of((buf, b) -> {
             buf.writeBlockPos(b.pos());
@@ -58,12 +59,15 @@ public final class WarRoomPayloads {
             StationPayloads.EVENT.apply(ByteBufCodecs.list()).encode(buf, b.log());
             buf.writeVarInt(b.view());
             buf.writeVarInt(b.layers());
+            buf.writeVarInt(b.viewX());
+            buf.writeVarInt(b.viewZ());
+            buf.writeVarInt(b.viewZoom());
         }, buf -> new Board(buf.readBlockPos(), buf.readBlockPos(), buf.readVarLong(), buf.readBoolean(), buf.readUtf(), buf.readVarInt(),
                 StationPayloads.MemberView.CODEC.apply(ByteBufCodecs.list()).decode(buf),
                 StationPayloads.ContactView.CODEC.apply(ByteBufCodecs.list()).decode(buf),
                 StationPayloads.BlastView.CODEC.apply(ByteBufCodecs.list()).decode(buf), ImpactView.CODEC.apply(ByteBufCodecs.list()).decode(buf),
                 StationPayloads.SpotView.CODEC.apply(ByteBufCodecs.list()).decode(buf), StationPayloads.EVENT.apply(ByteBufCodecs.list()).decode(buf),
-                buf.readVarInt(), buf.readVarInt()));
+                buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
 
         @Override
         public Type<Board> type() {
@@ -71,11 +75,15 @@ public final class WarRoomPayloads {
         }
     }
 
-    /** Its view (0: fit everything in; 1 on: centred on it at a scale) and the layers it draws. */
-    public record Settings(BlockPos pos, int view, int layers) implements CustomPacketPayload {
+    /**
+     * Its view (0: fit everything in; 1 on: centred on it at a scale; {@link WarRoomDisplayBlockEntity#VIEW_SET}: the
+     * middle and scale given, from its screen) and the layers it draws.
+     */
+    public record Settings(BlockPos pos, int view, int layers, int x, int z, int zoom) implements CustomPacketPayload {
         public static final Type<Settings> TYPE = GBNetwork.type("war_room_settings");
         public static final StreamCodec<RegistryFriendlyByteBuf, Settings> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Settings::pos, ByteBufCodecs.VAR_INT, Settings::view, ByteBufCodecs.VAR_INT, Settings::layers, Settings::new);
+                BlockPos.STREAM_CODEC, Settings::pos, ByteBufCodecs.VAR_INT, Settings::view, ByteBufCodecs.VAR_INT, Settings::layers,
+                ByteBufCodecs.VAR_INT, Settings::x, ByteBufCodecs.VAR_INT, Settings::z, ByteBufCodecs.VAR_INT, Settings::zoom, Settings::new);
 
         @Override
         public Type<Settings> type() {
@@ -86,7 +94,7 @@ public final class WarRoomPayloads {
             if (context.player() instanceof ServerPlayer player && dev.groundburst.content.machine.Carried.near(player, p.pos(), REACH)
                     && dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), WarRoomDisplayBlockEntity.class)
                             instanceof WarRoomDisplayBlockEntity d && player.level() instanceof ServerLevel level) {
-                d.applySettings(level, p.view(), p.layers());
+                d.applySettings(level, p.view(), p.layers(), p.x(), p.z(), p.zoom());
             }
         }
     }

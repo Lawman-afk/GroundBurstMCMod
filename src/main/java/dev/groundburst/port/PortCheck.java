@@ -523,7 +523,12 @@ public final class PortCheck {
                 GroundBurst.LOGGER.info("Port check: the war room's board lit at ATTACK {}, the strike recorded {}, the Dead Hand fired {}: {}",
                         board, felt, fired, board && felt && fired ? "OK" : "WRONG");
             });
-            case 1840 -> {
+            // Its screen (main's DESIGN.md §17.19): the board up close, opened from before the display.
+            case 1834 -> command(mc, "tp @s -76.5 -60 -24.5 180 -6");
+            case 1844 -> dev.groundburst.content.command.WarRoomDisplayBlock.screenHook.accept(DISPLAY);
+            case 1884 -> shot(mc, "war_room_screen");
+            case 1888 -> mc.setScreen(null);
+            case 1892 -> {
                 GroundBurst.LOGGER.info("Port check: done");
                 mc.stop();
             }

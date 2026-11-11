@@ -63,6 +63,25 @@ public interface LaunchSite {
     /** Fires it if armed. */
     boolean launchArmed(ServerLevel level, @Nullable Entity by);
 
+    /**
+     * Fires it if armed, standing by (DESIGN.md §17.19): its countdown runs as ever and holds at its last tick until it is
+     * {@link #release released} (the Dead Hand's command rocket reaching it) or {@link #scrub scrubbed}.
+     */
+    default boolean launchHeld(ServerLevel level, @Nullable Entity by) {
+        return launchArmed(level, by);
+    }
+
+    /** Its countdown is let run out: held at its last tick, it fires at once; still counting, at its end. */
+    default void release() {}
+
+    /** Its countdown scrubbed, its launchers stood down, what it holds kept, made safe (a Dead Hand stood down). */
+    default void scrub() {}
+
+    /** Whether its countdown waits for an order ({@link #launchHeld}, not yet released). */
+    default boolean standingBy() {
+        return false;
+    }
+
     /** What its strike would do round its target now (the computer's map; {@link Strike#NONE}: nothing loaded). */
     default Strike strike(ServerLevel level) {
         return Strike.NONE;

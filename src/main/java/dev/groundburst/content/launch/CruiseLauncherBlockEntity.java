@@ -90,6 +90,8 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     private @Nullable BlockPos target;
     private boolean armed;
     private @Nullable UUID launchedBy;
+    /** Standing by (DESIGN.md §17.19): its countdown holds at its last tick, the boxes up, until it is released. */
+    private boolean standingBy;
     /** The boxes up (synced: the model raises or lowers them); which have fired (their front covers open). */
     private boolean raised, firedA, firedB;
     /** The boxes still to fire in this launch, in order (their slots). */
@@ -248,6 +250,35 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
         return this.armed && this.target != null && launch(level, this.target, by);
     }
 
+    /** Fires if armed, standing by: its boxes rise and its countdown holds at its last tick until it is released. */
+    @Override
+    public boolean launchHeld(ServerLevel level, @Nullable Entity by) {
+        if (!launchArmed(level, by)) {
+            return false;
+        }
+        this.standingBy = true;
+        setChanged();
+        return true;
+    }
+
+    @Override
+    public void release() {
+        if (this.standingBy) {
+            this.standingBy = false;
+            setChanged();
+        }
+    }
+
+    @Override
+    public void scrub() {
+        standDown();
+    }
+
+    @Override
+    public boolean standingBy() {
+        return this.standingBy && this.phase == Phase.COUNTDOWN;
+    }
+
     /** Starts the countdown to fire its missiles at {@code target}: its boxes rise. False if it is not ready. */
     public boolean launch(ServerLevel level, BlockPos target, @Nullable Entity by) {
         if (readiness() != Readiness.READY) {
@@ -255,6 +286,7 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
         }
         this.target = target.immutable();
         this.armed = false;
+        this.standingBy = false;
         this.launchedBy = by == null ? null : by.getUUID();
         this.queue = missile(SLOT_A) != null && missile(SLOT_B) != null ? new int[] {SLOT_A, SLOT_B}
                 : new int[] {missile(SLOT_A) != null ? SLOT_A : SLOT_B};
@@ -314,6 +346,9 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
             }
             case COUNTDOWN -> {
                 this.status = MachineStatus.RUNNING;
+                if (this.standingBy && this.phaseTicks >= COUNTDOWN - 1) {
+                    return true;                                 // standing by at its last tick for the order (DESIGN.md §17.19)
+                }
                 this.phaseTicks++;
                 int left = COUNTDOWN - this.phaseTicks;
                 if (left > 0 && left % 20 == 0) {
@@ -385,14 +420,16 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
         enter(Phase.IDLE);
         setRaised(false);
         this.firedA = this.firedB = false;
+        this.standingBy = false;
         this.queue = new int[0];
         sync();
     }
 
-    /** Knocked out, stopped or broken: a countdown is scrubbed, an armed one made safe; the boxes come down. */
+    /** Knocked out, stopped, broken or scrubbed: a countdown is scrubbed, an armed one made safe; the boxes come down. */
     private void standDown() {
-        if (this.armed) {
+        if (this.armed || this.standingBy) {
             this.armed = false;
+            this.standingBy = false;
             setChanged();
         }
         if (this.phase == Phase.COUNTDOWN || this.phase == Phase.FIRING) {
@@ -653,6 +690,7 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
         output.putBoolean("fired_a", this.firedA);
         output.putBoolean("fired_b", this.firedB);
         output.putIntArray("queue", this.queue);
+        output.putBoolean("standing_by", this.standingBy);
     }
 
     @Override
@@ -671,5 +709,6 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
         this.firedA = input.getBooleanOr("fired_a", false);
         this.firedB = input.getBooleanOr("fired_b", false);
         this.queue = input.getIntArray("queue").orElse(new int[0]);
+        this.standingBy = input.getBooleanOr("standing_by", false);
     }
 }

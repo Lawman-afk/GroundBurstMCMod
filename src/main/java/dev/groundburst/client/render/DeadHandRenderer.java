@@ -19,8 +19,9 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 
 /**
- * The Dead Hand (DESIGN.md §17.17): its model (the lamps, the keys and the tube's lid by its state, the block entity's),
- * and on its console's little screen what it is doing: SAFE, WATCHING, the countdown in alert (red, flashing), FIRED.
+ * The Dead Hand (DESIGN.md §17.17, §17.19): its model (the lamps, the keys and the tube's lid by its state, the block
+ * entity's), and on its console's little screen what it is doing: SAFE, WATCHING, the countdown in alert (red, flashing),
+ * SENDING while its command rocket transmits, FIRED.
  * (The 1.21.1 backport's: drawn in GeckoLib 4's postRender, the pose already turned with the block.)
  */
 public class DeadHandRenderer extends MachineGeoRenderer<DeadHandBlockEntity> {
@@ -29,6 +30,7 @@ public class DeadHandRenderer extends MachineGeoRenderer<DeadHandBlockEntity> {
     private static final String T_WATCHING = GBLang.add(P + "watching", "WATCHING");
     private static final String T_ALERT = GBLang.add(P + "alert", "T-%s");
     private static final String T_FIRED = GBLang.add(P + "fired", "FIRED");
+    private static final String T_SENDING = GBLang.add(P + "sending", "SENDING");
     private static final String T_NO_ROCKET = GBLang.add(P + "no_rocket", "NO ROCKET");
     /**
      * The console's screen (tools/assets/dead_hand.py's SCREEN: x -4.5 to 4.5, y 19 to 25, its front at z -9.8): its
@@ -56,7 +58,8 @@ public class DeadHandRenderer extends MachineGeoRenderer<DeadHandBlockEntity> {
             case SAFE -> be.rocket() ? new Text(Component.translatable(T_SAFE), GREEN) : new Text(Component.translatable(T_NO_ROCKET), AMBER);
             case WATCHING -> new Text(Component.translatable(T_WATCHING), AMBER);
             case ALERT -> new Text(Component.translatable(T_ALERT, (Math.max(0, be.alertUntil() - now) + 19) / 20), now % 20 < 12 ? RED : DARK_RED);
-            case FIRING, SPENT -> new Text(Component.translatable(T_FIRED), RED);
+            case FIRING -> new Text(Component.translatable(T_SENDING), now % 10 < 6 ? RED : DARK_RED);    // its rocket transmitting
+            case SPENT -> new Text(Component.translatable(T_FIRED), RED);
         };
         Text text = t;
         SubmitNodeCollector renderTasks = new SubmitNodeCollector(buffers);

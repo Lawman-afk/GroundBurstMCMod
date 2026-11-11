@@ -116,15 +116,18 @@ public final class GBCommand {
                     + "seismographs felt, the counts, the log and the alert condition. Build it one block deep against a wall: a bottom "
                     + "row of seven Machine Casing with the controller in the middle and an Energy Port two to its right, three rows of "
                     + "seven Display Panels, a row of Machine Casing on top. Use Launch Codes on it to show their network; click it to "
-                    + "set its view. 60 FE/t.");
+                    + "watch its board up close (drag to look round, scroll to zoom), set what the wall shows, or put your view on the "
+                    + "wall. 60 FE/t.");
     public static final String INFO_DEAD_HAND = GBLang.add(GroundBurst.MODID + ".jei.info.dead_hand",
             "The Dead Hand retaliates when a strike lands. Build it of Hazard Concrete 3 wide, 2 deep and 2 high: the controller in "
                     + "the middle of the front, an Energy Port in the middle of the back row's bottom, two Missile Canisters standing in "
                     + "the back-right column, an Antenna on the roof's front-left corner. Link it with Launch Codes, load a Command "
                     + "Rocket and arm it at its console (both keys). A strike of its magnitude within its radius that its network did not "
-                    + "fire puts it in alert; HOLD (or redstone into it) stands it down. At zero, if no station of its network answers "
-                    + "(or on any strike), its rocket orders every launcher of the network to fire: at its own aim, or back where the "
-                    + "strike came from. An EMP does not stop it. 80 FE/t.");
+                    + "fire puts it in alert and readies every launcher of the network: aimed (at its own aim, or back where the strike "
+                    + "came from), armed and counted down to wait at its last second. HOLD (or redstone into it) stands them all down. At "
+                    + "zero, if no station of its network answers (or on any strike), its rocket flies a course over the network's "
+                    + "launchers, and each fires as its signal reaches it (256 blocks round it, more as it climbs, to 480). An EMP does "
+                    + "not stop it. 80 FE/t.");
 
     private GBCommand() {}
 

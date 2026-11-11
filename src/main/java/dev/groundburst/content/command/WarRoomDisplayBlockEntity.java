@@ -66,6 +66,8 @@ public class WarRoomDisplayBlockEntity extends MachineBlockEntity implements Ani
     public static final int ALERT_NEAR = 512;
     /** Its views: 0 fits everything in, then centred on it at these scales (blocks a screen pixel). */
     public static final int[] SCALES = {0, 2, 4, 8, 16, 32, 64};
+    /** A view set from its screen (DESIGN.md §17.19): the middle and scale the screen was looking at. */
+    public static final int VIEW_SET = SCALES.length;
     /** What it draws: the terrain, the radars' reach, labels, the log, blasts and impacts. */
     public static final int TERRAIN = 1, REACH = 2, LABELS = 4, LOG = 8, BLASTS = 16, ALL_LAYERS = 31;
 
@@ -73,6 +75,8 @@ public class WarRoomDisplayBlockEntity extends MachineBlockEntity implements Ani
     private long network;
     private boolean powered, surveyed;
     private int view, layers = ALL_LAYERS;
+    /** A view set from its screen: its middle and scale (blocks a screen pixel). */
+    private int viewX, viewZ, viewZoom = 8;
     /** The missiles it last saw (not saved): one gone close to its impact came down. */
     private Map<Integer, StationPayloads.ContactView> lastContacts = new HashMap<>();
     private final List<long[]> impacts = new ArrayList<>();
@@ -116,10 +120,15 @@ public class WarRoomDisplayBlockEntity extends MachineBlockEntity implements Ani
         sync();
     }
 
-    /** Its settings, from its screen. */
-    public void applySettings(ServerLevel level, int view, int layers) {
-        this.view = Math.clamp(view, 0, SCALES.length - 1);
+    /** Its settings, from its screen: its view (with the middle and scale of a view set there) and its layers. */
+    public void applySettings(ServerLevel level, int view, int layers, int x, int z, int zoom) {
+        this.view = Math.clamp(view, 0, VIEW_SET);
         this.layers = layers & ALL_LAYERS;
+        if (this.view == VIEW_SET) {
+            this.viewX = Math.clamp(x, -30_000_000, 30_000_000);
+            this.viewZ = Math.clamp(z, -30_000_000, 30_000_000);
+            this.viewZoom = TerrainSurvey.validScale(zoom) ? zoom : 8;
+        }
         setChanged();
     }
 
@@ -278,11 +287,8 @@ public class WarRoomDisplayBlockEntity extends MachineBlockEntity implements Ani
             impacts.add(new WarRoomPayloads.ImpactView((int) i[0], (int) i[1], (int) (now - i[2]), i[3] == 1));
         }
         List<LaunchNetwork.Event> log = n == null ? List.of() : n.log();
-        if (log.size() > 4) {
-            log = log.subList(log.size() - 4, log.size());
-        }
         WarRoomPayloads.Board board = new WarRoomPayloads.Board(this.worldPosition, worldBlockPos(), now, lit, n == null ? "" : n.code(), condition,
-                pic.members(), pic.contacts(), pic.blasts(), impacts, pic.spots(), log, this.view, this.layers);
+                pic.members(), pic.contacts(), pic.blasts(), impacts, pic.spots(), log, this.view, this.layers, this.viewX, this.viewZ, this.viewZoom);
         for (ServerPlayer p : room) {
             PacketDistributor.sendToPlayer(p, board);
         }
@@ -421,14 +427,21 @@ public class WarRoomDisplayBlockEntity extends MachineBlockEntity implements Ani
         output.putLong("network", this.network);
         output.putInt("view", this.view);
         output.putInt("layers", this.layers);
+        output.putInt("view_x", this.viewX);
+        output.putInt("view_z", this.viewZ);
+        output.putInt("view_zoom", this.viewZoom);
     }
 
     @Override
     protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
         super.loadAdditional(input.tag(), input.lookup());
         this.network = input.getLongOr("network", 0L);
-        this.view = Math.clamp(input.getIntOr("view", 0), 0, SCALES.length - 1);
+        this.view = Math.clamp(input.getIntOr("view", 0), 0, VIEW_SET);
         this.layers = input.getIntOr("layers", ALL_LAYERS);
+        this.viewX = input.getIntOr("view_x", 0);
+        this.viewZ = input.getIntOr("view_z", 0);
+        int zoom = input.getIntOr("view_zoom", 8);
+        this.viewZoom = TerrainSurvey.validScale(zoom) ? zoom : 8;
         this.shownPowered = input.getBooleanOr("shown_powered", this.shownPowered);
         this.condition = input.getIntOr("condition", this.condition);
     }

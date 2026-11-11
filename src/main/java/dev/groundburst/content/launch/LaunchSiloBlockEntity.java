@@ -77,6 +77,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     private @Nullable UUID launchedBy;
     /** The bomb scale its launch was ordered at (GameTests' shrunken blasts; 1 in play, and after a reload). */
     private float launchScale = 1f;
+    /** Standing by (DESIGN.md §17.19): its countdown holds at T-1 until the Dead Hand's command rocket reaches it. */
+    private boolean standingBy;
 
     public LaunchSiloBlockEntity(BlockPos pos, BlockState state) {
         this(GBLaunch.SILO_ENTITY.get(), pos, state, ENERGY_CAPACITY);
@@ -255,6 +257,35 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         return this.armed && this.target != null && launch(level, this.target, by);
     }
 
+    /** Fires if armed, standing by: the countdown holds at T-1 until it is released (DESIGN.md §17.19). */
+    @Override
+    public boolean launchHeld(ServerLevel level, @Nullable Entity by) {
+        if (!launchArmed(level, by)) {
+            return false;
+        }
+        this.standingBy = true;
+        setChanged();
+        return true;
+    }
+
+    @Override
+    public void release() {
+        if (this.standingBy) {
+            this.standingBy = false;
+            setChanged();
+        }
+    }
+
+    @Override
+    public void scrub() {
+        standDown();
+    }
+
+    @Override
+    public boolean standingBy() {
+        return this.standingBy && this.countdown >= 0;
+    }
+
     /** Starts the countdown to launch at {@code target}; false if the silo is not ready. */
     public boolean launch(ServerLevel level, BlockPos target, @Nullable Entity by) {
         if (readiness() != Readiness.READY || isEmpDisabled()) {
@@ -262,6 +293,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         }
         this.target = target.immutable();
         this.armed = false;
+        this.standingBy = false;
         this.launchedBy = by == null ? null : by.getUUID();
         this.launchScale = Charges.bombScale;
         this.countdown = countdownTicks();
@@ -350,8 +382,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         }
         this.status = MachineStatus.RUNNING;
         BlockPos pad = padCentre();
-        if (this.countdown <= 1 && holdLaunch(level)) {
-            this.countdown = 1;                              // held at T-1 (the silo's doors still opening)
+        if (this.countdown <= 1 && (this.standingBy || holdLaunch(level))) {
+            this.countdown = 1;                              // held at T-1: standing by for the order, or the doors still opening
             onCountdown(level, pad, 1);
             return true;
         }
@@ -368,11 +400,12 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         return true;
     }
 
-    /** Knocked out by an EMP, or stopped by redstone: an armed silo is made safe and a countdown is scrubbed. */
+    /** Knocked out by an EMP, stopped by redstone or scrubbed: an armed silo is made safe and a countdown is scrubbed. */
     private void standDown() {
-        if (this.armed || this.countdown >= 0) {
+        if (this.armed || this.countdown >= 0 || this.standingBy) {
             this.armed = false;
             this.countdown = -1;
+            this.standingBy = false;
             setChanged();
         }
     }
@@ -390,6 +423,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     /** T-0: the missile is lit on the pad (it climbs away after its ignition), carrying its warhead. */
     private void liftOff(ServerLevel level, BlockPos pad) {
         this.countdown = -1;
+        this.standingBy = false;
         var spec = missile();
         if (this.target == null || spec == null || readinessIgnoringCountdown() != Readiness.READY) {
             return;
@@ -553,6 +587,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             output.putString("launched_by", this.launchedBy.toString());
         }
         output.putString("held", this.held);
+        output.putBoolean("standing_by", this.standingBy);
     }
 
     @Override
@@ -563,5 +598,6 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         this.target = input.getLong("target").map(BlockPos::of).orElse(null);
         this.launchedBy = input.getString("launched_by").map(UUID::fromString).orElse(null);
         this.held = input.getStringOr("held", "");
+        this.standingBy = input.getBooleanOr("standing_by", false);
     }
 }

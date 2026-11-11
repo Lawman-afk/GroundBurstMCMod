@@ -36,18 +36,18 @@ import software.bernie.geckolib.cache.object.BakedGeoModel;
  */
 public class WarRoomRenderer extends MachineGeoRenderer<WarRoomDisplayBlockEntity> {
     private static final String P = GroundBurst.MODID + ".war_room.";
-    private static final String T_NET = GBLang.add(P + "net", "NET %s");
-    private static final String T_COUNTS = GBLang.add(P + "counts", "%s LINKED   %s ARMED   %s IN FLIGHT   %s INCOMING");
-    private static final String T_IMPACT = GBLang.add(P + "impact", "IMPACT %s");
-    private static final String T_NO_NETWORK = GBLang.add(P + "no_network", "NO NETWORK: USE LAUNCH CODES ON THIS DISPLAY");
+    public static final String T_NET = GBLang.add(P + "net", "NET %s");
+    public static final String T_COUNTS = GBLang.add(P + "counts", "%s LINKED   %s ARMED   %s IN FLIGHT   %s INCOMING");
+    public static final String T_IMPACT = GBLang.add(P + "impact", "IMPACT %s");
+    public static final String T_NO_NETWORK = GBLang.add(P + "no_network", "NO NETWORK: USE LAUNCH CODES ON THIS DISPLAY");
     private static final String T_SCALE = GBLang.add(P + "scale", "1:%s");
-    private static final String[] T_CONDITION = {
+    public static final String[] T_CONDITION = {
             GBLang.add(P + "condition.1", "CONDITION 1: ATTACK"),
             GBLang.add(P + "condition.2", "CONDITION 2: INCOMING"),
             GBLang.add(P + "condition.3", "CONDITION 3: MISSILES IN FLIGHT"),
             GBLang.add(P + "condition.4", "CONDITION 4: ARMED"),
             GBLang.add(P + "condition.5", "CONDITION 5: NORMAL")};
-    private static final int[] CONDITION_COLOUR = {0xFFFF3A24, 0xFFFF7A24, 0xFFFFB428, 0xFFFFE040, 0xFF46E04A};
+    public static final int[] CONDITION_COLOUR = {0xFFFF3A24, 0xFFFF7A24, 0xFFFFB428, 0xFFFFE040, 0xFF46E04A};
 
     /** The screen's glass (model pixels): its left and right, its top and bottom, and its face's z (a hair in front). */
     private static final float LEFT = -53f, TOP = 61f, FACE = 6.04f;
@@ -107,7 +107,7 @@ public class WarRoomRenderer extends MachineGeoRenderer<WarRoomDisplayBlockEntit
         for (StationPayloads.MemberView m : b.members()) {
             if (m.launcher()) {
                 linked++;
-                armed += m.willBeArmed() && !m.lost() ? 1 : 0;
+                armed += (m.willBeArmed() || m.standingBy()) && !m.lost() ? 1 : 0;
             }
         }
         for (StationPayloads.ContactView c : b.contacts()) {

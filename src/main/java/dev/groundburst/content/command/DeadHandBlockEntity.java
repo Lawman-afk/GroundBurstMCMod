@@ -33,6 +33,7 @@ import dev.groundburst.registry.GBSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -54,15 +55,16 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * The Dead Hand (DESIGN.md §17.17), after the Soviet Perimeter system: the command module of an automatic retaliation
- * system on a launch network. Loaded with a Command Rocket and armed at its console (both keys: two clicks of ARM), it
- * watches its radius for a strike (a blast of its set magnitude or more that its own network did not fire); then it goes
- * into alert (a countdown, its alarm channel raised, the network's log told); HOLD, or a redstone signal into it, stands it
- * down. At zero, if its network's command is silent (no Launch Control Station of its network working; or on any strike,
- * as set), it fires: its tube's lid opens, the command rocket climbs out (a missile with no warhead), and as it transmits
- * every launcher of the network that can fire is ordered to: at its own aim (the war plan) or at where the strike was
- * launched from (return fire). Then it is spent until a new rocket is loaded. Hardened: an EMP does not stop it. 80 FE a
- * tick.
+ * The Dead Hand (DESIGN.md §17.17, §17.19), after the Soviet Perimeter system: the command module of an automatic
+ * retaliation system on a launch network. Loaded with a Command Rocket and armed at its console (both keys: two clicks of
+ * ARM), it watches its radius for a strike (a blast of its set magnitude or more that its own network did not fire); then
+ * it goes into alert: a countdown, its alarm channel raised, the network's log told, and every launcher of the network
+ * readied to stand by (aimed, armed, its countdown run to its last tick by zero). HOLD, or a redstone signal into it,
+ * stands it and them down. Its tube's lid opens in the countdown's last two seconds; at zero, if its network's command is
+ * silent (no Launch Control Station of its network working; or on any strike, as set), its command rocket leaves the tube
+ * and flies a course over the network's launchers ({@link CommandRocket}), each firing as its signal reaches it (the
+ * network listens: {@link LaunchNetwork#commandRocketAway}). Then it is spent until a new rocket is loaded. Hardened: an
+ * EMP does not stop it. 80 FE a tick.
  */
 public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, ScreenWatched, NetworkMember {
     public static final int ENERGY_CAPACITY = 80_000, POWER_USE = 80;
@@ -71,17 +73,17 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
     public static final float[] THRESHOLDS = {3f, 4f, 5f};
     public static final int[] COUNTDOWNS = {600, 1200, 2400};
     public static final int DEFAULT_RADIUS = 2, DEFAULT_THRESHOLD = 1;
-    /** The second key must follow the first this soon (ticks); the lid's swing; the rocket transmits this long after it lifts off. */
-    public static final int CONFIRM = 60, LID_TICKS = 40, TRANSMIT = 60;
-    /** The command rocket's flight: this far behind the module (blocks), out of its tube two blocks deep. */
-    static final double ROCKET_RANGE = 120, TUBE_DEPTH = 2;
+    /** The second key must follow the first this soon (ticks); the lid's swing (it starts this long before zero). */
+    public static final int CONFIRM = 60, LID_TICKS = 40;
+    /** Its console's plan of the rocket's course is worked out again this often while it is watched, ticks. */
+    private static final int COURSE_INTERVAL = 40;
     private static final int RECHECK_INTERVAL = 40, SCOPE_INTERVAL = 10, LOG = 8;
 
-    /** What it is doing. */
+    /** What it is doing: FIRING while its command rocket flies, SPENT once it is down. */
     public enum State { SAFE, WATCHING, ALERT, FIRING, SPENT }
 
-    /** A line of its own log (its console shows them): what happened, and its figures. */
-    public enum Line { ARMED, SAFE, ALERT, STOOD_DOWN, ANSWERED, FIRED, DRILL, DRILL_ENDED, LOADED, NO_NETWORK }
+    /** A line of its own log (its console shows them): what happened, and its figures (new kinds go at the end). */
+    public enum Line { ARMED, SAFE, ALERT, STOOD_DOWN, ANSWERED, FIRED, DRILL, DRILL_ENDED, LOADED, NO_NETWORK, ROCKET_DOWN }
 
     /** One line: when, what, a magnitude (tenths) and a distance or count. */
     public record Entry(long time, Line line, int a, int b) {
@@ -105,11 +107,17 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
     private int strikeX, strikeZ, strikeDistance;
     private float strikeMagnitude;
     private @Nullable BlockPos origin;
-    /** Firing: when the rocket lifts off and when it transmits. */
-    private long liftOff = -1, transmitAt = -1;
+    /** Firing: its command rocket's flight, and how many launchers have taken the order from it. */
+    private @Nullable UUID rocketId;
+    private int sent;
+    /** Its lid swinging shut (game time it started, -1: not), from how far open (radians). */
+    private long lidShutAt = -1;
+    private float lidShutFrom;
     /** The first key's turn (game time), waiting for the second. */
     private long armAsked = -1;
-    private boolean held;
+    /** Its console's plan of the rocket's course (not saved), and when it was worked out. */
+    private CommandRocket.@Nullable Course course;
+    private long courseAt = -1;
 
     public DeadHandBlockEntity(BlockPos pos, BlockState state) {
         super(GBCommand.DEAD_HAND_ENTITY.get(), pos, state, ENERGY_CAPACITY, 2_000, 0, 0, new int[0], new int[0]);
@@ -162,6 +170,16 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
 
     public int channel() {
         return this.channel;
+    }
+
+    /** Its command rocket's flight while it flies (null: none). */
+    public @Nullable UUID rocketFlight() {
+        return this.rocketId;
+    }
+
+    /** How many launchers have taken the order from its command rocket. */
+    public int sent() {
+        return this.sent;
     }
 
     public List<Entry> log() {
@@ -284,8 +302,8 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
         this.rocket = true;
         if (this.state == State.SPENT) {
             this.state = State.SAFE;                             // a new rocket: armed again only at the console
+            shutLid(level.getGameTime(), LID_OPEN);
         }
-        this.liftOff = -1;
         line(level, Line.LOADED, 0, 0);
         level.playSound(null, this.worldPosition, GBSounds.DEAD_HAND_LID.get(), SoundSource.BLOCKS, 0.8f, 1.2f);
         changed(level);
@@ -336,7 +354,7 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
         }
     }
 
-    /** Broken up: its rocket dropped, its alarm lowered. */
+    /** Broken up: its rocket dropped, its alarm lowered, the launchers standing by for it stood down. */
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
@@ -350,6 +368,7 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
                 this.rocket = false;
             }
             Alarms.lower(server, this.channel, this.worldPosition);
+            standDownLaunchers(server);
         }
     }
 
@@ -423,7 +442,10 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
         }
     }
 
-    /** Into alert: the countdown, its alarm, the network told (a drill too, but nothing fires at its end). */
+    /**
+     * Into alert: the countdown, its alarm, the network told and its launchers readied to stand by for the rocket (a drill
+     * too, but it readies nothing and nothing fires at its end).
+     */
     private void alert(ServerLevel level, long now, @Nullable BlockPos from, int x, int z, float m, int d) {
         this.state = State.ALERT;
         this.alertUntil = now + COUNTDOWNS[this.countdown];
@@ -432,9 +454,13 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
         this.strikeMagnitude = m;
         this.strikeDistance = d;
         this.origin = from;
-        this.held = false;
         raise(level);
         if (!this.drill) {
+            LaunchNetwork nets = LaunchNetwork.of(level);
+            LaunchNetwork.Network n = nets.networkOf(this.worldPosition);
+            if (n != null) {
+                nets.standBy(level, n.id, this.worldPosition, this.targets == 1 ? this.origin : null, this.alertUntil);
+            }
             note(level, LaunchNetwork.EventKind.DEAD_HAND_ALERT, x, z, COUNTDOWNS[this.countdown] / 20);
         }
         playSound(level, this.worldPosition, GBSounds.DEAD_HAND_ALERT.get(), SoundSource.BLOCKS, 1.4f, 1f);
@@ -445,12 +471,17 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
         if ((now + this.worldPosition.hashCode()) % Alarms.REFRESH == 0) {
             raise(level);
         }
-        if ((this.alertUntil - now) % 20 == 0) {
-            playSound(level, this.worldPosition, GBSounds.DEAD_HAND_ALERT.get(), SoundSource.BLOCKS, 1.1f, this.alertUntil - now <= 200 ? 1.25f : 1f);
+        long left = this.alertUntil - now;
+        if (left % 20 == 0) {
+            playSound(level, this.worldPosition, GBSounds.DEAD_HAND_ALERT.get(), SoundSource.BLOCKS, 1.1f, left <= 200 ? 1.25f : 1f);
         }
         if (now % 5 == 0 && heldByRedstone(level)) {
             holdNow(level);
             return;
+        }
+        if (left == LID_TICKS && !this.drill && this.rocket) {
+            // The lid swings open over the countdown's last two seconds: the rocket leaves at zero.
+            playSound(level, this.worldPosition, GBSounds.DEAD_HAND_LID.get(), SoundSource.BLOCKS, 1.6f, 1f);
         }
         if (now < this.alertUntil) {
             return;
@@ -465,14 +496,14 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
         LaunchNetwork nets = LaunchNetwork.of(level);
         LaunchNetwork.Network n = nets.networkOf(this.worldPosition);
         if (n == null) {
-            Alarms.lower(level, this.channel, this.worldPosition);
+            standDown(level);
             this.state = State.WATCHING;
             line(level, Line.NO_NETWORK, 0, 0);
             changed(level);
             return;
         }
         if (this.command == 0 && nets.stationAnswers(level, n.id)) {
-            // Its link check: a station of its network answers, so the command lives; it stands down.
+            // Its link check: a station of its network answers, so the command lives; it stands down, its launchers too.
             standDown(level);
             this.state = State.WATCHING;
             line(level, Line.ANSWERED, 0, 0);
@@ -481,48 +512,81 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
             return;
         }
         if (!this.powered || !this.rocket) {
-            return;                                              // it waits for power (and its rocket) to fire
+            return;                                              // it waits for power (its launchers stand by)
         }
-        this.state = State.FIRING;
-        this.liftOff = now + LID_TICKS;
-        playSound(level, this.worldPosition, GBSounds.DEAD_HAND_LID.get(), SoundSource.BLOCKS, 1.6f, 1f);
-        changed(level);
+        fire(level, n);
     }
 
     /** Whether it was armed (watching) before a drill took it into alert. */
     private boolean lastArmed;
 
-    /** Firing: its lid opens, the rocket lifts off, and as it transmits the network's launchers are ordered to fire. */
-    private void firingTick(ServerLevel level, long now) {
-        if (this.liftOff >= 0 && now >= this.liftOff) {
-            this.liftOff = -1;
-            this.rocket = false;
-            launchRocket(level);
-            this.transmitAt = now + TRANSMIT;
-            changed(level);
-        }
-        if (this.transmitAt >= 0 && now >= this.transmitAt) {
-            this.transmitAt = -1;
-            LaunchNetwork nets = LaunchNetwork.of(level);
-            LaunchNetwork.Network n = nets.networkOf(this.worldPosition);
-            int ordered = n == null ? 0 : nets.retaliate(level, n.id, this.targets == 1 ? this.origin : null);
-            Alarms.lower(level, this.channel, this.worldPosition);
-            this.state = State.SPENT;
-            line(level, Line.FIRED, 0, ordered);
-            note(level, LaunchNetwork.EventKind.DEAD_HAND_FIRED, this.strikeX, this.strikeZ, ordered);
-            changed(level);
-        }
+    /** Zero: its command rocket leaves the tube, transmitting; the launchers by it take the order at once. */
+    private void fire(ServerLevel level, LaunchNetwork.Network n) {
+        LaunchNetwork nets = LaunchNetwork.of(level);
+        int standing = nets.standingFor(n.id, this.worldPosition);
+        this.state = State.FIRING;
+        this.rocket = false;
+        this.sent = 0;
+        Flights.Flight f = launchRocket(level, n);
+        this.rocketId = f.id();
+        Alarms.lower(level, this.channel, this.worldPosition);
+        line(level, Line.FIRED, 0, standing);
+        note(level, LaunchNetwork.EventKind.DEAD_HAND_FIRED, this.strikeX, this.strikeZ, standing);
+        nets.commandRocketAway(level, this.worldPosition, f);
+        this.sent = nets.reachedBy(f.id());
+        changed(level);
     }
 
-    /** The command rocket: out of its tube and away behind the module, a missile with no warhead (it comes down harmlessly). */
-    private void launchRocket(ServerLevel level) {
+    /** Firing: its rocket flies, the network following it (what it reaches fires); once it is down, it is spent. */
+    private void firingTick(ServerLevel level, long now) {
+        if (now % SCOPE_INTERVAL != 0) {
+            return;
+        }
+        UUID id = this.rocketId;
+        boolean flying = id != null && Flights.of(level).all().stream().anyMatch(f -> f.id().equals(id));
+        if (flying) {
+            int s = Math.max(this.sent, LaunchNetwork.of(level).reachedBy(id));
+            if (s != this.sent) {
+                this.sent = s;
+                setChanged();
+            }
+            return;
+        }
+        this.rocketId = null;
+        this.state = State.SPENT;
+        line(level, Line.ROCKET_DOWN, 0, this.sent);
+        changed(level);
+    }
+
+    /** The tube's foot in the world, where the rocket's tail stands. */
+    private Vec3 pad() {
         List<BlockPos> tube = definition().positionsOf('K', this.worldPosition, controllerFacing());
         BlockPos foot = tube.stream().min(java.util.Comparator.comparingInt(BlockPos::getY)).orElse(this.worldPosition);
-        Vec3 pad = inWorld(Vec3.atBottomCenterOf(foot));
-        Direction back = controllerFacing().getOpposite();
-        Vec3 target = pad.add(back.getStepX() * ROCKET_RANGE, 0, back.getStepZ() * ROCKET_RANGE);
-        Flights.Flight f = Flights.launch(level, pad, target, ItemStack.EMPTY, SizeClass.S, true, null, TUBE_DEPTH);
+        return inWorld(Vec3.atBottomCenterOf(foot));
+    }
+
+    /** The command rocket: ejected from its tube and away over the network's launchers, a missile with no warhead. */
+    private Flights.Flight launchRocket(ServerLevel level, LaunchNetwork.Network n) {
+        Vec3 pad = pad();
+        CommandRocket.Course course = CommandRocket.plan(pad, LaunchNetwork.of(level).commandable(n.id), controllerFacing().getOpposite());
+        Flights.Flight f = Flights.launch(level, pad, course.target(), ItemStack.EMPTY, SizeClass.S, true, null, CommandRocket.TUBE_DEPTH,
+                CommandRocket.TUBE_BURN);
         LaunchNetwork.launched(level, this.worldPosition, f);
+        // The gas charge's burst out of the tube's mouth as it is thrown up.
+        Vec3 mouth = pad.add(0, CommandRocket.TUBE_DEPTH + 0.3, 0);
+        particles(level, ParticleTypes.CLOUD, mouth.x, mouth.y, mouth.z, 14, 0.3, 0.15, 0.3, 0.06);
+        particles(level, ParticleTypes.LARGE_SMOKE, mouth.x, mouth.y + 0.4, mouth.z, 8, 0.25, 0.25, 0.25, 0.04);
+        return f;
+    }
+
+    /** What its console shows of the course its rocket would fly now (worked out again every two seconds while watched). */
+    private CommandRocket.Course course(ServerLevel level, LaunchNetwork.Network n) {
+        long now = level.getGameTime();
+        if (this.course == null || now - this.courseAt >= COURSE_INTERVAL || now < this.courseAt) {
+            this.course = CommandRocket.plan(pad(), LaunchNetwork.of(level).commandable(n.id), controllerFacing().getOpposite());
+            this.courseAt = now;
+        }
+        return this.course;
     }
 
     private boolean heldByRedstone(ServerLevel level) {
@@ -549,12 +613,30 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
         changed(level);
     }
 
-    /** Out of alert: the countdown and the alarm stopped, and the strikes it has had meanwhile taken as answered. */
+    /**
+     * Out of alert: the countdown and the alarm stopped, the lid shut again if it had begun to open, the launchers standing
+     * by stood down, and the strikes it has had meanwhile taken as answered.
+     */
     private void standDown(ServerLevel level) {
+        long now = level.getGameTime();
+        float open = lidAngle(now);
+        if (open > 0) {
+            shutLid(now, open);
+        }
         this.alertUntil = -1;
         this.drill = false;
         Alarms.lower(level, this.channel, this.worldPosition);
-        skip(level, level.getGameTime());
+        standDownLaunchers(level);
+        skip(level, now);
+    }
+
+    /** Every launcher of its network standing by for it stood down. */
+    private void standDownLaunchers(ServerLevel level) {
+        LaunchNetwork nets = LaunchNetwork.of(level);
+        LaunchNetwork.Network n = nets.networkOf(this.worldPosition);
+        if (n != null) {
+            nets.standDown(level, n.id, this.worldPosition);
+        }
     }
 
     /** Its alarm in alert: a Blast alert for the strike (a drill: an Alarm). */
@@ -604,8 +686,8 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
     }
 
     /**
-     * Its report: incomplete, no power, no rocket (READY only with one), counting in alert (its countdown); armed while
-     * watching, in alert or firing; the strike's place in alert; its radius; its rocket (as what it holds).
+     * Its report: incomplete, no power, no rocket (READY only with one), counting in alert (its countdown) and firing (0);
+     * armed while watching, in alert or firing; the strike's place in alert; its radius; its rocket (as what it holds).
      */
     @Override
     public LaunchNetwork.Report networkReport(ServerLevel level) {
@@ -645,13 +727,17 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
     }
 
     private void send(ServerLevel level, ServerPlayer player) {
-        LaunchNetwork.Network n = LaunchNetwork.of(level).networkOf(this.worldPosition);
+        LaunchNetwork nets = LaunchNetwork.of(level);
+        LaunchNetwork.Network n = nets.networkOf(this.worldPosition);
         String why = this.state == State.SAFE ? cannotArm(level) : null;
         long now = level.getGameTime();
+        CommandRocket.Course c = n == null || this.state == State.FIRING || this.state == State.SPENT ? null : course(level, n);
         PacketDistributor.sendToPlayer(player, new DeadHandPayloads.Scope(this.worldPosition, now, isFormed(), this.powered, this.state.ordinal(),
                 this.rocket, this.drill, this.alertUntil, this.strikeX, this.strikeZ, this.strikeMagnitude, this.strikeDistance,
                 this.origin != null, n == null ? "" : n.code(), why == null ? "" : why, this.armAsked >= 0 && now - this.armAsked <= CONFIRM,
-                this.radius, this.threshold, this.countdown, this.command, this.targets, this.channel, List.copyOf(this.log)));
+                this.radius, this.threshold, this.countdown, this.command, this.targets, this.channel,
+                n == null ? 0 : nets.standingFor(n.id, this.worldPosition), c == null ? 0 : c.reached().size(), c == null ? 0 : c.of(), this.sent,
+                List.copyOf(this.log)));
     }
 
     @Override
@@ -662,6 +748,31 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
     // --- the model (tools/assets/dead_hand.py) ----------------------------------------------------------------------------
     /** The tube's lid open, radians. */
     static final float LID_OPEN = (float) Math.toRadians(112);
+
+    /**
+     * How far its lid stands open at {@code now} (radians): swinging open over the countdown's last two seconds, open once
+     * the rocket has gone, swinging shut again after a stand-down or a new rocket.
+     */
+    float lidAngle(double now) {
+        double u = this.lidShutAt < 0 ? 1 : Mth.clamp((now - this.lidShutAt) / LID_TICKS, 0, 1);
+        float closing = (float) (this.lidShutFrom * (1 - ease(u)));
+        return switch (this.state) {
+            case ALERT -> this.drill || !this.rocket ? closing
+                    : Math.max(closing, (float) (LID_OPEN * ease(Mth.clamp((now - (this.alertUntil - LID_TICKS)) / LID_TICKS, 0, 1))));
+            case FIRING, SPENT -> LID_OPEN;
+            default -> closing;
+        };
+    }
+
+    /** The lid starts to swing shut from {@code from} radians open. */
+    private void shutLid(long now, float from) {
+        this.lidShutAt = now;
+        this.lidShutFrom = from;
+    }
+
+    private static double ease(double u) {
+        return u * u * (3 - 2 * u);
+    }
 
     /** Unformed, nothing; its lamps by its state; the rocket's nose in its tube while it has one; the mast's light blinking. */
     @Override
@@ -684,7 +795,8 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
         if (this.state != State.FIRING && this.state != State.SPENT) {
             hidden.add("lamp_fired");
         }
-        if (!on || now % 40 >= 4) {
+        // The command link's light: a slow blink, fast while its rocket is in the air.
+        if (!on || (this.state == State.FIRING ? now % 6 >= 3 : now % 40 >= 4)) {
             hidden.add("mast_light");
         }
         if (!this.rocket) {
@@ -698,14 +810,7 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
         if (this.level == null) {
             return Map.of();
         }
-        double now = this.level.getGameTime() + partialTick;
-        float lid = 0;
-        if (this.state == State.FIRING) {
-            double u = this.liftOff >= 0 ? Mth.clamp(1 - (this.liftOff - now) / LID_TICKS, 0, 1) : 1;
-            lid = (float) (LID_OPEN * (u * u * (3 - 2 * u)));
-        } else if (this.state == State.SPENT) {
-            lid = LID_OPEN;
-        }
+        float lid = lidAngle(this.level.getGameTime() + partialTick);
         boolean armed = this.state == State.WATCHING || this.state == State.ALERT || this.state == State.FIRING;
         float key = armed ? (float) Math.toRadians(90) : 0;
         return Map.of("lid", new float[] {lid, 0, 0}, "key_l", new float[] {0, 0, key}, "key_r", new float[] {0, 0, key});
@@ -753,8 +858,12 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
         if (this.origin != null) {
             output.putLong("origin", this.origin.asLong());
         }
-        output.putLong("lift_off", this.liftOff);
-        output.putLong("transmit_at", this.transmitAt);
+        if (this.rocketId != null) {
+            output.putString("rocket_flight", this.rocketId.toString());
+        }
+        output.putInt("sent", this.sent);
+        output.putLong("lid_shut_at", this.lidShutAt);
+        output.putFloat("lid_shut_from", this.lidShutFrom);
         output.store("log", Entry.CODEC.listOf(), List.copyOf(this.log));
     }
 
@@ -784,8 +893,14 @@ public class DeadHandBlockEntity extends MachineBlockEntity implements AnimatedM
         this.strikeMagnitude = input.getFloatOr("strike_magnitude", 0);
         long o = input.getLongOr("origin", Long.MIN_VALUE);
         this.origin = o == Long.MIN_VALUE ? null : BlockPos.of(o);
-        this.liftOff = input.getLongOr("lift_off", -1);
-        this.transmitAt = input.getLongOr("transmit_at", -1);
+        try {
+            this.rocketId = input.getString("rocket_flight").map(UUID::fromString).orElse(null);
+        } catch (IllegalArgumentException e) {
+            this.rocketId = null;
+        }
+        this.sent = input.getIntOr("sent", 0);
+        this.lidShutAt = input.getLongOr("lid_shut_at", -1);
+        this.lidShutFrom = input.getFloatOr("lid_shut_from", 0);
         this.log.clear();
         try {
             input.read("log", Entry.CODEC.listOf()).ifPresent(this.log::addAll);
