@@ -107,6 +107,16 @@ neoForge {
             systemProperty 'groundburst.portCheck', 'true'
         }
 
+        // This branch's check that the mod's sites come out of this version's world generation: a normal world, the
+        // nearest of each site found, made, measured (its blocks; the rock round its parts underground and the density
+        // the ground was shaped with there) and photographed into run/screenshots/sites_*.png, then it quits
+        // (dev.groundburst.port.SiteCheck; the log's "Site check:" lines).
+        siteCheck {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.siteCheck', 'true'
+        }
+
         // Launchers on moving structures (with -PwithCreate: Create, Sable and Create Aeronautics loaded): a Cruise Missile
         // Launcher on a Create bearing and one made into a Sable ship fire, the log saying whether each missile lit where
         // its launcher is and headed the way it points; pictures in run/screenshots/create_*.png
@@ -187,7 +197,7 @@ neoForge {
 // groundburst.keepMouse; the runs turn the camera themselves), NeoForge's early loading window (made before any mod code
 // runs) turned off for them in run/config/fml.toml; and every client run is muted (master volume 0 in run/options.txt;
 // -Psound=on keeps it).
-def testRunNames = ['runPortCheck', 'runCreateCheck', 'runTestRange', 'runPlayBench']
+def testRunNames = ['runPortCheck', 'runSiteCheck', 'runCreateCheck', 'runTestRange', 'runPlayBench']
 def fmlConfig = file('run/config/fml.toml')
 def clientOptions = file('run/options.txt')
 def withSound = providers.gradleProperty('sound').isPresent()

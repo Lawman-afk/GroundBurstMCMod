@@ -125,7 +125,17 @@ hold 27 and four drums stand in a block), screenshots each into
 `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`; it
 keeps the game from pausing when its window is behind another).
 
-The test runs (the port check, the Create check, the test range, the play bench) are muted and leave the person at the
+`gradlew runSiteCheck` checks that the mod's sites come out of this version's world generation: it makes a normal world
+(seed 20261111), finds the nearest of each site to the spawn (the research station in the End), has the chunks it
+stands in made, and logs where it is, how many of the mod's blocks it holds, and for each part closed in rock underground
+(main's encapsulated `SitePiece`: a bunker's rooms, a silo's shaft, a waste store's vault) how open the ground two blocks
+round it is and the density the ground was shaped with out from its sides (the beardifier's, at 2, 6 and 10 blocks);
+then it photographs each from the air (`run/screenshots/sites_*.png`, from spectator, the HUD hidden) and quits
+(`dev.groundburst.port.SiteCheck`). 2026-11-11: all seven found, each with its blocks; the parts closed in rock shaped
+0.667, 0.400 and 0.133 at 2, 6 and 10 blocks on every side (1.21's encapsulate). The 1.20.1 branch runs it too, to set
+its numbers beside these.
+
+The test runs (the port check, the site check, the Create check, the test range, the play bench) are muted and leave the person at the
 computer their mouse: the master volume is set to 0 in run/options.txt before each client run (`-Psound=on` keeps it),
 and their window opens behind the other windows without the focus and never grabs the mouse (`port/DevRuns`, set by
 `groundburst.keepMouse`; `port/mixin/DevWindowMixin`, `DevMouseMixin`), NeoForge's early loading window turned off for
