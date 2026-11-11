@@ -7,6 +7,7 @@ import dev.groundburst.content.alarm.AlarmBlockEntity;
 import dev.groundburst.content.alarm.Alarms;
 import dev.groundburst.content.alarm.GBAlarms;
 import dev.groundburst.content.assembly.SizeClass;
+import dev.groundburst.content.command.CommandRocket;
 import dev.groundburst.content.command.DeadHandBlockEntity;
 import dev.groundburst.content.command.GBCommand;
 import dev.groundburst.content.command.Seismic;
@@ -39,8 +40,10 @@ import net.minecraft.world.phys.Vec3;
  * fixing a blast on their network; the War Room Display forming in every facing, shown a network by codes (no member of
  * it), its alert condition rising for a blast near; the Dead Hand armed only by both keys, alerting on a strike in its
  * radius (not its own network's, not one outside), held by HOLD and by redstone, standing down when its command answers,
- * firing its network when it is silent (the war plan, and return fire), drilling, untouched by an EMP; and a command
- * rocket, harmless, raising no warning. Strikes are placed straight into the ground's record ({@link Seismic#addForTest}).
+ * readying its network's launchers to stand by in its alert and standing them down, firing its network when it is silent
+ * (the war plan, and return fire) as its command rocket's signal reaches them, at zero, those out of its reach standing
+ * down, its rocket's course planned over them, drilling, untouched by an EMP; and a command rocket, harmless, raising no
+ * warning (DESIGN.md §17.19). Strikes are placed straight into the ground's record ({@link Seismic#addForTest}).
  * The ground carries every test's blasts to every other, so the tests whose figures any blast would change run alone
  * ({@link GBGameTests#testAlone}); the rest check their own strikes by their own figures.
  */
@@ -62,8 +65,12 @@ final class CommandTests {
         GBGameTests.test("dead_hand_arms_with_both_keys", GBGameTests.FLOOR_16, 120, CommandTests::arms);
         GBGameTests.testAlone("dead_hand_alerts_on_a_strike_and_holds", GBGameTests.FLOOR_16, 160, false, CommandTests::alerts);
         GBGameTests.testAlone("dead_hand_stands_down_when_command_answers", GBGameTests.FLOOR_16, 120, false, CommandTests::answered);
+        GBGameTests.testAlone("dead_hand_readies_its_launchers_and_stands_them_down", GBGameTests.FLOOR_16, 160, false, CommandTests::readies);
         GBGameTests.testAlone("dead_hand_fires_its_network_when_command_is_silent", GBGameTests.FLOOR_16, 400, true, h -> fires(h, false));
         GBGameTests.testAlone("dead_hand_returns_fire", GBGameTests.FLOOR_16, 400, true, h -> fires(h, true));
+        GBGameTests.testAlone("dead_hand_launchers_fire_as_it_reaches_zero", GBGameTests.FLOOR_16, 900, true, CommandTests::atZero);
+        GBGameTests.testAlone("dead_hand_launchers_out_of_its_rockets_reach_stand_down", GBGameTests.FLOOR_16, 300, true, CommandTests::outOfReach);
+        GBGameTests.test("command_rocket_plans_its_course_over_the_launchers", GBGameTests.FLOOR_16, 20, CommandTests::course);
         GBGameTests.testAlone("dead_hand_drills_and_shrugs_off_an_emp", GBGameTests.FLOOR_16, 160, false, CommandTests::drillAndEmp);
         GBGameTests.testOpenSky("command_rocket_raises_no_warning", GBGameTests.FLOOR_16, 120, CommandTests::harmless);
     }
@@ -441,64 +448,210 @@ final class CommandTests {
                 .thenSucceed();
     }
 
-    /**
-     * Its station destroyed, a strike, and at zero no command answers: its lid opens, the command rocket (harmless) lifts
-     * off, and as it transmits the network's silo is armed and launched: at its own aim (the war plan) or, set to return
-     * fire, back at where the strike's missile came from. Then it is spent.
-     */
-    private static void fires(GameTestHelper helper, boolean returnFire) {
+    /** A firing test's network: a station, the Dead Hand (radius 128, strikes of mb 5 and up), a silo loaded, powered, linked. */
+    private record Setup(LaunchStationBlockEntity st, DeadHandBlockEntity dh, LaunchSiloBlockEntity silo, LaunchNetwork.Network n,
+            BlockPos plan, BlockPos from) {}
+
+    private static Setup setup(GameTestHelper helper, boolean returnFire, int channel) {
         LaunchTests.floor(helper);
         ServerLevel level = helper.getLevel();
         LaunchStationBlockEntity st = StationTests.station(helper);
         DeadHandBlockEntity dh = deadHand(helper, st);
         dh.order(level, DeadHandBlockEntity.SET_RADIUS, 0);
         dh.order(level, DeadHandBlockEntity.SET_THRESHOLD, 2);
-        dh.order(level, DeadHandBlockEntity.SET_CHANNEL, returnFire ? 9224 : 9223);
+        dh.order(level, DeadHandBlockEntity.SET_CHANNEL, channel);
         dh.order(level, DeadHandBlockEntity.SET_TARGETS, returnFire ? 1 : 0);
         LaunchSiloBlockEntity silo = LaunchTests.silo(helper, SILO);
         silo.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, LaunchTests.missile());
         silo.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
         LaunchCodesItem.use(level, codes(level, st), silo, false);
-        BlockPos plan = silo.getBlockPos().offset(300, 0, 40);
-        BlockPos from = silo.getBlockPos().offset(-420, 0, 260);
-        LaunchNetwork.Network n = st.network(level);
+        return new Setup(st, dh, silo, st.network(level), silo.getBlockPos().offset(300, 0, 40), silo.getBlockPos().offset(-420, 0, 260));
+    }
+
+    /** The silo aimed on its war plan, the Dead Hand armed and (where {@code alone}) its station gone: no command answers. */
+    private static void ready(GameTestHelper helper, Setup s, boolean alone) {
+        ServerLevel level = helper.getLevel();
+        s.st().aim(level, List.of(s.silo().getBlockPos()), s.plan().getX(), s.plan().getZ(), LaunchNetwork.Pattern.POINT, 0);
+        helper.assertTrue(s.silo().target() != null && !s.silo().armed(), "aimed (the war plan), not armed");
+        arm(level, s.dh());
+        helper.assertTrue(s.dh().state() == DeadHandBlockEntity.State.WATCHING, "the Dead Hand armed");
+        if (alone) {
+            level.setBlockAndUpdate(s.st().getBlockPos(), Blocks.AIR.defaultBlockState());     // the command post is gone
+        }
+    }
+
+    /** A strike of mb 5.8 off the Dead Hand, launched from {@code from}. */
+    private static void strike(GameTestHelper helper, Setup s) {
+        Seismic.of(helper.getLevel()).addForTest(helper.getLevel(), off(helper, DEAD_HAND, -40, 60), 5.8f, 0, Vec3.atCenterOf(s.from()));
+    }
+
+    private static boolean logged(LaunchNetwork.Network n, LaunchNetwork.EventKind kind, java.util.function.IntPredicate detail) {
+        return n.log().stream().anyMatch(e -> e.kind() == kind && detail.test(e.detail()));
+    }
+
+    /**
+     * A strike puts it in alert and readies the network's silo to stand by (DESIGN.md §17.19): armed at its war plan, its
+     * launch ordered to stand by so that its countdown is over by zero; HOLD stands it down again: its launch called off,
+     * made safe.
+     */
+    private static void readies(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Setup s = setup(helper, false, 9227);
         helper.startSequence()
                 .thenExecuteAfter(3, () -> {
-                    st.aim(level, List.of(silo.getBlockPos()), plan.getX(), plan.getZ(), LaunchNetwork.Pattern.POINT, 0);
-                    helper.assertTrue(silo.target() != null && !silo.armed(), "aimed (the war plan), not armed");
-                    arm(level, dh);
-                    helper.assertTrue(dh.state() == DeadHandBlockEntity.State.WATCHING, "the Dead Hand armed");
-                    level.setBlockAndUpdate(st.getBlockPos(), Blocks.AIR.defaultBlockState());     // the command post is gone
+                    ready(helper, s, false);
+                    strike(helper, s);
                 })
-                .thenExecuteAfter(2, () -> {
-                    helper.assertTrue(!n.stations().contains(st.getBlockPos()) && LaunchNetwork.of(level).network(n.id) != null,
-                            "the network lives on without its station");
-                    Seismic.of(level).addForTest(level, off(helper, DEAD_HAND, -40, 60), 5.8f, 0, Vec3.atCenterOf(from));
-                })
-                .thenWaitUntil(() -> helper.assertTrue(dh.state() == DeadHandBlockEntity.State.ALERT, "in alert: " + dh.state()))
-                .thenExecute(() -> dh.hurryForTest(level))
-                .thenWaitUntil(() -> helper.assertTrue(dh.state() == DeadHandBlockEntity.State.FIRING, "no answer: firing: " + dh.state()))
-                .thenWaitUntil(() -> helper.assertTrue(!dh.rocket(), "the rocket away"))
+                .thenWaitUntil(() -> helper.assertTrue(s.dh().state() == DeadHandBlockEntity.State.ALERT, "in alert: " + s.dh().state()))
                 .thenExecute(() -> {
-                    Flights.Flight rocket = Flights.of(level).all().stream().filter(Flights.Flight::harmless)
-                            .min(java.util.Comparator.comparingDouble(f -> f.start().distanceTo(helper.absoluteVec(Vec3.atCenterOf(DEAD_HAND)))))
-                            .orElse(null);
-                    helper.assertTrue(rocket != null && rocket.start().distanceTo(helper.absoluteVec(Vec3.atCenterOf(DEAD_HAND))) < 4,
-                            "the command rocket flies, harmless");
+                    LaunchNetwork.Member m = s.n().member(s.silo().getBlockPos());
+                    helper.assertTrue(m != null && s.dh().getBlockPos().equals(m.standingBy()), "the silo stands by for it");
+                    helper.assertTrue(m.orders().hold() == LaunchNetwork.STAND_BY && m.orders().launchAt() >= level.getGameTime(),
+                            "its launch ordered, to stand by: " + m.orders());
+                    long due = s.dh().alertUntil() - m.report().timing().delay();
+                    helper.assertTrue(m.orders().launchAt() <= due, "so its countdown is over by zero: " + m.orders().launchAt() + " <= " + due);
+                    BlockPos t = s.silo().target();
+                    helper.assertTrue(s.silo().armed() && t != null && t.getX() == s.plan().getX() && t.getZ() == s.plan().getZ(),
+                            "armed at its war plan: " + t);
+                    helper.assertTrue(LaunchNetwork.of(level).standingFor(s.n().id, s.dh().getBlockPos()) == 1, "one launcher standing by");
+                    s.dh().order(level, DeadHandBlockEntity.HOLD, 0);
+                    helper.assertTrue(s.dh().state() == DeadHandBlockEntity.State.WATCHING, "HOLD: watching again");
+                    helper.assertTrue(m.standingBy() == null && m.orders().launchAt() < 0, "its launcher stood down: " + m.orders());
+                    helper.assertTrue(!s.silo().armed() && s.silo().countdown() < 0 && !s.silo().standingBy(), "made safe, nothing counting");
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * Its station destroyed, a strike, and at zero no command answers: the command rocket (harmless) leaves its tube and its
+     * signal reaches the silo beside it at once: its launch (not yet begun, the alert cut short) starts at once with nothing
+     * to wait for, at its own aim (the war plan) or, set to return fire, back at where the strike's missile came from. The
+     * rocket down, it is spent; the logs say how many stood by and how many it reached.
+     */
+    private static void fires(GameTestHelper helper, boolean returnFire) {
+        ServerLevel level = helper.getLevel();
+        Setup s = setup(helper, returnFire, returnFire ? 9224 : 9223);
+        helper.startSequence()
+                .thenExecuteAfter(3, () -> ready(helper, s, true))
+                .thenExecuteAfter(2, () -> {
+                    helper.assertTrue(!s.n().stations().contains(s.st().getBlockPos()) && LaunchNetwork.of(level).network(s.n().id) != null,
+                            "the network lives on without its station");
+                    strike(helper, s);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(s.dh().state() == DeadHandBlockEntity.State.ALERT, "in alert: " + s.dh().state()))
+                .thenExecute(() -> {
+                    BlockPos want = returnFire ? s.from() : s.plan();
+                    BlockPos t = s.silo().target();
+                    helper.assertTrue(t != null && t.getX() == want.getX() && t.getZ() == want.getZ(),
+                            (returnFire ? "aimed back where the strike came from: " : "at its own aim: ") + t);
+                    s.dh().hurryForTest(level);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(s.dh().state() == DeadHandBlockEntity.State.FIRING, "no answer: firing: " + s.dh().state()))
+                .thenExecute(() -> {
+                    helper.assertTrue(!s.dh().rocket(), "the rocket away");
+                    Flights.Flight rocket = Flights.of(level).all().stream().filter(f -> f.id().equals(s.dh().rocketFlight())).findFirst().orElse(null);
+                    helper.assertTrue(rocket != null && rocket.harmless() && rocket.start().distanceTo(helper.absoluteVec(Vec3.atCenterOf(DEAD_HAND))) < 4,
+                            "the command rocket flies from its tube, harmless");
+                    LaunchNetwork.Member m = s.n().member(s.silo().getBlockPos());
+                    helper.assertTrue(m != null && m.standingBy() == null, "its signal reached the silo");
+                    helper.assertTrue(s.silo().countdown() >= 0 && !s.silo().standingBy(), "the silo launching, nothing to wait for: " + s.silo().countdown());
+                    helper.assertTrue(s.dh().sent() == 1, "one launcher has the order: " + s.dh().sent());
+                    helper.assertTrue(s.dh().log().stream().anyMatch(e -> e.line() == DeadHandBlockEntity.Line.FIRED && e.b() == 1), "one stood by");
+                    helper.assertTrue(logged(s.n(), LaunchNetwork.EventKind.DEAD_HAND_FIRED, d -> d == 1), "the network logged it");
                     Flights.of(level).cancelForTest(level, rocket);
                 })
-                .thenWaitUntil(() -> helper.assertTrue(dh.state() == DeadHandBlockEntity.State.SPENT, "transmitted: spent: " + dh.state()))
+                .thenWaitUntil(() -> helper.assertTrue(s.dh().state() == DeadHandBlockEntity.State.SPENT, "the rocket down: spent: " + s.dh().state()))
+                .thenWaitUntil(() -> helper.assertTrue(logged(s.n(), LaunchNetwork.EventKind.DEAD_HAND_ROCKET_DOWN, d -> d == 1),
+                        "the network logged the rocket down, one reached"))
                 .thenExecute(() -> {
-                    helper.assertTrue(dh.log().stream().anyMatch(e -> e.line() == DeadHandBlockEntity.Line.FIRED && e.b() == 1),
-                            "one launcher ordered to fire");
-                    helper.assertTrue(silo.armed() || silo.countdown() >= 0, "the silo armed and launching: " + silo.countdown());
-                    BlockPos want = returnFire ? from : plan;
-                    helper.assertTrue(silo.target() != null && silo.target().getX() == want.getX() && silo.target().getZ() == want.getZ(),
-                            (returnFire ? "aimed back where the strike came from: " : "at its own aim: ") + silo.target());
-                    helper.assertTrue(n.log().stream().anyMatch(e -> e.kind() == LaunchNetwork.EventKind.DEAD_HAND_FIRED), "the network logged it");
+                    helper.assertTrue(s.dh().log().stream().anyMatch(e -> e.line() == DeadHandBlockEntity.Line.ROCKET_DOWN && e.b() == 1), "its own log too");
                     helper.setBlock(SILO, Blocks.AIR);                                      // scrubbed: no missile left flying
                 })
                 .thenSucceed();
+    }
+
+    /**
+     * The whole of it, untouched (DESIGN.md §17.19): in the alert the silo's countdown runs and holds at T-1 before zero, its
+     * missile on the pad; at zero the rocket leaves its tube and the silo's missile is lit within a few ticks.
+     */
+    private static void atZero(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Setup s = setup(helper, false, 9228);
+        long[] zero = {-1};
+        java.util.function.Predicate<Flights.Flight> ours = f -> Math.hypot(f.target().x - (s.plan().getX() + 0.5), f.target().z - (s.plan().getZ() + 0.5)) < 4;
+        helper.startSequence()
+                .thenExecuteAfter(3, () -> ready(helper, s, true))
+                .thenExecuteAfter(2, () -> strike(helper, s))
+                .thenWaitUntil(() -> helper.assertTrue(s.dh().state() == DeadHandBlockEntity.State.ALERT, "in alert: " + s.dh().state()))
+                .thenExecute(() -> zero[0] = s.dh().alertUntil())
+                .thenWaitUntil(() -> helper.assertTrue(s.silo().standingBy() && s.silo().countdown() == 1, "standing by at T-1: " + s.silo().countdown()))
+                .thenExecute(() -> {
+                    helper.assertTrue(level.getGameTime() < zero[0], "before zero: " + (zero[0] - level.getGameTime()) + " ticks to go");
+                    helper.assertTrue(!s.silo().inventory().getItem(LaunchSiloBlockEntity.SLOT_MISSILE).isEmpty(), "its missile still on the pad");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(s.dh().state() == DeadHandBlockEntity.State.FIRING, "zero: firing: " + s.dh().state()))
+                .thenWaitUntil(() -> helper.assertTrue(s.silo().inventory().getItem(LaunchSiloBlockEntity.SLOT_MISSILE).isEmpty(), "the silo's missile lit"))
+                .thenExecute(() -> {
+                    long late = level.getGameTime() - zero[0];
+                    helper.assertTrue(late <= 3, "lit as the Dead Hand reached zero: " + late + " ticks after");
+                    helper.assertTrue(Flights.of(level).all().stream().anyMatch(ours), "on its way to its war plan");
+                    Flights.of(level).all().stream().filter(f -> ours.test(f) || f.id().equals(s.dh().rocketFlight()))
+                            .forEach(f -> Flights.of(level).cancelForTest(level, f));
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * A launcher the rocket's signal never reaches (its reach cut to nothing for the test) stands down when the rocket is
+     * down: its launch called off, made safe, the log saying so.
+     */
+    private static void outOfReach(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Setup s = setup(helper, false, 9229);
+        CommandRocket.REACH_FOR_TEST.put(s.dh().getBlockPos(), 0.5);
+        helper.startSequence()
+                .thenExecuteAfter(3, () -> ready(helper, s, true))
+                .thenExecuteAfter(2, () -> strike(helper, s))
+                .thenWaitUntil(() -> helper.assertTrue(s.dh().state() == DeadHandBlockEntity.State.ALERT, "in alert: " + s.dh().state()))
+                .thenExecute(() -> s.dh().hurryForTest(level))
+                .thenWaitUntil(() -> helper.assertTrue(s.dh().state() == DeadHandBlockEntity.State.FIRING, "firing: " + s.dh().state()))
+                .thenExecute(() -> {
+                    LaunchNetwork.Member m = s.n().member(s.silo().getBlockPos());
+                    helper.assertTrue(m != null && s.dh().getBlockPos().equals(m.standingBy()), "out of its reach: still standing by");
+                    Flights.of(level).all().stream().filter(f -> f.id().equals(s.dh().rocketFlight())).forEach(f -> Flights.of(level).cancelForTest(level, f));
+                })
+                .thenWaitUntil(() -> helper.assertTrue(s.n().member(s.silo().getBlockPos()).standingBy() == null, "the rocket down: stood down"))
+                .thenExecute(() -> {
+                    helper.assertTrue(logged(s.n(), LaunchNetwork.EventKind.FAILED, d -> d == LaunchNetwork.OUT_OF_REACH), "logged: out of its reach");
+                    helper.assertTrue(logged(s.n(), LaunchNetwork.EventKind.DEAD_HAND_ROCKET_DOWN, d -> d == 0), "and the rocket down, none reached");
+                    helper.assertTrue(!s.silo().armed() && s.silo().countdown() < 0, "made safe, nothing counting: " + s.silo().countdown());
+                    CommandRocket.REACH_FOR_TEST.remove(s.dh().getBlockPos());
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * Its signal: 256 blocks round it at lift-off, a block more for each block it climbs, 480 at most. Its course: east over
+     * two launchers 600 and 900 blocks off (one 120 to the side), reaching them and the one beside it; with one more far to
+     * the west, still east (three of four); none beyond its first reach, out over them at its shortest; none at all, away
+     * the way it is told.
+     */
+    private static void course(GameTestHelper helper) {
+        helper.assertTrue(CommandRocket.reach(0) == 256 && CommandRocket.reach(100) == 356 && CommandRocket.reach(1000) == 480,
+                "its reach: " + CommandRocket.reach(0) + ", " + CommandRocket.reach(100) + ", " + CommandRocket.reach(1000));
+        Vec3 pad = new Vec3(0.5, 64, 0.5);
+        BlockPos near = new BlockPos(-40, 64, 10), a = new BlockPos(600, 64, 0), b = new BlockPos(900, 64, 120), west = new BlockPos(-1500, 64, 0);
+        CommandRocket.Course c = CommandRocket.plan(pad, List.of(near, a, b), Direction.SOUTH);
+        helper.assertTrue(c.reached().size() == 3 && c.reached().getFirst().equals(near), "all three, the one beside it first: " + c.reached());
+        helper.assertTrue(c.target().x > 900 && Math.abs(c.target().z - pad.z) < 300, "out east past the farthest: " + c.target());
+        CommandRocket.Course d = CommandRocket.plan(pad, List.of(near, a, b, west), Direction.SOUTH);
+        helper.assertTrue(d.reached().size() == 3 && !d.reached().contains(west) && d.of() == 4, "the way that reaches the most: " + d.reached());
+        CommandRocket.Course e = CommandRocket.plan(pad, List.of(near), Direction.SOUTH);
+        double out = Math.hypot(e.target().x - pad.x, e.target().z - pad.z);
+        helper.assertTrue(Math.abs(out - CommandRocket.SHORTEST) < 1 && e.target().x < pad.x, "out over it at its shortest: " + e.target());
+        CommandRocket.Course f = CommandRocket.plan(pad, List.of(), Direction.SOUTH);
+        helper.assertTrue(f.target().z > pad.z + 250 && f.reached().isEmpty(), "none at all: away south: " + f.target());
+        helper.succeed();
     }
 
     /**

@@ -141,17 +141,23 @@ public final class StationPayloads {
      * contraption may carry it, DESIGN.md §17.16); launcher or radar; its controller's block id; what it last reported
      * (readiness, countdown, armed, target, range, strike, what it holds, its timing); its orders still waiting (arm -1:
      * none; aim pending; launch at, game time or -1); whether it reported lately, is out of contact, a radar is working;
-     * ticks until its soonest missile in the air comes down (-1: none).
+     * ticks until its soonest missile in the air comes down (-1: none); whether it stands by for the Dead Hand's command
+     * rocket (DESIGN.md §17.19).
      */
     public record MemberView(BlockPos pos, BlockPos at, int role, String kind, int readiness, int countdown, boolean armed, int pendingArm, boolean hasTarget,
             int targetX, int targetZ, boolean pendingAim, int range, LaunchSite.Strike strike, ItemStack shown, LaunchSite.Timing timing,
-            boolean contact, boolean lost, long launchAt, boolean working, int inFlight) {
+            boolean contact, boolean lost, long launchAt, boolean working, int inFlight, boolean standingBy) {
         public static MemberView of(LaunchNetwork.Member m, long now, int inFlight) {
             LaunchNetwork.Report r = m.report();
             BlockPos aim = m.aim().orElse(null);
             return new MemberView(m.pos, m.at(), m.role.ordinal(), m.kind, r.readiness(), r.countdown(), r.armed(), m.orders().arm(), aim != null,
                     aim == null ? 0 : aim.getX(), aim == null ? 0 : aim.getZ(), m.orders().aim().isPresent(), r.range(), r.strike(), r.shown(),
-                    r.timing(), m.inContact(now), m.lost(), m.orders().launchAt(), r.working(), inFlight);
+                    r.timing(), m.inContact(now), m.lost(), m.orders().launchAt(), r.working(), inFlight, m.standingBy() != null);
+        }
+
+        /** Standing by at its countdown's last tick, waiting for the command rocket's signal (DESIGN.md §17.19). */
+        public boolean awaitingOrder() {
+            return this.standingBy && this.readiness == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal() && this.countdown >= 0 && this.countdown <= 1;
         }
 
         public boolean radar() {
@@ -206,15 +212,20 @@ public final class StationPayloads {
             buf.writeVarLong(m.launchAt() + 1);
             buf.writeBoolean(m.working());
             buf.writeVarInt(m.inFlight() + 1);
+            buf.writeBoolean(m.standingBy());
         }, buf -> new MemberView(buf.readBlockPos(), buf.readBlockPos(), buf.readVarInt(), buf.readUtf(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(),
                 buf.readVarInt() - 1, buf.readBoolean(), buf.readVarInt(), buf.readVarInt(), buf.readBoolean(), buf.readVarInt(),
                 new LaunchSite.Strike(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat()), ItemStack.OPTIONAL_STREAM_CODEC.decode(buf),
                 new LaunchSite.Timing(buf.readVarInt(), buf.readBoolean(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readBoolean()),
-                buf.readBoolean(), buf.readBoolean(), buf.readVarLong() - 1, buf.readBoolean(), buf.readVarInt() - 1));
+                buf.readBoolean(), buf.readBoolean(), buf.readVarLong() - 1, buf.readBoolean(), buf.readVarInt() - 1, buf.readBoolean()));
     }
 
-    /** A missile in the air: its id, where, which way (radians, 0 = south), where it is coming down, when, and whether it is the network's. */
-    public record ContactView(int id, int x, int y, int z, float heading, int targetX, int targetZ, int eta, boolean own) {
+    /**
+     * A missile in the air: its id, where, which way (radians, 0 = south), where it is coming down, when, and whether it is
+     * the network's; a Dead Hand's command rocket, how far its signal reaches round it now (0: any other missile; DESIGN.md
+     * §17.19).
+     */
+    public record ContactView(int id, int x, int y, int z, float heading, int targetX, int targetZ, int eta, boolean own, int reach) {
         public static final StreamCodec<RegistryFriendlyByteBuf, ContactView> CODEC = StreamCodec.of((buf, c) -> {
             buf.writeInt(c.id());
             buf.writeVarInt(c.x());
@@ -225,8 +236,14 @@ public final class StationPayloads {
             buf.writeVarInt(c.targetZ());
             buf.writeVarInt(c.eta());
             buf.writeBoolean(c.own());
+            buf.writeVarInt(c.reach());
         }, buf -> new ContactView(buf.readInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readFloat(), buf.readVarInt(),
-                buf.readVarInt(), buf.readVarInt(), buf.readBoolean()));
+                buf.readVarInt(), buf.readVarInt(), buf.readBoolean(), buf.readVarInt()));
+
+        /** A Dead Hand's command rocket, transmitting. */
+        public boolean command() {
+            return this.reach > 0;
+        }
     }
 
     /** A laser spot one of the network's designators lases now (DESIGN.md §17.13): where, and who lases it. */
@@ -304,7 +321,10 @@ public final class StationPayloads {
                 if (f != null) {
                     soonest = soonest < 0 ? f.ticksToImpact() : Math.min(soonest, f.ticksToImpact());
                     if (powered && shown.add(id)) {
-                        contacts.add(contact(f, true));
+                        // A Dead Hand's flight is its command rocket: with the reach of its signal round it.
+                        int reach = m.role == LaunchNetwork.Role.DEAD_HAND
+                                ? (int) Math.round(dev.groundburst.content.command.CommandRocket.reach(m.pos, f.position().y - f.start().y)) : 0;
+                        contacts.add(contact(f, true, reach));
                     }
                 }
             }
@@ -320,7 +340,7 @@ public final class StationPayloads {
                     net.minecraft.world.phys.Vec3 p = f.position();
                     if (Math.abs(p.x - m.at().getX() - 0.5) <= RadarArrayBlockEntity.RANGE && Math.abs(p.z - m.at().getZ() - 0.5) <= RadarArrayBlockEntity.RANGE
                             && shown.add(f.id())) {
-                        contacts.add(contact(f, false));
+                        contacts.add(contact(f, false, 0));
                     }
                 }
             }
@@ -328,10 +348,10 @@ public final class StationPayloads {
         return new Picture(members, contacts, spots, blasts);
     }
 
-    private static ContactView contact(Flights.Flight f, boolean own) {
+    private static ContactView contact(Flights.Flight f, boolean own, int reach) {
         net.minecraft.world.phys.Vec3 p = f.position();
         return new ContactView(f.trackId(), (int) Math.floor(p.x), (int) Math.floor(p.y), (int) Math.floor(p.z), f.heading(),
-                (int) Math.floor(f.target().x), (int) Math.floor(f.target().z), f.ticksToImpact(), own);
+                (int) Math.floor(f.target().x), (int) Math.floor(f.target().z), f.ticksToImpact(), own, reach);
     }
 
     public static final StreamCodec<RegistryFriendlyByteBuf, LaunchNetwork.Event> EVENT = StreamCodec.of((buf, e) -> {

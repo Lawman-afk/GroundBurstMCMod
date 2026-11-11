@@ -34,11 +34,13 @@ public final class DeadHandPayloads {
      * Its state: the time; formed and powered; what it is doing ({@link DeadHandBlockEntity.State} ordinal), whether it has
      * a rocket and is drilling; in alert, when it fires and the strike (where, how big, how far, whether it is known where
      * it was fired from); its network's code (empty: none); why it cannot be armed (empty: it can); whether the first key
-     * is turned; its settings; its log.
+     * is turned; its settings; the launchers standing by for it, how many of its network's launchers its rocket's course
+     * would reach (of how many), how many have taken the order from its rocket in the air (DESIGN.md §17.19); its log.
      */
     public record Scope(BlockPos pos, long now, boolean formed, boolean powered, int state, boolean rocket, boolean drill, long alertUntil, int strikeX,
             int strikeZ, float strikeMagnitude, int strikeDistance, boolean origin, String network, String cannot, boolean firstKey, int radius,
-            int threshold, int countdown, int command, int targets, int channel, List<DeadHandBlockEntity.Entry> log) implements CustomPacketPayload {
+            int threshold, int countdown, int command, int targets, int channel, int standing, int reaches, int launchers, int sent,
+            List<DeadHandBlockEntity.Entry> log) implements CustomPacketPayload {
         public static final Type<Scope> TYPE = GBNetwork.type("dead_hand_scope");
         public static final StreamCodec<RegistryFriendlyByteBuf, Scope> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeBlockPos(s.pos());
@@ -63,11 +65,16 @@ public final class DeadHandPayloads {
             buf.writeVarInt(s.command());
             buf.writeVarInt(s.targets());
             buf.writeVarInt(s.channel());
+            buf.writeVarInt(s.standing());
+            buf.writeVarInt(s.reaches());
+            buf.writeVarInt(s.launchers());
+            buf.writeVarInt(s.sent());
             ENTRY.apply(ByteBufCodecs.list()).encode(buf, s.log());
         }, buf -> new Scope(buf.readBlockPos(), buf.readVarLong(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(), buf.readBoolean(),
                 buf.readBoolean(), buf.readVarLong() - 1, buf.readVarInt(), buf.readVarInt(), buf.readFloat(), buf.readVarInt(), buf.readBoolean(),
                 buf.readUtf(), buf.readUtf(), buf.readBoolean(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
-                buf.readVarInt(), buf.readVarInt(), ENTRY.apply(ByteBufCodecs.list()).decode(buf)));
+                buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
+                ENTRY.apply(ByteBufCodecs.list()).decode(buf)));
 
         @Override
         public Type<Scope> type() {
