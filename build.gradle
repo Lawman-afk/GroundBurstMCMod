@@ -68,8 +68,6 @@ tasks.named('jar', Jar) {
     from('LICENSE') {
         rename { licenceName }
     }
-    // The test worlds' builders (devworld: the War Room range) are for the dev runs only, never in a released jar.
-    exclude('dev/groundburst/devworld/**')
 }
 
 // Mojang ships Java 25 to end users in 26.3, so the mod targets Java 25.
@@ -165,19 +163,6 @@ neoForge {
             systemProperty 'groundburst.showroom', 'true'
             // -PshowroomWalk: a timed walk round the bunker doors instead of the pictures (run/bench/showroom_walk_*.txt).
             systemProperty 'groundburst.showroom.walk', (project.findProperty('showroomWalk') ?: 'false').toString()
-        }
-
-        // Makes a flat creative world, "Ground Burst War Room" (run/saves/ground_burst_war_room), built ready to test the war
-        // room in (DESIGN.md §17.17): the command bunker (the War Room Display, the base's station, a Seismograph, the
-        // alarms), a Radar Array, two more Seismographs, the Dead Hand armed, the base's launchers on the war plan, an
-        // enemy launch site 900 blocks north run from an ENEMY COMMAND booth; photographs it (run/screenshots/war_room_*.png)
-        // and quits, the world saved to copy into an instance's saves (see devworld/WarRoomRange, left out of the jar).
-        // -PwarRoomDemo=true: the attack played through in a throwaway world instead, photographed and checked in the log.
-        warRoom {
-            client()
-            programArguments.addAll '--width', shotSize[0], '--height', shotSize[1]
-            systemProperty 'groundburst.warRoom', 'true'
-            systemProperty 'groundburst.warRoom.demo', (project.findProperty('warRoomDemo') ?: 'false').toString()
         }
 
         // Makes a flat world, turns healing on with short waits, builds a farmstead and a little town, blows them up (a

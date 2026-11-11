@@ -509,24 +509,6 @@
     ],
     "subtitle": "subtitles.groundburst.cryo.wind"
   },
-  "dead_hand.alert": {
-    "sounds": [
-      {
-        "attenuation_distance": 32,
-        "name": "groundburst:launch/dead_hand_alert"
-      }
-    ],
-    "subtitle": "subtitles.groundburst.dead_hand.alert"
-  },
-  "dead_hand.lid": {
-    "sounds": [
-      {
-        "attenuation_distance": 32,
-        "name": "groundburst:launch/dead_hand_lid"
-      }
-    ],
-    "subtitle": "subtitles.groundburst.dead_hand.lid"
-  },
   "designator.fire": {
     "sounds": [
       "groundburst:launch/designator_fire"
@@ -914,15 +896,6 @@
     ],
     "subtitle": "subtitles.groundburst.machine.rtg"
   },
-  "machine.seismograph": {
-    "sounds": [
-      {
-        "attenuation_distance": 10,
-        "name": "groundburst:machine/seismograph_loop"
-      }
-    ],
-    "subtitle": "subtitles.groundburst.machine.seismograph"
-  },
   "machine.singularity_reactor": {
     "sounds": [
       {
@@ -1100,12 +1073,6 @@
     ],
     "subtitle": "subtitles.groundburst.scud_storm.erect"
   },
-  "seismograph.event": {
-    "sounds": [
-      "groundburst:machine/seismograph_event"
-    ],
-    "subtitle": "subtitles.groundburst.seismograph.event"
-  },
   "silo.doors": {
     "sounds": [
       {
@@ -1258,15 +1225,6 @@
       }
     ],
     "subtitle": "subtitles.groundburst.thermite.burn"
-  },
-  "war_room.contact": {
-    "sounds": [
-      {
-        "attenuation_distance": 32,
-        "name": "groundburst:launch/war_room_contact"
-      }
-    ],
-    "subtitle": "subtitles.groundburst.war_room.contact"
   },
   "wire.snip": {
     "sounds": [

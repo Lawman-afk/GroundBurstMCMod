@@ -347,17 +347,6 @@ public final class GBSounds {
             register("particle_cannon.beam", "Particle beam roars", List.of("superweapon/particle_beam_loop"), false, 160);
     public static final DeferredHolder<SoundEvent, SoundEvent> PARTICLE_FADE =
             register("particle_cannon.fade", "Particle beam dies away", List.of("superweapon/particle_fade"), false, 128);
-    // The war room (DESIGN.md §17.17): the Seismograph's drum and pen, the War Room Display's new contact, the Dead Hand.
-    public static final DeferredHolder<SoundEvent, SoundEvent> SEISMOGRAPH_LOOP =
-            register("machine.seismograph", "Seismograph's drum turns", List.of("machine/seismograph_loop"), false, 10);
-    public static final DeferredHolder<SoundEvent, SoundEvent> SEISMOGRAPH_EVENT =
-            register("seismograph.event", "Seismograph records a blast", List.of("machine/seismograph_event"), false, 16);
-    public static final DeferredHolder<SoundEvent, SoundEvent> WAR_ROOM_CONTACT =
-            register("war_room.contact", "New contact on the war room display", List.of("launch/war_room_contact"), false, 32);
-    public static final DeferredHolder<SoundEvent, SoundEvent> DEAD_HAND_ALERT =
-            register("dead_hand.alert", "Dead Hand counts down", List.of("launch/dead_hand_alert"), false, 32);
-    public static final DeferredHolder<SoundEvent, SoundEvent> DEAD_HAND_LID =
-            register("dead_hand.lid", "Command rocket's tube opens", List.of("launch/dead_hand_lid"), false, 32);
     /** The singularity's end (DESIGN.md §16.12): an inrush, then the thud as its horizon closes. */
     public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_IMPLODE =
             register("singularity.implode", "Singularity implodes", List.of("exotic/singularity_implode"), false, 160);

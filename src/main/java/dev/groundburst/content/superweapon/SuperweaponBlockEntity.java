@@ -99,8 +99,6 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     private @Nullable BlockPos target;
     private boolean armed;
     private @Nullable UUID launchedBy;
-    /** Standing by (DESIGN.md §17.19): its countdown holds at its last tick, its launchers up, until it is released. */
-    private boolean standingBy;
     private boolean announcedFormed, announcedReady;
     /** Whether its launchers are up (synced: the model raises or lowers them). */
     private boolean raised;
@@ -318,35 +316,6 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         return this.armed && this.target != null && launch(level, this.target, by);
     }
 
-    /** Fires if armed, standing by: its countdown holds at its last tick until it is released (DESIGN.md §17.19). */
-    @Override
-    public boolean launchHeld(ServerLevel level, @Nullable Entity by) {
-        if (!launchArmed(level, by)) {
-            return false;
-        }
-        this.standingBy = true;
-        setChanged();
-        return true;
-    }
-
-    @Override
-    public void release() {
-        if (this.standingBy) {
-            this.standingBy = false;
-            setChanged();
-        }
-    }
-
-    @Override
-    public void scrub() {
-        standDown();
-    }
-
-    @Override
-    public boolean standingBy() {
-        return this.standingBy && this.phase == Phase.COUNTDOWN;
-    }
-
     /** Starts a strike on {@code target}: the warning, the countdown, its launchers made ready. False if it is not ready. */
     public boolean launch(ServerLevel level, BlockPos target, @Nullable Entity by) {
         if (readiness() != Readiness.READY) {
@@ -354,7 +323,6 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         }
         this.target = target.immutable();
         this.armed = false;
-        this.standingBy = false;
         this.launchedBy = by == null ? null : by.getUUID();
         enter(Phase.COUNTDOWN);
         setRaised(true);
@@ -451,9 +419,6 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
 
     private boolean countingDown(ServerLevel level) {
         this.status = MachineStatus.RUNNING;
-        if (this.standingBy && this.phaseTicks >= COUNTDOWN - 1) {
-            return true;                                         // standing by at its last tick for the order (DESIGN.md §17.19)
-        }
         this.phaseTicks++;
         int left = COUNTDOWN - this.phaseTicks;
         if (left > 0 && left % 20 == 0) {
@@ -545,11 +510,10 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     /** Whether the strike under way has fired anything (a scrubbed one keeps its charge). */
     private boolean firedThisStrike;
 
-    /** Knocked out, stopped, broken or scrubbed: a countdown is scrubbed, an armed one made safe; it lowers its launchers. */
+    /** Knocked out, stopped or broken: a countdown is scrubbed, an armed one made safe; it lowers its launchers. */
     private void standDown() {
-        if (this.armed || this.standingBy) {
+        if (this.armed) {
             this.armed = false;
-            this.standingBy = false;
             setChanged();
         }
         if (this.phase == Phase.COUNTDOWN || this.phase == Phase.FIRING) {
@@ -830,7 +794,6 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         output.putBoolean("announced_ready", this.announcedReady);
         output.putBoolean("raised", this.raised);
         output.putBoolean("fired_this_strike", this.firedThisStrike);
-        output.putBoolean("standing_by", this.standingBy);
     }
 
     @Override
@@ -850,6 +813,5 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         this.announcedReady = input.getBooleanOr("announced_ready", false);
         this.raised = input.getBooleanOr("raised", false);
         this.firedThisStrike = input.getBooleanOr("fired_this_strike", false);
-        this.standingBy = input.getBooleanOr("standing_by", false);
     }
 }

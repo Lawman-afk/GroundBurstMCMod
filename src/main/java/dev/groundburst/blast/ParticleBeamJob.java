@@ -166,10 +166,6 @@ final class ParticleBeamJob {
             }
         }
         steer(cannon);
-        if (age == this.uplink && this.terrain) {
-            // It comes down: the ground carries its burning while it lasts (DESIGN.md §17.17).
-            dev.groundburst.content.command.Seismic.tremor(this.level, new Vec3(this.x, this.y, this.z), 3.8f, this.burn);
-        }
         if (age >= this.uplink) {
             if (this.terrain) {
                 burn();

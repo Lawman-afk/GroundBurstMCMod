@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "groundburst:block/dead_hand_front",
-    "side": "groundburst:block/dead_hand_side",
-    "top": "groundburst:block/dead_hand_top"
-  }
-}

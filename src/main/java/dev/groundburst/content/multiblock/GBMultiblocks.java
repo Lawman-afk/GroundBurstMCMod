@@ -226,8 +226,7 @@ public final class GBMultiblocks {
                 dev.groundburst.content.assembler.GBAssemblers.STRATEGIC, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM,
                 dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE, dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_CANNON,
                 dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER, dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY,
-                dev.groundburst.content.defence.GBDefence.COMPLEX, dev.groundburst.content.naval.GBNaval.RACK_STRUCTURE,
-                dev.groundburst.content.command.GBCommand.WAR_ROOM, dev.groundburst.content.command.GBCommand.DEAD_HAND);
+                dev.groundburst.content.defence.GBDefence.COMPLEX, dev.groundburst.content.naval.GBNaval.RACK_STRUCTURE);
     }
 
     public static @org.jspecify.annotations.Nullable MultiblockDefinition byId(net.minecraft.resources.Identifier id) {
