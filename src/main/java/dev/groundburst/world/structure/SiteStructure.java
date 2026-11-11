@@ -248,9 +248,9 @@ public class SiteStructure extends Structure {
      */
     private static int[] footprint(StructureTemplateManager templates, Variant variant, Rotation rotation, boolean land) {
         int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
-        boolean any = variant.parts().stream().anyMatch(p -> p.terrain() != TerrainAdjustment.BEARD_BOX);
+        boolean any = variant.parts().stream().anyMatch(p -> p.terrain() != TerrainAdjustment.BURY);
         for (Part part : variant.parts()) {
-            if (land && any && part.terrain() == TerrainAdjustment.BEARD_BOX) {
+            if (land && any && part.terrain() == TerrainAdjustment.BURY) {
                 continue;
             }
             Vec3i size = templates.getOrCreate(part.template()).getSize(rotation);

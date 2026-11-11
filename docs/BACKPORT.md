@@ -5,10 +5,11 @@ branch, `1.20.1`, carries the 1.21.1 build back once more, to Minecraft 1.20.1 o
 players are (main's DESIGN.md §30). It is brought up to the 1.21.1 branch every once in a while, as a whole, as that
 branch is brought up to main.
 
-- **Last brought up to:** the `1.21.1` branch at `1cfbf920` (main at `97a5792e`, 2026-11-11: the Depth Charge Rack holds
-  its rest pose while it works; a carried machine's client copy carried too, `compat/create/CarriedClient`). Synced
-  cleanly, the 1.21.1 build's own test-run hooks left out (this branch has its own); before it, at `2ef851ae` (main at
-  `ae7e2623`, 2026-11-11: the war room removed), where it was begun.
+- **Last brought up to:** the `1.21.1` branch at `9a3b8c05` (main at `97a5792e`, 2026-11-11: the site check,
+  `port/SiteCheck`, which here asks a part itself whether it is closed in rock). Synced cleanly; before it, at `1cfbf920`
+  (the Depth Charge Rack holds its rest pose while it works; a carried machine's client copy carried too,
+  `compat/create/CarriedClient`; the 1.21.1 build's own test-run hooks left out, this branch has its own); before it, at
+  `2ef851ae` (main at `ae7e2623`, 2026-11-11: the war room removed), where it was begun.
 - **Toolchain:** Minecraft 1.20.1, Forge 47.4.28 (the mod asks for 47 or later), Java 17, GeckoLib 4.8.4
   (`geckolib-forge-1.20.1`), JEI 15.74 (optional), MixinExtras 0.5.5 (packed in the jar: Forge 1.20.1 carries none).
   Built with ModDevGradle's legacy plugin (`net.neoforged.moddev.legacyforge` 2.0.148): the dev runs on official
@@ -56,7 +57,12 @@ in `tools/backport/base.txt`, so the 1.21.1 worktree is never touched) into this
    loaders as Forge's, the short grass's texture by its old name; the site templates saved at 1.20.1's data version,
    the blocks 1.20.1 lacks as it has them (`PALETTE_RENAMES`: short grass is `grass`; the guard's and the mast's huts'
    weathered copper doors are spruce doors, which a hand opens as it does a copper door; the test site's heavy core, the
-   device on its stand, a lodestone).
+   device on its stand, a lodestone). A site's parts closed in rock underground (a bunker's rooms, a silo's shaft, a
+   waste store's vault: 1.21's `encapsulate`, which 1.20.1 has not, and whose reader takes a value it does not know for
+   no shaping of the ground at all) carry `bury` instead, in their data and in the code (`port_site`), which stands for
+   it here (no part of the mod's is buried otherwise): such a part tells Forge's beardifier hook NONE, and each chunk's
+   beardifier closes it in rock as 1.21's does (`legacy.world.Encapsulation`, `legacy.mixin.BeardifierMixin`: its rock at
+   half the distances outside the part's box, times 0.8, out to twelve blocks).
 4. **Hand edits**, listed in `tools/backport/manual.txt` (kept as they are by `port.py`; `--sync` merges the 1.21.1
    build's changes into them): the armour materials (`GBArmor`: 1.20.1's are an enum), GeckoLib renderers and items
    (`MachineGeoRenderer`, `GeoBlockItem`), the effects drawn last (`DrawnLast`: 1.20.1's stage poses carry the camera's
@@ -112,7 +118,14 @@ Manual, a blast, a particle beam and its pit, sea mines and a depth charge's col
 bunker doors, the command room, the bunker fittings and the yard, each photographed (`run/screenshots/port_*.png`) and
 its log lines OK.
 
-The test runs (the port check, the play bench, the Create check) are muted and leave the person at the computer their
+`gradlew runSiteCheck` is the 1.21.1 build's check of the sites in world generation: a normal world (seed 20261111),
+the nearest of each site found, made and measured, each photographed from the air (`run/screenshots/sites_*.png`).
+2026-11-11: all seven where the 1.21.1 build has them, each with its blocks (a few more or fewer than there: their props'
+chances drawn otherwise, 1.21 listing more structures before the mod's), the same in the pictures; the parts closed in
+rock shaped exactly as there (0.667, 0.400 and 0.133 at 2, 6 and 10 blocks on every side) and the ground round them as
+open (218, 158 and 619 blocks of the 1.21.1 build's 217, 158 and 619). Before `Encapsulation` they were not shaped at all.
+
+The test runs (the port check, the site check, the play bench, the Create check) are muted and leave the person at the computer their
 mouse: the master volume is set to 0 in run/options.txt before each client run (`-Psound=on` keeps it), and their window
 opens behind the other windows without the focus and never grabs the mouse (`legacy/client/DevRuns`, set by
 `groundburst.keepMouse`; `DevWindowMixin`, `DevMouseMixin`), Forge's early loading window turned off for them in
@@ -161,12 +174,36 @@ ships are made with, has a 1.20.1 build (1.20.1's ships are Valkyrien Skies', an
   errors: a carried machine's menu threw on the client at first (Create 6.0.8's render world keeps no chunks, and the
   copy it draws told it of every slot the menu filled; the copy is carried now, the 1.21.1 branch's `CarriedClient`).
 
+## Performance
+
+`gradlew runPlayBench -Pjfr=<name>` (main's play bench: a normal world seen 32 chunks out, molotovs and a thermobaric
+warhead in a forest, the fires, the healing) beside the 1.21.1 build's, the same day on the same machine (2026-11-11,
+both muted and behind other windows):
+
+| phase   | server tick ms, mean/p95 (1.21.1) | (1.20.1)  | frame ms, mean/p95 (1.21.1) | (1.20.1)    |
+|---------|-----------------------------------|-----------|-----------------------------|-------------|
+| quiet   | 9.8 / 11.8                        | 8.8 / 10.8 | 10.4 / 15.1 (97 fps)        | 13.6 / 19.3 (73 fps) |
+| attack  | 10.4 / 15.4                       | 9.8 / 12.3 | 10.8 / 14.6 (93 fps)        | 15.8 / 21.5 (63 fps) |
+| burning | 9.6 / 11.8                        | 9.0 / 11.3 | 9.8 / 13.8 (102 fps)        | 14.6 / 19.9 (69 fps) |
+| healing | 10.0 / 11.9                       | 8.7 / 10.6 | 10.7 / 15.9 (94 fps)        | 14.3 / 19.7 (70 fps) |
+| after   | 9.5 / 11.2                        | 8.1 / 9.8  | 10.0 / 14.3 (100 fps)       | 13.1 / 17.9 (76 fps) |
+
+The server ticks a little faster here. The frames are slower, but not for the mod: before anything happens (quiet) half
+the render thread's samples are vanilla 1.20.1's own `ChunkRenderDispatcher$RenderChunk.getCompiledChunk`, 32 chunks of
+sections walked every frame (1.21's renderer does it more cheaply), and through the attack and the fires the mod's own
+drawing is on the render thread's stack in 38 samples of 1665 (2.3%), fewer than the 1.21.1 build's 56 (of 904). The
+stand-ins cost next to nothing (the data attachments a few samples on the server thread). With Embeddium, which most
+1.20.1 players run (0.3.31, Oculus's shaders off: `-PwithIris -PirisPack=off`), the frames take 2.1 to 3.3 ms (300 to 485
+fps) and the server ticks as before (8.4 to 9.1 ms): the attack adds 1.2 ms a frame to the quiet's, the fires 0.3. (The
+error Embeddium logs, its "mixin taint" detector, names Oculus, not the mod.)
+
 ## Where it stands (2026-11-11)
 
 It compiles, builds a jar for players, loads on a server and in the client: all 450 GameTests pass, `runPortCheck` passes
 all its checks (its pictures as the 1.21.1 build's, but for 1.20.1 dimming a screen's world where 1.21 blurs it), under
-the seven shader packs through Oculus and with Distant Horizons too, and Create's contraptions carry its machines (the
-Create check, 36 of 36). Not yet: play in the 1.20.1 instance.
+the seven shader packs through Oculus and with Distant Horizons too; Create's contraptions carry its machines (the
+Create check, 36 of 36); the sites generate as the 1.21.1 build's, their parts underground closed in rock (the site
+check); and the play bench finds nothing the port costs. Not yet: play in the 1.20.1 instance.
 
 ## Bringing it up to the 1.21.1 branch
 

@@ -98,11 +98,11 @@ final class StructureTests {
         SitePiece crater = new SitePiece(templates, sunk, origin.offset(sunk.offset()), Rotation.NONE, origin.getY());
         // Its rim is 3 up from its bottom; the beardifier wants the first air above the land, one more.
         helper.assertTrue(crater.getGroundLevelDelta() == 4, "a sunk part meets the ground at its rim (" + crater.getGroundLevelDelta() + ")");
-        var under = new SiteStructure.Part(GroundBurst.id("site/test_room"), new BlockPos(0, -6, 0), TerrainAdjustment.BEARD_BOX, 1f, Weathering.NONE);
+        var under = new SiteStructure.Part(GroundBurst.id("site/test_room"), new BlockPos(0, -6, 0), TerrainAdjustment.BURY, 1f, Weathering.NONE);
         SitePiece rooms = new SitePiece(templates, under, origin.offset(under.offset()), Rotation.NONE, origin.getY());
         helper.assertTrue(rooms.getBeardifierBox().maxY() <= origin.getY() - 13 || rooms.getBeardifierBox().maxY() == rooms.getBoundingBox().minY(),
                 "rock round rooms just under the ground stops short of it (" + rooms.getBeardifierBox() + ")");
-        var deep = new SiteStructure.Part(GroundBurst.id("site/test_room"), new BlockPos(0, -40, 0), TerrainAdjustment.BEARD_BOX, 1f, Weathering.NONE);
+        var deep = new SiteStructure.Part(GroundBurst.id("site/test_room"), new BlockPos(0, -40, 0), TerrainAdjustment.BURY, 1f, Weathering.NONE);
         SitePiece store = new SitePiece(templates, deep, origin.offset(deep.offset()), Rotation.NONE, origin.getY());
         helper.assertTrue(store.getBeardifierBox().equals(store.getBoundingBox()), "rooms deep down are closed in all round");
         helper.succeed();

@@ -14,7 +14,7 @@
             0,
             -19
           ],
-          "terrain": "encapsulate",
+          "terrain": "bury",
           "integrity": 1.0,
           "weathering": "none"
         }

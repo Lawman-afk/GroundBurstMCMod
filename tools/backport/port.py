@@ -1114,7 +1114,9 @@ def misc_calls(text: str) -> str:
     text = re.sub(r"\bFluidStack\.OPTIONAL_CODEC\b", f"{L}.net.Codecs.OPTIONAL_FLUID_STACK_CODEC", text)
     text = re.sub(r"\b(?:net\.minecraft\.world\.item\.)?Item\.ABSOLUTE_MAX_STACK_SIZE\b", "64", text)
     text = re.sub(r"\bBlocks\.SHORT_GRASS\b", "Blocks.GRASS", text)
-    text = re.sub(r"\bTerrainAdjustment\.ENCAPSULATE\b", "TerrainAdjustment.BEARD_BOX", text)
+    # 1.21's rock closed round a part (encapsulate) is not 1.20.1's: BURY stands for it (no part of the mod's is buried
+    # otherwise), and dev.groundburst.legacy.world.Encapsulation closes those parts in rock as 1.21 does.
+    text = re.sub(r"\bTerrainAdjustment\.ENCAPSULATE\b", "TerrainAdjustment.BURY", text)
     text = re.sub(r"\bSoundType\.COPPER_GRATE\b", "SoundType.COPPER", text)
     text = re.sub(r"\bOperation\.ADD_VALUE\b", "Operation.ADDITION", text)
     text = re.sub(r"\bOperation\.ADD_MULTIPLIED_BASE\b", "Operation.MULTIPLY_BASE", text)
@@ -1775,6 +1777,23 @@ FILE_FIXES: dict[str, list] = {
     "src/main/java/dev/groundburst/client/fx/ArtilleryClient.java": [
         swap("shell.getRandom().nextFloat()", "shell.level().getRandom().nextFloat()"),
     ],
+    # A site's part closed in rock (1.21's encapsulate; BURY stands for it here): Forge's beardifier hook is told NONE, and
+    # the beardifier closes it in rock itself (dev.groundburst.legacy.world.Encapsulation, legacy.mixin.BeardifierMixin).
+    "src/main/java/dev/groundburst/world/structure/SitePiece.java": [
+        swap("    @Override\n    public TerrainAdjustment getTerrainAdjustment() {\n        return this.terrain;\n    }\n",
+             "    /**\n"
+             "     * How the ground meets it. A part closed in rock (1.21's encapsulate, which 1.20.1 has not; BURY stands for it in this\n"
+             "     * build) has none of 1.20.1's own: its rock is {@link dev.groundburst.legacy.world.Encapsulation}'s.\n"
+             "     */\n"
+             "    @Override\n    public TerrainAdjustment getTerrainAdjustment() {\n"
+             "        return this.terrain == TerrainAdjustment.BURY ? TerrainAdjustment.NONE : this.terrain;\n    }\n\n"
+             "    /** Whether rock closes round it on every side (1.21's encapsulate). */\n"
+             "    public boolean closedIn() {\n        return this.terrain == TerrainAdjustment.BURY;\n    }\n"),
+    ],
+    # The site check asks a part itself whether it is closed in rock: here such a part tells the beardifier NONE (above).
+    "src/main/java/dev/groundburst/port/SiteCheck.java": [
+        swap("        return part.getTerrainAdjustment() == TerrainAdjustment.BURY;\n", "        return part.closedIn();\n"),
+    ],
     # A site's loot table: 1.20.1 names loot tables by id (1.20.5 made them a registry).
     "src/main/java/dev/groundburst/world/structure/GBStructures.java": [
         swap("    public static ResourceKey<LootTable> loot(String name) {\n        return ResourceKey.create(Registries.LOOT_TABLE, GroundBurst.id(\"chests/\" + name));",
@@ -1917,7 +1936,20 @@ def port_data_json(path: str, data: bytes) -> bytes | None:
         obj = port_loot(obj)
     elif folder == "tags":
         obj = port_tag(obj, "/tags/fluids/" in path)
+    elif "/worldgen/structure/" in path:
+        obj = port_site(obj)
     return (json.dumps(obj, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+
+
+def port_site(obj):
+    """A site's parts closed in rock (1.21's encapsulate, which 1.20.1 has not: its reader would quietly take such a part
+    for one with no terrain adjustment at all) as BURY, which stands for it here (dev.groundburst.legacy.world.Encapsulation)."""
+    for variant in obj.get("variants", []):
+        for part in variant.get("parts", []):
+            if part.get("terrain") == "encapsulate":
+                part["terrain"] = "bury"
+    assert obj.get("terrain_adaptation") != "encapsulate", "port.py: a site closed in rock as a whole: see port_site"
+    return obj
 
 
 def port_tag(obj, fluid: bool):

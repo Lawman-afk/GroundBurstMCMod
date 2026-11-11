@@ -6,6 +6,7 @@
   "refmap": "groundburst.refmap.json",
   "plugin": "dev.groundburst.legacy.mixin.MixinPlugin",
   "mixins": [
+    "BeardifierMixin",
     "BlockItemMixin",
     "ExplosionAccess",
     "ExplosionHitMixin",

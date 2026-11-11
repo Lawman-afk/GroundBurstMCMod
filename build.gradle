@@ -137,6 +137,17 @@ legacyForge {
             systemProperty 'groundburst.playBench.sim', (project.findProperty('playSim') ?: '12').toString()
         }
 
+        // The 1.21.1 build's check that the mod's sites come out of this version's world generation: a normal world, the
+        // nearest of each site found, made, measured (its blocks; the rock round its parts underground and the density the
+        // ground was shaped with there, to set beside the 1.21.1 build's) and photographed into run/screenshots/sites_*.png,
+        // then it quits (dev.groundburst.port.SiteCheck; the log's "Site check:" lines).
+        siteCheck {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.siteCheck', 'true'
+            systemProperty 'groundburst.keepMouse', 'true'
+        }
+
         // Machines and launchers on Create's contraptions (with -PwithCreate: Create loaded), the 1.21.1 build's check less its
         // ships' scenes (Create Aeronautics has no 1.20.1 build): pictures in run/screenshots/create_*.png, the log's
         // "Create check: ... OK" lines (dev.groundburst.compat.CreateCheck).
@@ -187,7 +198,7 @@ legacyForge {
 // without the focus and never grabs the mouse (dev.groundburst.legacy.client.DevRuns; the runs turn the camera
 // themselves). Forge's early loading window, made before any mod code runs, is turned off for them in run/config/fml.toml.
 def fmlConfig = file('run/config/fml.toml')
-tasks.matching { it.name in ['runPortCheck', 'runPlayBench', 'runCreateCheck'] }.configureEach {
+tasks.matching { it.name in ['runPortCheck', 'runSiteCheck', 'runPlayBench', 'runCreateCheck'] }.configureEach {
     doFirst {
         fmlConfig.parentFile.mkdirs()
         String text = fmlConfig.exists() ? fmlConfig.text : ''
@@ -221,7 +232,10 @@ def gameTestProperties = file('run/server.properties')
 tasks.matching { it.name == 'runGameTestServer' }.configureEach {
     doFirst {
         gameTestWorld.deleteDir()
-        gameTestProperties.text = 'level-type=minecraft\\:flat\n'
+        // (the classic flat ground, as 1.21's test server makes; with no settings 1.20.1 logs an error and makes it anyway)
+        gameTestProperties.text = 'level-type=minecraft\\:flat\n' +
+                'generator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},' +
+                '{"block":"minecraft:grass_block","height":1}],"biome":"minecraft:plains"}\n'
     }
 }
 

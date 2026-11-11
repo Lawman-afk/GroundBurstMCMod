@@ -226,16 +226,25 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
     @Override
     public BoundingBox getBeardifierBox() {
         BoundingBox b = this.boundingBox;
-        if (this.terrain == TerrainAdjustment.BEARD_BOX && b.maxY() > this.ground - 1 - ENCAPSULATE_REACH) {
+        if (this.terrain == TerrainAdjustment.BURY && b.maxY() > this.ground - 1 - ENCAPSULATE_REACH) {
             int top = Math.max(b.minY(), this.ground - 1 - ENCAPSULATE_REACH);
             return new BoundingBox(b.minX(), b.minY(), b.minZ(), b.maxX(), top, b.maxZ());
         }
         return b;
     }
 
+    /**
+     * How the ground meets it. A part closed in rock (1.21's encapsulate, which 1.20.1 has not; BURY stands for it in this
+     * build) has none of 1.20.1's own: its rock is {@link dev.groundburst.legacy.world.Encapsulation}'s.
+     */
     @Override
     public TerrainAdjustment getTerrainAdjustment() {
-        return this.terrain;
+        return this.terrain == TerrainAdjustment.BURY ? TerrainAdjustment.NONE : this.terrain;
+    }
+
+    /** Whether rock closes round it on every side (1.21's encapsulate). */
+    public boolean closedIn() {
+        return this.terrain == TerrainAdjustment.BURY;
     }
 
     /**
