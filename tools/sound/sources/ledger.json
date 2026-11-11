@@ -902,50 +902,6 @@
       "page": "https://freesound.org/people/parabolix/sounds/417424/",
       "file": "https://cdn.freesound.org/previews/417/417424_1036771-hq.ogg",
       "used_for": "a civil-defence Geiger counter (Lionel 6B) with a test source: the Geiger clicks"
-    },
-    {
-      "key": "pen_plotter",
-      "site": "freesound",
-      "id": 845810,
-      "title": "Plotter machine",
-      "author": "shimisuel",
-      "license": "CC0-1.0",
-      "page": "https://freesound.org/people/shimisuel/sounds/845810/",
-      "file": "https://cdn.freesound.org/previews/845/845810_16384651-hq.ogg",
-      "used_for": "a pen plotter drawing (phone voice memo): the Seismograph's drum and carriage"
-    },
-    {
-      "key": "plotter_startup",
-      "site": "freesound",
-      "id": 328767,
-      "title": "plotter.wav",
-      "author": "aerror",
-      "license": "CC0-1.0",
-      "page": "https://freesound.org/people/aerror/sounds/328767/",
-      "file": "https://cdn.freesound.org/previews/328/328767_2472895-hq.ogg",
-      "used_for": "a plotter starting up and running (Zoom H4n, unprocessed): the Seismograph's motor"
-    },
-    {
-      "key": "pen_on_paper",
-      "site": "freesound",
-      "id": 565206,
-      "title": "Pen or marker writing on paper - close up",
-      "author": "khenshom",
-      "license": "CC0-1.0",
-      "page": "https://freesound.org/people/khenshom/sounds/565206/",
-      "file": "https://cdn.freesound.org/previews/565/565206_6652872-hq.ogg",
-      "used_for": "a pen writing on paper, close up (MKE600 into a Zoom H5): the Seismograph's pen swinging"
-    },
-    {
-      "key": "telephone_buzzer",
-      "site": "freesound",
-      "id": 763483,
-      "title": "KS-20419L1 telephone buzzer",
-      "author": "tt_runscript",
-      "license": "CC0-1.0",
-      "page": "https://freesound.org/people/tt_runscript/sounds/763483/",
-      "file": "https://cdn.freesound.org/previews/763/763483_5365416-hq.ogg",
-      "used_for": "a Western Electric KS-20419L1 buzzer in a Bell System 564HLM key telephone: the Dead Hand's alert"
     }
   ]
 }

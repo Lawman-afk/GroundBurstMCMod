@@ -166,9 +166,6 @@ public final class GBBlockEntities {
         machine(event, dev.groundburst.content.launch.GBLaunch.STATION_ENTITY.get());
         machine(event, dev.groundburst.content.launch.GBLaunch.RADAR_ENTITY.get());
         machine(event, dev.groundburst.content.defence.GBDefence.COMPLEX_ENTITY.get());
-        machine(event, dev.groundburst.content.command.GBCommand.SEISMOGRAPH_ENTITY.get());
-        machine(event, dev.groundburst.content.command.GBCommand.WAR_ROOM_ENTITY.get());
-        machine(event, dev.groundburst.content.command.GBCommand.DEAD_HAND_ENTITY.get());
         tallMachine(event, GBMachines.ARC_FURNACE.block().get());
         tallMachine(event, GBMachines.CRYOGENIC_CONDENSER.block().get());
         tallMachine(event, GBMachines.CRYSTAL_PULLER.block().get());

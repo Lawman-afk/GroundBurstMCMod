@@ -134,10 +134,8 @@ public final class LaunchPayloads {
 
         public static void handle(MapRequest p, IPayloadContext context) {
             int scale = p.scale();
-            if (!(context.player() instanceof ServerPlayer player)
-                    || !(dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), MapSource.class) instanceof MapSource c)
-                    || !dev.groundburst.content.machine.Carried.near(player, p.pos(), Math.max(REACH, c.mapReach())) || !c.mapping()
-                    || !TerrainSurvey.validScale(scale)) {
+            if (!(context.player() instanceof ServerPlayer player) || !dev.groundburst.content.machine.Carried.near(player, p.pos(), REACH)
+                    || !(dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), MapSource.class) instanceof MapSource c) || !c.mapping() || !TerrainSurvey.validScale(scale)) {
                 return;
             }
             boolean bounded = c.boundedMap();

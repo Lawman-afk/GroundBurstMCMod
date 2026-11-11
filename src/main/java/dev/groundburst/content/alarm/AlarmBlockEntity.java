@@ -218,8 +218,8 @@ public class AlarmBlockEntity extends BlockEntity {
         int n = 0;
         long first = Long.MAX_VALUE;
         for (Flights.Flight f : Flights.of(level).all()) {
-            if (f.progress() <= 0 || f.ticksToImpact() <= 0 || f.harmless() || !Interception.tracked(level, f.position())) {
-                continue;                                          // (no warhead: the Dead Hand's command rocket, DESIGN.md §17.17)
+            if (f.progress() <= 0 || f.ticksToImpact() <= 0 || !Interception.tracked(level, f.position())) {
+                continue;
             }
             Vec3 t = f.target();
             if (Math.hypot(t.x - c.x, t.z - c.z) <= radius) {

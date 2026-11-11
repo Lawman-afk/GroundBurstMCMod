@@ -151,10 +151,6 @@ public final class GBTagProviders {
                     dev.groundburst.content.launch.GBLaunch.COMPUTER_CONTROLLER.block().key(),
                     dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.block().key(),
                     dev.groundburst.content.launch.GBLaunch.RADAR_CONTROLLER.block().key(),
-                    dev.groundburst.content.command.GBCommand.SEISMOGRAPH.block().key(),
-                    dev.groundburst.content.command.GBCommand.DISPLAY_PANEL.block().key(),
-                    dev.groundburst.content.command.GBCommand.WAR_ROOM_CONTROLLER.block().key(),
-                    dev.groundburst.content.command.GBCommand.DEAD_HAND_CONTROLLER.block().key(),
                     dev.groundburst.content.strategic.GBStrategic.CRANE_RAIL.block().key(),
                     dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.block().key(),
                     dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.block().key(),
@@ -187,8 +183,6 @@ public final class GBTagProviders {
                 tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key());
                 tag(BlockTags.NEEDS_IRON_TOOL).add(b.block().key());
             }
-            // The Dead Hand's console is hardened as its shell is.
-            tag(BlockTags.NEEDS_IRON_TOOL).add(dev.groundburst.content.command.GBCommand.DEAD_HAND_CONTROLLER.block().key());
             GBMachines.CAPACITOR_BANKS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GBMachines.FISSION_REACTOR.block().key(), GBMachines.PARTICLE_ACCELERATOR.block().key(),
                     GBMachines.FUSION_REACTOR.block().key(), GBMachines.SINGULARITY_REACTOR.block().key(), GBMultiblocks.TOROIDAL_FIELD_COIL.block().key(),

@@ -110,8 +110,6 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
     private @Nullable BlockPos target;
     private boolean armed;
     private @Nullable UUID launchedBy;
-    /** Standing by (DESIGN.md §17.19): its countdown holds at its last tick until it is released. */
-    private boolean standingBy;
     /** Its spread: the pattern and how far apart its points are (blocks). */
     private LaunchNetwork.Pattern pattern = LaunchNetwork.Pattern.GRID;
     private int spacing = 8;
@@ -326,35 +324,6 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         return this.armed && this.target != null && launch(level, this.target, by);
     }
 
-    /** Fires if armed, standing by: its countdown holds at its last tick until it is released (DESIGN.md §17.19). */
-    @Override
-    public boolean launchHeld(ServerLevel level, @Nullable Entity by) {
-        if (!launchArmed(level, by)) {
-            return false;
-        }
-        this.standingBy = true;
-        setChanged();
-        return true;
-    }
-
-    @Override
-    public void release() {
-        if (this.standingBy) {
-            this.standingBy = false;
-            setChanged();
-        }
-    }
-
-    @Override
-    public void scrub() {
-        standDown();
-    }
-
-    @Override
-    public boolean standingBy() {
-        return this.standingBy && this.phase == Phase.COUNTDOWN;
-    }
-
     /** Starts the countdown to ripple its whole load at {@code target}, spread round it. False if it is not ready. */
     public boolean launch(ServerLevel level, BlockPos target, @Nullable Entity by) {
         if (readiness() != Readiness.READY) {
@@ -362,7 +331,6 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         }
         this.target = target.immutable();
         this.armed = false;
-        this.standingBy = false;
         this.launchedBy = by == null ? null : by.getUUID();
         List<Integer> cells = new ArrayList<>();
         for (int cell : ORDER) {
@@ -424,9 +392,6 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
             }
             case COUNTDOWN -> {
                 this.status = MachineStatus.RUNNING;
-                if (this.standingBy && this.phaseTicks >= COUNTDOWN - 1) {
-                    return true;                                 // standing by at its last tick for the order (DESIGN.md §17.19)
-                }
                 this.phaseTicks++;
                 int left = COUNTDOWN - this.phaseTicks;
                 if (left > 0 && left % 20 == 0) {
@@ -499,15 +464,13 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         this.aimX = new int[0];
         this.aimZ = new int[0];
         this.shot = 0;
-        this.standingBy = false;
         sync();
     }
 
-    /** Knocked out, stopped, broken or scrubbed: a countdown is scrubbed, a ripple stopped, an armed one made safe. */
+    /** Knocked out, stopped or broken: a countdown is scrubbed, a ripple stopped, an armed one made safe. */
     private void standDown() {
-        if (this.armed || this.standingBy) {
+        if (this.armed) {
             this.armed = false;
-            this.standingBy = false;
             setChanged();
         }
         if (this.phase != Phase.IDLE) {
@@ -751,7 +714,6 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         output.putIntArray("aim_x", this.aimX);
         output.putIntArray("aim_z", this.aimZ);
         output.putInt("shot", this.shot);
-        output.putBoolean("standing_by", this.standingBy);
         long now = this.level == null ? 0 : this.level.getGameTime();
         for (int i = 0; i < CELLS; i++) {
             if (now - this.opened[i] < HATCH_OPEN) {
@@ -781,7 +743,6 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         this.queue = input.getIntArray("queue").orElse(new int[0]);
         this.aimX = input.getIntArray("aim_x").orElse(new int[0]);
         this.aimZ = input.getIntArray("aim_z").orElse(new int[0]);
-        this.standingBy = input.getBooleanOr("standing_by", false);
         if (this.aimX.length != this.queue.length || this.aimZ.length != this.queue.length) {
             this.queue = new int[0];
             this.aimX = new int[0];

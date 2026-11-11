@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "groundburst:item/war_room_display_spawner"
-  }
-}
