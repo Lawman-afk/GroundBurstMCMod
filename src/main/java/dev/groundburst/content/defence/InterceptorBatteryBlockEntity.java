@@ -174,8 +174,8 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
         this.radar = Interception.tracked(level, from);
         int seen = 0;
         for (Flights.Flight f : Flights.of(level).all()) {
-            if (f.progress() <= 0 || f.ticksToImpact() <= 1 || f.harmless() || this.testFilter != null && !this.testFilter.test(f)) {
-                continue;                                          // still on its pad, down already, or no warhead (DESIGN.md §17.17)
+            if (f.progress() <= 0 || f.ticksToImpact() <= 1 || this.testFilter != null && !this.testFilter.test(f)) {
+                continue;                                          // still on its pad, or down already
             }
             boolean tracked = Interception.tracked(level, f.position());
             double reach = tracked ? Interception.RADAR_RANGE : Interception.SEEKER_RANGE;

@@ -164,37 +164,22 @@ public final class Flights extends SavedData {
         return launch(level, pad, target, warhead, body, hardened, owner, silo, 0);
     }
 
-    /**
-     * The same, its motor burning {@code cellHold} ticks where it was lit before it moves (0: a pad's or a silo's
-     * ignition): a Vertical Launch Battery's cell, the Dead Hand's command rocket ejected from its tube (DESIGN.md §17.19).
-     */
-    public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, SizeClass body, boolean hardened, @Nullable Entity owner,
+    private static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, SizeClass body, boolean hardened, @Nullable Entity owner,
             double silo, int cellHold) {
-        Flight f = plan(pad, target, warhead, body, silo, cellHold, owner == null ? null : owner.getUUID());
+        double range = Math.sqrt(Mth.square(target.x - pad.x) + Mth.square(target.z - pad.z));
+        double apex = apex(range);
+        int ticks = flightTicks(range);
+        Flight f = new Flight(UUID.randomUUID(), pad, target, apex, ticks, warhead.copyWithCount(1), owner == null ? null : owner.getUUID());
+        f.body = body;
         f.hardened = hardened;
+        f.silo = Math.max(0, silo);
+        f.cell = Math.max(0, cellHold);
         Flights fs = of(level);
         fs.flights.add(f);
         fs.setDirty();
         f.keepLoaded(level);
         f.proxy(level);
         level.playSound(null, pad.x, pad.y, pad.z, GBLaunch.MISSILE_LAUNCH.get(), SoundSource.BLOCKS, 8f, 1f);
-        return f;
-    }
-
-    /**
-     * A flight as {@link #launch} would make it, never flown: where it would be over its course, from lighting
-     * ({@link Flight#positionIn}; the Dead Hand plans its command rocket's course with it, DESIGN.md §17.19).
-     */
-    public static Flight preview(Vec3 pad, Vec3 target, SizeClass body, double silo, int cellHold) {
-        return plan(pad, target, ItemStack.EMPTY, body, silo, cellHold, null);
-    }
-
-    private static Flight plan(Vec3 pad, Vec3 target, ItemStack warhead, SizeClass body, double silo, int cellHold, @Nullable UUID owner) {
-        double range = Math.sqrt(Mth.square(target.x - pad.x) + Mth.square(target.z - pad.z));
-        Flight f = new Flight(UUID.randomUUID(), pad, target, apex(range), flightTicks(range), warhead.copyWithCount(1), owner);
-        f.body = body;
-        f.silo = Math.max(0, silo);
-        f.cell = Math.max(0, cellHold);
         return f;
     }
 
@@ -546,19 +531,6 @@ public final class Flights extends SavedData {
             return this.pos;
         }
 
-        /** Where it was fired from (its tail on the pad, or the foot of its silo's shaft). */
-        public Vec3 start() {
-            return this.start;
-        }
-
-        /**
-         * Whether it carries no warhead (the Dead Hand's command rocket, DESIGN.md §17.17): it comes down harmlessly, so
-         * warning receivers and interceptors pass it by.
-         */
-        public boolean harmless() {
-            return this.warhead.isEmpty();
-        }
-
         public Vec3 target() {
             return this.target;
         }
@@ -597,7 +569,6 @@ public final class Flights extends SavedData {
                 return false;
             }
             Entity by = this.owner == null ? null : level.getEntity(this.owner);
-            dev.groundburst.content.command.Seismic.impact(level, at, this);     // its blasts are its (DESIGN.md §17.17)
             Charges.scaled(this.scale, () -> Charges.burst(level, bomb.kind, at, by));
             finish(level);
             return true;
@@ -908,12 +879,11 @@ public final class Flights extends SavedData {
         /** It hits: its warhead goes off where it hit (a bunker buster bores in first; an empty one does nothing). */
         private void impact(ServerLevel level, Vec3 at) {
             Entity by = this.owner == null ? null : level.getEntity(this.owner);
-            if (this.dud || this.warhead.isEmpty()) {
-                // A dead fuze, or nothing to go off (the Dead Hand's command rocket): it just slams into the ground.
+            if (this.dud) {
+                // A dead fuze: it just slams into the ground.
                 level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, at.x, at.y + 0.5, at.z, 20, 0.6, 0.4, 0.6, 0.05);
                 level.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 2f, 0.5f);
             } else if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
-                dev.groundburst.content.command.Seismic.impact(level, at, this); // its blasts are its (DESIGN.md §17.17)
                 Charges.scaled(this.scale, () -> Charges.impact(level, bomb.kind, BlockPos.containing(at.add(0, 0.5, 0)), by));
             }
             finish(level);

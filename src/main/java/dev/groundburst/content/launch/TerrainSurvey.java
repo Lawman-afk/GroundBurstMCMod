@@ -124,7 +124,7 @@ public final class TerrainSurvey extends SavedData {
     }
 
     /** Surveys every loaded chunk round a computer that has just formed (what it can already see). */
-    public void surveyAround(ServerLevel level, BlockPos at, int chunkRadius) {
+    void surveyAround(ServerLevel level, BlockPos at, int chunkRadius) {
         int cx = at.getX() >> 4, cz = at.getZ() >> 4;
         for (int x = cx - chunkRadius; x <= cx + chunkRadius; x++) {
             for (int z = cz - chunkRadius; z <= cz + chunkRadius; z++) {

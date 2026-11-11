@@ -29,11 +29,8 @@ public final class GBGameTests {
 
     private static final List<TestSpec> SPECS = new ArrayList<>();
 
-    /**
-     * A test: its name, the structure it runs in, its timeout, whether its plot has open sky, whether it runs alone (in a
-     * batch of its own, while no other test runs), and what it does.
-     */
-    public record TestSpec(String name, ResourceLocation structure, int maxTicks, boolean sky, boolean alone, Consumer<GameTestHelper> body) {}
+    /** A test: its name, the structure it runs in, its timeout, whether its plot has open sky, and what it does. */
+    public record TestSpec(String name, ResourceLocation structure, int maxTicks, boolean sky, Consumer<GameTestHelper> body) {}
 
     static {
         test("harness_floor", FLOOR_16, 20, helper -> {
@@ -93,8 +90,6 @@ public final class GBGameTests {
         CruiseTests.register();
         VlsTests.register();
         StationTests.register();
-        CommandTests.register();
-        StandByTests.register();
         DesignatorTests.register();
         SemiconductorTests.register();
         FactoryTests.register();
@@ -113,20 +108,12 @@ public final class GBGameTests {
     private GBGameTests() {}
 
     static void test(String name, ResourceLocation structure, int maxTicks, Consumer<GameTestHelper> body) {
-        SPECS.add(new TestSpec(name, structure, maxTicks, false, false, body));
+        SPECS.add(new TestSpec(name, structure, maxTicks, false, body));
     }
 
     /** A test with open sky over its plot (no barrier lid), for things that fly above it. */
     static void testOpenSky(String name, ResourceLocation structure, int maxTicks, Consumer<GameTestHelper> body) {
-        SPECS.add(new TestSpec(name, structure, maxTicks, true, false, body));
-    }
-
-    /**
-     * A test run alone, in a batch of its own: for what hears every blast in the world (DESIGN.md §17.17), which the
-     * tests running beside it would set off.
-     */
-    static void testAlone(String name, ResourceLocation structure, int maxTicks, boolean sky, Consumer<GameTestHelper> body) {
-        SPECS.add(new TestSpec(name, structure, maxTicks, sky, true, body));
+        SPECS.add(new TestSpec(name, structure, maxTicks, true, body));
     }
 
     /** Every test, in the order listed. */

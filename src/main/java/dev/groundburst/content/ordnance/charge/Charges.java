@@ -474,15 +474,6 @@ public final class Charges {
 
     /** An exotic warhead delivered by a missile (Phase 11, DESIGN.md §16): its full effect where it arrives. */
     public static void exotic(ServerLevel level, ChargeKind kind, Vec3 at, @Nullable Entity by) {
-        // The ground carries them as tremors (DESIGN.md §17.17; a storm's strikes are blasts of their own).
-        float shrink = (float) (2.25 * Math.log10(Math.max(1e-3, bombScale)));
-        switch (kind) {
-            case ANTIMATTER_WARHEAD -> dev.groundburst.content.command.Seismic.tremor(level, at, 6.7f + shrink, 0);
-            case SINGULARITY_WARHEAD -> dev.groundburst.content.command.Seismic.tremor(level, at, 4.4f + shrink,
-                    dev.groundburst.blast.Singularities.LIFE);
-            case CRYOGENIC_WARHEAD -> dev.groundburst.content.command.Seismic.tremor(level, at, 4.5f + shrink, 200);
-            default -> { }
-        }
         if (kind == ChargeKind.ANTIMATTER_WARHEAD) {
             dev.groundburst.content.exotic.Antimatter.burst(level, at, by, bombScale);
         } else if (kind == ChargeKind.SINGULARITY_WARHEAD) {

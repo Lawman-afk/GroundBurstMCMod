@@ -10,7 +10,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "A **Launch Control Station** runs your launchers anywhere in its dimension, near or far, loaded or not: Launch Silos, [Launch Complexes](ordnance/launch_complex), [Missile Silos](ordnance/missile_silo), [Cruise Missile Launchers](ordnance/cruise_launcher) and the superweapons (the [SCUD Storm](superweapons/scud_storm), the [Nuclear Missile](superweapons/nuclear_missile_silo) and the [Particle Uplink Cannon](superweapons/particle_uplink_cannon)). It shows what your linked [Radar Arrays](ordnance/radar_array) track too, and the blasts your [Seismographs](ordnance/seismograph) feel; a [War Room Display](ordnance/war_room_display) puts the same picture up on a wall, and a [Dead Hand](ordnance/dead_hand) fires the network if its command falls silent."
+      "text": "A **Launch Control Station** runs your launchers anywhere in its dimension, near or far, loaded or not: Launch Silos, [Launch Complexes](ordnance/launch_complex), [Missile Silos](ordnance/missile_silo), [Cruise Missile Launchers](ordnance/cruise_launcher) and the superweapons (the [SCUD Storm](superweapons/scud_storm), the [Nuclear Missile](superweapons/nuclear_missile_silo) and the [Particle Uplink Cannon](superweapons/particle_uplink_cannon)). It shows what your linked [Radar Arrays](ordnance/radar_array) track too."
     },
     {
       "type": "structure",

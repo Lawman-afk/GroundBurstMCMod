@@ -58,24 +58,12 @@ public final class LaunchNetwork extends SavedData {
     private static final int NO_ANSWER = 600;
     private static final String CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-    /** What a member is: a launcher, a Radar Array, a Seismograph or the Dead Hand (DESIGN.md §17.17). */
-    public enum Role { LAUNCHER, RADAR, SEISMOGRAPH, DEAD_HAND }
+    public enum Role { LAUNCHER, RADAR }
 
     /** Aim points round the aim for several picked members (DESIGN.md §17.12). */
     public enum Pattern { POINT, LINE, RING, GRID }
 
-    /**
-     * A log line's kind. BLAST: one of its seismographs felt a blast (where it was made out to be; detail its magnitude
-     * times ten); the Dead Hand's: armed, made safe, in alert (where the strike was; detail the countdown, seconds),
-     * fired (its command rocket away; detail how many launchers stand by), stood down (detail 1: a station answered), its
-     * rocket down (where; detail how many launchers it reached) (DESIGN.md §17.17, §17.19). A FAILED order's detail -2: a
-     * launcher the command rocket's signal never reached.
-     */
-    public enum EventKind { LAUNCHED, IMPACT, LOST, NO_CONTACT, FAILED, LINKED, UNLINKED, NEW_CODES, FIRE_CALLED, DESIGNATED,
-        BLAST, DEAD_HAND_ARMED, DEAD_HAND_SAFE, DEAD_HAND_ALERT, DEAD_HAND_FIRED, DEAD_HAND_STOOD_DOWN, DEAD_HAND_ROCKET_DOWN }
-
-    /** A FAILED order's detail: no answer from the member (woken and never there); out of the command rocket's reach. */
-    public static final int NO_ANSWER_DETAIL = -1, OUT_OF_REACH = -2;
+    public enum EventKind { LAUNCHED, IMPACT, LOST, NO_CONTACT, FAILED, LINKED, UNLINKED, NEW_CODES, FIRE_CALLED, DESIGNATED }
 
     // --- records -----------------------------------------------------------------------------------------------------------
     private static final Codec<LaunchSite.Strike> STRIKE_CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -91,17 +79,6 @@ public final class LaunchNetwork extends SavedData {
     /** What a member last reported. */
     public record Report(int readiness, int countdown, boolean armed, Optional<BlockPos> target, int range, LaunchSite.Strike strike,
             ItemStack shown, LaunchSite.Timing timing, long seen, boolean working) {
-        /** This report as seen at {@code time}. */
-        public Report seenAt(long time) {
-            return new Report(this.readiness, this.countdown, this.armed, this.target, this.range, this.strike, this.shown, this.timing, time,
-                    this.working);
-        }
-
-        /** A plain member's report (DESIGN.md §17.17): its readiness, a countdown, armed, a place, a reach, what it holds, working. */
-        public static Report of(int readiness, int countdown, boolean armed, Optional<BlockPos> target, int range, ItemStack shown, boolean working) {
-            return new Report(readiness, countdown, armed, target, range, LaunchSite.Strike.NONE, shown, NONE.timing, 0, working);
-        }
-
         static final Report NONE = new Report(LaunchSiloBlockEntity.Readiness.NOT_FORMED.ordinal(), -1, false, Optional.empty(), 0,
                 LaunchSite.Strike.NONE, ItemStack.EMPTY, new LaunchSite.Timing(0, false, 0, 0, 0), Long.MIN_VALUE / 4, false);
         static final Codec<Report> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -119,26 +96,18 @@ public final class LaunchNetwork extends SavedData {
                 net.minecraft.core.Direction.CODEC.fieldOf("face").forGetter(Mark::face)).apply(i, Mark::new));
     }
 
-    /**
-     * What the network has told a member to do and it has not done yet (-1: nothing). {@code hold} (DESIGN.md §17.19):
-     * {@link #STAND_BY} the launch at {@code launchAt} is to stand by at its countdown's last tick for the Dead Hand's
-     * command rocket; {@link #RELEASE} a launch standing by is let go; {@link #SCRUB} one is stood down.
-     */
-    public record Orders(Optional<BlockPos> aim, int arm, long launchAt, Optional<UUID> by, int hold) {
-        static final Orders NONE = new Orders(Optional.empty(), -1, -1, Optional.empty(), 0);
+    /** What the network has told a member to do and it has not done yet (-1: nothing). */
+    public record Orders(Optional<BlockPos> aim, int arm, long launchAt, Optional<UUID> by) {
+        static final Orders NONE = new Orders(Optional.empty(), -1, -1, Optional.empty());
         static final Codec<Orders> CODEC = RecordCodecBuilder.create(i -> i.group(
                 BlockPos.CODEC.optionalFieldOf("aim").forGetter(Orders::aim), Codec.INT.fieldOf("arm").forGetter(Orders::arm),
-                Codec.LONG.fieldOf("launch_at").forGetter(Orders::launchAt), UUIDUtil.CODEC.optionalFieldOf("by").forGetter(Orders::by),
-                Codec.INT.optionalFieldOf("hold", 0).forGetter(Orders::hold))
+                Codec.LONG.fieldOf("launch_at").forGetter(Orders::launchAt), UUIDUtil.CODEC.optionalFieldOf("by").forGetter(Orders::by))
                 .apply(i, Orders::new));
 
         boolean any() {
-            return this.aim.isPresent() || this.arm >= 0 || this.launchAt >= 0 || this.hold == RELEASE || this.hold == SCRUB;
+            return this.aim.isPresent() || this.arm >= 0 || this.launchAt >= 0;
         }
     }
-
-    /** {@link Orders#hold}: none, a launch standing by, a stand-by let go, one stood down. */
-    public static final int NO_HOLD = 0, STAND_BY = 1, RELEASE = 2, SCRUB = 3;
 
     /** One launcher or radar on a network. */
     public static final class Member {
@@ -149,18 +118,14 @@ public final class LaunchNetwork extends SavedData {
                 Codec.INT.listOf().fieldOf("box").forGetter(m -> List.of(m.minCX, m.minCZ, m.maxCX, m.maxCZ)),
                 UUIDUtil.CODEC.listOf().fieldOf("flights").forGetter(m -> List.copyOf(m.flights)),
                 Mark.CODEC.optionalFieldOf("mark").forGetter(m -> Optional.ofNullable(m.mark)),
-                BlockPos.CODEC.optionalFieldOf("at").forGetter(m -> m.at.equals(m.pos) ? Optional.empty() : Optional.of(m.at)),
-                BlockPos.CODEC.optionalFieldOf("standing_by").forGetter(m -> Optional.ofNullable(m.standingBy)),
-                Codec.LONG.optionalFieldOf("standing_zero", -1L).forGetter(m -> m.standingZero))
-                .apply(i, (pos, role, kind, report, orders, lost, box, flights, mark, at, standingBy, standingZero) -> {
+                BlockPos.CODEC.optionalFieldOf("at").forGetter(m -> m.at.equals(m.pos) ? Optional.empty() : Optional.of(m.at)))
+                .apply(i, (pos, role, kind, report, orders, lost, box, flights, mark, at) -> {
                     Member m = new Member(pos, Role.valueOf(role), kind);
                     m.report = report;
                     m.orders = orders;
                     m.lost = lost;
                     m.mark = mark.orElse(null);
                     m.at = at.orElse(pos).immutable();
-                    m.standingBy = standingBy.orElse(null);
-                    m.standingZero = standingZero;
                     if (box.size() == 4) {
                         m.minCX = box.get(0);
                         m.minCZ = box.get(1);
@@ -188,12 +153,6 @@ public final class LaunchNetwork extends SavedData {
         final List<UUID> flights = new ArrayList<>();
         /** Where a designator designated it (null: it was aimed some other way). */
         @Nullable Mark mark;
-        /**
-         * The Dead Hand it stands by for (DESIGN.md §17.19: readied in its alert, waiting for its command rocket's signal;
-         * null: none), and when that Dead Hand was to fire (game time).
-         */
-        @Nullable BlockPos standingBy;
-        long standingZero = -1;
         // Not saved: chunk tickets are dropped as the world loads and set again for orders still waiting.
         boolean awake;
         long keepUntil, wokeAt;
@@ -214,19 +173,12 @@ public final class LaunchNetwork extends SavedData {
             m.orders = this.orders;
             m.lost = this.lost;
             m.mark = this.mark;
-            m.standingBy = this.standingBy;
-            m.standingZero = this.standingZero;
             m.flights.addAll(this.flights);
             return m;
         }
 
         public Report report() {
             return this.report;
-        }
-
-        /** The Dead Hand it stands by for (DESIGN.md §17.19; null: none). */
-        public @Nullable BlockPos standingBy() {
-            return this.standingBy;
         }
 
         /** Where it is in the world, as it last reported (DESIGN.md §17.16). */
@@ -307,8 +259,6 @@ public final class LaunchNetwork extends SavedData {
         final LongOpenHashSet stations = new LongOpenHashSet();
         final Long2ObjectLinkedOpenHashMap<Member> members = new Long2ObjectLinkedOpenHashMap<>();
         final ArrayDeque<Event> log = new ArrayDeque<>();
-        /** The blasts its seismographs felt lately (not saved), newest last. */
-        final List<Blast> blasts = new ArrayList<>();
 
         Network(long id, String code) {
             this.id = id;
@@ -333,84 +283,6 @@ public final class LaunchNetwork extends SavedData {
 
         public int stationCount() {
             return this.stations.size();
-        }
-
-        /** The blasts its seismographs felt lately, oldest first (DESIGN.md §17.17). */
-        public List<Blast> blasts() {
-            return List.copyOf(this.blasts);
-        }
-
-        /** Its stations' places. */
-        public List<BlockPos> stations() {
-            List<BlockPos> out = new ArrayList<>();
-            for (long s : this.stations) {
-                out.add(BlockPos.of(s));
-            }
-            return out;
-        }
-    }
-
-    /**
-     * A blast a network's seismographs felt (DESIGN.md §17.17): the event's id and time, its magnitude as they made it
-     * out (their mean), how many felt it; where it was: the true place once two or more fixed it, else where the one
-     * station makes it, with that station's place, its bearing and distance and how far either may be off (drawn as the
-     * arc where it may be).
-     */
-    public static final class Blast {
-        public final long event, time;
-        float magnitude;
-        int picks;
-        boolean fixed;
-        double x, z, fromX, fromZ, bearing, bearingSpread, distance, distanceSpread;
-
-        Blast(long event, long time) {
-            this.event = event;
-            this.time = time;
-        }
-
-        public float magnitude() {
-            return this.magnitude;
-        }
-
-        public boolean fixed() {
-            return this.fixed;
-        }
-
-        public double x() {
-            return this.x;
-        }
-
-        public double z() {
-            return this.z;
-        }
-
-        public double fromX() {
-            return this.fromX;
-        }
-
-        public double fromZ() {
-            return this.fromZ;
-        }
-
-        /** Degrees clockwise from north. */
-        public double bearing() {
-            return this.bearing;
-        }
-
-        public double bearingSpread() {
-            return this.bearingSpread;
-        }
-
-        public double distance() {
-            return this.distance;
-        }
-
-        public double distanceSpread() {
-            return this.distanceSpread;
-        }
-
-        public int picks() {
-            return this.picks;
         }
     }
 
@@ -542,7 +414,7 @@ public final class LaunchNetwork extends SavedData {
      */
     public LinkResult link(ServerLevel level, long id, BlockEntity be) {
         Network n = this.networks.get(id);
-        Role role = roleOf(be);
+        Role role = be instanceof LaunchSite ? Role.LAUNCHER : be instanceof RadarArrayBlockEntity ? Role.RADAR : null;
         if (n == null || role == null) {
             return LinkResult.NOT_A_MEMBER;
         }
@@ -570,12 +442,6 @@ public final class LaunchNetwork extends SavedData {
         return old != null ? LinkResult.MOVED : LinkResult.LINKED;
     }
 
-    /** What kind of member a block entity would be (null: none). */
-    public static @Nullable Role roleOf(@Nullable BlockEntity be) {
-        return be instanceof LaunchSite ? Role.LAUNCHER : be instanceof RadarArrayBlockEntity ? Role.RADAR
-                : be instanceof NetworkMember member ? member.networkRole() : null;
-    }
-
     /** Where a member's block entity is in the world (DESIGN.md §17.16). */
     private static BlockPos worldPos(BlockEntity be) {
         return be instanceof dev.groundburst.content.machine.MachineBlockEntity mb ? mb.worldBlockPos().immutable() : be.getBlockPos().immutable();
@@ -594,7 +460,8 @@ public final class LaunchNetwork extends SavedData {
         if (old == null || networkOf(to) != null) {
             return;                                        // not a member, or something already holds the new place
         }
-        if (level.isLoaded(from) && level.getBlockEntity(from) instanceof BlockEntity there && roleOf(there) == old.role) {
+        if (level.isLoaded(from) && level.getBlockEntity(from) instanceof BlockEntity there
+                && (old.role == Role.LAUNCHER ? there instanceof LaunchSite : there instanceof RadarArrayBlockEntity)) {
             return;                                        // still standing there: this is a copy, not the member
         }
         sleep(level, old);
@@ -703,28 +570,6 @@ public final class LaunchNetwork extends SavedData {
         }
     }
 
-    /** A Seismograph's or the Dead Hand's tick (DESIGN.md §17.17): it reports what it is doing. */
-    public void tickMember(ServerLevel level, NetworkMember member) {
-        if (!(member instanceof BlockEntity be)) {
-            return;
-        }
-        Member m = memberAt(be.getBlockPos());
-        if (m != null && ((level.getGameTime() + be.getBlockPos().hashCode()) % REPORT == 0 || m.lost)) {
-            report(level, m, be);
-            if (m.role == Role.DEAD_HAND && m.report.readiness == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal()) {
-                wake(level, m);                            // in alert or firing: it keeps itself loaded (DESIGN.md §17.19)
-            }
-        }
-    }
-
-    /** A Seismograph's or the Dead Hand's state changed: it reports now (the station shows it at once). */
-    public void reportNow(ServerLevel level, BlockEntity be) {
-        Member m = memberAt(be.getBlockPos());
-        if (m != null) {
-            report(level, m, be);
-        }
-    }
-
     private void report(ServerLevel level, Member m, BlockEntity be) {
         Report r;
         if (be instanceof LaunchSite s) {
@@ -735,8 +580,6 @@ public final class LaunchNetwork extends SavedData {
             r = new Report(radar.isFormed() ? LaunchSiloBlockEntity.Readiness.READY.ordinal() : LaunchSiloBlockEntity.Readiness.NOT_FORMED.ordinal(),
                     -1, false, Optional.empty(), RadarArrayBlockEntity.RANGE, LaunchSite.Strike.NONE, ItemStack.EMPTY,
                     Report.NONE.timing(), level.getGameTime(), radar.working());
-        } else if (be instanceof NetworkMember member) {
-            r = member.networkReport(level).seenAt(level.getGameTime());
         } else {
             return;
         }
@@ -767,9 +610,7 @@ public final class LaunchNetwork extends SavedData {
         flight.seekerNetwork(n.id);                      // a laser-guided missile answers its network's designators
         net.lastSeen.put(flight.id(), flight.position());
         net.lastEta.put(flight.id(), flight.ticksToImpact());
-        if (m.role != Role.DEAD_HAND) {                  // (the Dead Hand's command rocket: its own FIRED line)
-            net.log(level, n, EventKind.LAUNCHED, launcher, m.kind, (int) Math.floor(flight.target().x), (int) Math.floor(flight.target().z), 0);
-        }
+        net.log(level, n, EventKind.LAUNCHED, launcher, m.kind, (int) Math.floor(flight.target().x), (int) Math.floor(flight.target().z), 0);
         net.setDirty();
     }
 
@@ -801,10 +642,10 @@ public final class LaunchNetwork extends SavedData {
                 continue;                                  // counting down: its target is set
             }
             int[] p = points.get(i);
-            m.orders = new Orders(Optional.of(new BlockPos(p[0], m.at.getY(), p[1])), m.orders.arm, m.orders.launchAt, m.orders.by, m.orders.hold);
+            m.orders = new Orders(Optional.of(new BlockPos(p[0], m.at.getY(), p[1])), m.orders.arm, m.orders.launchAt, m.orders.by);
             // Out of reach of its new aim: it will not stay armed.
             if (m.willBeArmed() && !m.canArm(m.orders.aim.get())) {
-                m.orders = new Orders(m.orders.aim, 0, m.orders.launchAt, m.orders.by, m.orders.hold);
+                m.orders = new Orders(m.orders.aim, 0, m.orders.launchAt, m.orders.by);
             }
             orderNow(level, m);
         }
@@ -875,12 +716,7 @@ public final class LaunchNetwork extends SavedData {
             if (on && !m.canArm(m.aim().orElse(null))) {
                 continue;
             }
-            if (!on && m.standingBy != null) {
-                scrubMember(level, m);                     // made safe: taken out of the Dead Hand's stand-by (DESIGN.md §17.19)
-                done++;
-                continue;
-            }
-            m.orders = new Orders(m.orders.aim, on ? 1 : 0, on ? m.orders.launchAt : -1, m.orders.by, on ? m.orders.hold : NO_HOLD);
+            m.orders = new Orders(m.orders.aim, on ? 1 : 0, on ? m.orders.launchAt : -1, m.orders.by);
             orderNow(level, m);
             done++;
         }
@@ -922,7 +758,7 @@ public final class LaunchNetwork extends SavedData {
         Optional<UUID> who = Optional.ofNullable(by == null ? null : by.getUUID());
         for (Member m : armed) {
             long at = together ? base + (longest - eta.get(m)) : now;
-            m.orders = new Orders(m.orders.aim, m.orders.arm, at, who, NO_HOLD);
+            m.orders = new Orders(m.orders.aim, m.orders.arm, at, who);
             orderNow(level, m);
         }
         setDirty();
@@ -1012,7 +848,7 @@ public final class LaunchNetwork extends SavedData {
             return false;
         }
         m.mark = mark;
-        m.orders = new Orders(Optional.of(aim), 1, -1, m.orders.by, NO_HOLD);
+        m.orders = new Orders(Optional.of(aim), 1, -1, m.orders.by);
         orderNow(level, m);
         log(level, n, EventKind.DESIGNATED, m.pos, m.kind, spot.getX(), spot.getZ(), 1);
         setDirty();
@@ -1028,7 +864,7 @@ public final class LaunchNetwork extends SavedData {
         if (n == null || !designatable(m) || firing(m) || !m.willBeArmed() || m.aim().isEmpty()) {
             return false;
         }
-        m.orders = new Orders(m.orders.aim, m.orders.arm, level.getGameTime(), Optional.ofNullable(by == null ? null : by.getUUID()), NO_HOLD);
+        m.orders = new Orders(m.orders.aim, m.orders.arm, level.getGameTime(), Optional.ofNullable(by == null ? null : by.getUUID()));
         orderNow(level, m);
         BlockPos at = m.aim().get();
         log(level, n, EventKind.FIRE_CALLED, m.pos, m.kind, at.getX(), at.getZ(), 1);
@@ -1093,15 +929,6 @@ public final class LaunchNetwork extends SavedData {
         Optional<BlockPos> aim = o.aim;
         int arm = o.arm;
         long launchAt = o.launchAt;
-        int hold = o.hold;
-        if (hold == SCRUB) {
-            // Stood down (DESIGN.md §17.19): a launch still to come is called off, one counting is scrubbed, made safe.
-            site.scrub();
-            aim = Optional.empty();
-            arm = -1;
-            launchAt = -1;
-            hold = NO_HOLD;
-        }
         if (aim.isPresent()) {
             if (!site.setTarget(aim.get().getX(), aim.get().getZ()) && n != null) {
                 log(level, n, EventKind.FAILED, m.pos, m.kind, aim.get().getX(), aim.get().getZ(), site.readiness().ordinal());
@@ -1119,29 +946,14 @@ public final class LaunchNetwork extends SavedData {
         }
         if (launchAt >= 0 && level.getGameTime() >= launchAt) {
             Entity by = o.by.map(level::getEntity).orElse(null);
-            boolean ok = hold == STAND_BY ? site.launchHeld(level, by) : site.launchArmed(level, by);
-            if (!ok && n != null) {
+            if (!site.launchArmed(level, by) && n != null) {
                 BlockPos t = site.target();
                 log(level, n, EventKind.FAILED, m.pos, m.kind, t == null ? 0 : t.getX(), t == null ? 0 : t.getZ(), site.readiness().ordinal());
             }
-            if (!ok) {
-                m.standingBy = null;                       // nothing to stand by: it did not launch
-                m.standingZero = -1;
-            }
             launchAt = -1;
-            hold = NO_HOLD;
             m.keepUntil = level.getGameTime() + GRACE;
         }
-        if (hold == RELEASE && launchAt < 0) {
-            site.release();                                // the command rocket's signal: a launch standing by goes
-            hold = NO_HOLD;
-        }
-        if (hold == STAND_BY && launchAt < 0) {
-            hold = NO_HOLD;                                // its launch called off: it could not be armed
-            m.standingBy = null;
-            m.standingZero = -1;
-        }
-        m.orders = new Orders(aim, arm, launchAt, launchAt >= 0 ? o.by : Optional.empty(), hold);
+        m.orders = new Orders(aim, arm, launchAt, launchAt >= 0 ? o.by : Optional.empty());
         if (site instanceof BlockEntity be) {
             report(level, m, be);
         }
@@ -1180,266 +992,6 @@ public final class LaunchNetwork extends SavedData {
         }
     }
 
-    // --- the war room (DESIGN.md §17.17) ---------------------------------------------------------------------------------
-    /** Blasts a network keeps for its maps (ticks), and at most this many. */
-    static final int BLAST_KEEP = 12_000, BLAST_MAX = 32;
-    /** Blasts this big or more go in the log. */
-    static final float BLAST_LOGGED = 2.0f;
-
-    /** The network one of whose launchers fired the missile {@code flight} (0: none). */
-    public long networkOfFlight(UUID flight) {
-        for (Network n : this.networks.values()) {
-            for (Member m : n.members.values()) {
-                if (m.flights.contains(flight)) {
-                    return n.id;
-                }
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * A seismograph on a network felt a blast (event {@code event}, at {@code at}, going off at {@code time}): its
-     * magnitude as it made it out, where it makes it ({@code x}/{@code z}) from where it stands ({@code from}), the
-     * bearing (degrees clockwise from north) and distance it made out, and how far either may be off. The first to feel
-     * it places it so; two or more fix it where it was (and it goes in the log once, if big enough).
-     */
-    public void felt(ServerLevel level, BlockPos seismograph, long event, long time, Vec3 at, float magnitude, double x, double z, Vec3 from,
-            double bearing, double bearingSpread, double distance, double distanceSpread) {
-        Network n = networkOf(seismograph);
-        Member m = n == null ? null : n.members.get(seismograph.asLong());
-        if (m == null) {
-            return;
-        }
-        long now = level.getGameTime();
-        n.blasts.removeIf(b -> now - b.time > BLAST_KEEP);
-        Blast b = null;
-        for (Blast x0 : n.blasts) {
-            if (x0.event == event) {
-                b = x0;
-            }
-        }
-        if (b == null) {
-            b = new Blast(event, time);
-            b.magnitude = magnitude;
-            b.picks = 1;
-            b.x = x;
-            b.z = z;
-            b.fromX = from.x;
-            b.fromZ = from.z;
-            b.bearing = bearing;
-            b.bearingSpread = bearingSpread;
-            b.distance = distance;
-            b.distanceSpread = distanceSpread;
-            n.blasts.add(b);
-            while (n.blasts.size() > BLAST_MAX) {
-                n.blasts.removeFirst();
-            }
-            if (magnitude >= BLAST_LOGGED) {
-                log(level, n, EventKind.BLAST, seismograph, m.kind, Mth.floor(x), Mth.floor(z), Math.round(magnitude * 10));
-            }
-        } else {
-            b.magnitude = (b.magnitude * b.picks + magnitude) / (b.picks + 1);
-            b.picks++;
-            b.fixed = true;                                  // two stations or more: fixed where it was
-            b.x = at.x;
-            b.z = at.z;
-        }
-    }
-
-    /** A line in the log of the network {@code member} is on (the Dead Hand's states). */
-    public void note(ServerLevel level, BlockPos member, EventKind kind, int x, int z, int detail) {
-        Network n = networkOf(member);
-        Member m = n == null ? null : n.members.get(member.asLong());
-        if (m != null) {
-            log(level, n, kind, member, m.kind, x, z, detail);
-        }
-    }
-
-    /** Whether any of the network's Launch Control Stations is working (loaded, formed, powered): its command answers. */
-    public boolean stationAnswers(ServerLevel level, long id) {
-        Network n = this.networks.get(id);
-        if (n == null) {
-            return false;
-        }
-        for (long s : n.stations) {
-            BlockPos p = BlockPos.of(s);
-            if (level.isLoaded(p) && level.getBlockEntity(p) instanceof LaunchStationBlockEntity station && station.isFormed() && station.powered()
-                    && !station.emped()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // --- the Dead Hand's command (DESIGN.md §17.19) ----------------------------------------------------------------------
-    /** A stand-by's launch is ordered this many ticks earlier than it must be (its countdown is surely over by zero). */
-    private static final int STAND_BY_EARLY = 10;
-    /** A launcher still standing by this long after its Dead Hand was to fire stands down by itself, ticks. */
-    public static final int STAND_BY_LAPSE = 6000;
-
-    /**
-     * The Dead Hand in alert: every launcher of the network that can fire is aimed where it already is (the war plan), or
-     * at {@code origin} where it reaches it (return fire), armed, and ordered to launch standing by: its countdown timed to
-     * be over by {@code zero} (from its timing: its countdown and its missile's ignition; at once if there is not that
-     * long), then held at its last tick for the command rocket's signal. Far ones are woken in time. Returns how many
-     * stand by for {@code hand}.
-     */
-    public int standBy(ServerLevel level, long id, BlockPos hand, @Nullable BlockPos origin, long zero) {
-        Network n = this.networks.get(id);
-        if (n == null) {
-            return 0;
-        }
-        long now = level.getGameTime();
-        int count = 0;
-        for (Member m : n.members.values()) {
-            if (m.role != Role.LAUNCHER || m.lost || m.standingBy != null || firing(m)) {
-                continue;
-            }
-            BlockPos back = origin == null ? null : new BlockPos(origin.getX(), m.at.getY(), origin.getZ());
-            if (back != null && m.canArm(back)) {
-                m.orders = new Orders(Optional.of(back), m.orders.arm, m.orders.launchAt, m.orders.by, m.orders.hold);
-            }
-            if (!m.canArm(m.aim().orElse(null))) {
-                continue;
-            }
-            long at = Math.max(now, zero - m.report.timing.delay() - STAND_BY_EARLY);
-            m.orders = new Orders(m.orders.aim, 1, at, Optional.empty(), STAND_BY);
-            m.standingBy = hand.immutable();
-            m.standingZero = zero;
-            orderNow(level, m);
-            count++;
-        }
-        setDirty();
-        return count;
-    }
-
-    /** The Dead Hand at {@code hand} stood down: every launcher standing by for it is stood down. Returns how many. */
-    public int standDown(ServerLevel level, long id, BlockPos hand) {
-        Network n = this.networks.get(id);
-        if (n == null) {
-            return 0;
-        }
-        int count = 0;
-        for (Member m : n.members.values()) {
-            if (hand.equals(m.standingBy)) {
-                scrubMember(level, m);
-                count++;
-            }
-        }
-        if (count > 0) {
-            setDirty();
-        }
-        return count;
-    }
-
-    /** How many of the network's launchers stand by for the Dead Hand at {@code hand}. */
-    public int standingFor(long id, BlockPos hand) {
-        Network n = this.networks.get(id);
-        if (n == null) {
-            return 0;
-        }
-        int count = 0;
-        for (Member m : n.members.values()) {
-            count += hand.equals(m.standingBy) ? 1 : 0;
-        }
-        return count;
-    }
-
-    /**
-     * Where the command rocket must reach: every launcher of the network standing by, or ready and aimed (where each is
-     * in the world).
-     */
-    public List<BlockPos> commandable(long id) {
-        Network n = this.networks.get(id);
-        List<BlockPos> out = new ArrayList<>();
-        if (n != null) {
-            for (Member m : n.members.values()) {
-                if (m.role == Role.LAUNCHER && !m.lost && (m.standingBy != null || !firing(m) && m.canArm(m.aim().orElse(null)))) {
-                    out.add(m.at);
-                }
-            }
-        }
-        return out;
-    }
-
-    /** A member's stand-by called off: a launch still to start forgotten, one counting scrubbed, made safe. */
-    private void scrubMember(ServerLevel level, Member m) {
-        m.standingBy = null;
-        m.standingZero = -1;
-        m.orders = new Orders(Optional.empty(), -1, -1, Optional.empty(), SCRUB);
-        orderNow(level, m);
-    }
-
-    /** How many launchers each command rocket in the air has reached (not saved: a count for the log). */
-    private final Map<UUID, Integer> reachedBy = new HashMap<>();
-
-    /** How many launchers the command rocket {@code rocket} has reached so far. */
-    public int reachedBy(UUID rocket) {
-        return this.reachedBy.getOrDefault(rocket, 0);
-    }
-
-    /**
-     * The command rocket's signal, heard {@code reach} blocks round {@code at}: every launcher of the network in reach
-     * takes the order. Standing by, it is let go (at its last tick it fires at once; still counting, at its countdown's
-     * end; its launch not started yet, it starts now with nothing to wait for); not readied but ready and aimed, it is
-     * armed and launched now on its own countdown. Returns how many took it.
-     */
-    private int broadcast(ServerLevel level, Network n, UUID rocket, Vec3 at, double reach) {
-        long now = level.getGameTime();
-        int took = 0;
-        for (Member m : n.members.values()) {
-            if (m.role != Role.LAUNCHER || m.lost || Math.hypot(m.at.getX() + 0.5 - at.x, m.at.getZ() + 0.5 - at.z) > reach) {
-                continue;
-            }
-            if (m.standingBy != null) {
-                m.standingBy = null;
-                m.standingZero = -1;
-                m.orders = m.orders.launchAt >= 0 ? new Orders(m.orders.aim, m.orders.arm, now, m.orders.by, NO_HOLD)
-                        : new Orders(m.orders.aim, m.orders.arm, -1, m.orders.by, RELEASE);
-            } else if (!firing(m) && m.canArm(m.aim().orElse(null))) {
-                m.orders = new Orders(m.orders.aim, 1, now, Optional.empty(), NO_HOLD);
-            } else {
-                continue;
-            }
-            orderNow(level, m);
-            took++;
-        }
-        if (took > 0) {
-            this.reachedBy.merge(rocket, took, Integer::sum);
-            setDirty();
-        }
-        return took;
-    }
-
-    /** The Dead Hand's rocket just lit (in its tube): its signal goes out at once, the launchers by it take the order now. */
-    public void commandRocketAway(ServerLevel level, BlockPos hand, Flights.Flight rocket) {
-        Network n = networkOf(hand);
-        if (n != null) {
-            this.reachedBy.put(rocket.id(), 0);
-            broadcast(level, n, rocket.id(), rocket.position(), dev.groundburst.content.command.CommandRocket.reach(hand, 0));
-        }
-    }
-
-    /**
-     * A command rocket down (or gone): the launchers still standing by for its Dead Hand were out of its reach: each is
-     * stood down, logged. Returns how many it had reached.
-     */
-    private int rocketDown(ServerLevel level, Network n, Member hand, UUID rocket, @Nullable Vec3 at) {
-        for (Member m : List.copyOf(n.members.values())) {
-            if (hand.pos.equals(m.standingBy)) {
-                log(level, n, EventKind.FAILED, m.pos, m.kind, m.at.getX(), m.at.getZ(), OUT_OF_REACH);
-                scrubMember(level, m);
-            }
-        }
-        int reached = this.reachedBy.getOrDefault(rocket, 0);
-        this.reachedBy.remove(rocket);
-        log(level, n, EventKind.DEAD_HAND_ROCKET_DOWN, hand.pos, hand.kind, at == null ? hand.at.getX() : (int) Math.floor(at.x),
-                at == null ? hand.at.getZ() : (int) Math.floor(at.z), reached);
-        setDirty();
-        return reached;
-    }
-
     // --- the tick ----------------------------------------------------------------------------------------------------------
     /** Every server tick: orders due, members woken and let sleep, contact lost, missiles followed down. */
     public void tick(ServerLevel level) {
@@ -1457,7 +1009,7 @@ public final class LaunchNetwork extends SavedData {
                         apply(level, m, site);
                     } else if (m.awake && be == null && now - m.wokeAt > NO_ANSWER && m.orders.launchAt >= 0 && now > m.orders.launchAt) {
                         // Woken and never there: it does not answer (its orders fail, it is let go).
-                        log(level, n, EventKind.FAILED, m.pos, m.kind, m.at.getX(), m.at.getZ(), NO_ANSWER_DETAIL);
+                        log(level, n, EventKind.FAILED, m.pos, m.kind, m.at.getX(), m.at.getZ(), -1);
                         m.orders = Orders.NONE;
                         sleep(level, m);
                     } else {
@@ -1467,7 +1019,7 @@ public final class LaunchNetwork extends SavedData {
                 // Contact lost: its chunk is loaded and it is not there.
                 if (check && level.isLoaded(m.pos) && !m.lost && dev.groundburst.content.machine.Carried.at(level, m.pos) == null) {
                     BlockEntity here = level.getBlockEntity(m.pos);
-                    boolean there = roleOf(here) == m.role;
+                    boolean there = m.role == Role.LAUNCHER ? here instanceof LaunchSite : here instanceof RadarArrayBlockEntity;
                     if (!there) {
                         m.lost = true;
                         m.orders = Orders.NONE;
@@ -1498,30 +1050,14 @@ public final class LaunchNetwork extends SavedData {
                         if (f != null) {
                             this.lastSeen.put(id, f.position());
                             this.lastEta.put(id, f.ticksToImpact());
-                            if (m.role == Role.DEAD_HAND) {
-                                // The command rocket transmits as it flies (DESIGN.md §17.19): what it reaches fires.
-                                broadcast(level, n, id, f.position(), dev.groundburst.content.command.CommandRocket.reach(m.pos, f.position().y - f.start().y));
-                            }
                             continue;
                         }
                         m.flights.remove(id);
                         Vec3 at = this.lastSeen.remove(id);
                         Integer eta = this.lastEta.remove(id);
-                        if (m.role == Role.DEAD_HAND) {
-                            rocketDown(level, n, m, id, at);
-                            continue;
-                        }
                         boolean down = eta == null || eta <= LANDED;
                         int x = at == null ? m.at.getX() : Mth.floor(at.x), z = at == null ? m.at.getZ() : Mth.floor(at.z);
                         log(level, n, down ? EventKind.IMPACT : EventKind.LOST, m.pos, m.kind, x, z, 0);
-                        setDirty();
-                    }
-                }
-                // Standing by with no word: its Dead Hand gone from the network or out of contact past the lapse.
-                if (check && m.standingBy != null) {
-                    Member hand = n.members.get(m.standingBy.asLong());
-                    if (hand == null || hand.lost || now > m.standingZero + STAND_BY_LAPSE) {
-                        scrubMember(level, m);
                         setDirty();
                     }
                 }
@@ -1535,7 +1071,7 @@ public final class LaunchNetwork extends SavedData {
     private void log(ServerLevel level, Network n, EventKind kind, BlockPos member, String memberKind, int x, int z, int detail) {
         Event last = n.log.peekLast();
         if (last != null && last.kind() == kind && last.member().equals(member) && level.getGameTime() - last.time() < SALVO
-                && (kind == EventKind.LAUNCHED || kind == EventKind.IMPACT || kind == EventKind.LOST || kind == EventKind.BLAST)) {
+                && (kind == EventKind.LAUNCHED || kind == EventKind.IMPACT || kind == EventKind.LOST)) {
             return;                                        // the same salvo: already reported
         }
         n.log.addLast(new Event(level.getGameTime(), kind, member.immutable(), memberKind, x, z, detail));
@@ -1556,7 +1092,7 @@ public final class LaunchNetwork extends SavedData {
     /** A report comes in: each of the network's stations that is loaded prints it (its teletype). */
     private static void heard(ServerLevel level, Network n, EventKind kind) {
         if (kind == EventKind.LAUNCHED || kind == EventKind.IMPACT || kind == EventKind.LOST || kind == EventKind.NO_CONTACT
-                || kind == EventKind.FAILED || kind == EventKind.BLAST || kind == EventKind.DEAD_HAND_ALERT || kind == EventKind.DEAD_HAND_FIRED) {
+                || kind == EventKind.FAILED) {
             for (long s : n.stations) {
                 BlockPos p = BlockPos.of(s);
                 if (level.isLoaded(p) && level.getBlockEntity(p) instanceof LaunchStationBlockEntity station) {

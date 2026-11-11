@@ -12,10 +12,8 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 
 /**
  * How the tests {@link GBGameTests} lists reach the game on this branch (main's registers 26.x's test functions and
- * instances): a generator makes each one a 1.21.1 test function over its structure, with its timeout, in one batch, a
- * test run alone in a batch of its own (1.21.1 batches its tests by name, one batch after another: main gives each an
- * environment of its own; docs/BACKPORT.md). Those that cannot run on 1.21.1 are left out by {@link PortSkips}, each with
- * why.
+ * instances): a generator makes each one a 1.21.1 test function over its structure, with its timeout, in one batch
+ * (docs/BACKPORT.md). Those that cannot run on 1.21.1 are left out by {@link PortSkips}, each with why.
  */
 @GameTestHolder(GroundBurst.MODID)
 public final class GameTestRegistration {
@@ -31,8 +29,7 @@ public final class GameTestRegistration {
             if (PortSkips.skipped(spec.name())) {
                 continue;
             }
-            String batch = spec.alone() ? "groundburst_alone_" + spec.name() : "groundburst";
-            out.add(new TestFunction(batch, spec.name(), spec.structure().toString(), Rotation.NONE, spec.maxTicks(), 0L, true, false,
+            out.add(new TestFunction("groundburst", spec.name(), spec.structure().toString(), Rotation.NONE, spec.maxTicks(), 0L, true, false,
                     1, 1, spec.sky(), spec.body()));
         }
         java.util.Set<String> names = new java.util.HashSet<>();

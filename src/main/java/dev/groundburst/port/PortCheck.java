@@ -475,136 +475,13 @@ public final class PortCheck {
                 GroundBurst.LOGGER.info("Port check: the searchlight two high and lit {}, the crates' 27 slots {}, four drums {}: {}", light, crates, drums,
                         light && crates && drums ? "OK" : "WRONG");
             });
-            // The war room (main's DESIGN.md §17.17): a station, a War Room Display showing its network, a Seismograph and the
-            // Dead Hand armed (on any strike), all powered; a strike of magnitude 4.5 put into the ground's record 60 blocks off;
-            // the board, the readout, the console before and in alert, the board in alert; the Dead Hand hurried to zero, its
-            // lid and its rocket; the log saying whether each did what it should.
-            case 1480 -> command(mc, "fill -96 -61 -42 -58 -61 -12 " + GroundBurst.MODID + ":reinforced_concrete");
-            case 1482 -> onServer(mc, PortCheck::warRoom);
-            case 1486 -> onServer(mc, level -> {
-                if (level.getBlockEntity(DEAD_HAND) instanceof dev.groundburst.content.command.DeadHandBlockEntity dh) {
-                    dh.order(level, dev.groundburst.content.command.DeadHandBlockEntity.ARM, 0);
-                    dh.order(level, dev.groundburst.content.command.DeadHandBlockEntity.ARM, 0);
-                }
-            });
-            case 1488 -> command(mc, "tp @s -76.5 -60 -22.5 180 -6");
-            case 1560 -> tidy(mc);
-            case 1565 -> shot(mc, "war_room_board");
-            case 1570 -> command(mc, "tp @s -72.6 -60 -21.5 -90 26");
-            case 1610 -> tidy(mc);
-            case 1615 -> shot(mc, "war_room_seismograph");
-            case 1620 -> command(mc, "tp @s -65.5 -60 -26.6 180 4");
-            case 1660 -> tidy(mc);
-            case 1665 -> shot(mc, "war_room_dead_hand");
-            case 1670 -> onServer(mc, level -> dev.groundburst.content.command.Seismic.of(level).addForTest(level,
-                    new net.minecraft.world.phys.Vec3(-26, -60, -70), 4.5f, 0, null));
-            case 1700 -> tidy(mc);
-            case 1705 -> shot(mc, "war_room_dead_hand_alert");
-            case 1710 -> command(mc, "tp @s -76.5 -60 -22.5 180 -6");
-            case 1760 -> tidy(mc);
-            case 1765 -> shot(mc, "war_room_attack");
-            case 1770 -> onServer(mc, level -> {
-                if (level.getBlockEntity(DEAD_HAND) instanceof dev.groundburst.content.command.DeadHandBlockEntity dh) {
-                    dh.hurryForTest(level);
-                }
-            });
-            case 1772 -> command(mc, "tp @s -60.5 -56 -24.5 135 22");
-            case 1798 -> tidy(mc);
-            case 1800 -> shot(mc, "war_room_lid");
-            case 1822 -> shot(mc, "war_room_rocket");
-            case 1830 -> onServer(mc, level -> {
-                var d = level.getBlockEntity(DISPLAY) instanceof dev.groundburst.content.command.WarRoomDisplayBlockEntity w ? w : null;
-                var s = level.getBlockEntity(SEISMOGRAPH) instanceof dev.groundburst.content.command.SeismographBlockEntity g ? g : null;
-                var dh = level.getBlockEntity(DEAD_HAND) instanceof dev.groundburst.content.command.DeadHandBlockEntity h ? h : null;
-                boolean board = d != null && d.isFormed() && d.shownPowered() && d.condition() == 1;
-                boolean felt = s != null && s.records().stream().anyMatch(r -> Math.abs(r.magnitude() - 4.5f) < 0.35f);
-                boolean fired = dh != null && (dh.state() == dev.groundburst.content.command.DeadHandBlockEntity.State.FIRING
-                        || dh.state() == dev.groundburst.content.command.DeadHandBlockEntity.State.SPENT) && !dh.rocket();
-                GroundBurst.LOGGER.info("Port check: the war room's board lit at ATTACK {}, the strike recorded {}, the Dead Hand fired {}: {}",
-                        board, felt, fired, board && felt && fired ? "OK" : "WRONG");
-            });
-            // Its screen (main's DESIGN.md §17.19): the board up close, opened from before the display.
-            case 1834 -> command(mc, "tp @s -76.5 -60 -24.5 180 -6");
-            case 1844 -> dev.groundburst.content.command.WarRoomDisplayBlock.screenHook.accept(DISPLAY);
-            case 1884 -> shot(mc, "war_room_screen");
-            case 1888 -> mc.setScreen(null);
-            case 1892 -> {
+            case 1480 -> {
                 GroundBurst.LOGGER.info("Port check: done");
                 mc.stop();
             }
             default -> {
             }
         }
-    }
-
-    /** The war room's display, seismograph and Dead Hand (their controllers). */
-    private static final BlockPos DISPLAY = new BlockPos(-77, -60, -30), STATION = new BlockPos(-86, -60, -24), SEISMOGRAPH = new BlockPos(-70, -60, -22),
-            DEAD_HAND = new BlockPos(-66, -60, -30);
-
-    /** On the server: the war room built, powered and linked; the display shown the station's network. */
-    private static void warRoom(net.minecraft.server.level.ServerLevel level) {
-        var command = dev.groundburst.content.command.GBCommand.class;
-        place(level, dev.groundburst.content.command.GBCommand.WAR_ROOM_CONTROLLER.block().get(), dev.groundburst.content.command.GBCommand.WAR_ROOM,
-                DISPLAY, net.minecraft.core.Direction.SOUTH);
-        place(level, dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.block().get(), dev.groundburst.content.launch.GBLaunch.STATION,
-                STATION, net.minecraft.core.Direction.SOUTH);
-        place(level, dev.groundburst.content.command.GBCommand.DEAD_HAND_CONTROLLER.block().get(), dev.groundburst.content.command.GBCommand.DEAD_HAND,
-                DEAD_HAND, net.minecraft.core.Direction.SOUTH);
-        level.setBlockAndUpdate(SEISMOGRAPH, dev.groundburst.content.command.GBCommand.SEISMOGRAPH.block().get().defaultBlockState()
-                .setValue(dev.groundburst.content.machine.MachineBlock.FACING, net.minecraft.core.Direction.WEST));
-        bank(level, SEISMOGRAPH.east(), net.minecraft.core.Direction.WEST);
-        for (BlockPos at : List.of(DISPLAY, STATION, DEAD_HAND, SEISMOGRAPH)) {
-            if (level.getBlockEntity(at) instanceof dev.groundburst.content.machine.MachineBlockEntity m) {
-                m.energy().generate(m.energy().capacity());
-            }
-        }
-        var card = new net.minecraft.world.item.ItemStack(dev.groundburst.content.launch.GBLaunch.LAUNCH_CODES.get());
-        dev.groundburst.content.launch.LaunchCodesItem.use(level, card, level.getBlockEntity(STATION), false);
-        for (BlockPos at : List.of(DISPLAY, SEISMOGRAPH, DEAD_HAND)) {
-            dev.groundburst.content.launch.LaunchCodesItem.use(level, card, level.getBlockEntity(at), false);
-        }
-        if (level.getBlockEntity(DEAD_HAND) instanceof dev.groundburst.content.command.DeadHandBlockEntity dh) {
-            dh.load(level);
-            dh.order(level, dev.groundburst.content.command.DeadHandBlockEntity.SET_RADIUS, 0);
-            dh.order(level, dev.groundburst.content.command.DeadHandBlockEntity.SET_THRESHOLD, 1);
-            dh.order(level, dev.groundburst.content.command.DeadHandBlockEntity.SET_COMMAND, 1);
-        }
-        GroundBurst.LOGGER.info("Port check: the war room built ({})", command.getSimpleName());
-    }
-
-    /** A multiblock placed whole, formed, and a Creative Capacitor Bank by its Energy Port. */
-    private static void place(net.minecraft.server.level.ServerLevel level, net.minecraft.world.level.block.Block controller,
-            dev.groundburst.content.multiblock.MultiblockDefinition def, BlockPos at, net.minecraft.core.Direction facing) {
-        java.util.Set<BlockPos> cells = new java.util.HashSet<>();
-        for (var cell : dev.groundburst.content.multiblock.StructureSpawnerItem.buildOrder(def, at, facing)) {
-            cells.add(cell.pos().immutable());
-            net.minecraft.world.level.block.state.BlockState s;
-            if (cell.key() == '.') {
-                s = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
-            } else if (cell.key() == dev.groundburst.content.multiblock.MultiblockDefinition.CONTROLLER) {
-                s = controller.defaultBlockState().setValue(dev.groundburst.content.machine.MachineBlock.FACING, facing);
-            } else {
-                s = def.legend().get(cell.key()).preview().get();
-            }
-            level.setBlockAndUpdate(cell.pos(), s);
-        }
-        if (level.getBlockEntity(at) instanceof dev.groundburst.content.multiblock.MultiblockController c) {
-            c.revalidate();
-        }
-        for (BlockPos port : def.positionsOf('E', at, facing)) {
-            for (var d : List.of(facing.getOpposite(), facing.getClockWise(), facing.getCounterClockWise(), facing)) {
-                BlockPos p2 = port.relative(d);
-                if (!cells.contains(p2)) {
-                    bank(level, p2, d.getOpposite());
-                    break;
-                }
-            }
-        }
-    }
-
-    private static void bank(net.minecraft.server.level.ServerLevel level, BlockPos at, net.minecraft.core.Direction toward) {
-        level.setBlockAndUpdate(at, dev.groundburst.content.machine.GBMachines.CAPACITOR_BANKS.get(3).block().get().defaultBlockState()
-                .setValue(dev.groundburst.content.machine.MachineBlock.FACING, toward));
     }
 
     /** Where the pictures go. */

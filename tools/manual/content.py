@@ -1256,7 +1256,7 @@ Whatever it hits on the way sets off the warhead there, so keep the sky above th
 entry("ordnance/launch_control_station", "Launch Control Station", "launch_control_station", ["launch_control_station", "launch_codes",
                                                                                                "launch_control_station_spawner"], [
     text("""
-A **Launch Control Station** runs your launchers anywhere in its dimension, near or far, loaded or not: Launch Silos, [Launch Complexes](ordnance/launch_complex), [Missile Silos](ordnance/missile_silo), [Cruise Missile Launchers](ordnance/cruise_launcher) and the superweapons (the [SCUD Storm](superweapons/scud_storm), the [Nuclear Missile](superweapons/nuclear_missile_silo) and the [Particle Uplink Cannon](superweapons/particle_uplink_cannon)). It shows what your linked [Radar Arrays](ordnance/radar_array) track too, and the blasts your [Seismographs](ordnance/seismograph) feel; a [War Room Display](ordnance/war_room_display) puts the same picture up on a wall, and a [Dead Hand](ordnance/dead_hand) fires the network if its command falls silent.
+A **Launch Control Station** runs your launchers anywhere in its dimension, near or far, loaded or not: Launch Silos, [Launch Complexes](ordnance/launch_complex), [Missile Silos](ordnance/missile_silo), [Cruise Missile Launchers](ordnance/cruise_launcher) and the superweapons (the [SCUD Storm](superweapons/scud_storm), the [Nuclear Missile](superweapons/nuclear_missile_silo) and the [Particle Uplink Cannon](superweapons/particle_uplink_cannon)). It shows what your linked [Radar Arrays](ordnance/radar_array) track too.
 """),
     structure("launch_control_station", "Three wide, two deep and three high. The desk across the front: Machine Casing, the controller in the middle, Machine Casing. Behind it the instrument bank: Machine Casing two high, the Energy Port in the middle of its bottom row. An Antenna on top of the bank's middle."),
     text("""
@@ -1534,75 +1534,6 @@ It shoots down any missile coming down within its reach, **yours too**: a redsto
     craft("interceptor_complex"),
     craft("launch_cell"),
     craft("phased_array_panel"),
-])
-
-entry("ordnance/seismograph", "Seismograph", "seismograph", ["seismograph"], [
-    text("""
-A **Seismograph** feels every blast through the ground: yours or anyone's, a creeper's or a Tsar's, near or far, loaded or not. The shaking spreads out from a blast at 300 blocks a tick, so even one a few kilometres off reaches it in a moment. As each arrives its pen swings, its drum's paper takes the trace, and it works out what one instrument can: the blast's **magnitude**, how far off it was and which way, and the **yield** that magnitude stands for, in tonnes or kilotons of TNT.
-
-**How far a blast is felt.** Ten times the yield is three quarters of a magnitude more, and the farther off, the fainter it is felt. An airburst, high over the ground, is felt a magnitude and a half less.
-"""),
-    table([
-        ["Creeper", "M0.8: 80 blocks"],
-        ["TNT", "M1.1: 110 blocks"],
-        ["HE Warhead", "M1.5: 170 blocks"],
-        ["Heavy HE Warhead", "M2.2: 380 blocks"],
-        ["Massive Ordnance", "M3.0: 980 blocks"],
-        ["Tactical nuke", "M4.1: 3.4 km"],
-        ["Fission Warhead", "M5.3: 15 km"],
-        ["Thermonuclear", "M6.8: 76 km"],
-        ["Tsar Warhead", "M8.0: 300 km"],
-    ], "Recorded within"),
-    text("""
-**Its screen** is the drum's paper: each arrival a trace, its first shaking (the P wave) and, a moment later, the second (the S wave). The farther the blast, the longer between them: that gap is how it knows the distance. Beside it is its record of the last sixteen: when, the magnitude, the yield, how far and which way, each to within what it can tell. A blast felt hard is read close (its bearing within 2 degrees, its distance within 3%, its magnitude within 0.05); one felt faintly, only roughly (14 degrees, 15%, 0.3).
-
-**Settings.** **Records**: everything it feels, or only what it feels at 1, 2 or 3 and up (to keep a busy range's small blasts off its paper). **Alarm**: off, or at magnitude 2, 3, 4 or 5 and up: a **Blast** alert on its [alarm channel](safety/alarms) for thirty seconds (an [Alert Display](safety/alert_display) shows BLAST, the magnitude and how far off). A comparator by it reads twice the last arrival's magnitude (up to 15) for two seconds.
-"""),
-    text("""
-**On a network.** Link it to a [Launch Control Station](ordnance/launch_control_station) with Launch Codes. A blast one seismograph feels shows on the station's map, and on a [War Room Display](ordnance/war_room_display), as the patch of ground it could have come from, its magnitude with a question mark; when two or more feel it, the network **fixes** it: a ring where it was. The network's log notes every blast of magnitude 2 and up. The farther apart your seismographs stand, the better they fix a blast between them.
-
-It feels the special weapons too: antimatter at once, a singularity's grinding and its collapse, the ground cracking under a cryo burst, a particle beam's burn. It needs 10 FE a tick; with no power, or in an EMP, it records nothing that arrives meanwhile. Unloaded, it catches up as it loads, recording what came (without its alarm).
-"""),
-    craft("seismograph"),
-])
-
-entry("ordnance/war_room_display", "War Room Display", "war_room_display", ["war_room_display", "display_panel", "war_room_display_spawner"], [
-    text("""
-The **War Room Display** puts a launch network's whole picture up on a wall for the room: a screen seven blocks wide that everyone within 64 blocks of it sees. On it, the ground round the network and every member (the launchers numbered, with their aim; the radars with their reach; [Seismographs](ordnance/seismograph); the [Dead Hand](ordnance/dead_hand) and its radius); every missile the network's launchers fired (amber) and every one its radars track (red, with where it will come down); impacts; the blasts its seismographs felt; laser spots; the counts along the top and the network's last four reports along the bottom.
-"""),
-    structure("war_room_display", "Seven wide and five high, one block deep: build it against a wall. The bottom row: Machine Casing, the controller in the middle and an Energy Port two to its right as you face it. Three rows of seven Display Panels above it, and a row of Machine Casing on top."),
-    text("""
-**Its header** has a clock (the world's time of day), its name plate and five lamps: the **alert condition**. 5 NORMAL; 4 ARMED (a launcher armed); 3 MISSILES IN FLIGHT (yours); 2 INCOMING (a missile its radars track coming down within 512 blocks of the network); 1 ATTACK (a blast felt within 512 blocks of it lately, or its Dead Hand in alert). The lamps flash at 2 and 1, and each new contact sounds its tone.
-
-**Linking.** Use Launch Codes on it (the controller or any panel) to show their network; sneak while you use them to show none. It only shows the network and is no member of it, so any number of displays can show one network.
-
-**Its screen.** Click the controller to see its board up close, as big as your window allows. **Drag** the map with either mouse button to look round and **scroll** to zoom in and out about the cursor, as on the station's map; **Fit** brings everything back into view and **Display** centres it on the display. Across the top: the network, its counts, the alert condition and the soonest impact; at the side, the network's members with what each is doing (click one to find it on the map), the log, and the **Wall** tab: what the wall itself shows (everything fitted in, or centred on it at a scale) and what it draws (the terrain, the radars' reach, labels, the log, blasts and impacts). **Show on the wall** puts the view you are looking at up on the wall for the room.
-
-It needs 60 FE a tick; with no power, or in an EMP, it goes dark.
-"""),
-    craft("war_room_display"),
-    craft("display_panel"),
-])
-
-entry("ordnance/dead_hand", "Dead Hand", "dead_hand", ["dead_hand", "command_rocket", "dead_hand_spawner"], [
-    text("""
-The **Dead Hand** strikes back when no one is left to give the order. After the Soviet *Perimeter* system: a hardened concrete module with a console, a launch tube for its **Command Rocket** and a sensor mast. Armed, it watches the ground round it for a **strike**; if one lands, it readies every launcher of its network, and if its network's command is silent when its countdown runs out, it fires its rocket. The rocket carries no warhead: like Perimeter's, it flies over your own launchers, and each one fires the moment its signal reaches it.
-"""),
-    structure("dead_hand", "Three wide, two deep and two high, of Hazard Concrete: the controller in the middle of the front, an Energy Port in the middle of the back row's bottom, two Missile Canisters one on the other in the back-right column (its launch tube), and an Antenna on the roof's front-left corner (its sensor mast)."),
-    text("""
-**Setting it up.** Link it to a [Launch Control Station](ordnance/launch_control_station)'s network with Launch Codes, load a **Command Rocket** into it (use the rocket on it) and give it power (80 FE a tick). Then **arm** it at its console: press **ARM** twice within three seconds, its two keys. It shows **WATCHING**.
-
-**A strike** is a blast of its set magnitude or more (3, 4 or 5) within its **radius** (128 to 2048 blocks) that its own network did not fire: it feels them through the ground, as a [Seismograph](ordnance/seismograph) does. Then it goes into **ALERT**: its countdown starts (30, 60 or 120 seconds), its buzzer sounds each second, its alarm channel raises a **Blast** alert, and the network's log and the [War Room Display](ordnance/war_room_display) show it.
-
-**Standing by.** In the alert every launcher of the network that can fire is aimed (at **the war plan**, its own aim; or, set to **return fire**, back at where the strike was launched from when it came by missile and the launcher reaches it), armed, and its launch begun so that its countdown is over by zero: you hear the sirens, the silo doors open, the deluge runs. Then each waits at its last second (**Awaiting order** on the station). **HOLD** on its console, or a redstone signal into any of its blocks, stops the countdown and stands it and every waiting launcher down: their countdowns scrubbed, their missiles kept. **SAFE** does the same and disarms it.
-"""),
-    text("""
-**At zero** it checks its link: if a Launch Control Station of its network answers (loaded, built, powered and not knocked out by an EMP), the command lives and it stands down by itself, its launchers with it. If none answers, or if it is set to **fire on any strike**, it **fires**. Its tube's lid has opened in the last two seconds; the Command Rocket leaves the tube and flies a course planned over the network's launchers, transmitting the launch order. Its signal reaches **256 blocks** round it as it lifts off and farther as it climbs, up to **480**: the launchers near it fire at once, far ones as it passes over them. It comes down harmlessly at the end of its course. A launcher its signal never reached stands down; its console shows, while it is armed, how many of the network's launchers its course would reach. Then it is spent until a new rocket is loaded.
-
-**DRILL** runs an alert with nothing at its end: the countdown, the buzzer and an Alarm on its channel, and no launcher readied. Its console shows its state, the strike (where, how big, how far), the countdown, the launchers standing by, its rocket, its settings and its own log. It is **hardened**: an EMP does not stop it. Breaking it drops its rocket and stands its launchers down.
-"""),
-    craft("dead_hand"),
-    craft("command_rocket"),
 ])
 
 entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "toxin_grenade", "chlorine_canister",
@@ -1967,7 +1898,6 @@ A channel **goes off** while any of its **senders** has something wrong:
 - a [Missile Warning Receiver](safety/missile_warning_receiver) sees a missile coming down near it;
 - an [Alarm Panel](safety/alarm_panel) is switched on by hand, or powered by redstone;
 - a [Hazard Monitor](safety/hazard_monitor) reads too much radiation, or poison gas.
-- a [Seismograph](ordnance/seismograph) records a blast as big as its alarm is set for, or a [Dead Hand](ordnance/dead_hand) goes into alert.
 """),
     text("""
 Then everything on the channel answers: [sirens, klaxons and bells](safety/sirens) sound, [warning lights](safety/warning_lights) light, [Alert Displays](safety/alert_display) show what is wrong and **Alarm Relays** give redstone (shut your blast doors with them). Each of them also goes off when it is powered by redstone itself, channel or not.
@@ -2033,7 +1963,7 @@ A caged bulkhead lamp for any face. Dark until an alarm, or white all the time (
 
 entry("safety/alert_display", "Alert Display and Alarm Relay", "alert_display", ["alert_display", "alarm_relay"], [
     spot("alert_display", """
-A screen for the wall. **ALL CLEAR** in green, with its channel; in an alert, flashing: **ATTACK**, how many are inbound and the time to impact; **RADIATION** and the dose rate; **POISON GAS** and how much; **BLAST**, its magnitude and how far off; or **ALARM, TAKE COVER**.
+A screen for the wall. **ALL CLEAR** in green, with its channel; in an alert, flashing: **ATTACK**, how many are inbound and the time to impact; **RADIATION** and the dose rate; **POISON GAS** and how much; or **ALARM, TAKE COVER**.
 """),
     spot("alarm_relay", """
 Wireless redstone: it gives a signal of 15 while its channel goes off (or, set the other way, while all is clear). Shut blast doors, cut the lights, start the shelter's air.
