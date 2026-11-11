@@ -10,7 +10,7 @@ branch is brought up to main.
   (the Depth Charge Rack holds its rest pose while it works; a carried machine's client copy carried too,
   `compat/create/CarriedClient`; the 1.21.1 build's own test-run hooks left out, this branch has its own); before it, at
   `2ef851ae` (main at `ae7e2623`, 2026-11-11: the war room removed), where it was begun.
-- **Toolchain:** Minecraft 1.20.1, Forge 47.4.28 (the mod asks for 47 or later), Java 17, GeckoLib 4.8.4
+- **Toolchain:** Minecraft 1.20.1, Forge 47.4.28 (the mod asks for 47.4 or later: built and tested on 47.4.28, never on the older 47 builds), Java 17, GeckoLib 4.8.4
   (`geckolib-forge-1.20.1`), JEI 15.74 (optional), MixinExtras 0.5.5 (packed in the jar: Forge 1.20.1 carries none).
   Built with ModDevGradle's legacy plugin (`net.neoforged.moddev.legacyforge` 2.0.148): the dev runs on official
   names; the jar for players is turned back to Forge's SRG names (`reobfJar`; the dev jar is `build/devlibs`'s); the
@@ -131,6 +131,14 @@ opens behind the other windows without the focus and never grabs the mouse (`leg
 `groundburst.keepMouse`; `DevWindowMixin`, `DevMouseMixin`), Forge's early loading window turned off for them in
 run/config/fml.toml (it is made before any mod code runs).
 
+**A release jar** (`reobfJar`'s, build/libs: the dev runs never use it) is checked in a real Forge client before it goes
+out: `tools/backport/prod_client.py <game dir> <jar> portCheck|siteCheck <GeckoLib jar> [<more mods>]` starts the Forge
+47.4.28 the CurseForge app installed (its version files, libraries and assets) on a throwaway game folder holding the
+jar and the mods given, offline, muted and behind the other windows, with the check the jar carries switched on, and the
+check quits it (its log in the folder's logs/latest.log, its pictures in screenshots/). A dedicated server cannot stand
+in: Forge 1.20.1's asks for the EULA's acceptance before it loads a mod. 0.11.1 (2026-11-11), with GeckoLib 4.8.4 and
+JEI 15.56: the port check 6 OK of 6, 28 pictures, no errors; the site check as in the dev runs.
+
 ## Shader packs and Distant Horizons
 
 On 1.20.1 shader packs come through Oculus (Iris for Forge, with Iris's own code and API) on Embeddium (Sodium for
@@ -199,7 +207,8 @@ error Embeddium logs, its "mixin taint" detector, names Oculus, not the mod.)
 
 ## Where it stands (2026-11-11)
 
-It compiles, builds a jar for players, loads on a server and in the client: all 450 GameTests pass, `runPortCheck` passes
+Released as 0.11.1 (`groundburst-mc1.20.1-0.11.1.jar`, with the 1.21.1 build's 0.11.1; main's CHANGELOG), its jar checked
+in a real Forge client. It compiles, builds a jar for players, loads on a server and in the client: all 450 GameTests pass, `runPortCheck` passes
 all its checks (its pictures as the 1.21.1 build's, but for 1.20.1 dimming a screen's world where 1.21 blurs it), under
 the seven shader packs through Oculus and with Distant Horizons too; Create's contraptions carry its machines (the
 Create check, 36 of 36); the sites generate as the 1.21.1 build's, their parts underground closed in rock (the site
