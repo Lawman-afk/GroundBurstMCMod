@@ -5,8 +5,10 @@ branch, `1.20.1`, carries the 1.21.1 build back once more, to Minecraft 1.20.1 o
 players are (main's DESIGN.md §30). It is brought up to the 1.21.1 branch every once in a while, as a whole, as that
 branch is brought up to main.
 
-- **Last brought up to:** the `1.21.1` branch at `2ef851ae` (main at `ae7e2623`, 2026-11-11: the war room removed).
-  Begun 2026-11-11.
+- **Last brought up to:** the `1.21.1` branch at `1cfbf920` (main at `97a5792e`, 2026-11-11: the Depth Charge Rack holds
+  its rest pose while it works; a carried machine's client copy carried too, `compat/create/CarriedClient`). Synced
+  cleanly, the 1.21.1 build's own test-run hooks left out (this branch has its own); before it, at `2ef851ae` (main at
+  `ae7e2623`, 2026-11-11: the war room removed), where it was begun.
 - **Toolchain:** Minecraft 1.20.1, Forge 47.4.28 (the mod asks for 47 or later), Java 17, GeckoLib 4.8.4
   (`geckolib-forge-1.20.1`), JEI 15.74 (optional), MixinExtras 0.5.5 (packed in the jar: Forge 1.20.1 carries none).
   Built with ModDevGradle's legacy plugin (`net.neoforged.moddev.legacyforge` 2.0.148): the dev runs on official
@@ -110,13 +112,61 @@ Manual, a blast, a particle beam and its pit, sea mines and a depth charge's col
 bunker doors, the command room, the bunker fittings and the yard, each photographed (`run/screenshots/port_*.png`) and
 its log lines OK.
 
+The test runs (the port check, the play bench, the Create check) are muted and leave the person at the computer their
+mouse: the master volume is set to 0 in run/options.txt before each client run (`-Psound=on` keeps it), and their window
+opens behind the other windows without the focus and never grabs the mouse (`legacy/client/DevRuns`, set by
+`groundburst.keepMouse`; `DevWindowMixin`, `DevMouseMixin`), Forge's early loading window turned off for them in
+run/config/fml.toml (it is made before any mod code runs).
+
+## Shader packs and Distant Horizons
+
+On 1.20.1 shader packs come through Oculus (Iris for Forge, with Iris's own code and API) on Embeddium (Sodium for
+Forge). The mod treats Oculus as it treats Iris (`FxRenderTypes.IRIS` asks for either mod id; `IrisFx` asks Iris's API by
+name), so the effects are drawn last under a pack (`DrawnLast`), at Forge's after-level stage, which 1.20.1 fires from the
+game renderer once the level is drawn, as NeoForge 21.1 does. Distant Horizons (3.3.3 for 1.20.1) likewise.
+
+- **Dev runs**: `-PwithIris` loads Oculus 1.8.0 and Embeddium 0.3.31 (Modrinth) and puts the seven test packs in
+  run/shaderpacks (`-PirisPack=complementary|unbound|bsl|bliss|photon|solas|makeup|off`; Oculus keeps Iris's settings
+  as `config/oculus.properties`); `-PpackFx=in` is the client option "Lit by the pack"; `-PwithDH` loads Distant
+  Horizons. E.g. `gradlew runPortCheck -PwithIris -PirisPack=bliss -PwithDH`.
+- **Checked** (2026-11-11): `runPortCheck` under all seven packs and with Oculus's shaders off, "Lit by the pack" under
+  Complementary, and Distant Horizons with no pack and under Bliss: every check OK, the effects drawn in every one.
+
+## Create
+
+Create 6 is out for 1.20.1 as for 1.21.1 (the same 6.0 line, with the same API for what the mod uses: movement and
+interaction behaviours, block movement checks, contraptions' mounted storages), so the 1.21.1 branch's support for its
+contraptions comes over whole, through `port.py` like the rest (`compat/GBCompat`, `compat/create`, `CreateCheck`,
+`HealCheck`, `RackCheck`; main's DESIGN.md §17.16 and the 1.21.1 branch's BACKPORT.md): machines and launchers ride its
+contraptions (bearings, pistons, gantries, carts, trains) and keep working there, sharing power and their pipes aboard;
+a right-click opens a carried machine's menu or screen; blasts and shells break blocks out of a contraption; healing
+puts Create's blocks back turning. Only Create Aeronautics' ships are left out: neither it nor Sable, the library its
+ships are made with, has a 1.20.1 build (1.20.1's ships are Valkyrien Skies', another mod), so `compat/sable`,
+`ShipCheck` and the ships' scenes of the checks are dropped (`port.py`'s `DROP` and `FILE_FIXES_BEFORE`).
+
+- **Players**: Create 6.0.8 for Forge 1.20.1, optional (`create` [6.0.0,7) in mods.toml); nothing touches Create's
+  classes unless it is installed.
+- **Build**: compiled against Create's slim jar from its own maven (maven.createmod.net) and the parts its released jar
+  carries inside it (Flywheel 1.0.5, Ponder 1.0.91, Registrate MC1.20-1.3.3), each turned into the dev runs' names by
+  the legacy plugin; none ships in our jar. Build 289 is the released 6.0.8 (the same commit): the maven's later 6.0.8
+  builds are development ones made against a newer Flywheel, and a contraption drawn with one threw. `-PwithCreate`
+  loads them into the dev runs.
+- **Check**: `gradlew runCreateCheck -PwithCreate`, the 1.21.1 branch's less its ships' scenes: a Cruise Missile
+  Launcher on a mechanical bearing fires from where its boxes are, heading the way they point, and is set down formed
+  and still on its network; a factory on a bearing (a pipe loading the launcher from a chest aboard, a fluid pipe
+  filling a separator from a Create tank, a generator powering the launcher and a Launch Computer, their menu and
+  screen opened by right-clicks), set down with nothing dropped; a yard (an assembler building aboard, a loaded silo);
+  a wreck (a blast and a mortar shell breaking blocks out of a turning platform); Create's shafts healed turning again;
+  a Create funnel loading a Depth Charge Rack. Pictures `run/screenshots/create_*.png`. 36 of 36 (2026-11-11), and no
+  errors: a carried machine's menu threw on the client at first (Create 6.0.8's render world keeps no chunks, and the
+  copy it draws told it of every slot the menu filled; the copy is carried now, the 1.21.1 branch's `CarriedClient`).
+
 ## Where it stands (2026-11-11)
 
-Begun. It compiles, builds a jar for players, loads on a server and in the client: all 450 GameTests pass, and
-`runPortCheck` passes all its checks, its pictures as the 1.21.1 build's (but for 1.20.1 dimming a screen's world where
-1.21 blurs it). Not yet: play in a 1.20.1 instance, the shader-pack mods 1.20.1 has (Oculus and Embeddium, not Iris and
-Sodium), Distant Horizons, and Create (for 1.20.1: Create 0.5.1 and its own addons; the 1.21.1 branch's compat is left
-out here).
+It compiles, builds a jar for players, loads on a server and in the client: all 450 GameTests pass, `runPortCheck` passes
+all its checks (its pictures as the 1.21.1 build's, but for 1.20.1 dimming a screen's world where 1.21 blurs it), under
+the seven shader packs through Oculus and with Distant Horizons too, and Create's contraptions carry its machines (the
+Create check, 36 of 36). Not yet: play in the 1.20.1 instance.
 
 ## Bringing it up to the 1.21.1 branch
 

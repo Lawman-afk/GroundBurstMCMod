@@ -109,6 +109,16 @@ public final class Game {
                 Math.max(a.getX(), b.getX()) + 1, Math.max(a.getY(), b.getY()) + 1, Math.max(a.getZ(), b.getZ()) + 1);
     }
 
+    /** The low corner of the box round two blocks, each coordinate the smaller (1.21's BlockPos.min). */
+    public static BlockPos min(BlockPos a, BlockPos b) {
+        return new BlockPos(Math.min(a.getX(), b.getX()), Math.min(a.getY(), b.getY()), Math.min(a.getZ(), b.getZ()));
+    }
+
+    /** The high corner of the box round two blocks, each coordinate the larger (1.21's BlockPos.max). */
+    public static BlockPos max(BlockPos a, BlockPos b) {
+        return new BlockPos(Math.max(a.getX(), b.getX()), Math.max(a.getY(), b.getY()), Math.max(a.getZ(), b.getZ()));
+    }
+
     /** A copy of a fluid stack with another amount (NeoForge's copyWithAmount). */
     public static net.minecraftforge.fluids.FluidStack copyWithAmount(net.minecraftforge.fluids.FluidStack stack, int amount) {
         return stack.isEmpty() ? net.minecraftforge.fluids.FluidStack.EMPTY : new net.minecraftforge.fluids.FluidStack(stack, amount);

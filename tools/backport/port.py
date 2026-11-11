@@ -29,18 +29,23 @@ BASE = (HERE / "base.txt").read_text(encoding="utf-8").split()[0]
 MANUAL = {line.strip() for line in (HERE / "manual.txt").read_text(encoding="utf-8").splitlines()
           if line.strip() and not line.startswith("#")} if (HERE / "manual.txt").exists() else set()
 
-# The 1.21.1 build's files with no place here: its own tool and notes, its build files (this branch has its own), and
-# for now its support for Create and Sable (Create Aeronautics) with the checks and test world built on them.
+# The 1.21.1 build's files with no place here: its own tool and notes, its build files (this branch has its own), its
+# support for Sable (Create Aeronautics' ships, which have no 1.20.1 build) with the check built on it, and its test
+# world (built on the ships too). Its Create support comes over (Create 6 is on 1.20.1), less the ships' scenes.
 DROP = [re.compile(p) for p in (
     r"docs/BACKPORT\.md", r"tools/backport/.*",
-    r"src/main/java/dev/groundburst/compat/(create|sable|range)/.*",
-    r"src/main/java/dev/groundburst/compat/(GBCompat|CreateCheck|HealCheck|RackCheck|ShipCheck)\.java",
+    r"src/main/java/dev/groundburst/compat/(sable|range)/.*",
+    r"src/main/java/dev/groundburst/compat/ShipCheck\.java",
     r"src/main/templates/META-INF/neoforge\.mods\.toml",
     # 1.21's block hit by an explosion (onExplosionHit): 1.20.1 has none (dev.groundburst.legacy.mixin.ExplosionHitMixin).
     r"src/main/java/dev/groundburst/mixin/BlockStateBaseMixin\.java",
+    # The 1.21.1 build's test runs keeping the mouse (NeoForge's early window): this branch has its own, on Forge's
+    # (dev.groundburst.legacy.client.DevRuns, legacy.mixin.DevWindowMixin and DevMouseMixin).
+    r"src/main/java/dev/groundburst/port/DevRuns\.java",
+    r"src/main/java/dev/groundburst/port/mixin/Dev(Window|Mouse)Mixin\.java",
 )]
 # Mixins of the 1.21.1 build left out of its mixin configs here (their files dropped above).
-DROPPED_MIXINS = {"BlockStateBaseMixin"}
+DROPPED_MIXINS = {"BlockStateBaseMixin", "DevWindowMixin", "DevMouseMixin"}
 # This branch's own files (changed or written here by hand): never overwritten.
 OWN = {"build.gradle", "gradle.properties", "settings.gradle", "src/main/templates/META-INF/mods.toml",
        "src/main/resources/pack.mcmeta",
@@ -601,7 +606,8 @@ SIGNATURES = [
     sub(r"\.saveWithoutMetadata\(\s*\w+\s*\)", ".saveWithoutMetadata()"),
     sub(r"\.saveWithFullMetadata\(\s*\w+\s*\)", ".saveWithFullMetadata()"),
     sub(r"\.saveWithId\(\s*\w+\s*\)", ".saveWithId()"),
-    sub(r"\bBlockEntity\.loadStatic\(([^,()]+), ([^,()]+), ([^,()]+), [^,()]+\)", r"BlockEntity.loadStatic(\1, \2, \3)"),
+    sub(r"\bBlockEntity\.loadStatic\(([^,()]+(?:\([^()]*\))?), ([^,()]+(?:\([^()]*\))?), ([^,()]+(?:\([^()]*\))?), [^,()]+(?:\([^()]*\))?\)",
+        r"BlockEntity.loadStatic(\1, \2, \3)"),
     sub(r"\bItemStack\.parseOptional\(\s*\w+(?:\(\))?\s*,\s*", "ItemStack.of("),
     sub(r"\bItemStack\.parse\(\s*\w+(?:\(\))?\s*,\s*([^()]+(?:\([^()]*\))?)\)", r"java.util.Optional.of(ItemStack.of(\1))"),
     sub(r"\bContainerHelper\.(saveAllItems|loadAllItems)\(([^,()]+), ([^,()]+), [^,()]+\)", r"ContainerHelper.\1(\2, \3)"),
@@ -819,6 +825,17 @@ def drop_method(signature: str):
     def fix(text: str) -> str:
         assert signature in text, f"port.py: '{signature}' is gone from the 1.21.1 build: update FILE_FIXES"
         return method_bodies(text, r"\n[ \t]*" + re.escape(signature) + r"[^{]*\{", lambda method: "\n")
+    return fix
+
+
+def cut(start: str, end: str, insert: str = ""):
+    """Removes the text from {start} (with it) up to {end} (without it), putting {insert} in its place."""
+    def fix(text: str) -> str:
+        i = text.find(start)
+        assert i >= 0, f"port.py: '{start}' is gone from the 1.21.1 build: update FILE_FIXES"
+        j = text.find(end, i + len(start))
+        assert j >= 0, f"port.py: '{end}' is gone from the 1.21.1 build (after '{start}'): update FILE_FIXES"
+        return text[:i] + insert + text[j:]
     return fix
 
 
@@ -1184,6 +1201,9 @@ def misc_calls(text: str) -> str:
                           lambda recv, args: not args.strip())
     text = calls(text, r"\.saveWithoutMetadata\(", lambda m, a: ".saveWithoutMetadata()")
     text = calls(text, r"\.getUpdateTag\(", lambda m, a: ".getUpdateTag()")
+    # A block entity handed its update tag (1.21 hands the registries along too; Forge 1.20.1's takes the tag alone).
+    text = calls(text, r"\.handleUpdateTag\(", lambda m, a: f".handleUpdateTag({split_args(a)[0].strip()})" if len(split_args(a)) == 2
+                 else m.group(0) + a + ")")
     text = receiver_calls(text, "loadWithComponents", lambda recv, args: ("", f"{recv}.load({split_args(args)[0].strip()})"))
     text = receiver_calls(text, "collectComponents", lambda recv, args: (f"{L}.component.DataComponentMap.collect(", f"{recv})"),
                           lambda recv, args: not args.strip())
@@ -1191,6 +1211,7 @@ def misc_calls(text: str) -> str:
     text = receiver_calls(text, "canBeHurtBy", lambda recv, args: (f"{L}.Game.canBeHurtBy(", f"{recv}, {args})"))
     text = re.sub(r"\.getDefaultMaxStackSize\(\)", ".getMaxStackSize()", text)
     text = re.sub(r"\bAABB\.encapsulatingFullBlocks\(", f"{L}.Game.encapsulatingFullBlocks(", text)
+    text = re.sub(r"(?<![\w.])(?:net\.minecraft\.core\.)?BlockPos\.(min|max)\(", rf"{L}.Game.\1(", text)
     text = calls(text, r"\bnew (?:net\.minecraft\.network\.)?(?:Registry)?FriendlyByteBuf\(",
                  lambda m, a: f"new net.minecraft.network.FriendlyByteBuf({split_args(a)[0].strip()})" if len(split_args(a)) == 2 else m.group(0) + a + ")")
     # A test player: 1.20.1's is made without the client's settings.
@@ -1481,7 +1502,75 @@ FUNCTIONS.extend([drop_codecs, block_use, player_will_destroy, screens, synced_d
                   block_sources, block_access, render_boxes, recipes])
 
 
-FILE_FIXES_BEFORE: dict[str, list] = {}
+FILE_FIXES_BEFORE: dict[str, list] = {
+    # Create Aeronautics' ships (Sable) have no 1.20.1 build: the Create support starts without them, and the Create check
+    # leaves out its ships' scenes (the ship's launcher, the ship hit, ShipCheck, the rack aboard an airship).
+    "src/main/java/dev/groundburst/compat/GBCompat.java": [
+        cut("            if (ModList.get().isLoaded(\"sable\")) {\n", "            if (ModList.get().isLoaded(\"create\")) {\n"),
+        swap(" * This build's support for other mods' moving structures (main's DESIGN.md §17.16, docs/BACKPORT.md): Sable's sub-levels\n"
+             " * (the ships, planes and cars of Create Aeronautics) and Create's contraptions (trains, bearings, pistons, gantries...),\n"
+             " * each only when that mod is installed. Nothing here touches either mod's classes unless it is.\n",
+             " * This build's support for other mods' moving structures (main's DESIGN.md §17.16, docs/BACKPORT.md): Create's\n"
+             " * contraptions (trains, bearings, pistons, gantries...), only when Create is installed (Create Aeronautics' ships, which\n"
+             " * the 1.21.1 build supports through Sable, have no 1.20.1 build). Nothing here touches Create's classes unless it is.\n"),
+    ],
+    "src/main/java/dev/groundburst/compat/CreateCheck.java": [
+        cut(" * §17.16): in a flat creative world with Create, Sable and Create Aeronautics loaded,", " */\n@EventBusSubscriber",
+            " * §17.16): in a flat creative world with Create loaded, a Cruise Missile Launcher on a Create mechanical bearing\n"
+            " * turned by a creative motor (its deck held together and carried) fires, and the log says where its missile lit and\n"
+            " * which way it headed against where its box's tail and its boxes' heading are in the world at that moment (\"Create\n"
+            " * check: ... OK\" or \"... WRONG\"). Then a factory, an assembler yard and a blasted platform, Create's shafts healed\n"
+            " * ({@link HealCheck}), and last a Depth Charge Rack loaded by a Create funnel ({@link RackCheck}). Pictures in\n"
+            " * run/screenshots/create_*.png. (The 1.21.1 build's ships' scenes are left out: Create Aeronautics and Sable have no\n"
+            " * 1.20.1 build.)\n"),
+        cut("            // --- the Sable ship ---", "            case 410 ->"),
+        cut("            // --- a ship hit: a blast beside a Sable ship, then a shell into it ---", "            case RackCheck.END ->"),
+        swap("                if (ticks >= ShipCheck.START && ticks < ShipCheck.END) {\n"
+             "                    ShipCheck.tick(mc, ticks);                   // ships under the slower weapons, and aimed at\n"
+             "                } else if (ticks >= HealCheck.START",
+             "                if (ticks >= HealCheck.START"),
+        # What only the ships' scenes used: the ship's launcher and where it was set down, the watch on a launcher standing
+        # in the world (a ship's: the bearing's is carried, checked after its carrier ticks it), the second ship.
+        cut("    /** The ship's launcher on a stone platform; where the ship is set down, turned 30 degrees. */\n",
+            "    private static boolean started, stopped;\n"),
+        swap("            GroundBurst.LOGGER.info(\"Create check: making the world (Create {}, Sable {})\", ModList.get().isLoaded(\"create\"),\n"
+             "                    ModList.get().isLoaded(\"sable\"));\n",
+             "            GroundBurst.LOGGER.info(\"Create check: making the world (Create {})\", ModList.get().isLoaded(\"create\"));\n"),
+        cut("    /** After each server tick: a launcher standing in the world (a ship's) being watched may have lit a missile. */\n",
+            "    /** A carried launcher being watched,"),
+        cut("    /** The second ship: a 5x2x5 block of planks made a ship,", "\n    /** The wreck's platform, glued:"),
+        cut("    /** The launcher aboard the ship: the one near where the ship was set down. */\n",
+            "    /** Fires {@code name} (its countdown cut short), watching for its first missile. */\n"),
+        swap("// a Depth Charge Rack loaded by a funnel, and aboard an airship\n", "// a Depth Charge Rack loaded by a funnel\n"),
+    ],
+    "src/main/java/dev/groundburst/compat/RackCheck.java": [
+        cut("            // --- a rack aboard an airship ---", "            default -> {"),
+        swap("import dev.groundburst.compat.sable.SableScenes;\n", ""),
+        # What only the airship's scene used: the ship, its rack, where it was seen, the helpers its log lines used.
+        cut("    /** The airship: levitite under a deck of planks,", "\n    private RackCheck() {}\n"),
+        cut("\n\n    private static String round(double v) {\n", "\n}\n"),
+        swap(" * The Create check's Depth Charge Rack scenes ({@link CreateCheck}; main's DESIGN.md §14.6): a rack on the ground loaded\n"
+             " * by a Create funnel on its Item Port (depth charges dropped on the funnel); then a rack aboard a Create Aeronautics\n"
+             " * airship turned 30 degrees, its screen's button rolling a charge off from where the ship has the rack, the way the ship\n"
+             " * points it, lying across as it lay; and a redstone block put beside it aboard rolling the last one off.\n",
+             " * The Create check's Depth Charge Rack scene ({@link CreateCheck}; main's DESIGN.md §14.6): a rack on the ground loaded\n"
+             " * by a Create funnel on its Item Port (depth charges dropped on the funnel). (The 1.21.1 build's rack aboard a Create\n"
+             " * Aeronautics airship is left out: Create Aeronautics has no 1.20.1 build.)\n"),
+    ],
+    # A contraption's own frame: the world's here (no ships carry contraptions on 1.20.1).
+    "src/main/java/dev/groundburst/compat/create/ContraptionFrame.java": [
+        swap(" * place in the contraption), and the contraption has it wherever it has moved and turned it to now. A contraption aboard\n"
+             " * a Sable ship (a bearing turning a launcher on an airship) is itself in the ship's plot: the ship's frame then takes it\n"
+             " * on into the world.\n",
+             " * place in the contraption), and the contraption has it wherever it has moved and turned it to now.\n"),
+        swap("    /** The frame the contraption itself is in: the world's, or a ship's. */\n",
+             "    /** The frame the contraption itself is in (the world's: nothing on 1.20.1 carries contraptions about). */\n"),
+    ],
+    "src/main/java/dev/groundburst/compat/create/ContraptionHulls.java": [
+        swap("    /** The frame the contraption itself is in: the world's, or a ship's (a bearing turning on an airship). */\n",
+             "    /** The frame the contraption itself is in (the world's: nothing on 1.20.1 carries contraptions about). */\n"),
+    ],
+}
 FILE_FIXES: dict[str, list] = {
     # Forge 1.20.1 makes a mod with no arguments: its bus and container are found; this branch's stand-ins start first,
     # and the client half (no mod of its own here) is started by the mod on the client.
@@ -1591,8 +1680,12 @@ FILE_FIXES: dict[str, list] = {
              "        new net.minecraft.server.network.ServerGamePacketListenerImpl(level.getServer(), nowhere, player);   // (it sets player.connection)\n"),
     ],
     # The effects' glow: a 1.20.1 shader sets its own blending as it is used, over the render type's, and the eyes shader's
-    # is not additive: the glow draws on this branch's own copy of it that adds (shaders/core/rendertype_fx_glow).
+    # is not additive: the glow draws on this branch's own copy of it that adds (shaders/core/rendertype_fx_glow). Iris on
+    # Forge 1.20.1 is Oculus (Iris's code and API under its own mod id).
     "src/main/java/dev/groundburst/client/fx/FxRenderTypes.java": [
+        swap('static final boolean IRIS = net.minecraftforge.fml.ModList.get().isLoaded("iris");',
+             'static final boolean IRIS = net.minecraftforge.fml.ModList.get().isLoaded("iris")\n'
+             '            || net.minecraftforge.fml.ModList.get().isLoaded("oculus");'),
         after("    private static @Nullable ShaderInstance cloudShader;\n",
               "    /** The glow's shader: the eyes shader, its own file blending it additively (1.20.1's shaders set their blending). */\n"
               "    private static @Nullable ShaderInstance glowShader;\n"),
@@ -1797,6 +1890,8 @@ def port_mixins(data: bytes) -> bytes:
     for side in ("mixins", "client", "server"):
         if side in m:
             m[side] = [name for name in m[side] if name not in DROPPED_MIXINS]
+            if not m[side] and side != "mixins":
+                del m[side]                                 # (a side whose mixins were all dropped)
     m["compatibilityLevel"] = "JAVA_17"
     m["refmap"] = "groundburst.refmap.json"
     # MixinExtras started before these mixins are read (dev.groundburst.legacy.mixin.MixinPlugin).

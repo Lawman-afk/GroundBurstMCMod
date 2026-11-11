@@ -44,6 +44,44 @@ repositories {
             includeGroup 'mezz.jei'
         }
     }
+    // Create (optional): its own maven has its slim jar and its parts (Flywheel, Ponder); Registrate is tterrag's.
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Create'
+                url = 'https://maven.createmod.net'
+            }
+        }
+        filter {
+            includeGroup 'com.simibubi.create'
+            includeGroup 'dev.engine-room.flywheel'
+            includeGroup 'net.createmod.ponder'
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'tterrag (Registrate)'
+                url = 'https://maven.tterrag.com/'
+            }
+        }
+        filter {
+            includeGroup 'com.tterrag.registrate'
+        }
+    }
+    // The optional mods the dev runs load (Oculus, Embeddium, Distant Horizons, Create and its parts) and the test
+    // shader packs, from Modrinth by version id.
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter {
+            includeGroup 'maven.modrinth'
+        }
+    }
 }
 
 base {
@@ -82,6 +120,31 @@ legacyForge {
             client()
             programArguments.addAll '--width', '1280', '--height', '720'
             systemProperty 'groundburst.portCheck', 'true'
+            systemProperty 'groundburst.keepMouse', 'true'
+        }
+
+        // Main's play bench (dev.groundburst.blast.PlayBench, the 1.21.1 build's client half): a normal world seen far
+        // (-PplayView=32, -PplaySim=12), a forest, molotovs and a thermobaric warhead among the trees, the fires, the
+        // healing (-PplayHeal=false: none); every server tick and frame timed by phase into run/bench/play_*.txt, then it
+        // quits. With -Pjfr=<name> (any run) the JVM records a flight recording into run/jfr/<name>.jfr.
+        playBench {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.playBench', 'true'
+            systemProperty 'groundburst.keepMouse', 'true'
+            systemProperty 'groundburst.playBench.heal', (project.findProperty('playHeal') ?: 'true').toString()
+            systemProperty 'groundburst.playBench.view', (project.findProperty('playView') ?: '32').toString()
+            systemProperty 'groundburst.playBench.sim', (project.findProperty('playSim') ?: '12').toString()
+        }
+
+        // Machines and launchers on Create's contraptions (with -PwithCreate: Create loaded), the 1.21.1 build's check less its
+        // ships' scenes (Create Aeronautics has no 1.20.1 build): pictures in run/screenshots/create_*.png, the log's
+        // "Create check: ... OK" lines (dev.groundburst.compat.CreateCheck).
+        createCheck {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.createCheck', 'true'
+            systemProperty 'groundburst.keepMouse', 'true'
         }
 
         server {
@@ -101,6 +164,9 @@ legacyForge {
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             systemProperty 'mixin.env.remapRefMap', 'true'
+            if (project.findProperty('packFx') != null) {   // -PpackFx=over|in: drawn after the level, or by the pack's programs
+                systemProperty 'groundburst.packFx', project.findProperty('packFx').toString()
+            }
             if (project.findProperty('jfr') != null) {
                 def jfrDir = file('run/jfr')
                 jfrDir.mkdirs()
@@ -113,6 +179,36 @@ legacyForge {
     mods {
         "${mod_id}" {
             sourceSet(sourceSets.main)
+        }
+    }
+}
+
+// The test runs leave the person at the computer their mouse (the user's wish): the game's window opens behind theirs
+// without the focus and never grabs the mouse (dev.groundburst.legacy.client.DevRuns; the runs turn the camera
+// themselves). Forge's early loading window, made before any mod code runs, is turned off for them in run/config/fml.toml.
+def fmlConfig = file('run/config/fml.toml')
+tasks.matching { it.name in ['runPortCheck', 'runPlayBench', 'runCreateCheck'] }.configureEach {
+    doFirst {
+        fmlConfig.parentFile.mkdirs()
+        String text = fmlConfig.exists() ? fmlConfig.text : ''
+        fmlConfig.text = text =~ /(?m)^earlyWindowControl\s*=/
+                ? text.replaceAll(/(?m)^earlyWindowControl\s*=.*$/, 'earlyWindowControl = false')
+                : text + 'earlyWindowControl = false\n'
+    }
+}
+
+// The dev clients run muted (the user's wish: the game is muted unless a run is testing sound): the master volume is set
+// to 0 in run/options.txt before each client run; -Psound=on leaves it as it is.
+def clientOptions = file('run/options.txt')
+def withSound = providers.gradleProperty('sound').isPresent()
+tasks.matching { it.name.startsWith('run') && !(it.name in ['runGameTestServer', 'runServer']) }.configureEach {
+    doFirst {
+        if (!withSound) {
+            String text = clientOptions.exists() ? clientOptions.text : ''
+            clientOptions.parentFile.mkdirs()
+            clientOptions.text = text =~ /(?m)^soundCategory_master:/
+                    ? text.replaceAll(/(?m)^soundCategory_master:.*$/, 'soundCategory_master:0.0')
+                    : text + (text.isEmpty() || text.endsWith('\n') ? '' : '\n') + 'soundCategory_master:0.0\n'
         }
     }
 }
@@ -160,6 +256,101 @@ dependencies {
     modCompileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     modCompileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
     modRuntimeOnly "mezz.jei:jei-${minecraft_version}-forge:${jei_version}"
+
+    // Shader packs on 1.20.1 (optional): Oculus (Iris for Forge, whose API client/fx/IrisFx asks for by name) and
+    // Embeddium (Sodium for Forge, which Oculus draws through). -PwithIris loads both into the dev runs.
+    if (providers.gradleProperty('withIris').isPresent()) {
+        modRuntimeOnly "maven.modrinth:oculus:${oculus_version}"
+        modRuntimeOnly "maven.modrinth:embeddium:${embeddium_version}"
+    }
+    // Create 6 (optional, docs/BACKPORT.md): machines and launchers ride its contraptions. Compiled against its slim jar
+    // and its parts (the released jar carries them inside it, in Forge's names, which the dev runs cannot use); never
+    // shipped: the code that touches Create runs only when it is installed (dev.groundburst.compat). -PwithCreate loads
+    // them into the dev runs (the createCheck run needs them).
+    var createParts = ["com.simibubi.create:create-${minecraft_version}:${create_version}:slim",
+                       "dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}",
+                       "net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}",
+                       "com.tterrag.registrate:Registrate:${registrate_version}"]
+    createParts.each { part ->
+        modCompileOnly(part) { transitive = false }
+        if (providers.gradleProperty('withCreate').isPresent()) {
+            modRuntimeOnly(part) { transitive = false }
+        }
+    }
+    // Distant Horizons (optional at runtime): -PwithDH runs it in the dev client, its far terrain drawn round the effects.
+    if (providers.gradleProperty('withDH').isPresent()) {
+        modRuntimeOnly "maven.modrinth:distanthorizons:${dh_version}"
+    }
+}
+
+// The shader packs the dev runs test with (-PwithIris; -PirisPack=complementary|unbound|bsl|bliss|photon|solas|makeup|off
+// picks one, Complementary by default): put in run/shaderpacks, and Oculus's config pointed at the one picked.
+configurations {
+    shaderPacks {
+        canBeConsumed = false
+        transitive = false
+    }
+}
+dependencies {
+    shaderPacks "maven.modrinth:complementary-reimagined:${complementary_version}@zip"
+    shaderPacks "maven.modrinth:bsl-shaders:${bsl_version}@zip"
+    shaderPacks "maven.modrinth:bliss-shader:${bliss_version}@zip"
+    shaderPacks "maven.modrinth:photon-shader:${photon_version}@zip"
+    shaderPacks "maven.modrinth:solas-shader:${solas_version}@zip"
+    shaderPacks "maven.modrinth:makeup-ultra-fast-shaders:${makeup_version}@zip"
+    shaderPacks "maven.modrinth:complementary-unbound:${unbound_version}@zip"
+}
+var installShaderPacks = tasks.register('installShaderPacks') {
+    group = 'development'
+    description = 'Puts the test shader packs in run/shaderpacks and sets Oculus to the one -PirisPack names.'
+    var packs = configurations.shaderPacks
+    var pick = (project.findProperty('irisPack') ?: 'complementary').toString()
+    var runDir = file('run')
+    inputs.files(packs)
+    outputs.upToDateWhen { false }
+    doLast {
+        var dir = new File(runDir, 'shaderpacks')
+        dir.mkdirs()
+        // Each pack's file by the name -PirisPack picks it by.
+        var names = ['complementary-reimagined': 'complementary', 'complementary-unbound': 'unbound', 'bsl-shaders': 'bsl',
+                     'bliss-shader': 'bliss', 'photon-shader': 'photon', 'solas-shader': 'solas', 'makeup-ultra-fast-shaders': 'makeup']
+        String chosen = null
+        var wanted = packs.files.collect { f -> var key = names.keySet().find { f.name.startsWith(it) }; key != null ? names[key] + '.zip' : f.name }
+        dir.listFiles().findAll { it.name.endsWith('.zip') && !wanted.contains(it.name) }.each { it.delete() }
+        packs.files.each { f ->
+            var key = names.keySet().find { f.name.startsWith(it) }
+            var name = key != null ? names[key] + '.zip' : f.name
+            java.nio.file.Files.copy(f.toPath(), new File(dir, name).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            if (key != null && names[key] == pick.toLowerCase()) {
+                chosen = name
+            }
+        }
+        // Oculus keeps Iris's settings under its own name (and reads Iris's once): both written alike.
+        ['oculus.properties', 'iris.properties'].each { fileName ->
+            var config = new File(runDir, "config/${fileName}")
+            config.parentFile.mkdirs()
+            var props = new Properties()
+            if (config.exists()) {
+                config.withInputStream { props.load(it) }
+            }
+            props.setProperty('enableShaders', (pick != 'off' && chosen != null).toString())
+            if (chosen != null) {
+                props.setProperty('shaderPack', chosen)
+            }
+            config.withOutputStream { props.store(it, 'Set by gradle installShaderPacks') }
+        }
+        // A mod's load warnings would hold the photographers on Forge's warning screen before the title screen.
+        var forge = new File(runDir, 'config/forge-client.toml')
+        if (forge.exists()) {
+            forge.text = forge.text.replaceAll(/(?m)^(\s*)showLoadWarnings\s*=\s*true/, '$1showLoadWarnings = false')
+        } else {
+            forge.text = '[client]\n\tshowLoadWarnings = false\n'
+        }
+        logger.lifecycle("Shader packs in ${dir}; Oculus set to ${pick == 'off' ? 'no pack' : chosen}")
+    }
+}
+if (providers.gradleProperty('withIris').isPresent()) {
+    tasks.matching { it.name.startsWith('run') && it.name != 'runGameTestServer' }.configureEach { it.dependsOn installShaderPacks }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

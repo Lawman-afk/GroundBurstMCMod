@@ -47,7 +47,8 @@ import net.minecraftforge.client.event.RegisterShadersEvent;
  */
 final class FxRenderTypes {
     /** Iris is installed: with a shader pack on, the effects are drawn last, or the pack draws them ({@link IrisFx}). */
-    static final boolean IRIS = net.minecraftforge.fml.ModList.get().isLoaded("iris");
+    static final boolean IRIS = net.minecraftforge.fml.ModList.get().isLoaded("iris")
+            || net.minecraftforge.fml.ModList.get().isLoaded("oculus");
     /** Distant Horizons is installed: its far terrain is laid over the level after the effects, so they are drawn after it. */
     static final boolean DISTANT_HORIZONS = net.minecraftforge.fml.ModList.get().isLoaded("distanthorizons");
     /** Dev runs: {@code -PpackFx=over|in} sets the way under a pack whatever the config says. */

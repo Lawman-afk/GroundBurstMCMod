@@ -36,7 +36,11 @@ public final class Network {
 
     private static final Map<ResourceLocation, Entry<?>> BY_ID = new ConcurrentHashMap<>();
     private static @Nullable SimpleChannel channel;
-    /** The mod's payload protocol (the version its registrar was asked for: GBNetwork.PROTOCOL_VERSION). */
+    /**
+     * The mod's payload protocol: every version its registrars were asked for, in turn (GBNetwork.PROTOCOL_VERSION, then the
+     * Create payloads' own), so a client and a server that differ in any of them are told apart, as NeoForge's would be.
+     */
+    private static final java.util.Set<String> VERSIONS = new java.util.LinkedHashSet<>();
     private static String version = "1";
     /** The client's own player (set on the client only, so this class never names a client class). */
     public static Supplier<@Nullable Player> clientPlayer = () -> null;
@@ -52,8 +56,9 @@ public final class Network {
         register(type, codec, handler, Direction.TO_CLIENT);
     }
 
-    static void version(String v) {
-        version = v;
+    static synchronized void version(String v) {
+        VERSIONS.add(v);
+        version = String.join("+", VERSIONS);
     }
 
     public static String version() {

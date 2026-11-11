@@ -17,6 +17,14 @@ public interface AnimatedMachine extends GeoBlockEntity {
     RawAnimation WORKING = RawAnimation.begin().thenLoop("working");
     RawAnimation IDLE = RawAnimation.begin().thenPlayAndHold("idle");
 
+    /**
+     * What it plays while working (the looping "working" animation). A model with no such animation plays its rest pose
+     * instead (the Depth Charge Rack), rather than have GeckoLib asked for one it has not (GeckoLib 4 says so every frame).
+     */
+    default RawAnimation workingAnimation() {
+        return WORKING;
+    }
+
     /** The pose it rests in while not working (the held "idle" animation; the Launch Complex's arms stay clear when empty). */
     default RawAnimation idleAnimation() {
         return IDLE;
@@ -69,7 +77,8 @@ public interface AnimatedMachine extends GeoBlockEntity {
         controllers.add(new AnimationController<AnimatedMachine>(this, "main", 4, test -> {
             BlockEntity be = (BlockEntity) test.getAnimatable();
             boolean active = be.getBlockState().hasProperty(MachineBlock.ACTIVE) && be.getBlockState().getValue(MachineBlock.ACTIVE);
-            return test.setAndContinue(active ? WORKING : ((AnimatedMachine) test.getAnimatable()).idleAnimation());
+            AnimatedMachine machine = (AnimatedMachine) test.getAnimatable();
+            return test.setAndContinue(active ? machine.workingAnimation() : machine.idleAnimation());
         }));
     }
 }
