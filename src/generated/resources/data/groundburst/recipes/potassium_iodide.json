@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "item": "minecraft:dried_kelp"
+    },
+    {
+      "item": "minecraft:dried_kelp"
+    },
+    {
+      "tag": "forge:dusts/saltpeter"
+    }
+  ],
+  "result": {
+    "item": "groundburst:potassium_iodide",
+    "count": 4
+  }
+}

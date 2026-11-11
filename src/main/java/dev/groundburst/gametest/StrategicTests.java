@@ -24,7 +24,7 @@ import dev.groundburst.content.strategic.StrategicAssembly;
 import dev.groundburst.content.strategic.StrategicAssemblyBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
+import dev.groundburst.legacy.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -146,7 +146,7 @@ final class StrategicTests {
             for (int slot = StrategicAssemblyBlockEntity.SLOT_PRIMARY; slot <= StrategicAssemblyBlockEntity.SLOT_MODULE; slot++) {
                 helper.assertTrue(inv.getItem(slot).isEmpty(), "the parts used: slot " + slot);
             }
-            var look = out.get(DataComponents.CUSTOM_MODEL_DATA);
+            var look = dev.groundburst.legacy.component.Comps.get(out, DataComponents.CUSTOM_MODEL_DATA);
             helper.assertTrue(look != null && look.value() == dev.groundburst.port.Looks.id("thermonuclear_warhead"), "its own model: " + look);
             helper.assertTrue(hall.laid() == StrategicAssemblyBlockEntity.SECTIONS, "the whole missile on the cradles: " + hall.laid());
         });
@@ -206,11 +206,11 @@ final class StrategicTests {
             MissileSpec spec = MissileItem.spec(out);
             helper.assertTrue(spec != null && spec.intercontinental() && AssemblyStats.kindOf(spec.warhead()) == ChargeKind.TSAR_WARHEAD,
                     "a Tsar missile: " + spec);
-            var look = out.get(DataComponents.CUSTOM_MODEL_DATA);
+            var look = dev.groundburst.legacy.component.Comps.get(out, DataComponents.CUSTOM_MODEL_DATA);
             helper.assertTrue(look != null && look.value() == dev.groundburst.port.Looks.id("tsar_warhead"), "its own model: " + look);
             var shown = hall.shownMissile();
             helper.assertTrue(hall.laid() == StrategicAssemblyBlockEntity.SECTIONS && shown != null
-                    && shown.looks().size() == StrategicAssemblyBlockEntity.SECTIONS && shown.looks().getLast().equals("tsar_warhead_part4"),
+                    && shown.looks().size() == StrategicAssemblyBlockEntity.SECTIONS && dev.groundburst.legacy.J21.last(shown.looks()).equals("tsar_warhead_part4"),
                     "the Tsar on the cradles: " + shown);
             helper.assertTrue(hall.takeApart(), "taken apart");
             helper.assertTrue(inv.getItem(StrategicAssemblyBlockEntity.SLOT_JACKET).is(GBStrategic.TERTIARY_STAGE.get())

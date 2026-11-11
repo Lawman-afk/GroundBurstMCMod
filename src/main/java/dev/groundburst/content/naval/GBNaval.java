@@ -17,7 +17,7 @@ import dev.groundburst.registry.GBLang;
 import dev.groundburst.registry.GBTab;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.dispenser.BlockSource;
+import net.minecraft.core.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -30,10 +30,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredItem;
 
 /**
  * Naval weapons (DESIGN.md §14.6): sea mines, moored and drifting, and depth charges; their entities and dispensers; the
@@ -116,10 +116,10 @@ public final class GBNaval {
         DispenserBlock.registerBehavior(DEPTH_CHARGE.get(), new DefaultDispenseItemBehavior() {
             @Override
             protected ItemStack execute(BlockSource source, ItemStack stack) {
-                Direction d = source.state().getValue(DispenserBlock.FACING);
-                Vec3 at = source.center().add(d.getStepX() * 0.8, d.getStepY() * 0.8, d.getStepZ() * 0.8);
+                Direction d = source.getBlockState().getValue(DispenserBlock.FACING);
+                Vec3 at = net.minecraft.world.phys.Vec3.atCenterOf(source.getPos()).add(d.getStepX() * 0.8, d.getStepY() * 0.8, d.getStepZ() * 0.8);
                 Vec3 v = new Vec3(d.getStepX() * 0.25, d == Direction.DOWN ? -0.1 : d == Direction.UP ? 0.4 : 0.06, d.getStepZ() * 0.25);
-                DepthCharge.release(source.level(), at, v, stack, null);
+                DepthCharge.release(source.getLevel(), at, v, stack, null);
                 stack.shrink(1);
                 return stack;
             }
@@ -127,12 +127,12 @@ public final class GBNaval {
         DefaultDispenseItemBehavior lay = new DefaultDispenseItemBehavior() {
             @Override
             protected ItemStack execute(BlockSource source, ItemStack stack) {
-                Direction d = source.state().getValue(DispenserBlock.FACING);
-                BlockPos front = source.pos().relative(d);
-                for (int i = 0; i < 3 && stack.getItem() instanceof SeaMineItem mine; i++) {
+                Direction d = source.getBlockState().getValue(DispenserBlock.FACING);
+                BlockPos front = source.getPos().relative(d);
+                for (int i = 0; i < 3 && ((Object) stack.getItem()) instanceof SeaMineItem mine; i++) {
                     BlockPos at = front.below(i);
-                    if (Water.water(source.level(), at)) {
-                        SeaMine.lay(source.level(), Vec3.atCenterOf(at), mine.moored(), SeaMineItem.depthOf(stack), null);
+                    if (Water.water(source.getLevel(), at)) {
+                        SeaMine.lay(source.getLevel(), Vec3.atCenterOf(at), mine.moored(), SeaMineItem.depthOf(stack), null);
                         stack.shrink(1);
                         return stack;
                     }

@@ -62,7 +62,7 @@ public final class Carried {
 
     /** The machine carried with its key at {@code key}, if its carrier ticked it just now (on the client: the copy drawn). */
     public static @Nullable BlockEntity at(Level level, BlockPos key) {
-        if (level instanceof ServerLevel server) {
+        if (((Object) level) instanceof ServerLevel server) {
             Long2ObjectOpenHashMap<Seen> seen = SEEN.get(server.dimension());
             Seen s = seen == null ? null : seen.get(key.asLong());
             if (s == null) {

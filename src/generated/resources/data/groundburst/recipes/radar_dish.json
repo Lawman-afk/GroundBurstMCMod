@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "item": "groundburst:sensor_array"
+    },
+    {
+      "item": "groundburst:servo"
+    },
+    {
+      "tag": "forge:wires/copper"
+    }
+  ],
+  "result": {
+    "item": "groundburst:radar_dish"
+  }
+}

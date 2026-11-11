@@ -13,7 +13,7 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.neoforged.neoforge.registries.DeferredItem;
+import dev.groundburst.legacy.DeferredItem;
 
 /** Structural blocks and multiblock patterns (DESIGN.md §23). */
 public final class GBMultiblocks {

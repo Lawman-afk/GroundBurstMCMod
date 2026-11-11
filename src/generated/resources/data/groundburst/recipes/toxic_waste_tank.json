@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:toxin_canister"
+    },
+    {
+      "item": "groundburst:toxin_canister"
+    },
+    {
+      "item": "groundburst:toxin_canister"
+    },
+    {
+      "tag": "forge:plates/steel"
+    }
+  ],
+  "result": {
+    "item": "groundburst:toxic_waste_tank"
+  }
+}

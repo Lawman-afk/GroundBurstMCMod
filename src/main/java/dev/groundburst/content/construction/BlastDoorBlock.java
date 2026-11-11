@@ -53,10 +53,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * leaf's swing). Shut, a doorway block is the leaf across its front and the frame behind; open, the frame alone.
  */
 public class BlastDoorBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends BlastDoorBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final EnumProperty<DoorHingeSide> HINGE = BlockStateProperties.DOOR_HINGE;
     public static final IntegerProperty U = IntegerProperty.create("u", 0, 1);
@@ -167,26 +164,26 @@ public class BlastDoorBlock extends HorizontalDirectionalBlock implements Entity
                 }
             }
         }
-        if (level.getBlockEntity(pos) instanceof BlastDoorBlockEntity door && level instanceof ServerLevel server) {
+        if (((Object) level.getBlockEntity(pos)) instanceof BlastDoorBlockEntity door && ((Object) level) instanceof ServerLevel server) {
             door.lookAtPower(server);
         }
     }
 
     /** A player breaking any block breaks the hinges' lowest (it drops the item, unless in creative); the rest follow it. */
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && !isController(state)) {
             BlockPos c = controllerOf(level, pos, state);
             if (c != null) {
                 level.destroyBlock(c, !player.getAbilities().instabuild, player);
             }
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player); return;
     }
 
     /** A block gone however it went (a player, a blast, the door shutting): the rest are told to look again. */
     @Override
-    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+    public void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(((Object) level_l) instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
         
         BlockPos c = isController(state) ? pos : controllerOf(level, pos, state);
         if (c == null) {
@@ -210,7 +207,7 @@ public class BlastDoorBlock extends HorizontalDirectionalBlock implements Entity
      * opening) a block of its leaf, falls apart, its hinges' lowest dropping the one item.
      */
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         BlockPos c = controllerOf(level, pos, state);
         if (c == null) {
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
@@ -222,7 +219,7 @@ public class BlastDoorBlock extends HorizontalDirectionalBlock implements Entity
     }
 
     private boolean complete(ServerLevel level, BlockPos base, BlockState state) {
-        boolean swing = level.getBlockEntity(base) instanceof BlastDoorBlockEntity door && door.needsSwing();
+        boolean swing = ((Object) level.getBlockEntity(base)) instanceof BlastDoorBlockEntity door && door.needsSwing();
         Direction facing = state.getValue(FACING), across = across(state);
         for (int u = 0; u < 2; u++) {
             for (int v = 0; v < 3; v++) {
@@ -301,11 +298,10 @@ public class BlastDoorBlock extends HorizontalDirectionalBlock implements Entity
 
     // --- using it -------------------------------------------------------------------------------------------------------------------
     /** A click on any of its blocks: the hinges' lowest opens it or shuts it. */
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level instanceof ServerLevel server) {
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (((Object) level) instanceof ServerLevel server) {
             BlockPos c = controllerOf(level, pos, state);
-            if (c != null && level.getBlockEntity(c) instanceof BlastDoorBlockEntity door) {
+            if (c != null && ((Object) level.getBlockEntity(c)) instanceof BlastDoorBlockEntity door) {
                 door.toggle(server, player);
             }
         }
@@ -313,10 +309,10 @@ public class BlastDoorBlock extends HorizontalDirectionalBlock implements Entity
     }
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
-        if (level instanceof ServerLevel server) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
+        if (((Object) level) instanceof ServerLevel server) {
             BlockPos c = controllerOf(level, pos, state);
-            if (c != null && level.getBlockEntity(c) instanceof BlastDoorBlockEntity door) {
+            if (c != null && ((Object) level.getBlockEntity(c)) instanceof BlastDoorBlockEntity door) {
                 door.lookAtPower(server);
             }
         }
@@ -380,19 +376,19 @@ public class BlastDoorBlock extends HorizontalDirectionalBlock implements Entity
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES[index(state.getValue(FACING), state.getValue(HINGE) == DoorHingeSide.LEFT, state.getValue(U), state.getValue(V),
                 state.getValue(W), state.getValue(OPEN))];
     }
 
     /** Mobs walk through its doorway while it stands open, never through its leaf. */
     @Override
-    protected boolean isPathfindable(BlockState state, PathComputationType type) {
+    public boolean isPathfindable(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_, net.minecraft.world.level.pathfinder.PathComputationType type) {
         return type == PathComputationType.LAND && state.getValue(W) == 0 && state.getValue(OPEN);
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;                            // the hinges' lowest block entity draws the whole door
     }
 
@@ -408,5 +404,11 @@ public class BlastDoorBlock extends HorizontalDirectionalBlock implements Entity
             return null;
         }
         return (l, p, s, be) -> ((BlastDoorBlockEntity) be).serverTick((ServerLevel) l);
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": {
+      "item": "groundburst:plastic_sheet"
+    },
+    "R": {
+      "tag": "forge:rods/steel"
+    },
+    "W": {
+      "tag": "forge:wires/gold"
+    }
+  },
+  "pattern": [
+    "RPR",
+    "WPW",
+    "RPR"
+  ],
+  "result": {
+    "item": "groundburst:proton_exchange_membrane"
+  }
+}

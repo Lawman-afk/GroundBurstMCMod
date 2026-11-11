@@ -50,7 +50,7 @@ final class TankPumpTests {
     }
 
     private static int fill(GameTestHelper helper, BlockPos rel, int amount) {
-        var h = helper.getLevel().getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(rel), Direction.UP);
+        var h = dev.groundburst.legacy.Caps.get(helper.getLevel(), Capabilities.Fluid.BLOCK, helper.absolutePos(rel), Direction.UP);
         try (var tx = Transaction.openRoot()) {
             int in = h.insert(FluidResource.of(Fluids.WATER), amount, tx);
             tx.commit();
@@ -134,7 +134,7 @@ final class TankPumpTests {
         helper.setBlock(new BlockPos(4, 2, 6), GBMachines.CABLES.get(0).block().get());
         helper.setBlock(new BlockPos(5, 2, 6), GBMachines.CABLES.get(0).block().get());
         var level = helper.getLevel();
-        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player player = helper.makeMockPlayer();
         ItemStack wrench = new ItemStack(GBMachines.WRENCH.get());
         player.setItemInHand(InteractionHand.MAIN_HAND, wrench);
         BlockPos pipe = helper.absolutePos(new BlockPos(5, 2, 4));
@@ -151,7 +151,7 @@ final class TankPumpTests {
         wrench.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(cableArm, Direction.UP, a, false)));
         helper.assertTrue(CableBlock.side(level.getBlockState(a), Direction.EAST) == CableBlock.Side.DISABLED
                 && CableBlock.side(level.getBlockState(b), Direction.WEST) == CableBlock.Side.DISABLED, "both cables switch the join off");
-        helper.assertTrue(level.getCapability(Capabilities.Energy.BLOCK, a, Direction.EAST) == null, "a switched-off cable side exposes nothing");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, Capabilities.Energy.BLOCK, a, Direction.EAST) == null, "a switched-off cable side exposes nothing");
         // Sneak-click picks the pipe up.
         player.setShiftKeyDown(true);
         wrench.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(armPoint, Direction.UP, pipe, false)));
@@ -170,8 +170,8 @@ final class TankPumpTests {
         ElectrolyticSeparatorBlockEntity sep = ((ElectrolyticSeparatorBlockEntity) helper.getBlockEntity(new BlockPos(7, 2, 4)));
         var level = helper.getLevel();
         BlockPos p = helper.absolutePos(new BlockPos(4, 2, 4));
-        helper.assertTrue(level.getCapability(Capabilities.Fluid.BLOCK, p, Direction.SOUTH) == null
-                && level.getCapability(Capabilities.Fluid.BLOCK, p, Direction.EAST) != null, "water only leaves by the two side outlets");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, p, Direction.SOUTH) == null
+                && dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, p, Direction.EAST) != null, "water only leaves by the two side outlets");
         helper.succeedWhen(() -> helper.assertTrue(sep.tank(0).amount() >= 2_000, "pumped water reaches the separator, has " + sep.tank(0).amount()));
     }
 
@@ -204,7 +204,7 @@ final class TankPumpTests {
         BlockPos rel = new BlockPos(4, 2, 4);
         helper.setBlock(rel, GBFluids.CREATIVE_FLUID_TANK.block().get());
         CreativeFluidTankBlockEntity be = ((CreativeFluidTankBlockEntity) helper.getBlockEntity(rel));
-        var h = helper.getLevel().getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(rel), Direction.NORTH);
+        var h = dev.groundburst.legacy.Caps.get(helper.getLevel(), Capabilities.Fluid.BLOCK, helper.absolutePos(rel), Direction.NORTH);
         helper.assertTrue(h != null, "creative tank exposes a fluid handler");
         try (var tx = Transaction.openRoot()) {
             helper.assertTrue(h.extract(FluidResource.of(Fluids.WATER), 1000, tx) == 0, "an empty creative tank gives nothing");

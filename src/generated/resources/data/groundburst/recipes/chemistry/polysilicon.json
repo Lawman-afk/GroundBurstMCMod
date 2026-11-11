@@ -1,0 +1,26 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": {
+        "tag": "forge:trichlorosilane"
+      }
+    },
+    {
+      "amount": 1000,
+      "ingredient": {
+        "tag": "forge:hydrogen"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:polysilicon"
+      }
+    }
+  ],
+  "time": 400
+}

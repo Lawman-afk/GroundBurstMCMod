@@ -12,9 +12,9 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredRegister;
 
 /**
  * The world's structures (DESIGN.md §22, Phase 15): the site structure type and its piece, the structures' keys, their
@@ -26,7 +26,7 @@ public final class GBStructures {
     public static final DeferredRegister<StructureType<?>> TYPES = DeferredRegister.create(Registries.STRUCTURE_TYPE, GroundBurst.MODID);
     public static final DeferredRegister<StructurePieceType> PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, GroundBurst.MODID);
 
-    public static final DeferredHolder<StructureType<?>, StructureType<SiteStructure>> SITE = TYPES.register("site", () -> () -> SiteStructure.CODEC);
+    public static final DeferredHolder<StructureType<?>, StructureType<SiteStructure>> SITE = TYPES.register("site", () -> () -> SiteStructure.CODEC.codec());
     public static final DeferredHolder<StructurePieceType, StructurePieceType> SITE_PIECE = PIECES.register("site_piece",
             () -> (StructurePieceType.StructureTemplateType) SitePiece::new);
 
@@ -48,8 +48,8 @@ public final class GBStructures {
         return TagKey.create(Registries.BIOME, GroundBurst.id("has_structure/" + name));
     }
 
-    public static ResourceKey<LootTable> loot(String name) {
-        return ResourceKey.create(Registries.LOOT_TABLE, GroundBurst.id("chests/" + name));
+    public static net.minecraft.resources.ResourceLocation loot(String name) {
+        return GroundBurst.id("chests/" + name);
     }
 
     /**

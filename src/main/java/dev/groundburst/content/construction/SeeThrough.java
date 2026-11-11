@@ -4,8 +4,8 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.SlabBlock;
-import net.minecraft.world.level.block.TransparentBlock;
-import net.minecraft.world.level.block.WaterloggedTransparentBlock;
+import net.minecraft.world.level.block.AbstractGlassBlock;
+import dev.groundburst.legacy.WaterloggedTransparentBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 
@@ -53,13 +53,13 @@ public final class SeeThrough {
     }
 
     /** The Lattice Frame: an open braced steel cube. */
-    public static class Lattice extends TransparentBlock {
+    public static class Lattice extends AbstractGlassBlock {
         public Lattice(Properties properties) {
             super(properties);
         }
 
         @Override
-        protected boolean skipRendering(BlockState state, BlockState neighbour, Direction dir) {
+        public boolean skipRendering(BlockState state, BlockState neighbour, Direction dir) {
             return hidden(state, neighbour, dir) || super.skipRendering(state, neighbour, dir);
         }
     }
@@ -71,7 +71,7 @@ public final class SeeThrough {
         }
 
         @Override
-        protected boolean skipRendering(BlockState state, BlockState neighbour, Direction dir) {
+        public boolean skipRendering(BlockState state, BlockState neighbour, Direction dir) {
             return hidden(state, neighbour, dir) || super.skipRendering(state, neighbour, dir);
         }
     }
@@ -83,7 +83,7 @@ public final class SeeThrough {
         }
 
         @Override
-        protected boolean skipRendering(BlockState state, BlockState neighbour, Direction dir) {
+        public boolean skipRendering(BlockState state, BlockState neighbour, Direction dir) {
             return hidden(state, neighbour, dir) || super.skipRendering(state, neighbour, dir);
         }
     }

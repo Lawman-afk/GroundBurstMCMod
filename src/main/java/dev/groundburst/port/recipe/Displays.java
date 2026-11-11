@@ -16,15 +16,15 @@ public final class Displays {
     private Displays() {}
 
     public static Optional<RecipeDisplay> of(Recipe<?> recipe, HolderLookup.Provider registries) {
-        SlotDisplay result = SlotDisplay.of(recipe.getResultItem(registries));
-        if (recipe instanceof ShapedRecipe shaped) {
+        SlotDisplay result = SlotDisplay.of(recipe.getResultItem(dev.groundburst.legacy.Regs.access()));
+        if (((Object) recipe) instanceof ShapedRecipe shaped) {
             return Optional.of(new ShapedCraftingRecipeDisplay(shaped.getWidth(), shaped.getHeight(), slots(shaped.getIngredients()), result));
         }
-        if (recipe instanceof ShapelessRecipe shapeless) {
+        if (((Object) recipe) instanceof ShapelessRecipe shapeless) {
             return Optional.of(new ShapelessCraftingRecipeDisplay(slots(shapeless.getIngredients()), result));
         }
-        if (recipe instanceof AbstractCookingRecipe cooking) {
-            Ingredient in = cooking.getIngredients().isEmpty() ? Ingredient.EMPTY : cooking.getIngredients().getFirst();
+        if (((Object) recipe) instanceof AbstractCookingRecipe cooking) {
+            Ingredient in = cooking.getIngredients().isEmpty() ? Ingredient.EMPTY : dev.groundburst.legacy.J21.first(cooking.getIngredients());
             return Optional.of(new FurnaceRecipeDisplay(SlotDisplay.of(in), result, cooking.getCookingTime()));
         }
         return Optional.empty();

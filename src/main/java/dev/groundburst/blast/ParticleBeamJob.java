@@ -32,7 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * One Particle Uplink Cannon beam (DESIGN.md §19.6). It leaves its cannon's pit and, {@link ParticleBeams#UPLINK} ticks
@@ -122,7 +122,7 @@ final class ParticleBeamJob {
         int spawnR = 0;
         if (GBServerConfig.PROTECT_SPAWN.get() && level.dimension() == Level.OVERWORLD) {
             spawnAt = level.getSharedSpawnPos();
-            spawnR = level.getServer() instanceof DedicatedServer server ? server.getSpawnProtectionRadius() : 16;
+            spawnR = ((Object) level.getServer()) instanceof DedicatedServer server ? server.getSpawnProtectionRadius() : 16;
         }
         this.spawn = spawnAt;
         this.spawnRadius = spawnR;
@@ -190,7 +190,7 @@ final class ParticleBeamJob {
         if (this.cannon == null || !this.level.isLoaded(this.cannon)) {
             return null;
         }
-        return this.level.getBlockEntity(this.cannon) instanceof ParticleCannonBlockEntity c && c.beamLive(this.netId) ? c : null;
+        return ((Object) this.level.getBlockEntity(this.cannon)) instanceof ParticleCannonBlockEntity c && c.beamLive(this.netId) ? c : null;
     }
 
     private void end() {
@@ -449,17 +449,17 @@ final class ParticleBeamJob {
      */
     private void hurt(int age) {
         Entity source = this.by == null ? null : this.level.getEntity(this.by);
-        DamageSource beam = this.level.damageSources().source(ParticleBeams.PARTICLE_BEAM, null, source);
+        DamageSource beam = dev.groundburst.legacy.Game.source(this.level, ParticleBeams.PARTICLE_BEAM, null, source);
         float reach = ParticleBeams.FIRE;
         AABB box = new AABB(this.x - reach, this.y - ParticleBeams.MAX_DEPTH - 2, this.z - reach, this.x + reach, (this.level.getMaxBuildHeight() - 1) + 1,
                 this.z + reach);
         for (Entity e : this.level.getEntities((Entity) null, box, e -> e.isAlive() && !spared(e))) {
             double d = Math.hypot(e.getX() - this.x, e.getZ() - this.z) - e.getBbWidth() / 2;
             if (d <= ParticleBeams.CORE) {
-                e.igniteForSeconds(10);
+                e.setSecondsOnFire((int) (10));
                 e.hurt(beam, VAPORISE);
             } else if (d <= reach && e.getY() <= this.y + 6) {
-                e.igniteForSeconds(6);
+                e.setSecondsOnFire((int) (6));
                 if (e instanceof LivingEntity && age % 10 == 0) {
                     e.hurt(beam, SCALD);
                 }
@@ -468,6 +468,6 @@ final class ParticleBeamJob {
     }
 
     private static boolean spared(Entity e) {
-        return e instanceof Player p && (p.isCreative() || p.isSpectator()) || e instanceof dev.groundburst.content.launch.MissileEntity;
+        return ((Object) e) instanceof Player p && (p.isCreative() || p.isSpectator()) || e instanceof dev.groundburst.content.launch.MissileEntity;
     }
 }

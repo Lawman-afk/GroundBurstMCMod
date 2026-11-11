@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "item": "groundburst:plastic_sheet"
+    },
+    {
+      "item": "groundburst:plastic_sheet"
+    },
+    {
+      "tag": "forge:dyes/white"
+    }
+  ],
+  "result": {
+    "item": "groundburst:clean_room_panel",
+    "count": 2
+  }
+}

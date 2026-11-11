@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "groundburst:steel_plate"
+  },
+  "result": "groundburst:i_beam",
+  "count": 2
+}

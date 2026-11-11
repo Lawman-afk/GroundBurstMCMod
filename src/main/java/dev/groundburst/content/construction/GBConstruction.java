@@ -13,8 +13,8 @@ import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.TransparentBlock;
-import net.minecraft.world.level.block.WaterloggedTransparentBlock;
+import net.minecraft.world.level.block.AbstractGlassBlock;
+import dev.groundburst.legacy.WaterloggedTransparentBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.material.MapColor;
 
@@ -57,9 +57,9 @@ public final class GBConstruction {
      * from both sides (SeeThrough).
      */
     public static final WithItem<WaterloggedTransparentBlock> STEEL_GRATING = GBBlocks.register("steel_grating", "Steel Grating", TAB,
-            SeeThrough.Grating::new, p -> seeThrough(metal(p, MapColor.METAL)).sound(SoundType.COPPER_GRATE));
+            SeeThrough.Grating::new, p -> seeThrough(metal(p, MapColor.METAL)).sound(SoundType.COPPER));
     public static final WithItem<SlabBlock> STEEL_GRATING_SLAB = GBBlocks.register("steel_grating_slab", "Steel Grating Slab", TAB,
-            SeeThrough.GratingSlab::new, p -> seeThrough(metal(p, MapColor.METAL)).sound(SoundType.COPPER_GRATE));
+            SeeThrough.GratingSlab::new, p -> seeThrough(metal(p, MapColor.METAL)).sound(SoundType.COPPER));
 
     // --- structure ------------------------------------------------------------------------------------------------------------
     /** A steel girder, set along any axis as a log is. */
@@ -69,7 +69,7 @@ public final class GBConstruction {
      * An open braced steel cube: towers, masts and gantries. Lattice next to lattice (or grating) shows only the outside,
      * from both sides: looking into a stack you see its far side (SeeThrough).
      */
-    public static final WithItem<TransparentBlock> LATTICE_FRAME = GBBlocks.register("lattice_frame", "Lattice Frame", TAB,
+    public static final WithItem<AbstractGlassBlock> LATTICE_FRAME = GBBlocks.register("lattice_frame", "Lattice Frame", TAB,
             SeeThrough.Lattice::new, p -> seeThrough(metal(p, MapColor.METAL)));
 
     // --- radome ---------------------------------------------------------------------------------------------------------------
@@ -104,11 +104,11 @@ public final class GBConstruction {
     public static final WithItem<SearchRadarWreckBlock> SEARCH_RADAR_WRECK = GBBlocks.register("search_radar_wreck", "Wrecked Search Radar",
             TAB, p -> new SearchRadarWreckBlock(p, () -> GBConstruction.SEARCH_RADAR_WRECK_ENTITY.get()),
             p -> metal(p, MapColor.TERRACOTTA_BROWN).strength(4f, 8f).noOcclusion());
-    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+    public static final dev.groundburst.legacy.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<SearchRadarBlockEntity>> SEARCH_RADAR_ENTITY =
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("search_radar", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new SearchRadarBlockEntity(GBConstruction.SEARCH_RADAR_ENTITY.get(), pos, state), SEARCH_RADAR.block().get()).build(null));
-    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+    public static final dev.groundburst.legacy.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<SearchRadarBlockEntity>> SEARCH_RADAR_WRECK_ENTITY =
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("search_radar_wreck", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new SearchRadarBlockEntity(GBConstruction.SEARCH_RADAR_WRECK_ENTITY.get(), pos, state),
@@ -120,7 +120,7 @@ public final class GBConstruction {
     public static final WithItem<MissileWreckBlock> MISSILE_WRECK = GBBlocks.register("missile_wreck", "Missile Wreck", TAB,
             p -> new MissileWreckBlock(p, () -> GBConstruction.MISSILE_WRECK_ENTITY.get()),
             p -> metal(p, MapColor.SNOW).strength(4f, 8f).noOcclusion());
-    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<PropBlockEntity>> MISSILE_WRECK_ENTITY =
+    public static final dev.groundburst.legacy.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<PropBlockEntity>> MISSILE_WRECK_ENTITY =
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("missile_wreck", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new PropBlockEntity(GBConstruction.MISSILE_WRECK_ENTITY.get(), pos, state), MISSILE_WRECK.block().get()).build(null));
 
@@ -131,10 +131,10 @@ public final class GBConstruction {
     /** The same door left to rust, as the world's old silos have it (stuck where it stopped there). */
     public static final WithItem<SiloDoorBlock> RUSTED_LARGE_SILO_DOOR = GBBlocks.register("rusted_large_silo_door", "Rusted Large Silo Door",
             TAB, p -> new SiloDoorBlock(p, () -> GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get()), GBConstruction::door);
-    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<SiloDoorBlockEntity>> LARGE_SILO_DOOR_ENTITY =
+    public static final dev.groundburst.legacy.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<SiloDoorBlockEntity>> LARGE_SILO_DOOR_ENTITY =
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("large_silo_door", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new SiloDoorBlockEntity(GBConstruction.LARGE_SILO_DOOR_ENTITY.get(), pos, state), LARGE_SILO_DOOR.block().get()).build(null));
-    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<SiloDoorBlockEntity>> RUSTED_LARGE_SILO_DOOR_ENTITY =
+    public static final dev.groundburst.legacy.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<SiloDoorBlockEntity>> RUSTED_LARGE_SILO_DOOR_ENTITY =
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("rusted_large_silo_door", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new SiloDoorBlockEntity(GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get(), pos, state),
                     RUSTED_LARGE_SILO_DOOR.block().get()).build(null));
@@ -145,7 +145,7 @@ public final class GBConstruction {
             p -> metal(p, MapColor.METAL).strength(15f, 1200f).sound(SoundType.NETHERITE_BLOCK).noOcclusion()
                     .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK).isRedstoneConductor((s, l, at) -> false)
                     .isSuffocating((s, l, at) -> false).isViewBlocking((s, l, at) -> false));
-    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+    public static final dev.groundburst.legacy.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<BlastDoorBlockEntity>> BLAST_DOOR_ENTITY =
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("blast_door", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new BlastDoorBlockEntity(GBConstruction.BLAST_DOOR_ENTITY.get(), pos, state), BLAST_DOOR.block().get()).build(null));
@@ -153,15 +153,15 @@ public final class GBConstruction {
     /** A round steel hatch in a square coaming, opening as a trapdoor does: its lid stands up out of the floor (§22.3). */
     public static final WithItem<BunkerHatchBlock> BUNKER_HATCH = GBBlocks.register("bunker_hatch", "Bunker Hatch", TAB,
             BunkerHatchBlock::new, p -> metal(p, MapColor.METAL).strength(6f, 300f).noOcclusion()
-                    .isValidSpawn(Blocks::never).isRedstoneConductor((s, l, at) -> false));
+                    .isValidSpawn((s_, l_, p_, e_) -> false).isRedstoneConductor((s, l, at) -> false));
     /** An open hatch's lid, where it stands over (or under) the hatch: solid, and clicked to shut it. No item (§22.3). */
-    public static final net.neoforged.neoforge.registries.DeferredBlock<BunkerHatchLidBlock> BUNKER_HATCH_LID = GBBlocks.blockOnly(
+    public static final dev.groundburst.legacy.DeferredBlock<BunkerHatchLidBlock> BUNKER_HATCH_LID = GBBlocks.blockOnly(
             "bunker_hatch_lid", "Bunker Hatch", BunkerHatchLidBlock::new, p -> metal(p, MapColor.METAL).strength(6f, 300f).noOcclusion()
-                    .isValidSpawn(Blocks::never).isRedstoneConductor((s, l, at) -> false).isSuffocating((s, l, at) -> false)
+                    .isValidSpawn((s_, l_, p_, e_) -> false).isRedstoneConductor((s, l, at) -> false).isSuffocating((s, l, at) -> false)
                     .isViewBlocking((s, l, at) -> false).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK));
     /** A steel door with a porthole and a dog lever, a block wide and two high, opening as a door does (§22.3). */
     public static final WithItem<net.minecraft.world.level.block.DoorBlock> PRESSURE_DOOR = GBBlocks.register("pressure_door", "Pressure Door",
-            TAB, p -> new net.minecraft.world.level.block.DoorBlock(BunkerSet.get(), p),
+            TAB, p -> new net.minecraft.world.level.block.DoorBlock(p, BunkerSet.get()),
             p -> metal(p, MapColor.METAL).strength(6f, 300f).noOcclusion()
                     .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY));
 
@@ -180,7 +180,7 @@ public final class GBConstruction {
     public static final WithItem<FilingCabinetBlock> FILING_CABINET = GBBlocks.register("filing_cabinet", "Filing Cabinet", TAB,
             p -> new FilingCabinetBlock(p, () -> GBConstruction.FILING_CABINET_ENTITY.get()),
             p -> metal(p, MapColor.COLOR_GREEN).strength(3f, 6f).noOcclusion());
-    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+    public static final dev.groundburst.legacy.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<FilingCabinetBlockEntity>> FILING_CABINET_ENTITY =
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("filing_cabinet", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new FilingCabinetBlockEntity(GBConstruction.FILING_CABINET_ENTITY.get(), pos, state), FILING_CABINET.block().get()).build(null));
@@ -189,7 +189,7 @@ public final class GBConstruction {
             p -> new TapeComputerBlock(p, () -> GBConstruction.TAPE_COMPUTER_ENTITY.get()),
             p -> metal(p, MapColor.COLOR_LIGHT_GRAY).strength(3f, 6f).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)
                     .lightLevel(s -> s.getValue(TapeComputerBlock.ACTIVE) ? 3 : 0));
-    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+    public static final dev.groundburst.legacy.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<TapeComputerBlockEntity>> TAPE_COMPUTER_ENTITY =
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("tape_computer", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new TapeComputerBlockEntity(GBConstruction.TAPE_COMPUTER_ENTITY.get(), pos, state), TAPE_COMPUTER.block().get()).build(null));
@@ -225,7 +225,7 @@ public final class GBConstruction {
     public static final WithItem<SteelLockerBlock> STEEL_LOCKER = GBBlocks.register("steel_locker", "Steel Locker", TAB,
             p -> new SteelLockerBlock(p, () -> GBConstruction.STEEL_LOCKER_ENTITY.get()),
             p -> metal(p, MapColor.COLOR_GRAY).strength(3f, 6f).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK));
-    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+    public static final dev.groundburst.legacy.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<SteelLockerBlockEntity>> STEEL_LOCKER_ENTITY =
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("steel_locker", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new SteelLockerBlockEntity(GBConstruction.STEEL_LOCKER_ENTITY.get(), pos, state), STEEL_LOCKER.block().get()).build(null));
@@ -257,7 +257,7 @@ public final class GBConstruction {
             p -> new SearchlightBlock(p, () -> GBConstruction.SEARCHLIGHT_ENTITY.get()),
             p -> metal(p, MapColor.COLOR_GREEN).strength(3f, 6f).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)
                     .lightLevel(s -> s.getValue(SearchlightBlock.ACTIVE) ? 15 : 0));
-    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+    public static final dev.groundburst.legacy.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<SearchlightBlockEntity>> SEARCHLIGHT_ENTITY =
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("searchlight", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new SearchlightBlockEntity(GBConstruction.SEARCHLIGHT_ENTITY.get(), pos, state), SEARCHLIGHT.block().get()).build(null));
@@ -265,7 +265,7 @@ public final class GBConstruction {
     public static final WithItem<AmmoCratesBlock> AMMO_CRATES = GBBlocks.register("ammo_crates", "Ammo Crates", TAB,
             p -> new AmmoCratesBlock(p, () -> GBConstruction.AMMO_CRATES_ENTITY.get()),
             p -> p.mapColor(MapColor.COLOR_GREEN).strength(2.5f, 3f).sound(SoundType.WOOD).noOcclusion().ignitedByLava());
-    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+    public static final dev.groundburst.legacy.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<AmmoCratesBlockEntity>> AMMO_CRATES_ENTITY =
             dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("ammo_crates", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new AmmoCratesBlockEntity(GBConstruction.AMMO_CRATES_ENTITY.get(), pos, state), AMMO_CRATES.block().get()).build(null));
@@ -307,7 +307,7 @@ public final class GBConstruction {
     }
 
     private static Properties seeThrough(Properties p) {
-        return p.noOcclusion().isValidSpawn(Blocks::never).isRedstoneConductor((s, l, at) -> false).isSuffocating((s, l, at) -> false)
+        return p.noOcclusion().isValidSpawn((s_, l_, p_, e_) -> false).isRedstoneConductor((s, l, at) -> false).isSuffocating((s, l, at) -> false)
                 .isViewBlocking((s, l, at) -> false);
     }
 

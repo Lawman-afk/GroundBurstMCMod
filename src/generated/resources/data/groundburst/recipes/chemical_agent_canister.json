@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:toxin_canister"
+    },
+    {
+      "item": "groundburst:toxin_canister"
+    },
+    {
+      "item": "groundburst:chlorine_canister"
+    },
+    {
+      "item": "groundburst:chlorine_canister"
+    },
+    {
+      "item": "groundburst:pressure_vessel"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    }
+  ],
+  "result": {
+    "item": "groundburst:chemical_agent_canister"
+  }
+}

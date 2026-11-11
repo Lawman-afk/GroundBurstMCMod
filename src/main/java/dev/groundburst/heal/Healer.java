@@ -219,7 +219,7 @@ public final class Healer {
         var blasts = dev.groundburst.blast.BlastManager.of(this.level);
         for (int k = 0; k < n; k++) {
             LevelChunk chunk = chunks[(start + k) % n];
-            ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+            ChunkScars scars = dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
             if (scars == null) {
                 untrack(chunk);
                 continue;
@@ -347,7 +347,7 @@ public final class Healer {
      * no reason to wait (this is asked only of a chunk that is due).
      */
     public boolean fireNear(LevelChunk chunk, boolean putOut) {
-        ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+        ChunkScars scars = dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
         if (scars == null || scars.sections.isEmpty()) {
             return false;
         }
@@ -430,7 +430,7 @@ public final class Healer {
     }
 
     private void drop(LevelChunk chunk) {
-        chunk.removeData(GBHeal.SCARS.get());
+        dev.groundburst.legacy.Attachments.remove(chunk, GBHeal.SCARS.get());
         untrack(chunk);
     }
 
@@ -603,7 +603,7 @@ public final class Healer {
                     now.setChanged();
                 }
             }
-            if (block instanceof Healable healable) {
+            if (((Object) block) instanceof Healable healable) {
                 healable.healed(level, p.immutable(), original);
             }
             if (modded || original.hasBlockEntity()) {
@@ -648,7 +648,7 @@ public final class Healer {
                 } else {
                     continue;
                 }
-                if (there.getBlock() instanceof Healable healable) {
+                if (((Object) there.getBlock()) instanceof Healable healable) {
                     healable.besideHealed(level, n, there);
                 } else if (modded(there.getBlock())) {
                     Snapshots.tellNeighbour(level, there, n, block, at);
@@ -704,7 +704,7 @@ public final class Healer {
     private List<LevelChunk> within(@Nullable Vec3 centre, double radius) {
         List<LevelChunk> out = new ArrayList<>();
         for (LevelChunk chunk : this.tracked.values()) {
-            if (chunk.getExistingDataOrNull(GBHeal.SCARS.get()) == null) {
+            if (dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get()) == null) {
                 continue;
             }
             if (centre != null) {
@@ -722,7 +722,7 @@ public final class Healer {
     public int[] rush(@Nullable Vec3 centre, double radius) {
         int chunks = 0, blocks = 0;
         for (LevelChunk chunk : within(centre, radius)) {
-            ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+            ChunkScars scars = dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
             scars.rushed = true;
             chunk.setUnsaved(true);
             chunks++;
@@ -735,7 +735,7 @@ public final class Healer {
     public int[] forgetDamage(@Nullable Vec3 centre, double radius) {
         int chunks = 0, blocks = 0;
         for (LevelChunk chunk : within(centre, radius)) {
-            ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+            ChunkScars scars = dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
             chunks++;
             blocks += scars.count;
             drop(chunk);
@@ -754,7 +754,7 @@ public final class Healer {
         BlockPos nearest = null;
         double best = Double.MAX_VALUE;
         for (LevelChunk chunk : within(null, 0)) {
-            ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+            ChunkScars scars = dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
             chunks++;
             blocks += scars.count;
             boolean due = due(scars, s, now, today, chunk);
@@ -783,7 +783,7 @@ public final class Healer {
         for (int cx = box.minX() >> 4; cx <= box.maxX() >> 4; cx++) {
             for (int cz = box.minZ() >> 4; cz <= box.maxZ() >> 4; cz++) {
                 LevelChunk chunk = this.level.getChunkSource().getChunkNow(cx, cz);
-                ChunkScars scars = chunk == null ? null : chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+                ChunkScars scars = chunk == null ? null : dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
                 if (scars == null) {
                     continue;
                 }

@@ -5,8 +5,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
 
 /**
  * What radiation has done to a living thing (DESIGN.md §21.2, §21.8), kept on it as a data attachment: the dose it has

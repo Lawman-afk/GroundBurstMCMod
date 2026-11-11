@@ -27,7 +27,7 @@ import net.minecraft.util.FormattedCharSequence;
 import dev.groundburst.port.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import dev.groundburst.legacy.recipe.RecipeHolder;
 import dev.groundburst.port.recipe.FurnaceRecipeDisplay;
 import dev.groundburst.port.recipe.RecipeDisplay;
 import dev.groundburst.port.recipe.ShapedCraftingRecipeDisplay;
@@ -243,7 +243,7 @@ final class ManualPages {
         if (c.over(x + 1, y + 1, 16, 16)) {
             c.g().fill(x + 1, y + 1, x + 17, y + 17, 0x40FFFFFF);
             c.g().setTooltipForNextFrame(c.font(), List.of(fluid.getFluidType().getDescription(),
-                    Component.literal(String.format(java.util.Locale.ROOT, "%,d mB", amount)).withColor(0xFF9AA0A8)), java.util.Optional.empty(),
+                    Component.literal(String.format(java.util.Locale.ROOT, "%,d mB", amount)).withStyle(s_ -> s_.withColor(0xFF9AA0A8))), java.util.Optional.empty(),
                     c.mouseX(), c.mouseY());
         }
     }
@@ -370,7 +370,7 @@ final class ManualPages {
         }
 
         private List<SlotDisplay> grid() {
-            if (this.display instanceof ShapedCraftingRecipeDisplay shaped) {
+            if (((Object) this.display) instanceof ShapedCraftingRecipeDisplay shaped) {
                 List<SlotDisplay> out = new ArrayList<>();
                 for (int i = 0; i < 9; i++) {
                     int col = i % 3, row = i / 3;
@@ -378,7 +378,7 @@ final class ManualPages {
                 }
                 return out;
             }
-            if (this.display instanceof ShapelessCraftingRecipeDisplay shapeless) {
+            if (((Object) this.display) instanceof ShapelessCraftingRecipeDisplay shapeless) {
                 List<SlotDisplay> out = new ArrayList<>(shapeless.ingredients());
                 while (out.size() < 9) {
                     out.add(SlotDisplay.Empty.INSTANCE);
@@ -393,7 +393,7 @@ final class ManualPages {
             drawHeading(c, this.name, x, y);
             ContextMap ctx = context();
             int gy = y + this.headH;
-            if (this.display instanceof FurnaceRecipeDisplay furnace) {
+            if (((Object) this.display) instanceof FurnaceRecipeDisplay furnace) {
                 slot(c, cycle(furnace.ingredient().resolveForStacks(ctx), c.time()), x + 24, gy, true);
                 c.g().blit(RenderPipelines.GUI_TEXTURED, FieldManualScreen.TEXTURE, x + 46, gy + 2, 178, 208, 22, 15, FieldManualScreen.TEX_W, FieldManualScreen.TEX_H);
                 result(c, furnace.result().resolveForFirstStack(ctx), x + 74, gy - 4);
@@ -418,7 +418,7 @@ final class ManualPages {
         boolean clickGraphic(Ctx c, int x, int y, double mx, double my) {
             ContextMap ctx = context();
             int gy = y + this.headH;
-            if (this.display instanceof FurnaceRecipeDisplay furnace) {
+            if (((Object) this.display) instanceof FurnaceRecipeDisplay furnace) {
                 return slotClick(c, cycle(furnace.ingredient().resolveForStacks(ctx), c.time()), x + 24, gy, mx, my);
             }
             List<SlotDisplay> grid = grid();
@@ -747,7 +747,7 @@ final class ManualPages {
 
         void release() {
             for (Part p : this.parts) {
-                if (p.graphic() instanceof StructurePage sp) {
+                if (((Object) p.graphic()) instanceof StructurePage sp) {
                     sp.release();
                 }
             }
@@ -981,7 +981,7 @@ final class ManualPages {
                 put(pages, graphics.get(g), g == graphics.size() - 1 ? firstParagraph(text) : 0);
             }
             flow(pages, text);
-            if (spec instanceof Manual.StructureSpec s) {
+            if (((Object) spec) instanceof Manual.StructureSpec s) {
                 MultiblockDefinition def = GBMultiblocks.byId(s.structure());
                 if (def != null) {
                     for (GraphicPage m : materials(def)) {
@@ -1075,12 +1075,12 @@ final class ManualPages {
     private static List<Manual.PageSpec> mergeMachines(List<Manual.PageSpec> specs) {
         List<Manual.PageSpec> out = new ArrayList<>();
         for (Manual.PageSpec spec : specs) {
-            if (spec instanceof Manual.MachineSpec m && !out.isEmpty() && out.get(out.size() - 1) instanceof MachineGroup g
+            if (((Object) spec) instanceof Manual.MachineSpec m && !out.isEmpty() && ((Object) out.get(out.size() - 1)) instanceof MachineGroup g
                     && g.kind().equals(m.kind()) && g.text().isBlank()) {
                 List<Manual.MachineSpec> filters = new ArrayList<>(g.filters());
                 filters.add(m);
                 out.set(out.size() - 1, new MachineGroup(m.kind(), filters, m.text()));
-            } else if (spec instanceof Manual.MachineSpec m) {
+            } else if (((Object) spec) instanceof Manual.MachineSpec m) {
                 out.add(new MachineGroup(m.kind(), List.of(m), m.text()));
             } else {
                 out.add(spec);
@@ -1091,11 +1091,11 @@ final class ManualPages {
 
     /** The picture or recipe pages a spec draws (several when there are many recipes). */
     private static List<GraphicPage> graphics(Font font, Manual.PageSpec spec, @Nullable String openingTitle) {
-        if (spec instanceof Manual.SpotlightSpec s) {
+        if (((Object) spec) instanceof Manual.SpotlightSpec s) {
             String name = s.title() != null ? s.title() : new ItemStack(s.item()).getHoverName().getString();
             return List.of(new SpotlightPage(font, s.item(), s.title(), name.equals(openingTitle)));
         }
-        if (spec instanceof Manual.CraftingSpec s) {
+        if (((Object) spec) instanceof Manual.CraftingSpec s) {
             List<GraphicPage> out = new ArrayList<>();
             for (RecipeDisplay d : ClientRecipes.crafting(s.item(), s.smelting())) {
                 out.add(new CraftingPage(font, d, new ItemStack(s.item()).getHoverName()));
@@ -1105,7 +1105,7 @@ final class ManualPages {
             }
             return out;
         }
-        if (spec instanceof MachineGroup group) {
+        if (((Object) spec) instanceof MachineGroup group) {
             ProcessingKind kind = kind(group.kind());
             List<MachineRow> rows = new ArrayList<>();
             if (kind != null) {
@@ -1140,17 +1140,17 @@ final class ManualPages {
             }
             return out;
         }
-        if (spec instanceof Manual.StructureSpec s) {
+        if (((Object) spec) instanceof Manual.StructureSpec s) {
             MultiblockDefinition def = GBMultiblocks.byId(s.structure());
             return def == null ? List.of() : List.of(new StructurePage(def));
         }
-        if (spec instanceof Manual.ImageSpec s) {
+        if (((Object) spec) instanceof Manual.ImageSpec s) {
             return List.of(new ImagePage(s.image(), s.width(), s.height()));
         }
-        if (spec instanceof Manual.TableSpec s) {
+        if (((Object) spec) instanceof Manual.TableSpec s) {
             return List.of(new TablePage(s.title(), s.rows()));
         }
-        if (spec instanceof Manual.LinksSpec s) {
+        if (((Object) spec) instanceof Manual.LinksSpec s) {
             List<Manual.Entry> links = s.entries().stream().map(Manual::entry).filter(java.util.Objects::nonNull).toList();
             return List.of(new LinksPage(s.title(), links));
         }

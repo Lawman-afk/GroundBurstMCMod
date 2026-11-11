@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import dev.groundburst.network.GBNetwork;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
 
 /** What clients are told of the gas grid and of EMP fields, to draw them. */
@@ -24,7 +24,7 @@ public final class GasPayloads {
     /** The gas near a player (all of it they should draw; empty once it has gone). */
     public record Cells(List<Cell> cells) implements CustomPacketPayload {
         public static final Type<Cells> TYPE = GBNetwork.type("gas_cells");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Cells> CODEC = StreamCodec.of((buf, c) -> {
+        public static final StreamCodec<FriendlyByteBuf, Cells> CODEC = StreamCodec.of((buf, c) -> {
             buf.writeVarInt(c.cells().size());
             for (Cell cell : c.cells()) {
                 buf.writeLong(cell.pos());
@@ -52,7 +52,7 @@ public final class GasPayloads {
      */
     public record Emp(Vec3 centre, float radius, int ticks, boolean pulse) implements CustomPacketPayload {
         public static final Type<Emp> TYPE = GBNetwork.type("emp_field");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Emp> CODEC = StreamCodec.of((buf, e) -> {
+        public static final StreamCodec<FriendlyByteBuf, Emp> CODEC = StreamCodec.of((buf, e) -> {
             buf.writeDouble(e.centre().x);
             buf.writeDouble(e.centre().y);
             buf.writeDouble(e.centre().z);

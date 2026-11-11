@@ -49,7 +49,7 @@ public class Shrapnel extends Projectile {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {}
+    protected void defineSynchedData() {}
 
     @Override
     public void tick() {
@@ -66,12 +66,12 @@ public class Shrapnel extends Projectile {
             return;
         }
         setPos(hit.getLocation());
-        if (level() instanceof ServerLevel server) {
-            if (hit instanceof EntityHitResult e) {
-                if (this.everyHitCounts && e.getEntity() instanceof net.minecraft.world.entity.LivingEntity living) {
+        if (((Object) level()) instanceof ServerLevel server) {
+            if (((Object) hit) instanceof EntityHitResult e) {
+                if (this.everyHitCounts && ((Object) e.getEntity()) instanceof net.minecraft.world.entity.LivingEntity living) {
                     living.invulnerableTime = 0;
                 }
-                e.getEntity().hurt(damageSources().source(GBOrdnance.SHRAPNEL_DAMAGE, this, getOwner()), this.damage);
+                e.getEntity().hurt(dev.groundburst.legacy.Game.source(this, GBOrdnance.SHRAPNEL_DAMAGE, this, getOwner()), this.damage);
             } else {
                 server.sendParticles(ParticleTypes.CRIT, hit.getLocation().x, hit.getLocation().y, hit.getLocation().z, 3, 0.05, 0.05, 0.05, 0.1);
             }
@@ -92,13 +92,13 @@ public class Shrapnel extends Projectile {
     }
 
     @Override
-    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, this.registryAccess());}
+    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, dev.groundburst.legacy.Regs.access());}
 
     @Override
-    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, this.registryAccess());}
+    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, dev.groundburst.legacy.Regs.access());}
 
     @Override
-    public boolean hurt(DamageSource source, float damage) { if (!(this.level() instanceof ServerLevel level)) return false;
+    public boolean hurt(DamageSource source, float damage) { if (!(((Object) this.level()) instanceof ServerLevel level)) return false;
         return false;
     }
 }

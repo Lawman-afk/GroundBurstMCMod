@@ -260,7 +260,7 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
         this.doorFrom = this.doorPos;
         this.doorsWanted = open;
         this.doorSince = this.level == null ? 0 : this.level.getGameTime();
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             setHatch(server, open);
         }
         sync();
@@ -275,7 +275,7 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
     public void revalidate() {
         boolean was = isFormed();
         super.revalidate();
-        if (was && !isFormed() && this.level instanceof ServerLevel server) {
+        if (was && !isFormed() && ((Object) this.level) instanceof ServerLevel server) {
             this.manualOpen = false;                           // broken up: the doors (as drawn) are gone with it
             this.doorPos = 0;
             this.doorFrom = 0;
@@ -327,8 +327,8 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
 
     // --- saving -------------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("door_pos", this.doorPos);
         output.putBoolean("doors_wanted", this.doorsWanted);
         output.putLong("door_since", this.doorSince);
@@ -339,8 +339,8 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.doorPos = input.getIntOr("door_pos", 0);
         this.doorsWanted = input.getBooleanOr("doors_wanted", false);
         this.doorSince = input.getLongOr("door_since", 0L);

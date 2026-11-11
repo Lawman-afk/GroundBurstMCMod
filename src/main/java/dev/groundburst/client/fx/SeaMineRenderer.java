@@ -19,12 +19,12 @@ import net.minecraft.client.renderer.RenderType;
 import dev.groundburst.port.render.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
+import dev.groundburst.legacy.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomModelData;
+import dev.groundburst.legacy.component.CustomModelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -60,7 +60,7 @@ public class SeaMineRenderer extends dev.groundburst.port.render.StateEntityRend
 
     private static ItemStack part(String look) {
         ItemStack s = new ItemStack(GBNaval.MOORED_MINE.get());
-        s.set(DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(dev.groundburst.port.Looks.id(look)));
+        dev.groundburst.legacy.component.Comps.set(s, DataComponents.CUSTOM_MODEL_DATA, new dev.groundburst.legacy.component.CustomModelData(dev.groundburst.port.Looks.id(look)));
         return s;
     }
 
@@ -164,8 +164,8 @@ public class SeaMineRenderer extends dev.groundburst.port.render.StateEntityRend
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, Vec3 p, float u, float v, int light, Vec3 n) {
-        b.addVertex(pose, (float) p.x, (float) p.y, (float) p.z).setColor(-1).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light)
-                .setNormal(pose, (float) n.x, (float) n.y, (float) n.z);
+        b.vertex(dev.groundburst.legacy.Verts.matrix(pose), (float) p.x, (float) p.y, (float) p.z).color(-1).uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light)
+                .normal(dev.groundburst.legacy.Verts.normal(pose), (float) n.x, (float) n.y, (float) n.z).endVertex();
     }
 
     /** Drawn wherever it is in sight or not: its chain and sinker reach far below its own box. */

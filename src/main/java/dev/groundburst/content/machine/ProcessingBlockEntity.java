@@ -13,8 +13,8 @@ import dev.groundburst.content.recipe.ProcessingRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraftforge.fluids.FluidStack;
+import dev.groundburst.legacy.recipe.RecipeHolder;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
@@ -94,7 +94,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
             return false;                // outputs are filled by the machine only
         }
         // Recipes live on the server; the client side of a menu stays permissive and the server corrects it.
-        return !(this.level instanceof ServerLevel server) || usedByRecipe(server, stack, slot == this.catalystSlot);
+        return !(((Object) this.level) instanceof ServerLevel server) || usedByRecipe(server, stack, slot == this.catalystSlot);
     }
 
     /**
@@ -120,11 +120,11 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
     /** Input tanks only take fluids some recipe of this machine uses (checked on the server, where recipes live). */
     @Override
     protected boolean acceptsFluid(int tank, dev.groundburst.port.transfer.fluid.FluidResource resource) {
-        if (!(this.level instanceof ServerLevel server)) {
+        if (!(((Object) this.level) instanceof ServerLevel server)) {
             return true;
         }
         FluidStack probe = resource.toStack(1000);
-        for (RecipeHolder<ProcessingRecipe> holder : server.getRecipeManager().getAllRecipesFor(GBRecipes.type(this.kind))) {
+        for (RecipeHolder<ProcessingRecipe> holder : dev.groundburst.legacy.recipe.Recipes.all(server.getRecipeManager(), GBRecipes.type(this.kind))) {
             for (var fluid : holder.value().fluids()) {
                 if (fluid.ingredient().test(probe)) {
                     return true;
@@ -136,7 +136,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
 
     /** True if some recipe of this machine's kind uses the item as an ingredient (or as its catalyst). */
     private boolean usedByRecipe(ServerLevel level, ItemStack stack, boolean asCatalyst) {
-        for (RecipeHolder<ProcessingRecipe> holder : level.getRecipeManager().getAllRecipesFor(GBRecipes.type(this.kind))) {
+        for (RecipeHolder<ProcessingRecipe> holder : dev.groundburst.legacy.recipe.Recipes.all(level.getRecipeManager(), GBRecipes.type(this.kind))) {
             ProcessingRecipe recipe = holder.value();
             if (asCatalyst) {
                 if (recipe.catalyst().isPresent() && recipe.catalyst().get().test(stack)) {
@@ -252,7 +252,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
      * counts once one of its fluids is in a tank (a separator with a single bucket of water).
      */
     private boolean shortOfFluid(ServerLevel level, MachineRecipeInput input) {
-        for (RecipeHolder<ProcessingRecipe> holder : level.getRecipeManager().getAllRecipesFor(GBRecipes.type(this.kind))) {
+        for (RecipeHolder<ProcessingRecipe> holder : dev.groundburst.legacy.recipe.Recipes.all(level.getRecipeManager(), GBRecipes.type(this.kind))) {
             ProcessingRecipe recipe = holder.value();
             if (recipe.fluids().isEmpty() || recipe.assignSlots(input) == null || !recipe.catalystFits(input.catalyst())) {
                 continue;
@@ -295,7 +295,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
                 if (slot.isEmpty()) {
                     simulated.set(i, remaining);
                     remaining = ItemStack.EMPTY;
-                } else if (ItemStack.isSameItemSameComponents(slot, remaining)) {
+                } else if (ItemStack.isSameItemSameTags(slot, remaining)) {
                     int moved = Math.min(slot.getMaxStackSize() - slot.getCount(), remaining.getCount());
                     slot.grow(moved);
                     remaining.shrink(moved);
@@ -346,15 +346,15 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("progress", this.progress);
         output.putInt("max_progress", this.maxProgress);
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.progress = input.getIntOr("progress", 0);
         this.maxProgress = input.getIntOr("max_progress", 0);
     }

@@ -9,9 +9,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * Frozen solid (DESIGN.md §16.4): a block of ice drawn round every living thing the Frozen effect holds, a little bigger
@@ -26,7 +26,7 @@ public final class IceShellRenderer {
     private IceShellRenderer() {}
 
     public static void register(IEventBus modBus) {
-        NeoForge.EVENT_BUS.addListener((RenderLivingEvent.Post<?, ?> event) -> {
+        MinecraftForge.EVENT_BUS.addListener((RenderLivingEvent.Post<?, ?> event) -> {
             LivingEntity entity = event.getEntity();
             if (!FrozenEffect.iceBound(entity)) {
                 return;
@@ -49,8 +49,8 @@ public final class IceShellRenderer {
     private static void quad(PoseStack.Pose pose, VertexConsumer b, int light, float nx, float ny, float nz, float... v) {
         float[][] uv = {{0, 0}, {0, 1}, {1, 1}, {1, 0}};
         for (int i = 0; i < 4; i++) {
-            b.addVertex(pose, v[i * 3], v[i * 3 + 1], v[i * 3 + 2]).setColor(255, 255, 255, 255).setUv(uv[i][0], uv[i][1])
-                    .setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
+            b.vertex(dev.groundburst.legacy.Verts.matrix(pose), v[i * 3], v[i * 3 + 1], v[i * 3 + 2]).color(255, 255, 255, 255).uv(uv[i][0], uv[i][1])
+                    .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
         }
     }
 }

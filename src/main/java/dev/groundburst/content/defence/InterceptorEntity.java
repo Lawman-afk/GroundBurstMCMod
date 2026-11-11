@@ -26,7 +26,7 @@ public class InterceptorEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {}
+    protected void defineSynchedData() {}
 
     /** Moved along its flight from {@code was} to {@code now}, pointed the way it is going. */
     void follow(Vec3 was, Vec3 now) {
@@ -54,7 +54,7 @@ public class InterceptorEntity extends Entity {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float damage) { if (!(this.level() instanceof ServerLevel level)) return false;
+    public boolean hurt(DamageSource source, float damage) { if (!(((Object) this.level()) instanceof ServerLevel level)) return false;
         return false;
     }
 
@@ -70,8 +70,8 @@ public class InterceptorEntity extends Entity {
     }
 
     @Override
-    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, this.registryAccess());}
+    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, dev.groundburst.legacy.Regs.access());}
 
     @Override
-    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, this.registryAccess());}
+    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, dev.groundburst.legacy.Regs.access());}
 }

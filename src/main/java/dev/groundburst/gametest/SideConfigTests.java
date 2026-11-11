@@ -48,8 +48,8 @@ final class SideConfigTests {
                 c.cycleItems(Face.TOP, true);
             }
         });
-        var bottom = level.getCapability(Capabilities.Item.BLOCK, abs, Direction.DOWN);
-        var top = level.getCapability(Capabilities.Item.BLOCK, abs, Direction.UP);
+        var bottom = dev.groundburst.legacy.Caps.get(level, Capabilities.Item.BLOCK, abs, Direction.DOWN);
+        var top = dev.groundburst.legacy.Caps.get(level, Capabilities.Item.BLOCK, abs, Direction.UP);
         helper.assertTrue(bottom != null, "an INPUT face still exposes items");
         crusher.inventory().setItem(1, new ItemStack(GBResources.IRON_DUST.get(), 4));
         try (var tx = dev.groundburst.port.transfer.transaction.Transaction.openRoot()) {
@@ -80,9 +80,9 @@ final class SideConfigTests {
         BlockState state = helper.getBlockState(pos);
         Direction back = Face.BACK.toDirection(state.getValue(dev.groundburst.content.machine.MachineBlock.FACING));
         var level = helper.getLevel();
-        helper.assertTrue(level.getCapability(Capabilities.Energy.BLOCK, helper.absolutePos(pos), back) != null, "energy on by default");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, Capabilities.Energy.BLOCK, helper.absolutePos(pos), back) != null, "energy on by default");
         crusher.changeSides(c -> c.toggleEnergy(Face.BACK));
-        helper.assertTrue(level.getCapability(Capabilities.Energy.BLOCK, helper.absolutePos(pos), back) == null, "energy switched off on the back");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, Capabilities.Energy.BLOCK, helper.absolutePos(pos), back) == null, "energy switched off on the back");
         helper.succeed();
     }
 
@@ -123,7 +123,7 @@ final class SideConfigTests {
         helper.assertTrue(press.hiddenBones().size() == 5, "no die loaded: all five dies hidden");
         press.inventory().setItem(press.catalystSlot(), new ItemStack(GBParts.WIRE_DIE.get()));
         helper.assertTrue(!press.hiddenBones().contains("die_wire") && press.hiddenBones().size() == 4, "wire die should show");
-        helper.assertTrue(press.getUpdateTag(helper.getLevel().registryAccess()).contains("items"), "the update tag must carry the die");
+        helper.assertTrue(press.getUpdateTag().contains("items"), "the update tag must carry the die");
         helper.succeed();
     }
 

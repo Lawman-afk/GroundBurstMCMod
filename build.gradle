@@ -1,6 +1,8 @@
 plugins {
     id 'java-library'
-    id 'net.neoforged.moddev' version '2.0.148'
+    // Forge for 1.20.1 through ModDevGradle's plugin for the older Forge versions (official names in the sources,
+    // the jar turned back to Forge's SRG names for players: reobfJar).
+    id 'net.neoforged.moddev.legacyforge' version '2.0.148'
     id 'idea'
 }
 
@@ -12,11 +14,10 @@ version = mod_version
 group = mod_group_id
 
 sourceSets.main.resources {
-    // Resources produced by the data generators (models, blockstates, recipes, loot, tags, lang).
+    // The data, ported with the rest from the 1.21.1 build (models, blockstates, recipes, loot, tags, lang).
     srcDir('src/generated/resources')
 
     exclude("**/*.bbmodel")
-    // The data generators' cache (patterns are relative to each resource folder).
     exclude("**/.cache", "**/.cache/**")
 }
 
@@ -29,7 +30,6 @@ repositories {
             }
         }
         filter {
-            includeGroup 'com.geckolib'
             includeGroup 'software.bernie.geckolib'
         }
     }
@@ -42,37 +42,12 @@ repositories {
         }
         filter {
             includeGroup 'mezz.jei'
-            includeGroup 'net.mezzdev.config'
-        }
-    }
-    // Create, Sable and Create Aeronautics, as released (compile against Create; run all three with -PwithCreate).
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = 'Modrinth'
-                url = 'https://api.modrinth.com/maven'
-            }
-        }
-        filter {
-            includeGroup 'maven.modrinth'
-        }
-    }
-    // Sable Companion: Sable's small API for where a block on a sub-level really is (Sable carries it).
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = 'RyanHCode'
-                url = 'https://maven.ryanhcode.dev/releases'
-            }
-        }
-        filter {
-            includeGroup 'dev.ryanhcode.sable-companion'
         }
     }
 }
 
 base {
-    // The Minecraft version in the name, so the backport's jar is never taken for main's.
+    // The Minecraft version in the name, so this jar is never taken for another version's.
     archivesName = "${mod_id}-mc${minecraft_version}"
 }
 
@@ -82,90 +57,50 @@ tasks.named('jar', Jar) {
     from('LICENSE') {
         rename { licenceName }
     }
-    // The test world's builder (gradlew runTestRange) is for the dev runs only: players never get it.
-    exclude 'dev/groundburst/compat/range/**'
+    // Forge 1.20.1 finds a mod's mixins through the jar's manifest.
+    manifest.attributes([
+            'MixinConfigs': "${mod_id}.legacy.mixins.json,${mod_id}.mixins.json,${mod_id}.port.mixins.json"
+    ])
 }
 
-// Minecraft 1.21.1 runs on Java 21, so the backport targets Java 21.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+// Minecraft 1.20.1 runs on Java 17, so this branch targets Java 17.
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-neoForge {
-    version = project.neo_version
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
 
     runs {
         client {
             client()
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
         }
 
-        // This branch's check that the mod draws on 1.21.1: makes a flat creative world, sets the mod's blocks out,
-        // opens the Field Manual and sets a blast off, screenshotting each into run/screenshots/port_*.png, then quits
-        // (see dev.groundburst.port.PortCheck). Main's photographers and benches are not ported.
+        // This branch's check that the mod draws on 1.20.1 (as the 1.21.1 build's): makes a flat creative world, sets
+        // the mod's blocks out, opens the Field Manual and sets a blast off, screenshotting each into
+        // run/screenshots/port_*.png, then quits (dev.groundburst.port.PortCheck).
         portCheck {
             client()
             programArguments.addAll '--width', '1280', '--height', '720'
             systemProperty 'groundburst.portCheck', 'true'
         }
 
-        // Launchers on moving structures (with -PwithCreate: Create, Sable and Create Aeronautics loaded): a Cruise Missile
-        // Launcher on a Create bearing and one made into a Sable ship fire, the log saying whether each missile lit where
-        // its launcher is and headed the way it points; pictures in run/screenshots/create_*.png
-        // (dev.groundburst.compat.CreateCheck).
-        createCheck {
-            client()
-            programArguments.addAll '--width', '1280', '--height', '720'
-            systemProperty 'groundburst.createCheck', 'true'
-        }
-
-        // A test world for 1.21.1 with Create and Create Aeronautics (with -PwithCreate): a command post, a row of loaded
-        // launchers on its network, artillery, launchers on Create contraptions and Create Aeronautics ships, targets;
-        // built, photographed (run/screenshots/range_*.png) and saved as run/saves/"Ground Burst Test Range"
-        // (dev.groundburst.compat.range.TestRange, left out of the jar). -PrangeBlast=<profile>@<place> instead sets a
-        // blast off there once the ships are made (airship, target_airship, boat, town) and logs the server's slow ticks.
-        testRange {
-            client()
-            programArguments.addAll '--width', '1280', '--height', '720'
-            systemProperty 'groundburst.testRange', 'true'
-            systemProperty 'groundburst.testRange.blast', (project.findProperty('rangeBlast') ?: '').toString()
-        }
-
-        // Main's play bench (dev.groundburst.blast.PlayBench, this branch's own client half): a normal world seen far
-        // (-PplayView=32, -PplaySim=12), a forest, molotovs and a thermobaric warhead among the trees, the fires, the
-        // healing (-PplayHeal=false: none); every server tick and frame timed by phase into run/bench/play_*.txt, then it
-        // quits. With -Pjfr=<name> (any run) the JVM records a flight recording into run/jfr/<name>.jfr.
-        playBench {
-            client()
-            programArguments.addAll '--width', '1280', '--height', '720'
-            systemProperty 'groundburst.playBench', 'true'
-            systemProperty 'groundburst.playBench.heal', (project.findProperty('playHeal') ?: 'true').toString()
-            systemProperty 'groundburst.playBench.view', (project.findProperty('playView') ?: '32').toString()
-            systemProperty 'groundburst.playBench.sim', (project.findProperty('playSim') ?: '12').toString()
-        }
-
         server {
             server()
             programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
         }
 
         // Launches a GameTestServer, runs every registered gametest for this mod, then exits.
         gameTestServer {
             type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        data {
-            clientData()
-            programArguments.addAll '--mod', project.mod_id, '--all',
-                    '--output', file('src/generated/resources/').getAbsolutePath(),
-                    '--existing', file('src/main/resources/').getAbsolutePath()
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+            // -PonlyTests=<name>,<name>: only those of main's tests (GameTestRegistration).
+            systemProperty 'groundburst.onlyTests', (project.findProperty('onlyTests') ?: '').toString()
         }
 
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
-            if (project.findProperty('packFx') != null) {   // -PpackFx=over|in: drawn after the level, or by the pack's programs
-                systemProperty 'groundburst.packFx', project.findProperty('packFx').toString()
-            }
+            systemProperty 'mixin.env.remapRefMap', 'true'
             if (project.findProperty('jfr') != null) {
                 def jfrDir = file('run/jfr')
                 jfrDir.mkdirs()
@@ -182,147 +117,57 @@ neoForge {
     }
 }
 
+// Forge 1.20.1's test server makes its world as a dedicated server does, from run/server.properties (a normal world
+// unless told otherwise, each test then dug into its stone), and keeps it from run to run: so each run starts on a new
+// flat world, as the test servers of 1.21 and 26.x do.
+def gameTestWorld = file('run/world')
+def gameTestProperties = file('run/server.properties')
+tasks.matching { it.name == 'runGameTestServer' }.configureEach {
+    doFirst {
+        gameTestWorld.deleteDir()
+        gameTestProperties.text = 'level-type=minecraft\\:flat\n'
+    }
+}
+
+// The mixins name the game's methods by their official names; a refmap, made as the code compiles, gives the jar
+// their SRG names for players' games.
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+    config "${mod_id}.legacy.mixins.json"
+    config "${mod_id}.mixins.json"
+    config "${mod_id}.port.mixins.json"
+}
+
 // Runtime-only dependencies for dev testing that must not leak into the published metadata.
 configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 
 dependencies {
-    // Main's nullness annotations (Minecraft 26.x carries JSpecify; 1.21.1 does not): compile only, as at run time the
-    // missing annotation classes are simply ignored.
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    // MixinExtras (the mod's mixins wrap methods and calls with it): NeoForge carries it, Forge 1.20.1 does not, so this
+    // jar does (started by dev.groundburst.legacy.mixin.MixinPlugin).
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixinextras_version}"))
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:${mixinextras_version}"))
+
+    // Main's nullness annotations: compile only, as at run time the missing annotation classes are simply ignored.
     compileOnly "org.jspecify:jspecify:1.0.0"
 
     // Animated models (missiles, launchers, silo doors, radar dishes, guns, machines). The one hard dependency.
-    implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    modImplementation "software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}"
 
     // JEI integration (optional at runtime): compile against the API, run the full mod in the dev client.
-    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
-    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
-    runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
-
-    // Create and Sable (both optional, docs/BACKPORT.md): launchers ride Create's contraptions and Sable's sub-levels
-    // (Create Aeronautics' ships). Compiled against, never shipped: the code that touches them runs only when they are
-    // installed (dev.groundburst.compat).
-    compileOnly "maven.modrinth:create:${create_version}"
-    compileOnly "dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}"
-    // Sable itself, for its physics: a blast shoves a ship as Sable shoves one for vanilla's explosions (compat/sable/SableHulls).
-    compileOnly "maven.modrinth:sable:${sable_version}"
-    // -PwithCreate: the dev runs load Create, Sable and Create Aeronautics too (the createCheck run needs them).
-    if (providers.gradleProperty('withCreate').isPresent()) {
-        localRuntime "maven.modrinth:create:${create_version}"
-        localRuntime "maven.modrinth:sable:${sable_version}"
-        localRuntime "maven.modrinth:create-aeronautics:${aeronautics_version}"
-    }
-    // Iris (optional): compiled against its API for shader packs; -PwithIris loads Iris and Sodium into the dev runs
-    // (Sodium from run/mods, sodiumToMods below).
-    compileOnly "maven.modrinth:iris:${iris_version}"
-    if (providers.gradleProperty('withIris').isPresent()) {
-        localRuntime "maven.modrinth:iris:${iris_version}"
-    }
-    // Distant Horizons (optional at runtime): -PwithDH runs it in the dev client, its far terrain drawn round the effects.
-    if (providers.gradleProperty('withDH').isPresent()) {
-        localRuntime "maven.modrinth:distanthorizons:${dh_version}"
-    }
-}
-
-// Sodium for 1.21.1 comes as a wrapper: a library of its early start-up classes with the mod itself and its Fabric API
-// parts packed inside. On the dev runs' classpath the launcher took the wrapper for the mod and loaded none of Sodium,
-// and the packed mod alone lacks the wrapper's classes; from a mods folder it loads as it does for players. So the dev
-// runs with Iris put it in run/mods, and the others take it out again.
-configurations {
-    sodiumWrapper {
-        canBeConsumed = false
-        transitive = false
-    }
-}
-dependencies {
-    sodiumWrapper "maven.modrinth:sodium:${sodium_version}"
-}
-var sodiumToMods = tasks.register('sodiumToMods', Sync) {
-    from(configurations.sodiumWrapper)
-    into file('run/mods')
-    preserve { include '**/*' }
-    rename { 'sodium-dev-iris.jar' }
-}
-var sodiumFromMods = tasks.register('sodiumFromMods', Delete) {
-    delete file('run/mods/sodium-dev-iris.jar')
-}
-
-// The shader packs the dev runs test with (-PwithIris; -PirisPack=complementary|unbound|bsl|bliss|photon|solas|makeup|off
-// picks one, Complementary by default): put in run/shaderpacks, and Iris's config pointed at the one picked.
-configurations {
-    shaderPacks {
-        canBeConsumed = false
-        transitive = false
-    }
-}
-dependencies {
-    shaderPacks "maven.modrinth:complementary-reimagined:${complementary_version}@zip"
-    shaderPacks "maven.modrinth:bsl-shaders:${bsl_version}@zip"
-    shaderPacks "maven.modrinth:bliss-shader:${bliss_version}@zip"
-    shaderPacks "maven.modrinth:photon-shader:${photon_version}@zip"
-    shaderPacks "maven.modrinth:solas-shader:${solas_version}@zip"
-    shaderPacks "maven.modrinth:makeup-ultra-fast-shaders:${makeup_version}@zip"
-    shaderPacks "maven.modrinth:complementary-unbound:${unbound_version}@zip"
-}
-var installShaderPacks = tasks.register('installShaderPacks') {
-    group = 'development'
-    description = 'Puts the test shader packs in run/shaderpacks and sets Iris to the one -PirisPack names.'
-    var packs = configurations.shaderPacks
-    var pick = (project.findProperty('irisPack') ?: 'complementary').toString()
-    var runDir = file('run')
-    inputs.files(packs)
-    outputs.upToDateWhen { false }
-    doLast {
-        var dir = new File(runDir, 'shaderpacks')
-        dir.mkdirs()
-        // Each pack's file by the name -PirisPack picks it by.
-        var names = ['complementary-reimagined': 'complementary', 'complementary-unbound': 'unbound', 'bsl-shaders': 'bsl',
-                     'bliss-shader': 'bliss', 'photon-shader': 'photon', 'solas-shader': 'solas', 'makeup-ultra-fast-shaders': 'makeup']
-        String chosen = null
-        var wanted = packs.files.collect { f -> var key = names.keySet().find { f.name.startsWith(it) }; key != null ? names[key] + '.zip' : f.name }
-        dir.listFiles().findAll { it.name.endsWith('.zip') && !wanted.contains(it.name) }.each { it.delete() }   // packs named otherwise before
-        packs.files.each { f ->
-            var key = names.keySet().find { f.name.startsWith(it) }
-            var name = key != null ? names[key] + '.zip' : f.name
-            java.nio.file.Files.copy(f.toPath(), new File(dir, name).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
-            if (key != null && names[key] == pick.toLowerCase()) {
-                chosen = name
-            }
-        }
-        var config = new File(runDir, 'config/iris.properties')
-        config.parentFile.mkdirs()
-        var props = new Properties()
-        if (config.exists()) {
-            config.withInputStream { props.load(it) }
-        }
-        props.setProperty('enableShaders', (pick != 'off' && chosen != null).toString())
-        if (chosen != null) {
-            props.setProperty('shaderPack', chosen)
-        }
-        config.withOutputStream { props.store(it, 'Set by gradle installShaderPacks') }
-        // Iris's own metadata may warn as it loads, and NeoForge's warning screen would hold the photographers before
-        // the title screen: the dev runs with Iris skip it.
-        var neo = new File(runDir, 'config/neoforge-client.toml')
-        if (neo.exists()) {
-            neo.text = neo.text.replaceAll(/(?m)^showLoadWarnings\s*=\s*true/, 'showLoadWarnings = false')
-        } else {
-            neo.text = 'showLoadWarnings = false\n'
-        }
-        logger.lifecycle("Shader packs in ${dir}; Iris set to ${pick == 'off' ? 'no pack' : chosen}")
-    }
-}
-if (providers.gradleProperty('withIris').isPresent()) {
-    tasks.matching { it.name.startsWith('run') && it.name != 'runData' }.configureEach { it.dependsOn installShaderPacks, sodiumToMods }
-} else {
-    tasks.matching { it.name.startsWith('run') }.configureEach { it.dependsOn sodiumFromMods }
+    modCompileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+    modCompileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
+    modRuntimeOnly "mezz.jei:jei-${minecraft_version}-forge:${jei_version}"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
     var replaceProperties = [
             minecraft_version      : minecraft_version,
             minecraft_version_range: minecraft_version_range,
-            neo_version            : neo_version,
+            forge_version          : forge_version,
+            forge_version_range    : forge_version_range,
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
@@ -337,12 +182,12 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
     into "build/generated/sources/modMetadata"
 }
 sourceSets.main.resources.srcDir generateModMetadata
-neoForge.ideSyncTask generateModMetadata
+legacyForge.ideSyncTask generateModMetadata
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     // Every error at once while porting (javac stops at 100).
-    options.compilerArgs += ['-Xmaxerrs', '5000']
+    options.compilerArgs += ['-Xmaxerrs', '10000']
 }
 
 idea {
@@ -353,9 +198,9 @@ idea {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Deployment: every `build` ends with the fresh jar in a CurseForge test instance, the folder
-// `deploy_instance_dir_1_21_1` names (set in your own ~/.gradle/gradle.properties; a 1.21.1 instance, not main's
-// `deploy_instance_dir`); without one the jar just stays in build/libs.
+// Deployment: every `build` ends with the fresh jar (the one for players, with Forge's names) in a CurseForge test
+// instance, the folder `deploy_instance_dir_1_20_1` names (set in your own ~/.gradle/gradle.properties; a Forge 1.20.1
+// instance); without one the jar just stays in build/libs.
 // ---------------------------------------------------------------------------------------------
 
 abstract class DeployToInstance extends DefaultTask {
@@ -368,7 +213,7 @@ abstract class DeployToInstance extends DefaultTask {
     @Input
     abstract Property<String> getModId()
 
-    /** Whether an instance folder was named outright (deploy_instance_dir): then a missing one is an error. */
+    /** Whether an instance folder was named outright: then a missing one is an error. */
     @Input
     abstract Property<Boolean> getRequired()
 
@@ -386,10 +231,9 @@ abstract class DeployToInstance extends DefaultTask {
             String where = dir == null ? "(no default folder on this system)" : "${dir.parentFile}"
             if (required.get()) {
                 throw new GradleException("CurseForge instance not found at ${where}. " +
-                        "Set deploy_instance_dir_1_21_1 in gradle.properties or pass -Pdeploy_instance_dir_1_21_1=<path>.")
+                        "Set deploy_instance_dir_1_20_1 in gradle.properties or pass -Pdeploy_instance_dir_1_20_1=<path>.")
             }
-            // Anyone else building the mod has no test instance: the jar stays in build/libs.
-            logger.lifecycle("No CurseForge instance at ${where}: the jar was not deployed (set deploy_instance_dir_1_21_1 to deploy it).")
+            logger.lifecycle("No CurseForge instance at ${where}: the jar was not deployed (set deploy_instance_dir_1_20_1 to deploy it).")
             return
         }
         dir.mkdirs()
@@ -438,19 +282,21 @@ configurations {
 }
 
 dependencies {
-    deployDependencies "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    // GeckoLib as released (Forge's names), for the instance.
+    deployDependencies "software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}"
 }
 
-var instanceDir = providers.gradleProperty('deploy_instance_dir_1_21_1')
+var instanceDir = providers.gradleProperty('deploy_instance_dir_1_20_1')
         .filter { !it.isBlank() }
 
 var deployToInstance = tasks.register('deployToInstance', DeployToInstance) {
     group = 'deployment'
-    description = 'Copies the built mod jar into the 1.21.1 CurseForge test instance (deploy_instance_dir_1_21_1), replacing older builds.'
-    jarFile = tasks.named('jar', Jar).flatMap { it.archiveFile }
+    description = 'Copies the built mod jar into the 1.20.1 CurseForge test instance (deploy_instance_dir_1_20_1), replacing older builds.'
+    // The jar for players: reobfJar's (the game's SRG names), not the dev jar in build/devlibs.
+    jarFile = tasks.named('reobfJar').flatMap { it.archiveFile }
     modsDir = layout.dir(instanceDir.map { new File(it, 'mods') })
     modId = project.mod_id
-    required = providers.gradleProperty('deploy_instance_dir_1_21_1').map { !it.isBlank() }.orElse(false)
+    required = providers.gradleProperty('deploy_instance_dir_1_20_1').map { !it.isBlank() }.orElse(false)
     dependencyJars.from(configurations.deployDependencies)
     outputs.upToDateWhen { false }
 }

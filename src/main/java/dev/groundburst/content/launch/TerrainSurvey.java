@@ -227,7 +227,7 @@ public final class TerrainSurvey extends SavedData {
     }
 
     @Override
-    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access();
         return TYPE.save(this, tag_, registries_);
     }
 }

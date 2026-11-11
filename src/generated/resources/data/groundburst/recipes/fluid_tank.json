@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "G": {
+      "tag": "forge:glass/colorless"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    },
+    "R": {
+      "tag": "forge:rods/steel"
+    }
+  },
+  "pattern": [
+    "RPR",
+    "G G",
+    "RPR"
+  ],
+  "result": {
+    "item": "groundburst:fluid_tank"
+  }
+}

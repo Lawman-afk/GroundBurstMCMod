@@ -34,7 +34,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class Explosions {
     /** What an explosion with no entity and no damage type behind it is called. */
-    static final ResourceLocation UNKNOWN = ResourceLocation.withDefaultNamespace("explosion");
+    static final ResourceLocation UNKNOWN = new ResourceLocation("explosion");
     private static final BiConsumer<ItemStack, BlockPos> NO_DROPS = (stack, pos) -> {};
 
     /** The explosion last asked about and its recorder (an explosion hits its blocks one after another). */
@@ -79,10 +79,10 @@ public final class Explosions {
         if (explosion == last && r != null) {
             return r;
         }
-        Explosion.BlockInteraction interaction = explosion.getBlockInteraction();
+        Explosion.BlockInteraction interaction = ((dev.groundburst.legacy.mixin.ExplosionAccess) explosion).groundburst$interaction();
         if (interaction == Explosion.BlockInteraction.DESTROY || interaction == Explosion.BlockInteraction.DESTROY_WITH_DECAY) {
             ResourceLocation source = source(explosion);
-            r = Scars.recorder(level, explosion.center(), source, kind(source));
+            r = Scars.recorder(level, explosion.getPosition(), source, kind(source));
         } else {
             r = Scars.Recorder.none(level);                    // a wind charge's: it only works doors and buttons
         }
@@ -130,7 +130,7 @@ public final class Explosions {
      * back. One the explosion leaves be (a fixed frame, a marker stand) is left as it is.
      */
     public static boolean hurt(Entity e, Explosion explosion, BooleanSupplier hurt) {
-        if (!(e instanceof HangingEntity || e instanceof ArmorStand) || !(e.level() instanceof ServerLevel level) || e.isRemoved()) {
+        if (!(e instanceof HangingEntity || e instanceof ArmorStand) || !(((Object) e.level()) instanceof ServerLevel level) || e.isRemoved()) {
             return hurt.getAsBoolean();
         }
         Scars.Recorder r = recorder(explosion, level);

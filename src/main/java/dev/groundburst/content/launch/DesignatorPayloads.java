@@ -6,12 +6,12 @@ import java.util.function.Consumer;
 import dev.groundburst.network.GBNetwork;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import dev.groundburst.legacy.net.IPayloadContext;
 
 /** What a lasing player's Laser Designator screen is sent (DESIGN.md §17.13): what only the server knows. */
 public final class DesignatorPayloads {
@@ -27,7 +27,7 @@ public final class DesignatorPayloads {
      */
     public record Click(boolean disarm) implements CustomPacketPayload {
         public static final Type<Click> TYPE = GBNetwork.type("designator_click");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Click> CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, Click::disarm, Click::new);
+        public static final StreamCodec<FriendlyByteBuf, Click> CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, Click::disarm, Click::new);
 
         @Override
         public Type<Click> type() {
@@ -35,7 +35,7 @@ public final class DesignatorPayloads {
         }
 
         public static void handle(Click click, IPayloadContext context) {
-            if (context.player() instanceof ServerPlayer player) {
+            if (((Object) context.player()) instanceof ServerPlayer player) {
                 LaserDesignatorItem.click(player, click.disarm());
             }
         }
@@ -44,7 +44,7 @@ public final class DesignatorPayloads {
     /** The mouse wheel while lasing zoomed: pick the next ({@code step} 1) or the previous (-1) laser-guided launcher. */
     public record Scroll(int step) implements CustomPacketPayload {
         public static final Type<Scroll> TYPE = GBNetwork.type("designator_scroll");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Scroll> CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, Scroll::step, Scroll::new);
+        public static final StreamCodec<FriendlyByteBuf, Scroll> CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, Scroll::step, Scroll::new);
 
         @Override
         public Type<Scroll> type() {
@@ -52,7 +52,7 @@ public final class DesignatorPayloads {
         }
 
         public static void handle(Scroll scroll, IPayloadContext context) {
-            if (context.player() instanceof ServerPlayer player) {
+            if (((Object) context.player()) instanceof ServerPlayer player) {
                 LaserDesignatorItem.scroll(player, Integer.signum(scroll.step()));
             }
         }
@@ -66,7 +66,7 @@ public final class DesignatorPayloads {
      */
     public record Beam(int holder, boolean lands, double x, double y, double z) implements CustomPacketPayload {
         public static final Type<Beam> TYPE = GBNetwork.type("designator_beam");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Beam> CODEC = StreamCodec.composite(
+        public static final StreamCodec<FriendlyByteBuf, Beam> CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT, Beam::holder, ByteBufCodecs.BOOL, Beam::lands, ByteBufCodecs.DOUBLE, Beam::x, ByteBufCodecs.DOUBLE, Beam::y,
                 ByteBufCodecs.DOUBLE, Beam::z, Beam::new);
 
@@ -105,7 +105,7 @@ public final class DesignatorPayloads {
     public record Status(Pick pick, int homing, String network, int charge, int result, int count, List<Aim> aims, int picked)
             implements CustomPacketPayload {
         public static final Type<Status> TYPE = GBNetwork.type("designator_status");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Status> CODEC = dev.groundburst.port.StreamCodecs.composite(
+        public static final StreamCodec<FriendlyByteBuf, Status> CODEC = dev.groundburst.port.StreamCodecs.composite(
                 Pick.CODEC, Status::pick, ByteBufCodecs.VAR_INT, Status::homing,
                 ByteBufCodecs.STRING_UTF8, Status::network, ByteBufCodecs.VAR_INT, Status::charge, ByteBufCodecs.VAR_INT, Status::result,
                 ByteBufCodecs.VAR_INT, Status::count, Aim.CODEC.apply(ByteBufCodecs.list()), Status::aims,

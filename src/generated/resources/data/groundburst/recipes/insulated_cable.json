@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": {
+      "item": "groundburst:copper_cable"
+    },
+    "G": {
+      "tag": "forge:wires/gold"
+    },
+    "P": {
+      "item": "groundburst:plastic_sheet"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "PGP",
+    "CCC"
+  ],
+  "result": {
+    "item": "groundburst:insulated_cable",
+    "count": 6
+  }
+}

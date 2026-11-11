@@ -3,8 +3,8 @@ package dev.groundburst.content.recipe;
 import java.util.List;
 
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeInput;
-import net.neoforged.neoforge.fluids.FluidStack;
+import dev.groundburst.legacy.recipe.RecipeInput;
+import net.minecraftforge.fluids.FluidStack;
 
 /**
  * A machine's input slots as a recipe input, plus its catalyst slot and the contents of its input tanks (in tank

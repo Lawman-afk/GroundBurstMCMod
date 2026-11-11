@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.machine.AnimatedMachine;
@@ -20,7 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 
-import net.minecraft.core.component.DataComponentMap;
+import dev.groundburst.legacy.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -42,7 +42,7 @@ import dev.groundburst.port.transfer.energy.LimitingEnergyHandler;
  * gives it out (pushing into whatever cable or machine it faces). The wrench turns it, the side tab can switch faces
  * off. It keeps its charge when picked up, shows its charge on a gauge, and gives a comparator signal.
  */
-public class CapacitorBankBlockEntity extends MachineBlockEntity implements AnimatedMachine {
+public class CapacitorBankBlockEntity extends MachineBlockEntity implements dev.groundburst.legacy.component.ImplicitComponents, AnimatedMachine {
 
     /** Capacity and per-tick transfer (matching the cable tiers) of each bank. */
     public enum Tier {
@@ -166,8 +166,8 @@ public class CapacitorBankBlockEntity extends MachineBlockEntity implements Anim
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -176,18 +176,14 @@ public class CapacitorBankBlockEntity extends MachineBlockEntity implements Anim
     }
 
     // --- keeping the charge in the item -------------------------------------------------------------------------------
-    @Override
-    protected void collectImplicitComponents(DataComponentMap.Builder components) {
-        super.collectImplicitComponents(components);
+    public void collectImplicitComponents(DataComponentMap.Builder components) {
         if (this.energy.stored() > 0) {
-            components.set(GBDataComponents.ENERGY.get(), this.energy.stored());
+            dev.groundburst.legacy.component.Comps.set(components, GBDataComponents.ENERGY.get(), this.energy.stored());
         }
     }
 
-    @Override
-    protected void applyImplicitComponents(net.minecraft.world.level.block.entity.BlockEntity.DataComponentInput components) {
-        super.applyImplicitComponents(components);
-        int stored = components.getOrDefault(GBDataComponents.ENERGY.get(), 0);
+    public void applyImplicitComponents(dev.groundburst.legacy.component.DataComponentInput components) {
+        int stored = dev.groundburst.legacy.component.Comps.getOrDefault(components, GBDataComponents.ENERGY.get(), 0);
         if (stored > 0) {
             this.energy.generate(stored);
         }

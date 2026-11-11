@@ -174,7 +174,7 @@ final class CruiseTests {
         helper.runAfterDelay(5, () -> {
             var now = Flights.of(level).all().stream().filter(bound).toList();
             helper.assertTrue(now.size() == 1, "the first missile is lit: " + now.size());
-            Flights.Flight f = now.getFirst();
+            Flights.Flight f = dev.groundburst.legacy.J21.first(now);
             ours.add(f);
             helper.assertTrue(f.cruise(), "a cruise flight");
             helper.assertTrue(f.position().distanceTo(be.tailPoint(CruiseLauncherBlockEntity.SLOT_A)) < 1e-6, "lit at its box's tail: " + f.position());
@@ -187,7 +187,7 @@ final class CruiseTests {
         helper.runAfterDelay(5 + CruiseLauncherBlockEntity.BETWEEN, () -> {
             var now = Flights.of(level).all().stream().filter(f -> bound.test(f) && !ours.contains(f)).toList();
             helper.assertTrue(now.size() == 1, "the second is lit 3 s later: " + now.size());
-            Flights.Flight f = now.getFirst();
+            Flights.Flight f = dev.groundburst.legacy.J21.first(now);
             ours.add(f);
             helper.assertTrue(f.position().distanceTo(be.tailPoint(CruiseLauncherBlockEntity.SLOT_B)) < 1e-6, "lit at box B's tail: " + f.position());
             helper.assertTrue(be.loaded() == 0 && be.raised(), "both gone, the boxes still up");
@@ -258,7 +258,7 @@ final class CruiseTests {
         double top = path.subList(popAt, path.size()).stream().mapToDouble(Vec3::y).max().orElse(0);
         // (Sampled a tick apart, 1.6 blocks, the highest sample may fall a little short of the pop-up's top.)
         helper.assertTrue(top >= ground + Flights.CruisePlan.POP_HEIGHT - 2, "it pops up short of the target: " + (top - ground));
-        Vec3 end = path.getLast();
+        Vec3 end = dev.groundburst.legacy.J21.last(path);
         helper.assertTrue(end.distanceTo(target) < 1e-6, "it comes down on the target: " + end + " vs " + target);
         helper.assertTrue(length > 150 && length < 260, "a sensible path's length: " + length);
         helper.succeed();
@@ -283,7 +283,7 @@ final class CruiseTests {
             helper.assertTrue(s != null && s.cruise() && s.motor() == MissileParts.Motor.CRUISE, "a cruise missile: " + s);
             helper.assertTrue("he_warhead_cruise".equals(s.look()), "its own look: " + s.look());
             helper.assertTrue(s.range() == MissileParts.Motor.CRUISE.range, "1,500 blocks: " + s.range());
-            helper.assertTrue(out.getHoverName().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
+            helper.assertTrue(((Object) out.getHoverName().getContents()) instanceof net.minecraft.network.chat.contents.TranslatableContents t
                     && t.getKey().equals("groundburst.missile.name.he_warhead_cruise"), "its name (HE Cruise Missile): " + out.getHoverName());
             var shown = a.shownMissile();
             helper.assertTrue(shown != null && "he_warhead_cruise".equals(shown.warhead()), "the cruise missile on show: " + shown);

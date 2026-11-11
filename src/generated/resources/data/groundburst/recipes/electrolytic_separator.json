@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": {
+      "tag": "groundburst:basic_circuits"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "K": {
+      "item": "minecraft:cauldron"
+    },
+    "P": {
+      "tag": "forge:plates/copper"
+    },
+    "W": {
+      "tag": "forge:wires/gold"
+    }
+  },
+  "pattern": [
+    "WGW",
+    "PFP",
+    "BK "
+  ],
+  "result": {
+    "item": "groundburst:electrolytic_separator"
+  }
+}

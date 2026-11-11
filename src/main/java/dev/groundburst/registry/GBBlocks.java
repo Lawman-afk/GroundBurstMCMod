@@ -8,9 +8,9 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import dev.groundburst.legacy.DeferredBlock;
+import dev.groundburst.legacy.DeferredItem;
+import dev.groundburst.legacy.DeferredRegister;
 
 /** Block registration helpers; blocks with an item form are registered together with it. */
 public final class GBBlocks {

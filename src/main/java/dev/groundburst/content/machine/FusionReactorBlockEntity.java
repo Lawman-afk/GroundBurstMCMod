@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.fluid.ChemFluid;
@@ -276,8 +276,8 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -296,16 +296,16 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         this.ignition.serialize(output.child("ignition"));
         output.putBoolean("lit", this.lit);
         output.putFloat("gas_debt", this.gasDebt);
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.ignition.deserialize(input.childOrEmpty("ignition"));
         this.lit = input.getBooleanOr("lit", false);
         this.gasDebt = input.getFloatOr("gas_debt", 0);

@@ -15,22 +15,22 @@ public class GlassPartBlock extends MultiblockPartBlock {
     }
 
     @Override
-    protected boolean skipRendering(BlockState state, BlockState neighborState, Direction direction) {
+    public boolean skipRendering(BlockState state, BlockState neighborState, Direction direction) {
         return neighborState.is(this) || super.skipRendering(state, neighborState, direction);
     }
 
     @Override
-    protected VoxelShape getVisualShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getVisualShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return Shapes.empty();
     }
 
     @Override
-    protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+    public float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
         return 1.0f;
     }
 
     @Override
-    protected boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
+    public boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return true;
     }
 }

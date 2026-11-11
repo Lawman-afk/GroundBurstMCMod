@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "A": {
+      "tag": "forge:circuits/advanced"
+    },
+    "B": {
+      "item": "groundburst:capacitor_bank"
+    },
+    "W": {
+      "tag": "forge:wires/gold"
+    }
+  },
+  "pattern": [
+    "W W",
+    " B ",
+    "WAW"
+  ],
+  "result": {
+    "item": "groundburst:advanced_capacitor_bank"
+  }
+}

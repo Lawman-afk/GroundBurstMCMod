@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "#forge:wires/copper",
+      "required": false
+    },
+    {
+      "id": "#forge:wires/gold",
+      "required": false
+    }
+  ]
+}

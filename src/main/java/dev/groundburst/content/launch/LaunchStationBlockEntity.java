@@ -37,8 +37,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import dev.groundburst.legacy.net.PacketDistributor;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
@@ -231,7 +231,7 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             if (state.hasProperty(MultiblockPartBlock.FORMED) && state.getValue(MultiblockPartBlock.FORMED)) {
                 MultiblockController.setPartsFormed(server, this, false);
             }
@@ -244,7 +244,7 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
     @Override
     public void onLoad() {
         super.onLoad();
-        if (this.level instanceof ServerLevel server && this.network != 0) {
+        if (((Object) this.level) instanceof ServerLevel server && this.network != 0) {
             LaunchNetwork.of(server).stationOn(this.network, this.worldPosition);
         }
     }
@@ -271,7 +271,7 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
         }
         if (!this.viewers.isEmpty() && level.getGameTime() % SCOPE_INTERVAL == 0) {
             for (UUID id : List.copyOf(this.viewers)) {
-                if (level.getPlayerByUUID(id) instanceof ServerPlayer p && p.position().distanceTo(inWorld(Vec3.atCenterOf(this.worldPosition))) < 16) {
+                if (((Object) level.getPlayerByUUID(id)) instanceof ServerPlayer p && p.position().distanceTo(inWorld(Vec3.atCenterOf(this.worldPosition))) < 16) {
                     sendScope(level, p);
                 } else {
                     this.viewers.remove(id);
@@ -290,7 +290,7 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
         this.powered = false;
         if (level.getGameTime() % SCOPE_INTERVAL == 0) {
             for (UUID id : List.copyOf(this.viewers)) {
-                if (level.getPlayerByUUID(id) instanceof ServerPlayer p) {
+                if (((Object) level.getPlayerByUUID(id)) instanceof ServerPlayer p) {
                     sendScope(level, p);
                 }
             }
@@ -465,12 +465,12 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
     }
 
     public Lamp lamp(int i) {
-        return i < 0 || i >= this.lamps.length ? Lamp.OFF : Lamp.values()[Math.clamp(this.lamps[i], 0, Lamp.values().length - 1)];
+        return i < 0 || i >= this.lamps.length ? Lamp.OFF : Lamp.values()[dev.groundburst.legacy.J21.clamp(this.lamps[i], 0, Lamp.values().length - 1)];
     }
 
     @Override
-    public CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
-        CompoundTag tag = saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        CompoundTag tag = saveWithoutMetadata();
         tag.putString("shown_code", this.shownCode);
         tag.putBoolean("shown_powered", this.shownPowered);
         tag.putInt("linked", this.linked);
@@ -559,7 +559,7 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
 
     /** Nothing animates: what moves is set above. */
     @Override
-    public void registerControllers(software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar controllers) {}
+    public void registerControllers(software.bernie.geckolib.core.animation.AnimatableManager.ControllerRegistrar controllers) {}
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
@@ -568,14 +568,14 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putLong("network", this.network);
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.network = input.getLongOr("network", 0L);
         // What the model shows comes with the update tag.
         this.shownCode = input.getStringOr("shown_code", this.shownCode);

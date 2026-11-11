@@ -36,7 +36,7 @@ final class FactoryTests {
         BlockPos pos = new BlockPos(3, 1, 3);
         helper.setBlock(pos, GBMachines.CIRCUIT_FABRICATOR.block().get());
         CircuitFabricatorBlockEntity fab = ((CircuitFabricatorBlockEntity) helper.getBlockEntity(pos));
-        var top = helper.getLevel().getCapability(Capabilities.Item.BLOCK, helper.absolutePos(pos), Direction.UP);
+        var top = dev.groundburst.legacy.Caps.get(helper.getLevel(), Capabilities.Item.BLOCK, helper.absolutePos(pos), Direction.UP);
         helper.assertTrue(top != null, "its top takes items");
         try (Transaction tx = Transaction.openRoot()) {
             helper.assertTrue(top.insert(ItemResource.of(GBParts.COPPER_WIRE.get()), 200, tx) == 64, "one slot of copper wire and no more");
@@ -63,7 +63,7 @@ final class FactoryTests {
         CircuitLine.build(level, o);
         Set<String> ran = new TreeSet<>();
         helper.onEachTick(() -> CircuitLine.MACHINES.forEach((name, at) -> {
-            if (level.getBlockEntity(o.offset(at)) instanceof MachineBlockEntity m && m.status() == MachineStatus.RUNNING) {
+            if (((Object) level.getBlockEntity(o.offset(at))) instanceof MachineBlockEntity m && m.status() == MachineStatus.RUNNING) {
                 ran.add(name);
             }
         }));

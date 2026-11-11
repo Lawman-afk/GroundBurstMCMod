@@ -76,7 +76,7 @@ final class StructureTests {
         LootParams params = new LootParams.Builder(level).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(helper.absolutePos(BlockPos.ZERO)))
                 .create(LootContextParamSets.CHEST);
         for (String name : LOOT) {
-            var table = level.getServer().reloadableRegistries().getLootTable(GBStructures.loot(name));
+            var table = level.getServer().getLootData().getLootTable(GBStructures.loot(name));
             int items = 0;
             for (int i = 0; i < 6; i++) {
                 items += table.getRandomItems(params).stream().mapToInt(ItemStack::getCount).sum();
@@ -98,11 +98,11 @@ final class StructureTests {
         SitePiece crater = new SitePiece(templates, sunk, origin.offset(sunk.offset()), Rotation.NONE, origin.getY());
         // Its rim is 3 up from its bottom; the beardifier wants the first air above the land, one more.
         helper.assertTrue(crater.getGroundLevelDelta() == 4, "a sunk part meets the ground at its rim (" + crater.getGroundLevelDelta() + ")");
-        var under = new SiteStructure.Part(GroundBurst.id("site/test_room"), new BlockPos(0, -6, 0), TerrainAdjustment.ENCAPSULATE, 1f, Weathering.NONE);
+        var under = new SiteStructure.Part(GroundBurst.id("site/test_room"), new BlockPos(0, -6, 0), TerrainAdjustment.BEARD_BOX, 1f, Weathering.NONE);
         SitePiece rooms = new SitePiece(templates, under, origin.offset(under.offset()), Rotation.NONE, origin.getY());
         helper.assertTrue(rooms.getBeardifierBox().maxY() <= origin.getY() - 13 || rooms.getBeardifierBox().maxY() == rooms.getBoundingBox().minY(),
                 "rock round rooms just under the ground stops short of it (" + rooms.getBeardifierBox() + ")");
-        var deep = new SiteStructure.Part(GroundBurst.id("site/test_room"), new BlockPos(0, -40, 0), TerrainAdjustment.ENCAPSULATE, 1f, Weathering.NONE);
+        var deep = new SiteStructure.Part(GroundBurst.id("site/test_room"), new BlockPos(0, -40, 0), TerrainAdjustment.BEARD_BOX, 1f, Weathering.NONE);
         SitePiece store = new SitePiece(templates, deep, origin.offset(deep.offset()), Rotation.NONE, origin.getY());
         helper.assertTrue(store.getBeardifierBox().equals(store.getBoundingBox()), "rooms deep down are closed in all round");
         helper.succeed();
@@ -117,11 +117,11 @@ final class StructureTests {
         p.postProcess(level, level.structureManager(), level.getChunkSource().getGenerator(), level.getRandom(), box,
                 new ChunkPos(corner), corner);
         var chest = level.getBlockEntity(corner.offset(1, 1, 1));
-        helper.assertTrue(chest instanceof ChestBlockEntity c && c.getLootTable() != null
-                && c.getLootTable().equals(GBStructures.loot("waste_storage")), "the chest keeps its loot table");
+        helper.assertTrue(((Object) chest) instanceof ChestBlockEntity c && ((dev.groundburst.legacy.mixin.RandomizableContainerAccess) c).groundburst$lootTable() != null
+                && ((dev.groundburst.legacy.mixin.RandomizableContainerAccess) c).groundburst$lootTable().equals(GBStructures.loot("waste_storage")), "the chest keeps its loot table");
         var stands = level.getEntitiesOfClass(ArmorStand.class, new AABB(corner).inflate(6));
         helper.assertTrue(stands.size() == 1, "the marker became a stand (" + stands.size() + ")");
-        ArmorStand stand = stands.getFirst();
+        ArmorStand stand = dev.groundburst.legacy.J21.first(stands);
         int worn = 0;
         for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
             worn += GBArmor.HAZMAT_SET.stream().anyMatch(i -> stand.getItemBySlot(slot).is(i.get())) ? 1 : 0;

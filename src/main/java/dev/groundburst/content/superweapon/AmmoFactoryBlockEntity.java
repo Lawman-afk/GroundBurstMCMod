@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -374,8 +374,8 @@ public class AmmoFactoryBlockEntity extends MachineBlockEntity implements Animat
 
     // --- model ------------------------------------------------------------------------------------------------------------
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -406,16 +406,16 @@ public class AmmoFactoryBlockEntity extends MachineBlockEntity implements Animat
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("progress", this.progress);
         output.putInt("total", this.total);
         output.putInt("laid", this.laid);
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.progress = input.getIntOr("progress", 0);
         this.total = input.getIntOr("total", 0);
         this.laid = input.getIntOr("laid", 0);

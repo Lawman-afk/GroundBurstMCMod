@@ -41,7 +41,7 @@ public final class MissileShapes {
 
         /** Blocks up its axis from the tail to where the exhaust of the stage now lowest leaves ({@code dropped} gone). */
         public float engine(int dropped) {
-            return this.engines.length == 0 ? 0 : this.engines[Math.clamp(dropped, 0, this.engines.length - 1)] / 16f;
+            return this.engines.length == 0 ? 0 : this.engines[dev.groundburst.legacy.J21.clamp(dropped, 0, this.engines.length - 1)] / 16f;
         }
 
         /** Blocks up its axis from the tail to its tip. */
@@ -51,7 +51,7 @@ public final class MissileShapes {
 
         /** The middle of its {@code k}th stage (1: the first), the world's pixels up from its tail. */
         public float stageMiddle(int k) {
-            int i = Math.clamp(k - 1, 0, this.stages.length - 1);
+            int i = dev.groundburst.legacy.J21.clamp(k - 1, 0, this.stages.length - 1);
             float bottom = i == 0 ? 0 : this.stages[i - 1];
             return (bottom + this.stages[i]) / 2;
         }

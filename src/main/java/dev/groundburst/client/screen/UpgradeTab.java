@@ -80,12 +80,12 @@ final class UpgradeTab {
         }
         if (!open()) {
             if (!fitted.isEmpty()) {
-                g.item(fitted.getFirst(), x + 4, y + 5);
+                g.item(dev.groundburst.legacy.J21.first(fitted), x + 4, y + 5);
             }
             if (a.contains(mouseX, mouseY)) {
                 List<Component> lines = new ArrayList<>();
                 lines.add(Component.translatable(T_TAB));
-                fitted.forEach(chip -> lines.add(chip.getHoverName().copy().withColor(TEXT_DIM)));
+                fitted.forEach(chip -> lines.add(chip.getHoverName().copy().withStyle(s_ -> s_.withColor(TEXT_DIM))));
                 g.setTooltipForNextFrame(font, lines, Optional.empty(), mouseX, mouseY);
             }
             return;

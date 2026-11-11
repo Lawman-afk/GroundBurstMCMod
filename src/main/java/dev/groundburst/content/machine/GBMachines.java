@@ -19,7 +19,7 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.Shapes;
 import dev.groundburst.port.transfer.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import dev.groundburst.legacy.RegisterCapabilitiesEvent;
 
 /** Machines, generators and cables (DESIGN.md §7–8). */
 public final class GBMachines {
@@ -40,7 +40,7 @@ public final class GBMachines {
     public static final WithItem<MachineBlock> ELECTROLYTIC_SEPARATOR = machine("electrolytic_separator", "Electrolytic Separator",
             p -> new MachineBlock(p, GBBlockEntities.ELECTROLYTIC_SEPARATOR, true, Shapes.block()));
     /** Configures pipe and cable sides, turns machines, picks blocks up (see {@link WrenchItem}). */
-    public static final net.neoforged.neoforge.registries.DeferredItem<WrenchItem> WRENCH = dev.groundburst.registry.GBItems.register(
+    public static final dev.groundburst.legacy.DeferredItem<WrenchItem> WRENCH = dev.groundburst.registry.GBItems.register(
             "wrench", "Wrench", GBTab.MACHINES, WrenchItem::new, p -> p.stacksTo(1));
     public static final WithItem<MachineBlock> WATER_PUMP = machine("water_pump", "Water Pump",
             p -> new MachineBlock(p, GBBlockEntities.WATER_PUMP, true, Shapes.block()));

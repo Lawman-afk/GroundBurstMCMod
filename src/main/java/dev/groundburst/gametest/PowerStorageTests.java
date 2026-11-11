@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import dev.groundburst.port.transfer.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import dev.groundburst.port.transfer.fluid.FluidResource;
 import dev.groundburst.port.transfer.transaction.Transaction;
 
@@ -55,7 +55,7 @@ final class PowerStorageTests {
         DieselGeneratorBlockEntity gen = ((DieselGeneratorBlockEntity) helper.getBlockEntity(pos));
         helper.setBlock(pos.east(), GBMachines.ORE_CRUSHER.block().get());
         OreCrusherBlockEntity crusher = ((OreCrusherBlockEntity) helper.getBlockEntity(pos.east()));
-        var handler = helper.getLevel().getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(pos), Direction.UP);
+        var handler = dev.groundburst.legacy.Caps.get(helper.getLevel(), Capabilities.Fluid.BLOCK, helper.absolutePos(pos), Direction.UP);
         try (var tx = Transaction.openRoot()) {
             helper.assertTrue(handler.insert(0, FluidResource.of(Fluids.WATER), 1000, tx) == 0, "water is not fuel");
             helper.assertTrue(handler.insert(0, FluidResource.of(GBFluids.SYNTHETIC_FUEL.source().get()), 1000, tx) == 1000, "synthetic fuel goes in");
@@ -88,8 +88,8 @@ final class PowerStorageTests {
         helper.setBlock(pos, GBMachines.CAPACITOR_BANKS.get(0).block().get().defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
         CapacitorBankBlockEntity bank = ((CapacitorBankBlockEntity) helper.getBlockEntity(pos));
         var level = helper.getLevel();
-        var side = level.getCapability(Capabilities.Energy.BLOCK, helper.absolutePos(pos), Direction.EAST);
-        var front = level.getCapability(Capabilities.Energy.BLOCK, helper.absolutePos(pos), Direction.NORTH);
+        var side = dev.groundburst.legacy.Caps.get(level, Capabilities.Energy.BLOCK, helper.absolutePos(pos), Direction.EAST);
+        var front = dev.groundburst.legacy.Caps.get(level, Capabilities.Energy.BLOCK, helper.absolutePos(pos), Direction.NORTH);
         try (var tx = Transaction.openRoot()) {
             helper.assertTrue(side.insert(500, tx) == 500, "the side takes power");
             helper.assertTrue(side.extract(100, tx) == 0, "the side gives none");
@@ -120,7 +120,7 @@ final class PowerStorageTests {
 
     private static void wasteFireproof(GameTestHelper helper) {
         ItemStack waste = new ItemStack(GBNuclear.NUCLEAR_WASTE.get());
-        helper.assertTrue(!waste.canBeHurtBy(helper.getLevel().damageSources().lava()), "lava does not destroy nuclear waste");
+        helper.assertTrue(!dev.groundburst.legacy.Game.canBeHurtBy(waste, helper.getLevel().damageSources().lava()), "lava does not destroy nuclear waste");
         helper.succeed();
     }
 
@@ -135,11 +135,11 @@ final class PowerStorageTests {
         List<ItemStack> drops = Block.getDrops(state, helper.getLevel(), helper.absolutePos(pos), bank);
         helper.assertTrue(drops.size() == 1 && drops.get(0).is(block.asItem()), "the bank drops itself, got " + drops);
         ItemStack item = drops.get(0);
-        helper.assertTrue(item.getOrDefault(GBDataComponents.ENERGY.get(), 0) == 123_456, "the item carries the charge");
+        helper.assertTrue(dev.groundburst.legacy.component.Comps.getOrDefault(item, GBDataComponents.ENERGY.get(), 0) == 123_456, "the item carries the charge");
         BlockPos other = new BlockPos(6, 1, 3);
         helper.setBlock(other, block);
         CapacitorBankBlockEntity placed = ((CapacitorBankBlockEntity) helper.getBlockEntity(other));
-        placed.applyComponentsFromItemStack(item);
+        dev.groundburst.legacy.component.DataComponentInput.apply(placed, item);
         helper.assertTrue(placed.energy().stored() == 123_456, "placing it restores the charge, have " + placed.energy().stored());
         helper.succeed();
     }
@@ -171,7 +171,7 @@ final class PowerStorageTests {
         shower.tank(0).fillInternal(new FluidStack(Fluids.WATER, 1_000));
         Pig pig = helper.spawnWithNoFreeWill(EntityType.PIG, pos);
         pig.addEffect(new MobEffectInstance(MobEffects.POISON, 400));
-        pig.igniteForSeconds(10);
+        pig.setSecondsOnFire((int) (10));
         helper.succeedWhen(() -> {
             helper.assertFalse(pig.hasEffect(MobEffects.POISON), "the poison is washed off");
             helper.assertFalse(pig.isOnFire(), "the fire is out");

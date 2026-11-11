@@ -3,9 +3,9 @@ package dev.groundburst.blast;
 import java.util.function.Consumer;
 
 import dev.groundburst.network.GBNetwork;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -23,7 +23,7 @@ public final class StormPayloads {
     /** Storm {@code id} gathered {@code age} ticks ago over {@code center}: {@code radius} round, {@code life} ticks, its clouds at {@code cloudY}. */
     public record Start(int id, Vec3 center, float radius, int life, int age, double cloudY) implements CustomPacketPayload {
         public static final Type<Start> TYPE = GBNetwork.type("storm_start");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeDouble(p.center.x);
             buf.writeDouble(p.center.y);
@@ -44,7 +44,7 @@ public final class StormPayloads {
     /** Storm {@code id} struck at {@code foot}; its chain jumped through {@code chain} (x, y, z each, from the first). */
     public record Strike(int id, Vec3 foot, double[] chain, int seed) implements CustomPacketPayload {
         public static final Type<Strike> TYPE = GBNetwork.type("storm_strike");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Strike> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Strike> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeDouble(p.foot.x);
             buf.writeDouble(p.foot.y);
@@ -74,7 +74,7 @@ public final class StormPayloads {
     /** Storm {@code id} has died away. */
     public record End(int id) implements CustomPacketPayload {
         public static final Type<End> TYPE = GBNetwork.type("storm_end");
-        public static final StreamCodec<RegistryFriendlyByteBuf, End> CODEC = StreamCodec.of((buf, p) -> buf.writeVarInt(p.id),
+        public static final StreamCodec<FriendlyByteBuf, End> CODEC = StreamCodec.of((buf, p) -> buf.writeVarInt(p.id),
                 buf -> new End(buf.readVarInt()));
 
         @Override

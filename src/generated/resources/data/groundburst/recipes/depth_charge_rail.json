@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "tag": "forge:rods/steel"
+    },
+    {
+      "tag": "forge:rods/steel"
+    },
+    {
+      "tag": "forge:rods/steel"
+    },
+    {
+      "tag": "forge:rods/steel"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "tag": "forge:plates/steel"
+    }
+  ],
+  "result": {
+    "item": "groundburst:depth_charge_rail",
+    "count": 2
+  }
+}

@@ -8,14 +8,14 @@ import dev.groundburst.content.multiblock.Multiblocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.neoforged.neoforge.common.util.TriState;
+
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.transfer.Capabilities;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import dev.groundburst.port.transfer.ResourceHandler;
 import dev.groundburst.port.transfer.ResourceHandlerUtil;
 import dev.groundburst.port.transfer.access.ItemAccess;
@@ -33,23 +33,23 @@ public final class MachineFluidInteraction {
     /** The machine a click on this block reaches: itself, a tall machine's base, or a formed multiblock's controller. */
     public static @Nullable MachineBlockEntity machineAt(Level level, BlockPos pos, BlockState state) {
         if (state.getBlock() instanceof MachineBlock) {
-            return level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m : null;
+            return ((Object) level.getBlockEntity(TallMachineBlock.base(pos, state))) instanceof MachineBlockEntity m ? m : null;
         }
         if (state.hasProperty(MultiblockPartBlock.FORMED) && state.getValue(MultiblockPartBlock.FORMED)) {
             MultiblockController c = Multiblocks.formedControllerOf(level, pos);
-            return c != null && level.getBlockEntity(c.controllerPos()) instanceof MachineBlockEntity m ? m : null;
+            return c != null && ((Object) level.getBlockEntity(c.controllerPos())) instanceof MachineBlockEntity m ? m : null;
         }
         return null;
     }
 
     public static boolean isFluidContainer(Player player, InteractionHand hand) {
-        return ItemAccess.forPlayerInteraction(player, hand).getCapability(Capabilities.Fluid.ITEM) != null;
+        return dev.groundburst.legacy.Caps.get(ItemAccess.forPlayerInteraction(player, hand), Capabilities.Fluid.ITEM) != null;
     }
 
     /** Pours a held container in (or, sneaking, fills it from a product tank). Server side; true if fluid moved. */
     public static boolean use(MachineBlockEntity machine, Level level, BlockPos pos, Player player, InteractionHand hand) {
         // One container at a time: a stack of canisters would otherwise split the fluid between them.
-        ResourceHandler<FluidResource> item = ItemAccess.forPlayerInteraction(player, hand).oneByOne().getCapability(Capabilities.Fluid.ITEM);
+        ResourceHandler<FluidResource> item = dev.groundburst.legacy.Caps.get(ItemAccess.forPlayerInteraction(player, hand).oneByOne(), Capabilities.Fluid.ITEM);
         if (item == null || machine.tanks().isEmpty()) {
             return false;
         }
@@ -92,8 +92,8 @@ public final class MachineFluidInteraction {
         MachineBlockEntity machine = machineAt(level, event.getPos(), state);
         if (machine != null && !machine.tanks().isEmpty() || state.getBlock() instanceof dev.groundburst.content.fluid.FluidTankBlock
                 || state.getBlock() instanceof dev.groundburst.content.fluid.CreativeFluidTankBlock) {
-            event.setUseBlock(TriState.TRUE);
-            event.setUseItem(TriState.FALSE);
+            event.setUseBlock(net.minecraftforge.eventbus.api.Event.Result.ALLOW);
+            event.setUseItem(net.minecraftforge.eventbus.api.Event.Result.DENY);
         }
     }
 }

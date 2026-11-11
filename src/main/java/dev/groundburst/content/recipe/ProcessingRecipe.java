@@ -10,9 +10,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.groundburst.port.FluidStackTemplate;
 import dev.groundburst.port.ItemStackTemplate;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -20,9 +20,9 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
+import dev.groundburst.legacy.SizedIngredient;
+import net.minecraftforge.fluids.FluidStack;
+import dev.groundburst.legacy.SizedFluidIngredient;
 
 /**
  * One machine process: counted item inputs and fluid inputs -> item outputs (each with a chance) and fluid outputs,
@@ -34,6 +34,11 @@ import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, Optional<Ingredient> catalyst,
         List<SizedFluidIngredient> fluids, List<Output> outputs, List<FluidStackTemplate> fluidOutputs, int time, int energyPerTick)
         implements Recipe<MachineRecipeInput> {
+    @Override
+    public net.minecraft.resources.ResourceLocation getId() {
+        return dev.groundburst.legacy.recipe.Recipes.idOf(this);
+    }
+
 
     public ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, List<Output> outputs, int time, int energyPerTick) {
         this(kind, inputs, Optional.empty(), List.of(), outputs, List.of(), time, energyPerTick);
@@ -45,11 +50,11 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
      * never takes its place; then the first by name. The same whatever order the game lists the recipes in (it had been
      * the game's first match, which the 1.21.1 build lists otherwise: it made RDX of photoresist's makings).
      */
-    public static Optional<net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe>> pick(net.minecraft.server.level.ServerLevel level,
+    public static Optional<dev.groundburst.legacy.recipe.RecipeHolder<ProcessingRecipe>> pick(net.minecraft.server.level.ServerLevel level,
             ProcessingKind kind, MachineRecipeInput input) {
-        net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe> best = null;
+        dev.groundburst.legacy.recipe.RecipeHolder<ProcessingRecipe> best = null;
         int most = -1;
-        for (net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe> holder : level.getRecipeManager().getAllRecipesFor(GBRecipes.type(kind))) {
+        for (dev.groundburst.legacy.recipe.RecipeHolder<ProcessingRecipe> holder : dev.groundburst.legacy.recipe.Recipes.all(level.getRecipeManager(), GBRecipes.type(kind))) {
             ProcessingRecipe r = holder.value();
             if (!r.matches(input, level)) {
                 continue;
@@ -74,26 +79,26 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
                 ItemStackTemplate.CODEC.fieldOf("item").forGetter(Output::item),
                 Codec.floatRange(0, 1).optionalFieldOf("chance", 1f).forGetter(Output::chance)
         ).apply(i, Output::new));
-        public static final StreamCodec<RegistryFriendlyByteBuf, Output> STREAM_CODEC = StreamCodec.composite(
+        public static final StreamCodec<FriendlyByteBuf, Output> STREAM_CODEC = StreamCodec.composite(
                 ItemStackTemplate.STREAM_CODEC, Output::item, ByteBufCodecs.FLOAT, Output::chance, Output::new);
     }
 
     static MapCodec<ProcessingRecipe> codec(ProcessingKind kind) {
         return RecordCodecBuilder.mapCodec(i -> i.group(
-                SizedIngredient.NESTED_CODEC.listOf(0, 9).optionalFieldOf("inputs", List.of()).forGetter(ProcessingRecipe::inputs),
-                Ingredient.CODEC_NONEMPTY.optionalFieldOf("catalyst").forGetter(ProcessingRecipe::catalyst),
-                SizedFluidIngredient.NESTED_CODEC.listOf(0, 4).optionalFieldOf("fluids", List.of()).forGetter(ProcessingRecipe::fluids),
-                Output.CODEC.listOf(0, 9).optionalFieldOf("outputs", List.of()).forGetter(ProcessingRecipe::outputs),
-                FluidStackTemplate.CODEC.listOf(0, 4).optionalFieldOf("fluid_outputs", List.of()).forGetter(ProcessingRecipe::fluidOutputs),
+                SizedIngredient.NESTED_CODEC.listOf().optionalFieldOf("inputs", List.of()).forGetter(ProcessingRecipe::inputs),
+                dev.groundburst.legacy.net.Codecs.INGREDIENT_NONEMPTY_CODEC.optionalFieldOf("catalyst").forGetter(ProcessingRecipe::catalyst),
+                SizedFluidIngredient.NESTED_CODEC.listOf().optionalFieldOf("fluids", List.of()).forGetter(ProcessingRecipe::fluids),
+                Output.CODEC.listOf().optionalFieldOf("outputs", List.of()).forGetter(ProcessingRecipe::outputs),
+                FluidStackTemplate.CODEC.listOf().optionalFieldOf("fluid_outputs", List.of()).forGetter(ProcessingRecipe::fluidOutputs),
                 ExtraCodecs.POSITIVE_INT.fieldOf("time").forGetter(ProcessingRecipe::time),
                 ExtraCodecs.NON_NEGATIVE_INT.fieldOf("energy_per_tick").forGetter(ProcessingRecipe::energyPerTick)
         ).apply(i, (in, cat, fl, out, flOut, time, fe) -> new ProcessingRecipe(kind, in, cat, fl, out, flOut, time, fe)));
     }
 
-    static StreamCodec<RegistryFriendlyByteBuf, ProcessingRecipe> streamCodec(ProcessingKind kind) {
-        return net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs.composite(
+    static StreamCodec<FriendlyByteBuf, ProcessingRecipe> streamCodec(ProcessingKind kind) {
+        return dev.groundburst.port.StreamCodecs.composite(
                 SizedIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::inputs,
-                ByteBufCodecs.optional(Ingredient.CONTENTS_STREAM_CODEC), ProcessingRecipe::catalyst,
+                ByteBufCodecs.optional(dev.groundburst.legacy.net.Codecs.INGREDIENT), ProcessingRecipe::catalyst,
                 SizedFluidIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::fluids,
                 Output.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::outputs,
                 FluidStackTemplate.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::fluidOutputs,
@@ -167,11 +172,11 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
     }
 
     public ItemStack assemble(MachineRecipeInput input) {
-        return this.outputs.isEmpty() ? ItemStack.EMPTY : this.outputs.getFirst().item().create();
+        return this.outputs.isEmpty() ? ItemStack.EMPTY : dev.groundburst.legacy.J21.first(this.outputs).item().create();
     }
 
     @Override
-    public ItemStack assemble(MachineRecipeInput input, HolderLookup.Provider registries) {
+    public ItemStack assemble(MachineRecipeInput input, net.minecraft.core.RegistryAccess registries) {
         return assemble(input);
     }
 
@@ -181,8 +186,8 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
     }
 
     @Override
-    public ItemStack getResultItem(HolderLookup.Provider registries) {
-        return this.outputs.isEmpty() ? ItemStack.EMPTY : this.outputs.getFirst().item().create();
+    public ItemStack getResultItem(net.minecraft.core.RegistryAccess registries) {
+        return this.outputs.isEmpty() ? ItemStack.EMPTY : dev.groundburst.legacy.J21.first(this.outputs).item().create();
     }
 
     @Override

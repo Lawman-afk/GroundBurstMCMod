@@ -6,10 +6,10 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -545,8 +545,8 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
             return;
         }
         Component line = Component.translatable(announcementKey(which)).withStyle(announcementColour(), ChatFormatting.BOLD);
-        Holder<SoundEvent> sound = which == Announcement.READY ? dev.groundburst.registry.GBSounds.SUPERWEAPON_READY
-                : dev.groundburst.registry.GBSounds.SUPERWEAPON_WARNING;
+        Holder<SoundEvent> sound = which == Announcement.READY ? dev.groundburst.registry.GBSounds.SUPERWEAPON_READY.getDelegate()
+                : dev.groundburst.registry.GBSounds.SUPERWEAPON_WARNING.getDelegate();
         for (ServerPlayer player : level.players()) {
             player.sendSystemMessage(line);
             player.connection.send(new ClientboundSoundPacket(sound, SoundSource.MASTER, player.getX(), player.getEyeY(), player.getZ(),
@@ -616,7 +616,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     @Override
     public void onLoad() {
         super.onLoad();
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             Launches.track(server, this.worldPosition);
         }
     }
@@ -630,7 +630,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             Launches.untrack(server, this.worldPosition);
         }
     }
@@ -713,8 +713,8 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     }
 
     @Override
-    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public net.minecraft.nbt.CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -778,8 +778,8 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("charge", this.charge);
         output.putString("phase", this.phase.name());
         output.putInt("phase_ticks", this.phaseTicks);
@@ -797,8 +797,8 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.charge = input.getIntOr("charge", 0);
         try {
             this.phase = Phase.valueOf(input.getStringOr("phase", Phase.IDLE.name()));

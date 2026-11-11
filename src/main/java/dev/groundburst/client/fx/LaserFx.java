@@ -23,9 +23,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import dev.groundburst.port.render.SubmitCustomGeometryEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * The Laser Designator's beam (DESIGN.md §17.13), drawn for every player lasing: a thin red line from the designator at
@@ -69,15 +69,15 @@ public final class LaserFx {
     private LaserFx() {}
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(LaserFx::submit);
+        MinecraftForge.EVENT_BUS.addListener(LaserFx::submit);
         DesignatorPayloads.beamHook = b -> {
             ClientLevel level = Minecraft.getInstance().level;
             if (level != null) {
                 REMOTE.put(b.holder(), new Remote(b.lands() ? new Vec3(b.x(), b.y(), b.z()) : null, level.getGameTime()));
             }
         };
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> REMOTE.clear());
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.Clone event) -> REMOTE.clear());     // a new dimension
+        MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> REMOTE.clear());
+        MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.Clone event) -> REMOTE.clear());     // a new dimension
     }
 
     /** How far our designator reaches: as far as we see (our render distance), to its greatest reach. */
@@ -117,7 +117,7 @@ public final class LaserFx {
         if (level == null) {
             return;
         }
-        float partial = mc.isPaused() ? 1 : mc.getTimer().getGameTimeDeltaPartialTick(false);
+        float partial = mc.isPaused() ? 1 : mc.getFrameTime();
         List<Beam> beams = new ArrayList<>();
         for (AbstractClientPlayer p : level.players()) {
             if (lasing(p)) {
@@ -237,7 +237,7 @@ public final class LaserFx {
      * known here.
      */
     static double top(ClientLevel level, net.minecraft.core.BlockPos a) {
-        if (level.getChunkSource().getChunk(a.getX() >> 4, a.getZ() >> 4, net.minecraft.world.level.chunk.status.ChunkStatus.FULL, false) == null) {
+        if (level.getChunkSource().getChunk(a.getX() >> 4, a.getZ() >> 4, net.minecraft.world.level.chunk.ChunkStatus.FULL, false) == null) {
             return a.getY();
         }
         net.minecraft.core.BlockPos.MutableBlockPos p = new net.minecraft.core.BlockPos.MutableBlockPos(a.getX(), Math.min((level.getMaxBuildHeight() - 1), a.getY() + 96), a.getZ());
@@ -304,7 +304,7 @@ public final class LaserFx {
         double t = 0;
         for (int i = 0; i < 256 && t < length; i++) {
             double near = beam.from().add(dir.scale(t)).distanceTo(camera);
-            double t1 = Math.min(length, t + Math.clamp(near * 0.5, 0.2, SEGMENT));
+            double t1 = Math.min(length, t + dev.groundburst.legacy.J21.clamp(near * 0.5, 0.2, SEGMENT));
             float a0 = beam.spot() == null ? (float) (1 - t / length) : 1, a1 = beam.spot() == null ? (float) (1 - t1 / length) : 1;
             ribbon(b, pose, beam.from().add(dir.scale(t)), beam.from().add(dir.scale(t1)), camera, width, rgb, alpha * a0, alpha * a1);
             t = t1;

@@ -72,7 +72,7 @@ final class LaunchTests {
                 .filter(c -> c.key() == 'I').findFirst().orElseThrow().pos();
         helper.assertTrue(level.getBlockState(port).is(dev.groundburst.content.multiblock.GBMultiblocks.ITEM_PORT.block().get()),
                 "an Item Port in its port's place");
-        var items = level.getCapability(dev.groundburst.port.transfer.Capabilities.Item.BLOCK, port, Direction.UP);
+        var items = dev.groundburst.legacy.Caps.get(level, dev.groundburst.port.transfer.Capabilities.Item.BLOCK, port, Direction.UP);
         helper.assertTrue(items != null, "its Item Port takes items");
         try (var tx = dev.groundburst.port.transfer.transaction.Transaction.openRoot()) {
             helper.assertTrue(items.insert(dev.groundburst.port.transfer.item.ItemResource.of(refused), 1, tx) == 0,
@@ -80,7 +80,7 @@ final class LaunchTests {
             helper.assertTrue(items.insert(dev.groundburst.port.transfer.item.ItemResource.of(missile), 1, tx) == 1, "it takes a missile it fires");
             tx.commit();
         }
-        helper.assertTrue(ItemStack.isSameItemSameComponents(launcher.inventory().getItem(0), missile), "the missile is in its launch slot");
+        helper.assertTrue(ItemStack.isSameItemSameTags(launcher.inventory().getItem(0), missile), "the missile is in its launch slot");
         try (var tx = dev.groundburst.port.transfer.transaction.Transaction.openRoot()) {
             helper.assertTrue(items.extract(dev.groundburst.port.transfer.item.ItemResource.of(missile), 1, tx) == 0, "nothing comes out of its port");
         }
@@ -88,7 +88,7 @@ final class LaunchTests {
         level.setBlockAndUpdate(port, instead.defaultBlockState());
         launcher.revalidate();
         helper.assertTrue(launcher.isFormed(), "with " + instead.getName().getString() + " where the port goes it still forms");
-        helper.assertTrue(level.getCapability(dev.groundburst.port.transfer.Capabilities.Item.BLOCK, port, Direction.UP) == null,
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, dev.groundburst.port.transfer.Capabilities.Item.BLOCK, port, Direction.UP) == null,
                 "and nothing loads it there");
         helper.succeed();
     }
@@ -431,7 +431,7 @@ final class LaunchTests {
                 helper.assertTrue(!level.getBlockState(p).is(block), "all of it gone");
             }
             var drops = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(c).inflate(3));
-            helper.assertTrue(drops.size() == 1 && drops.getFirst().getItem().is(GBLaunch.LARGE_RADAR_DISH.item().get()), "one dish dropped");
+            helper.assertTrue(drops.size() == 1 && dev.groundburst.legacy.J21.first(drops).getItem().is(GBLaunch.LARGE_RADAR_DISH.item().get()), "one dish dropped");
         });
     }
 

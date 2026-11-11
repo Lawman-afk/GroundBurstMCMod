@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": {
+      "item": "groundburst:corrugated_steel"
+    }
+  },
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "item": "groundburst:corrugated_steel_slab",
+    "count": 6
+  }
+}

@@ -24,7 +24,7 @@ public class SuperweaponAmmoItem extends Item {
     }
 
     @Override
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         for (int i = 0; i < this.lines.size(); i++) {
             tooltip.accept(Component.translatable(this.lines.get(i)).withStyle(i == 0 ? ChatFormatting.GRAY : ChatFormatting.DARK_GRAY));
         }

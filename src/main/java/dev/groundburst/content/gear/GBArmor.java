@@ -8,13 +8,11 @@ import java.util.Map;
 import dev.groundburst.GroundBurst;
 import dev.groundburst.registry.GBItems;
 import dev.groundburst.registry.GBTab;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -23,11 +21,9 @@ import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import dev.groundburst.legacy.DeferredItem;
 
 /**
  * Protective suits (DESIGN.md §21.5). "Hazmat" (hazardous materials) covers radioactive contamination as well as
@@ -41,22 +37,93 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * Pieces share the set's protection: hood 20%, coat 35%, trousers 30%, boots 15%. Radiation Sickness from
  * contamination is reduced by it ({@link #radiationProtection}).
  * <p>
- * The 1.21.1 backport's: the materials are registered (1.21.1's armour materials are a registry; main's are 26.x's
- * equipment assets), the pieces are armour items, and the suits' textures are the {@code textures/models/armor}
- * layers {@code tools/backport/port.py} copies from main's equipment textures.
+ * The 1.20.1 backport's: the materials are 1.20.1's armour materials (an interface, not yet a registry: {@link Suit}),
+ * the pieces are armour items, and the suits' textures are the {@code textures/models/armor} layers the 1.21.1 build
+ * copies from main's equipment textures.
  */
 public final class GBArmor {
     public static final TagKey<Item> REPAIRS_HAZMAT = TagKey.create(Registries.ITEM, GroundBurst.id("repairs_hazmat"));
     public static final TagKey<Item> REPAIRS_LEAD_HAZMAT = TagKey.create(Registries.ITEM, GroundBurst.id("repairs_lead_lined_hazmat"));
 
-    private static final DeferredRegister<ArmorMaterial> MATERIALS = DeferredRegister.create(Registries.ARMOR_MATERIAL, GroundBurst.MODID);
-    public static final Holder<ArmorMaterial> HAZMAT = MATERIALS.register("hazmat", () -> new ArmorMaterial(defense(1, 2, 2, 1), 10,
-            SoundEvents.ARMOR_EQUIP_LEATHER, () -> Ingredient.of(REPAIRS_HAZMAT), List.of(new ArmorMaterial.Layer(GroundBurst.id("hazmat"))), 0f, 0f));
-    public static final Holder<ArmorMaterial> LEAD_HAZMAT = MATERIALS.register("lead_lined_hazmat", () -> new ArmorMaterial(defense(1, 3, 4, 2), 8,
-            SoundEvents.ARMOR_EQUIP_IRON, () -> Ingredient.of(REPAIRS_LEAD_HAZMAT), List.of(new ArmorMaterial.Layer(GroundBurst.id("lead_lined_hazmat"))),
-            0f, 0.05f));
     /** Durability, as main's materials have it (times each piece's own factor). */
     private static final int HAZMAT_DURABILITY = 10, LEAD_HAZMAT_DURABILITY = 18;
+
+    /** The two suits' materials (1.20.1's armour material: its textures named by getName, groundburst:textures/models/armor). */
+    private enum Suit implements ArmorMaterial {
+        HAZMAT_SUIT("hazmat", HAZMAT_DURABILITY, defense(1, 2, 2, 1), 10, SoundEvents.ARMOR_EQUIP_LEATHER, REPAIRS_HAZMAT, 0f, 0f),
+        LEAD_HAZMAT_SUIT("lead_lined_hazmat", LEAD_HAZMAT_DURABILITY, defense(1, 3, 4, 2), 8, SoundEvents.ARMOR_EQUIP_IRON, REPAIRS_LEAD_HAZMAT,
+                0f, 0.05f);
+
+        private final String name;
+        private final int durability;
+        private final Map<ArmorItem.Type, Integer> defense;
+        private final int enchantment;
+        private final net.minecraft.sounds.SoundEvent sound;
+        private final TagKey<Item> repairs;
+        private final float toughness, knockback;
+
+        Suit(String name, int durability, Map<ArmorItem.Type, Integer> defense, int enchantment, net.minecraft.sounds.SoundEvent sound,
+                TagKey<Item> repairs, float toughness, float knockback) {
+            this.name = name;
+            this.durability = durability;
+            this.defense = defense;
+            this.enchantment = enchantment;
+            this.sound = sound;
+            this.repairs = repairs;
+            this.toughness = toughness;
+            this.knockback = knockback;
+        }
+
+        /** Each piece's durability: the game's own factor for its type (1.20.1 keeps it to its own materials) times the suit's. */
+        @Override
+        public int getDurabilityForType(ArmorItem.Type type) {
+            int factor = switch (type) {
+                case HELMET -> 11;
+                case CHESTPLATE -> 16;
+                case LEGGINGS -> 15;
+                case BOOTS -> 13;
+            };
+            return factor * this.durability;
+        }
+
+        @Override
+        public int getDefenseForType(ArmorItem.Type type) {
+            return this.defense.getOrDefault(type, 0);
+        }
+
+        @Override
+        public int getEnchantmentValue() {
+            return this.enchantment;
+        }
+
+        @Override
+        public net.minecraft.sounds.SoundEvent getEquipSound() {
+            return this.sound;
+        }
+
+        @Override
+        public Ingredient getRepairIngredient() {
+            return Ingredient.of(this.repairs);
+        }
+
+        @Override
+        public String getName() {
+            return GroundBurst.MODID + ":" + this.name;
+        }
+
+        @Override
+        public float getToughness() {
+            return this.toughness;
+        }
+
+        @Override
+        public float getKnockbackResistance() {
+            return this.knockback;
+        }
+    }
+
+    public static final ArmorMaterial HAZMAT = Suit.HAZMAT_SUIT;
+    public static final ArmorMaterial LEAD_HAZMAT = Suit.LEAD_HAZMAT_SUIT;
 
     /** Share of a full set's protection each piece gives. */
     private static final Map<ArmorItem.Type, Float> SHARE = Map.of(ArmorItem.Type.HELMET, 0.20f, ArmorItem.Type.CHESTPLATE, 0.35f,
@@ -86,9 +153,8 @@ public final class GBArmor {
 
     public static void init() {}
 
-    /** The armour materials' registry (1.21.1's), on the mod's bus. */
+    /** Nothing to register on 1.20.1 (its armour materials are no registry): kept for the mod's start. */
     public static void register(IEventBus modBus) {
-        MATERIALS.register(modBus);
     }
 
     private static Map<ArmorItem.Type, Integer> defense(int boots, int legs, int chest, int helm) {
@@ -97,19 +163,18 @@ public final class GBArmor {
         m.put(ArmorItem.Type.LEGGINGS, legs);
         m.put(ArmorItem.Type.CHESTPLATE, chest);
         m.put(ArmorItem.Type.HELMET, helm);
-        m.put(ArmorItem.Type.BODY, 0);
         return m;
     }
 
     /**
      * One suit piece: vanilla armour, plus (for heavy suits) a share of the set's slowdown on the movement speed, and its
-     * share of the set's radiation protection.
+     * share of the set's radiation protection. (Its durability is its material's, for its type.)
      */
-    private static DeferredItem<Item> piece(String name, String english, Holder<ArmorMaterial> material, int durability, ArmorItem.Type type,
+    private static DeferredItem<Item> piece(String name, String english, ArmorMaterial material, int durability, ArmorItem.Type type,
             float protection, float slowdown) {
         float share = protection * SHARE.get(type);
         DeferredItem<Item> item = GBItems.register(name, english, GBTab.GEAR, p -> new SuitPiece(material, type, p, share, protection, slowdown),
-                p -> p.durability(type.getDurability(durability)));
+                p -> p);
         PENDING.put(item, share);
         return item;
     }
@@ -125,7 +190,7 @@ public final class GBArmor {
     private static final class SuitPiece extends ArmorItem {
         private final float share, set, slowdown;
 
-        SuitPiece(Holder<ArmorMaterial> material, Type type, Properties properties, float share, float set, float slowdown) {
+        SuitPiece(ArmorMaterial material, Type type, Properties properties, float share, float set, float slowdown) {
             super(material, type, properties);
             this.share = share;
             this.set = set;
@@ -134,17 +199,22 @@ public final class GBArmor {
 
         @Override
         @SuppressWarnings("deprecation")
-        public ItemAttributeModifiers getDefaultAttributeModifiers() {
-            ItemAttributeModifiers base = super.getDefaultAttributeModifiers();
-            if (this.slowdown <= 0) {
+        public com.google.common.collect.Multimap<net.minecraft.world.entity.ai.attributes.Attribute, AttributeModifier> getDefaultAttributeModifiers(
+                EquipmentSlot slot) {
+            var base = super.getDefaultAttributeModifiers(slot);
+            if (this.slowdown <= 0 || slot != getType().getSlot()) {
                 return base;
             }
-            return base.withModifierAdded(Attributes.MOVEMENT_SPEED, new AttributeModifier(GroundBurst.id("suit_weight." + getType().getName()),
-                    -this.slowdown * SHARE.get(getType()), AttributeModifier.Operation.ADD_MULTIPLIED_BASE), EquipmentSlotGroup.bySlot(getType().getSlot()));
+            com.google.common.collect.ImmutableMultimap.Builder<net.minecraft.world.entity.ai.attributes.Attribute, AttributeModifier> out =
+                    com.google.common.collect.ImmutableMultimap.builder();
+            out.putAll(base);
+            out.put(Attributes.MOVEMENT_SPEED, dev.groundburst.legacy.Attrs.modifier(GroundBurst.id("suit_weight." + getType().getName()),
+                    -this.slowdown * SHARE.get(getType()), AttributeModifier.Operation.MULTIPLY_BASE));
+            return out.build();
         }
 
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        public void appendHoverText(ItemStack stack, net.minecraft.world.level.Level context_level, List<Component> tooltip, TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level);
             var green = net.minecraft.ChatFormatting.GREEN;
             tooltip.add(Component.translatable(TIP_RADIATION, Math.round(this.share * 100), Math.round(this.set * 100)).withStyle(green));
             tooltip.add(Component.translatable(TIP_CHEMICAL, Math.round(this.share / this.set * 100)).withStyle(green));
@@ -165,7 +235,7 @@ public final class GBArmor {
         float total = 0;
         for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
             Item item = entity.getItemBySlot(slot).getItem();
-            if (PROTECTION.containsKey(item) && item instanceof SuitPiece piece) {
+            if (PROTECTION.containsKey(item) && ((Object) item) instanceof SuitPiece piece) {
                 total += piece.share / piece.set;
             }
         }

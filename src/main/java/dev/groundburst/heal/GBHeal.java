@@ -22,27 +22,27 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.util.BlockSnapshot;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.neoforge.event.level.ChunkEvent;
-import net.neoforged.neoforge.event.level.LevelEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.IEventBus;
+import dev.groundburst.legacy.AttachmentType;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.level.ChunkEvent;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.TickEvent;
+import dev.groundburst.legacy.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * Wiring for healing (DESIGN.md §21.9): the chunk record, the hooks that keep the healer's list of damaged chunks
  * and tell it what players and the aftermath do, and {@code /groundburst heal}.
  */
 public final class GBHeal {
-    public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES,
+    public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS = DeferredRegister.create(dev.groundburst.legacy.Attachments.REGISTRY_KEY,
             GroundBurst.MODID);
     /** A chunk's remembered damage (only on chunks that have some). */
     public static final Supplier<AttachmentType<ChunkScars>> SCARS = ATTACHMENTS.register("scars",
@@ -71,34 +71,34 @@ public final class GBHeal {
 
     public static void register(IEventBus modBus) {
         ATTACHMENTS.register(modBus);
-        NeoForge.EVENT_BUS.addListener((ChunkEvent.Load e) -> {
-            if (e.getLevel() instanceof ServerLevel level && e.getChunk() instanceof LevelChunk chunk
-                    && chunk.getExistingDataOrNull(SCARS.get()) != null) {
+        MinecraftForge.EVENT_BUS.addListener((ChunkEvent.Load e) -> {
+            if (((Object) e.getLevel()) instanceof ServerLevel level && ((Object) e.getChunk()) instanceof LevelChunk chunk
+                    && dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, SCARS.get()) != null) {
                 Healer.of(level).track(chunk);
             }
         });
-        NeoForge.EVENT_BUS.addListener((ChunkEvent.Unload e) -> {
-            if (e.getLevel() instanceof ServerLevel level && e.getChunk() instanceof LevelChunk chunk) {
+        MinecraftForge.EVENT_BUS.addListener((ChunkEvent.Unload e) -> {
+            if (((Object) e.getLevel()) instanceof ServerLevel level && ((Object) e.getChunk()) instanceof LevelChunk chunk) {
                 Healer.of(level).untrack(chunk);
             }
         });
-        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
-            if (e.getLevel() instanceof ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent e) -> {if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) e.level) instanceof ServerLevel level) {
                 Healer.of(level).tick();
                 Explosions.forget();
             }
         });
-        NeoForge.EVENT_BUS.addListener((LevelEvent.Unload e) -> {
-            if (e.getLevel() instanceof ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((LevelEvent.Unload e) -> {
+            if (((Object) e.getLevel()) instanceof ServerLevel level) {
                 Healer.forget(level);
             }
         });
         // A player's block over remembered damage (after any other mod has had its say: a cancelled one is not placed).
-        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, (BlockEvent.EntityPlaceEvent e) -> {
-            if (!(e.getLevel() instanceof ServerLevel level) || !(e.getEntity() instanceof Player)) {
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (BlockEvent.EntityPlaceEvent e) -> {
+            if (!(((Object) e.getLevel()) instanceof ServerLevel level) || !(e.getEntity() instanceof Player)) {
                 return;
             }
-            if (e instanceof BlockEvent.EntityMultiPlaceEvent multi) {
+            if (((Object) e) instanceof BlockEvent.EntityMultiPlaceEvent multi) {
                 for (BlockSnapshot s : multi.getReplacedBlockSnapshots()) {
                     Scars.claim(level, s.getPos());
                 }
@@ -107,30 +107,30 @@ public final class GBHeal {
             }
         });
         // Sand and gravel the damage left hanging fall: where they fell from heals, and where they landed.
-        NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent e) -> {
-            if (!(e.getLevel() instanceof ServerLevel level)) {
+        MinecraftForge.EVENT_BUS.addListener((EntityJoinLevelEvent e) -> {
+            if (!(((Object) e.getLevel()) instanceof ServerLevel level)) {
                 return;
             }
             Entity entity = e.getEntity();
             if ((entity instanceof ItemEntity || entity instanceof ExperienceOrb) && Healer.of(level).hushed(entity.position())) {
                 e.setCanceled(true);                       // a decoration taken down to hang again, a block that will heal: no drop
-            } else if (entity instanceof FallingBlockEntity falling && !e.loadedFromDisk()) {
+            } else if (((Object) entity) instanceof FallingBlockEntity falling && !e.loadedFromDisk()) {
                 Scars.aftermath(level, falling.blockPosition(), falling.getBlockState(), falling.blockData, false);
             }
         });
-        NeoForge.EVENT_BUS.addListener((EntityLeaveLevelEvent e) -> {
-            if (!(e.getLevel() instanceof ServerLevel level) || e.getEntity().getRemovalReason() != Entity.RemovalReason.DISCARDED) {
+        MinecraftForge.EVENT_BUS.addListener((EntityLeaveLevelEvent e) -> {
+            if (!(((Object) e.getLevel()) instanceof ServerLevel level) || e.getEntity().getRemovalReason() != Entity.RemovalReason.DISCARDED) {
                 return;
             }
-            if (e.getEntity() instanceof FallingBlockEntity falling) {
+            if (((Object) e.getEntity()) instanceof FallingBlockEntity falling) {
                 if (level.getBlockState(falling.blockPosition()) == falling.getBlockState()) {
                     Scars.aftermath(level, falling.blockPosition(), Blocks.AIR.defaultBlockState(), null, false);
                 }
-            } else if (e.getEntity() instanceof HangingEntity hanging && !hanging.survives()) {
+            } else if (((Object) e.getEntity()) instanceof HangingEntity hanging && !hanging.survives()) {
                 Scars.lostWall(level, hanging);
             }
         });
-        NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> commands(e.getDispatcher()));
+        MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> commands(e.getDispatcher()));
     }
 
     /**

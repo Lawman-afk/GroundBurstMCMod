@@ -43,13 +43,13 @@ public class DepthChargeItem extends Item {
                     next = depths[(i + 1) % depths.length];
                 }
             }
-            stack.set(GBDataComponents.NAVAL_DEPTH.get(), next);
+            dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.NAVAL_DEPTH.get(), next);
             if (!level.isClientSide()) {
                 player.displayClientMessage(Component.translatable(T_DEPTH_SET, next), true);
             }
             return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
         }
-        if (level instanceof ServerLevel server) {
+        if (((Object) level) instanceof ServerLevel server) {
             DepthCharge thrown = new DepthCharge(server, player, stack);
             thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0f, 0.6f, 1.0f);
             server.addFreshEntity(thrown);
@@ -57,12 +57,12 @@ public class DepthChargeItem extends Item {
         }
         player.awardStat(Stats.ITEM_USED.get(this));
         player.getCooldowns().addCooldown(stack.getItem(), 20);
-        stack.consume(1, player);
+        dev.groundburst.legacy.Items2.consume(stack, 1, player);
         return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
     }
 
     @Override
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         tooltip.accept(Component.translatable(T_DEPTH, DepthCharge.depthOf(stack)).withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable(T_SET).withStyle(ChatFormatting.DARK_GRAY));
         tooltip.accept(Component.translatable(T_DRY).withStyle(ChatFormatting.DARK_GRAY));

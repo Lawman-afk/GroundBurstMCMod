@@ -15,13 +15,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.level.LevelEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.registries.DataPackRegistryEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.registries.DataPackRegistryEvent;
 
 /** Wiring for the explosion engine: the blast profile registry, the tick hooks and the {@code /groundburst blast} command. */
 public final class GBBlast {
@@ -43,9 +42,9 @@ public final class GBBlast {
         GBLang.add("death.attack." + GroundBurst.MODID + ".flash_frozen.player", "%1$s was frozen solid by %2$s's cryo bomb");
         GBLang.add("death.attack." + GroundBurst.MODID + ".particle_beam", "%1$s was vaporized by a particle beam");
         GBLang.add("death.attack." + GroundBurst.MODID + ".particle_beam.player", "%1$s was vaporized by %2$s's particle beam");
-        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre event) -> BlastManager.resetBudget());
-        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
-            if (event.getLevel() instanceof ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ServerTickEvent event) -> { if (event.phase != net.minecraftforge.event.TickEvent.Phase.START) return; BlastManager.resetBudget(); });
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent event) -> {if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) event.level) instanceof ServerLevel level) {
                 Annihilations.tick(level);                  // short-lived: ahead of the blasts in the budget
                 Singularities.tick(level);
                 Storms.tick(level);
@@ -54,8 +53,8 @@ public final class GBBlast {
                 BlastManager.of(level).tick();
             }
         });
-        NeoForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
-            if (event.getLevel() instanceof ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
+            if (((Object) event.getLevel()) instanceof ServerLevel level) {
                 BlastManager.forget(level);
                 Annihilations.forget(level);
                 Singularities.forget(level);
@@ -64,12 +63,12 @@ public final class GBBlast {
                 ParticleBeams.forget(level);
             }
         });
-        NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> commands(event.getDispatcher()));
-        modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent event) -> event.register(BlastChunks.TICKETS));
+        MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> commands(event.getDispatcher()));
+        modBus.addListener((dev.groundburst.legacy.RegisterTicketControllersEvent event) -> event.register(BlastChunks.TICKETS));
         PlayBench.register();
         // Players arriving while blasts run are told about them (sound timing, the shockwave in slice 5c).
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) -> {
-            if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) -> {
+            if (((Object) event.getEntity()) instanceof net.minecraft.server.level.ServerPlayer player) {
                 BlastManager.of((net.minecraft.server.level.ServerLevel) player.level()).syncTo(player);
                 Annihilations.syncTo(player);
                 Singularities.syncTo(player);
@@ -78,8 +77,8 @@ public final class GBBlast {
                 ParticleBeams.syncTo(player);
             }
         });
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) -> {
-            if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) -> {
+            if (((Object) event.getEntity()) instanceof net.minecraft.server.level.ServerPlayer player) {
                 BlastManager.of((net.minecraft.server.level.ServerLevel) player.level()).syncTo(player);
                 Annihilations.syncTo(player);
                 Singularities.syncTo(player);

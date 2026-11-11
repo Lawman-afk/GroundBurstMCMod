@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.groundburst.legacy.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "groundburst.refmap.json",
+  "plugin": "dev.groundburst.legacy.mixin.MixinPlugin",
+  "mixins": [
+    "BlockItemMixin",
+    "ExplosionAccess",
+    "ExplosionHitMixin",
+    "GameTestHelperAccess",
+    "ItemMixin",
+    "RandomizableContainerAccess"
+  ],
+  "client": [
+    "FluidTypeMixin",
+    "ItemClientMixin",
+    "LevelRendererMixin",
+    "MouseHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

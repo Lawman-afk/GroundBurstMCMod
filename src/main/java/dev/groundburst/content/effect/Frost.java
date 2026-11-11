@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.common.Tags;
 
 /**
  * Freezing (DESIGN.md §16.4): a burst of cold that freezes water to ice (packed ice near its middle), lava to obsidian
@@ -89,10 +89,10 @@ public final class Frost {
         crystals(level, c, radius, random, scars);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(centre, centre).inflate(radius))) {
             if (e.position().distanceTo(centre) > radius || e.getType().is(Tags.EntityTypes.BOSSES) || e.isSpectator()
-                    || e instanceof Player pl && pl.isCreative()) {
+                    || ((Object) e) instanceof Player pl && pl.isCreative()) {
                 continue;
             }
-            e.addEffect(new MobEffectInstance(EffectSystems.FROZEN, ticks, 0, false, true, true));
+            e.addEffect(new MobEffectInstance(EffectSystems.FROZEN.get(), ticks, 0, false, true, true));
             e.setTicksFrozen(e.getTicksRequiredToFreeze() + FrozenEffect.MARK);
         }
         level.sendParticles(ParticleTypes.SNOWFLAKE, centre.x, centre.y + 1, centre.z, (int) (40 * radius), radius * 0.4, 1, radius * 0.4, 0.15);
@@ -109,7 +109,7 @@ public final class Frost {
 
     /** Small plants it freezes solid: grass, ferns, flowers, saplings (a tall plant's upper half just goes). */
     public static boolean plant(BlockState s) {
-        return s.is(Blocks.SHORT_GRASS) || s.is(Blocks.TALL_GRASS) || s.is(Blocks.FERN) || s.is(Blocks.LARGE_FERN)
+        return s.is(Blocks.GRASS) || s.is(Blocks.TALL_GRASS) || s.is(Blocks.FERN) || s.is(Blocks.LARGE_FERN)
                 || s.is(BlockTags.SMALL_FLOWERS) || s.is(BlockTags.SAPLINGS) || s.is(Blocks.SWEET_BERRY_BUSH);
     }
 

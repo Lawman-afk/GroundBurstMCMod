@@ -39,10 +39,7 @@ import dev.groundburst.port.transfer.access.ItemAccess;
  * use an invisible block model; the block entity renderer draws them.
  */
 public class MachineBlock extends BaseEntityBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends MachineBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
@@ -71,22 +68,22 @@ public class MachineBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return this.geckoRendered ? RenderShape.INVISIBLE : RenderShape.MODEL;
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos, CollisionContext context) {
         return this.shapes.get(state.getValue(FACING));
     }
 
@@ -107,32 +104,40 @@ public class MachineBlock extends BaseEntityBlock {
     }
 
     /** Right-click with a full bucket or canister pours it in; sneak-right-click with an empty one fills it from a product tank. */
-    @Override
-    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected dev.groundburst.legacy.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         return useFluidContainer(state, level, pos, player, hand);
     }
 
     /** Shared with formed multiblock parts, which pass the click on to their controller. */
-    public static net.minecraft.world.ItemInteractionResult useFluidContainer(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
+    public static dev.groundburst.legacy.ItemInteractionResult useFluidContainer(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
         MachineBlockEntity machine = MachineFluidInteraction.machineAt(level, pos, state);
         if (machine == null || machine.tanks().isEmpty() || !MachineFluidInteraction.isFluidContainer(player, hand)) {
-            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         if (level.isClientSide()) {
-            return net.minecraft.world.ItemInteractionResult.SUCCESS;
+            return dev.groundburst.legacy.ItemInteractionResult.SUCCESS;
         }
         if (MachineFluidInteraction.use(machine, level, pos, player, hand)) {
-            return net.minecraft.world.ItemInteractionResult.SUCCESS;
+            return dev.groundburst.legacy.ItemInteractionResult.SUCCESS;
         }
         // Nothing to pour or fill: sneaking does nothing, a plain click opens the machine.
-        return player.isSecondaryUseActive() ? net.minecraft.world.ItemInteractionResult.CONSUME : net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        return player.isSecondaryUseActive() ? dev.groundburst.legacy.ItemInteractionResult.CONSUME : dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!level.isClientSide() && ((Object) level.getBlockEntity(pos)) instanceof MachineBlockEntity machine && ((Object) player) instanceof ServerPlayer serverPlayer) {
+            net.minecraftforge.network.NetworkHooks.openScreen((net.minecraft.server.level.ServerPlayer) serverPlayer, machine, pos);
+        }
+        return InteractionResult.SUCCESS;
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MachineBlockEntity machine && player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.openMenu(machine, pos);
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        dev.groundburst.legacy.ItemInteractionResult item_ = this.useItemOn(player_.getItemInHand(hand_), state_, level_, pos_, player_, hand_, hit_);
+        if (item_ != dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+            return item_.result();
         }
-        return InteractionResult.SUCCESS;
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

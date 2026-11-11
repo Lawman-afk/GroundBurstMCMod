@@ -23,7 +23,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * One singularity (DESIGN.md §16.2, §16.12): a black hole that opens, feeds on what it reaches and grows by it, then
@@ -175,9 +175,9 @@ final class SingularityJob {
         double gm = Singularities.gm(this.reach) * boost;
         float pull = Singularities.pullRadius(this.reach);
         Entity source = this.by == null ? null : this.level.getEntity(this.by);
-        DamageSource damage = this.level.damageSources().source(Singularities.SPAGHETTIFIED, null, source);
+        DamageSource damage = dev.groundburst.legacy.Game.source(this.level, Singularities.SPAGHETTIFIED, null, source);
         for (Entity e : this.level.getEntities((Entity) null, new AABB(this.center, this.center).inflate(pull), Entity::isAlive)) {
-            if (e instanceof Player p && (p.isCreative() || p.isSpectator()) || e instanceof dev.groundburst.content.launch.MissileEntity) {
+            if (((Object) e) instanceof Player p && (p.isCreative() || p.isSpectator()) || e instanceof dev.groundburst.content.launch.MissileEntity) {
                 continue;
             }
             Vec3 to = this.center.subtract(e.getBoundingBox().getCenter());
@@ -187,7 +187,7 @@ final class SingularityJob {
             }
             if (d <= h + 0.5 * e.getBbWidth()) {
                 this.mass += worth(e);
-                if (e instanceof LivingEntity living) {
+                if (((Object) e) instanceof LivingEntity living) {
                     living.invulnerableTime = 0;
                     living.hurt(damage, 1.0E6f);
                 } else {

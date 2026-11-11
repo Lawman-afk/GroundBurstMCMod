@@ -37,10 +37,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import dev.groundburst.port.render.ExtractLevelRenderStateEvent;
 import dev.groundburst.port.render.SubmitCustomGeometryEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * Multiblock ghost preview (DESIGN.md §23.1). Shows a translucent, gently pulsing copy of each missing block and a
@@ -70,9 +70,9 @@ public final class MultiblockPreview {
     public static void register() {
         MultiblockClientHooks.togglePreview = MultiblockPreview::toggle;
         MultiblockClientHooks.stepLayer = MultiblockPreview::stepLayer;
-        NeoForge.EVENT_BUS.addListener(MultiblockPreview::extract);
-        NeoForge.EVENT_BUS.addListener(MultiblockPreview::submit);
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
+        MinecraftForge.EVENT_BUS.addListener(MultiblockPreview::extract);
+        MinecraftForge.EVENT_BUS.addListener(MultiblockPreview::submit);
+        MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             PINNED.clear();
             layer = 0;
         });
@@ -110,7 +110,7 @@ public final class MultiblockPreview {
             return;
         }
         List<MultiblockController> shown = new ArrayList<>();
-        PINNED.removeIf(pos -> !(level.getBlockEntity(pos) instanceof MultiblockController c) || c.isFormed());
+        PINNED.removeIf(pos -> !(((Object) level.getBlockEntity(pos)) instanceof MultiblockController c) || c.isFormed());
         for (BlockPos pos : PINNED) {
             shown.add((MultiblockController) level.getBlockEntity(pos));
         }
@@ -125,7 +125,7 @@ public final class MultiblockPreview {
                         continue;
                     }
                     for (BlockEntity be : level.getChunk(center.x + cx, center.z + cz).getBlockEntities().values()) {
-                        if (be instanceof MultiblockController c && !c.isFormed() && !PINNED.contains(be.getBlockPos())
+                        if (((Object) be) instanceof MultiblockController c && !c.isFormed() && !PINNED.contains(be.getBlockPos())
                                 && be.getBlockPos().distToCenterSqr(player.position()) <= range2) {
                             shown.add(c);
                         }
@@ -191,7 +191,7 @@ public final class MultiblockPreview {
      * cube in the block's particle texture if its model draws nothing.
      */
     private static void ghost(VertexConsumer buffer, PoseStack.Pose base, List<BlockStateModelPart> parts, TextureAtlasSprite sprite, int tint) {
-        PoseStack.Pose pose = base.copy();
+        PoseStack.Pose pose = dev.groundburst.legacy.Game.copy(base);
         float k = 1 - 2 * INSET;
         pose.pose().translate(0.5f, 0.5f, 0.5f);
         dev.groundburst.port.render.Poses.scale(pose, k, k, k);
@@ -232,9 +232,9 @@ public final class MultiblockPreview {
             float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz, float dx, float dy, float dz,
             float u0, float v0, float u1, float v1) {
         int light = LightTexture.FULL_BRIGHT;
-        buffer.addVertex(pose, ax, ay, az).setColor(color).setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, bx, by, bz).setColor(color).setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, cx, cy, cz).setColor(color).setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, dx, dy, dz).setColor(color).setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), ax, ay, az).color(color).uv(u0, v0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), bx, by, bz).color(color).uv(u0, v1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), cx, cy, cz).color(color).uv(u1, v1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), dx, dy, dz).color(color).uv(u1, v0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
     }
 }

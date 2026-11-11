@@ -17,7 +17,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import dev.groundburst.GroundBurst;
-import net.neoforged.fml.loading.FMLPaths;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 /**
  * What the reader has done with the Field Manual: entries read (no more "new" dot), bookmarks (up to

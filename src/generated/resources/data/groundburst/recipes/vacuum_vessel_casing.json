@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "M": {
+      "item": "groundburst:machine_casing"
+    },
+    "T": {
+      "tag": "forge:plates/tungsten"
+    }
+  },
+  "pattern": [
+    "TMT",
+    "M M",
+    "TMT"
+  ],
+  "result": {
+    "item": "groundburst:vacuum_vessel_casing",
+    "count": 4
+  }
+}

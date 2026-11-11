@@ -13,7 +13,7 @@ import dev.groundburst.port.transfer.transaction.TransactionContext;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.capabilities.ItemCapability;
+import dev.groundburst.legacy.ItemCapability;
 
 /**
  * Where an item is (a player's hand, a slot of a handler, a stack on its own), so a handler living in the item (a
@@ -73,7 +73,7 @@ public interface ItemAccess {
     /** The item's capability, given this place as its context (null: it has none). */
     default <T> @Nullable T getCapability(ItemCapability<T, ItemAccess> capability) {
         ItemResource r = getResource();
-        return r.isEmpty() ? null : r.toStack(Math.max(1, getAmount())).getCapability(capability, this);
+        return r.isEmpty() ? null : dev.groundburst.legacy.Caps.get(r.toStack(Math.max(1, getAmount())), capability, this);
     }
 
     /** A stack on its own (a copy is kept and changed; read it back with the access's resource). */
@@ -206,7 +206,7 @@ public interface ItemAccess {
         }
 
         private boolean infinite() {
-            return this.player.hasInfiniteMaterials();
+            return this.player.getAbilities().instabuild;
         }
 
         @Override

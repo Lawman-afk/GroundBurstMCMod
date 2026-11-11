@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    },
+    {
+      "item": "groundburst:crt_display"
+    },
+    {
+      "item": "groundburst:copper_wire"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "item": "groundburst:missile_warning_receiver"
+  }
+}

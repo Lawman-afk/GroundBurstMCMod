@@ -6,14 +6,13 @@ import java.util.function.Consumer;
 import dev.groundburst.network.GBNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import dev.groundburst.legacy.net.IPayloadContext;
 
 /** The Launch Computer's screen: opening and closing it, aiming and arming each silo, launching; and the scope it is sent. */
 public final class LaunchPayloads {
@@ -27,8 +26,8 @@ public final class LaunchPayloads {
     private LaunchPayloads() {}
 
     private static LaunchComputerBlockEntity computer(IPayloadContext context, BlockPos pos) {
-        if (context.player() instanceof ServerPlayer player && dev.groundburst.content.machine.Carried.near(player, pos, REACH)
-                && dev.groundburst.content.machine.Carried.blockEntity(player.level(), pos, LaunchComputerBlockEntity.class) instanceof LaunchComputerBlockEntity c) {
+        if (((Object) context.player()) instanceof ServerPlayer player && dev.groundburst.content.machine.Carried.near(player, pos, REACH)
+                && ((Object) dev.groundburst.content.machine.Carried.blockEntity(player.level(), pos, LaunchComputerBlockEntity.class)) instanceof LaunchComputerBlockEntity c) {
             return c;
         }
         return null;
@@ -37,8 +36,8 @@ public final class LaunchPayloads {
     /** The screen of a computer or radar array opened (true) or closed (false). */
     public record Watch(BlockPos pos, boolean open) implements CustomPacketPayload {
         public static final Type<Watch> TYPE = GBNetwork.type("launch_watch");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Watch> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Watch::pos, ByteBufCodecs.BOOL, Watch::open, Watch::new);
+        public static final StreamCodec<FriendlyByteBuf, Watch> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, Watch::pos, ByteBufCodecs.BOOL, Watch::open, Watch::new);
 
         @Override
         public Type<Watch> type() {
@@ -46,8 +45,8 @@ public final class LaunchPayloads {
         }
 
         public static void handle(Watch p, IPayloadContext context) {
-            if (context.player() instanceof ServerPlayer player && dev.groundburst.content.machine.Carried.near(player, p.pos(), REACH)
-                    && dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), ScreenWatched.class) instanceof ScreenWatched c) {
+            if (((Object) context.player()) instanceof ServerPlayer player && dev.groundburst.content.machine.Carried.near(player, p.pos(), REACH)
+                    && ((Object) dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), ScreenWatched.class)) instanceof ScreenWatched c) {
                 if (p.open()) {
                     c.addViewer(player);
                 } else {
@@ -60,8 +59,8 @@ public final class LaunchPayloads {
     /** Aim one silo of this computer's. */
     public record Target(BlockPos pos, BlockPos silo, int x, int z) implements CustomPacketPayload {
         public static final Type<Target> TYPE = GBNetwork.type("launch_target");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Target> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Target::pos, BlockPos.STREAM_CODEC, Target::silo, ByteBufCodecs.VAR_INT, Target::x,
+        public static final StreamCodec<FriendlyByteBuf, Target> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, Target::pos, dev.groundburst.legacy.net.Codecs.BLOCK_POS, Target::silo, ByteBufCodecs.VAR_INT, Target::x,
                 ByteBufCodecs.VAR_INT, Target::z, Target::new);
 
         @Override
@@ -71,7 +70,7 @@ public final class LaunchPayloads {
 
         public static void handle(Target p, IPayloadContext context) {
             LaunchComputerBlockEntity c = computer(context, p.pos());
-            if (c != null && context.player() instanceof ServerPlayer player) {
+            if (c != null && ((Object) context.player()) instanceof ServerPlayer player) {
                 c.setTarget((ServerLevel) player.level(), p.silo(), p.x(), p.z());
             }
         }
@@ -80,8 +79,8 @@ public final class LaunchPayloads {
     /** Arm one silo of this computer's (true), or make it safe (false). */
     public record Arm(BlockPos pos, BlockPos silo, boolean on) implements CustomPacketPayload {
         public static final Type<Arm> TYPE = GBNetwork.type("launch_arm");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Arm> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Arm::pos, BlockPos.STREAM_CODEC, Arm::silo, ByteBufCodecs.BOOL, Arm::on, Arm::new);
+        public static final StreamCodec<FriendlyByteBuf, Arm> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, Arm::pos, dev.groundburst.legacy.net.Codecs.BLOCK_POS, Arm::silo, ByteBufCodecs.BOOL, Arm::on, Arm::new);
 
         @Override
         public Type<Arm> type() {
@@ -90,7 +89,7 @@ public final class LaunchPayloads {
 
         public static void handle(Arm p, IPayloadContext context) {
             LaunchComputerBlockEntity c = computer(context, p.pos());
-            if (c != null && context.player() instanceof ServerPlayer player) {
+            if (c != null && ((Object) context.player()) instanceof ServerPlayer player) {
                 c.arm((ServerLevel) player.level(), p.silo(), p.on());
             }
         }
@@ -99,8 +98,8 @@ public final class LaunchPayloads {
     /** LAUNCH: fire every armed silo this computer links. */
     public record Launch(BlockPos pos) implements CustomPacketPayload {
         public static final Type<Launch> TYPE = GBNetwork.type("launch_fire");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Launch> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Launch::pos, Launch::new);
+        public static final StreamCodec<FriendlyByteBuf, Launch> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, Launch::pos, Launch::new);
 
         @Override
         public Type<Launch> type() {
@@ -109,7 +108,7 @@ public final class LaunchPayloads {
 
         public static void handle(Launch p, IPayloadContext context) {
             LaunchComputerBlockEntity c = computer(context, p.pos());
-            if (c != null && context.player() instanceof ServerPlayer player) {
+            if (c != null && ((Object) context.player()) instanceof ServerPlayer player) {
                 c.launchArmed((ServerLevel) player.level(), player);
             }
         }
@@ -123,8 +122,8 @@ public final class LaunchPayloads {
     public record MapRequest(BlockPos pos, int scale, List<Long> tiles) implements CustomPacketPayload {
         public static final int MAX_TILES = 32;
         public static final Type<MapRequest> TYPE = GBNetwork.type("launch_map_request");
-        public static final StreamCodec<RegistryFriendlyByteBuf, MapRequest> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, MapRequest::pos, ByteBufCodecs.VAR_INT, MapRequest::scale,
+        public static final StreamCodec<FriendlyByteBuf, MapRequest> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, MapRequest::pos, ByteBufCodecs.VAR_INT, MapRequest::scale,
                 ByteBufCodecs.VAR_LONG.apply(ByteBufCodecs.list(MAX_TILES)), MapRequest::tiles, MapRequest::new);
 
         @Override
@@ -134,8 +133,8 @@ public final class LaunchPayloads {
 
         public static void handle(MapRequest p, IPayloadContext context) {
             int scale = p.scale();
-            if (!(context.player() instanceof ServerPlayer player) || !dev.groundburst.content.machine.Carried.near(player, p.pos(), REACH)
-                    || !(dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), MapSource.class) instanceof MapSource c) || !c.mapping() || !TerrainSurvey.validScale(scale)) {
+            if (!(((Object) context.player()) instanceof ServerPlayer player) || !dev.groundburst.content.machine.Carried.near(player, p.pos(), REACH)
+                    || !(((Object) dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), MapSource.class)) instanceof MapSource c) || !c.mapping() || !TerrainSurvey.validScale(scale)) {
                 return;
             }
             boolean bounded = c.boundedMap();
@@ -150,7 +149,7 @@ public final class LaunchPayloads {
                     continue;
                 }
                 TerrainSurvey.Tile tile = survey.tile(level, scale, tx, tz);
-                net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player,
+                dev.groundburst.legacy.net.PacketDistributor.sendToPlayer(player,
                         new MapTile(p.pos(), scale, tx, tz, tile.colours(), tile.partial()));
             }
         }
@@ -159,8 +158,8 @@ public final class LaunchPayloads {
     /** A map tile for the screen: {@link TerrainSurvey#TILE} squared map colours (empty: nothing known there); partial: ask again soon. */
     public record MapTile(BlockPos pos, int scale, int tx, int tz, byte[] colours, boolean partial) implements CustomPacketPayload {
         public static final Type<MapTile> TYPE = GBNetwork.type("launch_map_tile");
-        public static final StreamCodec<RegistryFriendlyByteBuf, MapTile> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, MapTile::pos, ByteBufCodecs.VAR_INT, MapTile::scale, ByteBufCodecs.VAR_INT, MapTile::tx,
+        public static final StreamCodec<FriendlyByteBuf, MapTile> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, MapTile::pos, ByteBufCodecs.VAR_INT, MapTile::scale, ByteBufCodecs.VAR_INT, MapTile::tx,
                 ByteBufCodecs.VAR_INT, MapTile::tz, ByteBufCodecs.BYTE_ARRAY, MapTile::colours, ByteBufCodecs.BOOL, MapTile::partial, MapTile::new);
 
         @Override
@@ -221,7 +220,7 @@ public final class LaunchPayloads {
      */
     public record Radar(BlockPos pos, BlockPos at, boolean formed, boolean powered, int energy, List<Track> tracks) implements CustomPacketPayload {
         public static final Type<Radar> TYPE = GBNetwork.type("radar_tracks");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Radar> CODEC = StreamCodec.of((buf, r) -> {
+        public static final StreamCodec<FriendlyByteBuf, Radar> CODEC = StreamCodec.of((buf, r) -> {
             buf.writeBlockPos(r.pos());
             buf.writeBlockPos(r.at());
             buf.writeBoolean(r.formed());
@@ -253,7 +252,7 @@ public final class LaunchPayloads {
     public record Scope(BlockPos pos, BlockPos at, boolean formed, boolean powered, int energy, List<Silo> silos, List<Contact> contacts)
             implements CustomPacketPayload {
         public static final Type<Scope> TYPE = GBNetwork.type("launch_scope");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Scope> CODEC = StreamCodec.of((buf, s) -> {
+        public static final StreamCodec<FriendlyByteBuf, Scope> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeBlockPos(s.pos());
             buf.writeBlockPos(s.at());
             buf.writeBoolean(s.formed());

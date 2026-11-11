@@ -32,8 +32,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 
 /**
  * Placed charges going off (DESIGN.md §9.4, §14): the charges loaded in each level (for the Remote Detonator), charges
@@ -95,13 +95,13 @@ public final class Charges {
     }
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
-            if (e.getLevel() instanceof ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent e) -> {if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) e.level) instanceof ServerLevel level) {
                 tick(level);
             }
         });
         // A new world (or a restarted integrated server) starts with nothing known or pending.
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStoppedEvent e) -> {
             LOADED.clear();
             PENDING.clear();
         });
@@ -130,7 +130,7 @@ public final class Charges {
         int n = 0;
         for (long l : set.toLongArray()) {
             BlockPos p = BlockPos.of(l);
-            if (Vec3.atCenterOf(p).distanceTo(centre) <= radius && level.getBlockEntity(p) instanceof ChargeBlockEntity be && be.armed()
+            if (Vec3.atCenterOf(p).distanceTo(centre) <= radius && ((Object) level.getBlockEntity(p)) instanceof ChargeBlockEntity be && be.armed()
                     && be.kind() != ChargeKind.LANDMINE && be.kind() != ChargeKind.BOUNCING_MINE && be.disarm(level)) {
                 n++;
             }
@@ -166,7 +166,7 @@ public final class Charges {
 
     /** A charge caught in a blast (or broken while its timer runs): it goes off 2-5 ticks later, armed or not. */
     public static void caughtInBlast(ServerLevel level, BlockPos pos, BlockState state) {
-        if (!(state.getBlock() instanceof ChargeBlock block) || block.kind == ChargeKind.THERMITE) {
+        if (!(((Object) state.getBlock()) instanceof ChargeBlock block) || block.kind == ChargeKind.THERMITE) {
             return;                                    // thermite only burns when lit; a blast just scatters it
         }
         ChargeBlockEntity be = ChargeBlock.at(level, pos);
@@ -208,7 +208,7 @@ public final class Charges {
 
     /** As above, a bomb's reach times {@code scale} (a bomb dropped from a height lands harder). */
     static void detonate(ServerLevel level, BlockPos pos, BlockState state, @Nullable Entity by, float scale) {
-        if (!(state.getBlock() instanceof ChargeBlock block)) {
+        if (!(((Object) state.getBlock()) instanceof ChargeBlock block)) {
             return;
         }
         level.removeBlock(pos, false);
@@ -593,7 +593,7 @@ public final class Charges {
         }
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(centre, centre).inflate(radius, 4, radius))) {
             if (!e.fireImmune()) {
-                e.igniteForSeconds(10);
+                e.setSecondsOnFire((int) (10));
             }
         }
         level.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 2f, 0.6f);
@@ -671,7 +671,7 @@ public final class Charges {
 
     /** Whether an armed mine senses something: a creature on its plate, or across the claymore's laser. */
     static boolean sensed(ServerLevel level, BlockPos pos, BlockState state) {
-        if (!(state.getBlock() instanceof ChargeBlock block)) {
+        if (!(((Object) state.getBlock()) instanceof ChargeBlock block)) {
             return false;
         }
         AABB zone = switch (block.kind.sensor) {
@@ -759,7 +759,7 @@ public final class Charges {
         }
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(pos).inflate(1))) {
             if (!e.fireImmune()) {
-                e.igniteForSeconds(5);
+                e.setSecondsOnFire((int) (5));
                 e.hurt(level.damageSources().inFire(), 2f);
             }
         }

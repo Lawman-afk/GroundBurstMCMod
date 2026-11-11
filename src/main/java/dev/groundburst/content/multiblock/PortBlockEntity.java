@@ -31,7 +31,7 @@ public class PortBlockEntity extends BlockEntity {
             this.controller = controller;
             setChanged();
             if (this.level != null) {
-                this.level.invalidateCapabilities(this.worldPosition);
+                dev.groundburst.legacy.Caps.invalidate(this.level, this.worldPosition);
             }
         }
     }
@@ -40,7 +40,7 @@ public class PortBlockEntity extends BlockEntity {
         if (this.controller == null || this.level == null) {
             return null;
         }
-        return this.level.getBlockEntity(this.controller) instanceof MachineBlockEntity m ? m : null;
+        return ((Object) this.level.getBlockEntity(this.controller)) instanceof MachineBlockEntity m ? m : null;
     }
 
     private boolean isEnergyPort() {
@@ -76,16 +76,16 @@ public class PortBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         if (this.controller != null) {
             output.putLong("controller", this.controller.asLong());
         }
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.controller = input.getLong("controller").map(BlockPos::of).orElse(null);
     }
 }

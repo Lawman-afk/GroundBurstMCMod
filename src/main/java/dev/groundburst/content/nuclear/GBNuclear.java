@@ -8,7 +8,7 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.material.MapColor;
-import net.neoforged.neoforge.registries.DeferredItem;
+import dev.groundburst.legacy.DeferredItem;
 
 /**
  * Nuclear and exotic materials from the slice 5 machines (DESIGN.md §6, §26.3): enriched and depleted uranium from

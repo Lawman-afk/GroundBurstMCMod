@@ -24,12 +24,12 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.world.chunk.TicketController;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.common.MinecraftForge;
+import dev.groundburst.legacy.TicketController;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredItem;
+import dev.groundburst.legacy.DeferredRegister;
 
 /**
  * Launching (DESIGN.md §17, a basic launch site built ahead of Phase 9): the gantry Launch Silo, the Launch Computer
@@ -311,13 +311,13 @@ public final class GBLaunch {
                     + "missile lighting in its cell and climbing out through its hatch to its own point of the spread round the target.");
 
     /** Creative: places a whole Vertical Launch Battery where you click. */
-    public static final net.neoforged.neoforge.registries.DeferredItem<dev.groundburst.content.multiblock.StructureSpawnerItem> VLS_SPAWNER =
+    public static final dev.groundburst.legacy.DeferredItem<dev.groundburst.content.multiblock.StructureSpawnerItem> VLS_SPAWNER =
             GBItems.register("vertical_launch_battery_spawner", "Structure Spawner: Vertical Launch Battery", GBTab.MISSILES,
                     p -> new dev.groundburst.content.multiblock.StructureSpawnerItem(p, () -> VLS),
                     p -> p.stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC));
 
     /** Creative: places a whole Cruise Missile Launcher where you click. */
-    public static final net.neoforged.neoforge.registries.DeferredItem<dev.groundburst.content.multiblock.StructureSpawnerItem> CRUISE_SPAWNER =
+    public static final dev.groundburst.legacy.DeferredItem<dev.groundburst.content.multiblock.StructureSpawnerItem> CRUISE_SPAWNER =
             GBItems.register("cruise_launcher_spawner", "Structure Spawner: Cruise Missile Launcher", GBTab.MISSILES,
                     p -> new dev.groundburst.content.multiblock.StructureSpawnerItem(p, () -> CRUISE_LAUNCHER),
                     p -> p.stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC));
@@ -425,7 +425,7 @@ public final class GBLaunch {
                     p -> p.stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC));
 
     /** Creative: places a whole Missile Silo dug into the ground where you click (its top level with what you clicked). */
-    public static final net.neoforged.neoforge.registries.DeferredItem<dev.groundburst.content.multiblock.StructureSpawnerItem> MISSILE_SILO_SPAWNER =
+    public static final dev.groundburst.legacy.DeferredItem<dev.groundburst.content.multiblock.StructureSpawnerItem> MISSILE_SILO_SPAWNER =
             GBItems.register("missile_silo_spawner", "Structure Spawner: Missile Silo", GBTab.MISSILES,
                     p -> new dev.groundburst.content.multiblock.StructureSpawnerItem(p, () -> MISSILE_SILO, true),
                     p -> p.stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC));
@@ -436,17 +436,17 @@ public final class GBLaunch {
 
     public static void register(IEventBus modBus) {
         ENTITIES.register(modBus);
-        modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent event) -> {
+        modBus.addListener((dev.groundburst.legacy.RegisterTicketControllersEvent event) -> {
             event.register(TICKETS);
             event.register(NETWORK_TICKETS);
         });
         // The Laser Designator's charge, filled by the Battery Charger (or any mod's charger) like a Battery's.
-        modBus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) -> event.registerItem(
+        modBus.addListener((dev.groundburst.legacy.RegisterCapabilitiesEvent event) -> event.registerItem(
                 dev.groundburst.port.transfer.Capabilities.Energy.ITEM,
                 (stack, access) -> new dev.groundburst.port.transfer.energy.ItemAccessEnergyHandler(access,
                         dev.groundburst.registry.GBDataComponents.ENERGY.get(), LaserDesignatorItem.CAPACITY, LaserDesignatorItem.TRANSFER),
                 LASER_DESIGNATOR.get()));
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStoppedEvent e) -> {
             Launches.clear();
             dev.groundburst.content.machine.Carried.clear();
             Designators.clear();
@@ -454,8 +454,8 @@ public final class GBLaunch {
             dev.groundburst.content.defence.Interceptors.clear();
         });
         // Missiles in the air move on every tick, loaded or not (Flights).
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.LevelTickEvent.Post e) -> {
-            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent e) -> {if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) e.level) instanceof net.minecraft.server.level.ServerLevel level) {
                 Flights.of(level).tick(level);
                 dev.groundburst.content.defence.Interceptors.tick(level);   // after the missiles: they meet them where they are
                 TerrainSurvey.of(level).tick(level);
@@ -463,14 +463,14 @@ public final class GBLaunch {
             }
         });
         // The terrain survey hears about chunks coming and going (it maps those near a Launch Computer).
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load e) -> {
-            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.level.ChunkEvent.Load e) -> {
+            if (((Object) e.getLevel()) instanceof net.minecraft.server.level.ServerLevel level) {
                 TerrainSurvey.of(level).chunkLoaded(e.getChunk().getPos().toLong());
             }
         });
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Unload e) -> {
-            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level
-                    && e.getChunk() instanceof net.minecraft.world.level.chunk.LevelChunk chunk) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.level.ChunkEvent.Unload e) -> {
+            if (((Object) e.getLevel()) instanceof net.minecraft.server.level.ServerLevel level
+                    && ((Object) e.getChunk()) instanceof net.minecraft.world.level.chunk.LevelChunk chunk) {
                 TerrainSurvey.of(level).chunkUnloading(level, chunk);
             }
         });

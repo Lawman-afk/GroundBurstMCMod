@@ -1,0 +1,26 @@
+{
+  "type": "groundburst:arc_smelting",
+  "energy_per_tick": 80,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:raw_materials/lead"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:lead_ingot"
+      }
+    },
+    {
+      "chance": 0.25,
+      "item": {
+        "id": "groundburst:lead_dust"
+      }
+    }
+  ],
+  "time": 120
+}

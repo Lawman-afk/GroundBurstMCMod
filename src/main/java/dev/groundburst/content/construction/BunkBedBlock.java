@@ -65,7 +65,7 @@ public class BunkBedBlock extends BedBlock {
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;                            // its own model, not a bed's block entity
     }
 
@@ -108,7 +108,7 @@ public class BunkBedBlock extends BedBlock {
 
     /** A block whose bunk over or under it is gone goes too (the bed's own head and foot as a bed's). */
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         boolean lower = state.getValue(HALF) == DoubleBlockHalf.LOWER;
         if (direction == (lower ? Direction.UP : Direction.DOWN)) {
             return neighbor.is(this) && neighbor.getValue(HALF) != state.getValue(HALF) && neighbor.getValue(PART) == state.getValue(PART)
@@ -119,7 +119,7 @@ public class BunkBedBlock extends BedBlock {
 
     /** In creative, the block that drops it is taken first and quietly, so breaking any of its blocks gives nothing back. */
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && player.getAbilities().instabuild) {
             BlockPos drops = cells(state, pos).get(0);
             BlockState there = level.getBlockState(drops);
@@ -128,11 +128,11 @@ public class BunkBedBlock extends BedBlock {
                 level.levelEvent(player, 2001, drops, Block.getId(there));
             }
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player); return;
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         boolean head = state.getValue(PART) == BedPart.HEAD;
         VoxelShape[] shapes = state.getValue(HALF) == DoubleBlockHalf.LOWER ? head ? HEAD_LOWER : FOOT_LOWER : head ? HEAD_UPPER : FOOT_UPPER;
         return shapes[state.getValue(FACING).get2DDataValue()];

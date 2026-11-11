@@ -52,7 +52,7 @@ public final class Blasts {
         int spawnRadius = 0;
         if (GBServerConfig.PROTECT_SPAWN.get() && level.dimension() == Level.OVERWORLD) {
             spawn = level.getSharedSpawnPos();
-            spawnRadius = level.getServer() instanceof DedicatedServer server ? server.getSpawnProtectionRadius() : 16;
+            spawnRadius = ((Object) level.getServer()) instanceof DedicatedServer server ? server.getSpawnProtectionRadius() : 16;
         }
         BlastJob job = new BlastJob(level, java.util.UUID.randomUUID(), key.location(), level.getGameTime(), center, profile,
                 level.getRandom().nextLong(), source, terrain, spawn, spawnRadius);

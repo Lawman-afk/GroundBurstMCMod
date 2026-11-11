@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:plutonium_nugget"
+    },
+    {
+      "item": "groundburst:plutonium_nugget"
+    },
+    {
+      "item": "groundburst:plutonium_nugget"
+    },
+    {
+      "item": "groundburst:he_charge"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    }
+  ],
+  "result": {
+    "item": "groundburst:tactical_fission_core"
+  }
+}

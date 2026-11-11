@@ -1,0 +1,23 @@
+{
+  "type": "groundburst:pressing",
+  "catalyst": {
+    "item": "groundburst:plate_die"
+  },
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:ingots/tungsten"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:tungsten_plate"
+      }
+    }
+  ],
+  "time": 160
+}

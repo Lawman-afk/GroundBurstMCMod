@@ -15,8 +15,8 @@ import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * This branch's check that the mod draws on 1.21.1 ({@code gradlew runPortCheck}): makes a flat creative world, sets the
@@ -41,7 +41,7 @@ public final class PortCheck {
         if (!ON) {
             return;
         }
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent event) -> {if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
             Minecraft mc = Minecraft.getInstance();
             // Once the game has loaded (whatever screen it shows first: the title, or a warning), make the world.
             if (!started && mc.getOverlay() == null && mc.level == null && mc.screen != null) {
@@ -62,9 +62,7 @@ public final class PortCheck {
         }
         LevelSettings settings = new LevelSettings(WORLD, GameType.CREATIVE, false, Difficulty.PEACEFUL, true, new GameRules(),
                 WorldDataConfiguration.DEFAULT);
-        mc.createWorldOpenFlows().createFreshLevel(WORLD, settings, new WorldOptions(20261103L, false, false),
-                registries -> registries.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.FLAT).value().createWorldDimensions(),
-                mc.screen);
+        mc.createWorldOpenFlows().createFreshLevel(WORLD, settings, new WorldOptions(20261103L, false, false), registries -> registries.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.FLAT).value().createWorldDimensions());
     }
 
     private static void command(Minecraft mc, String command) {
@@ -206,7 +204,7 @@ public final class PortCheck {
                         level.setBlockAndUpdate(cell.pos(), def.legend().get(cell.key()).preview().get());
                     }
                 }
-                if (level.getBlockEntity(at) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity rack) {
+                if (((Object) level.getBlockEntity(at)) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity rack) {
                     rack.revalidate();
                     for (int i = 0; i < 4; i++) {
                         rack.inventory().setItem(i, new net.minecraft.world.item.ItemStack(dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE.get()));
@@ -218,14 +216,14 @@ public final class PortCheck {
                 BlockPos hopper = new BlockPos(43, -44, 15);
                 level.setBlockAndUpdate(hopper, net.minecraft.world.level.block.Blocks.HOPPER.defaultBlockState()
                         .setValue(net.minecraft.world.level.block.HopperBlock.FACING, net.minecraft.core.Direction.DOWN));
-                if (level.getBlockEntity(hopper) instanceof net.minecraft.world.level.block.entity.HopperBlockEntity h) {
+                if (((Object) level.getBlockEntity(hopper)) instanceof net.minecraft.world.level.block.entity.HopperBlockEntity h) {
                     h.setItem(0, new net.minecraft.world.item.ItemStack(dev.groundburst.content.naval.GBNaval.DEPTH_CHARGE.get(), 2));
                 }
             });
             case 744 -> command(mc, "fill 40 -47 13 40 -45 13 minecraft:stone");      // a post on the sea's wall to look from
             case 746 -> command(mc, "tp @s 40.5 -44 13.5 -90 30");                   // on it, side on to the rack
             case 790 -> onServer(mc, level -> {
-                var rack = level.getBlockEntity(new BlockPos(43, -45, 12)) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity r ? r : null;
+                var rack = ((Object) level.getBlockEntity(new BlockPos(43, -45, 12))) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity r ? r : null;
                 GroundBurst.LOGGER.info("Port check: the rack formed {}, {} charges on it (4 put on, 2 from the hopper over its Item Port), depth {}: {}",
                         rack != null && rack.isFormed(), rack == null ? "-" : rack.loaded(), rack == null ? "-" : rack.depthSetting(),
                         rack != null && rack.isFormed() && rack.loaded() == 6 && rack.depthSetting() == 8 ? "OK" : "WRONG");
@@ -233,7 +231,7 @@ public final class PortCheck {
             case 795 -> tidy(mc);
             case 800 -> shot(mc, "rack");
             case 805 -> onServer(mc, level -> {
-                if (level.getBlockEntity(new BlockPos(43, -45, 12)) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity rack) {
+                if (((Object) level.getBlockEntity(new BlockPos(43, -45, 12))) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity rack) {
                     rack.releaseAll();
                 }
             });
@@ -243,7 +241,7 @@ public final class PortCheck {
             case 822 -> shot(mc, "rack_down");
             case 845 -> shot(mc, "rack_second");
             case 900 -> onServer(mc, level -> {
-                var rack = level.getBlockEntity(new BlockPos(43, -45, 12)) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity r ? r : null;
+                var rack = ((Object) level.getBlockEntity(new BlockPos(43, -45, 12))) instanceof dev.groundburst.content.naval.DepthChargeRackBlockEntity r ? r : null;
                 int charges = level.getEntitiesOfClass(dev.groundburst.content.naval.DepthCharge.class, new net.minecraft.world.phys.AABB(30, -64, -10, 60, -40, 30)).size();
                 GroundBurst.LOGGER.info("Port check: the rack's pattern: {} left on it, {} charges in the sea: {}", rack == null ? "-" : rack.loaded(),
                         charges, rack != null && rack.loaded() <= 3 && rack.loaded() >= 1 ? "OK" : "WRONG");
@@ -270,7 +268,7 @@ public final class PortCheck {
                         }
                         level.setBlockAndUpdate(at, state);
                         blast.setPlacedBy(level, at, state, null, net.minecraft.world.item.ItemStack.EMPTY);
-                        if (i == 0 && level.getBlockEntity(at) instanceof dev.groundburst.content.construction.BlastDoorBlockEntity door) {
+                        if (i == 0 && ((Object) level.getBlockEntity(at)) instanceof dev.groundburst.content.construction.BlastDoorBlockEntity door) {
                             door.toggle(level, null);
                         }
                     }
@@ -300,7 +298,7 @@ public final class PortCheck {
             case 1070 -> tidy(mc);
             case 1075 -> shot(mc, "doors_side");
             case 1080 -> onServer(mc, level -> {
-                var door = level.getBlockEntity(new BlockPos(-48, -60, -30)) instanceof dev.groundburst.content.construction.BlastDoorBlockEntity d ? d : null;
+                var door = ((Object) level.getBlockEntity(new BlockPos(-48, -60, -30))) instanceof dev.groundburst.content.construction.BlastDoorBlockEntity d ? d : null;
                 int leaf = 0;
                 for (int v = 0; v < 3; v++) {
                     for (int w = 1; w < 3; w++) {
@@ -350,7 +348,7 @@ public final class PortCheck {
             case 1210 -> onServer(mc, level -> {
                 boolean tape = level.getBlockEntity(new BlockPos(-41, -60, -44)) instanceof dev.groundburst.content.construction.TapeComputerBlockEntity
                         && level.getBlockState(new BlockPos(-41, -59, -44)).is(dev.groundburst.content.construction.GBConstruction.TAPE_COMPUTER.block().get());
-                boolean cabinet = level.getBlockEntity(new BlockPos(-43, -60, -44)) instanceof dev.groundburst.content.construction.FilingCabinetBlockEntity c
+                boolean cabinet = ((Object) level.getBlockEntity(new BlockPos(-43, -60, -44))) instanceof dev.groundburst.content.construction.FilingCabinetBlockEntity c
                         && c.getContainerSize() == 27;
                 boolean table = level.getBlockState(new BlockPos(-46, -60, -48)).is(dev.groundburst.content.construction.GBConstruction.SITUATION_MAP_TABLE.block().get());
                 GroundBurst.LOGGER.info("Port check: the tape drive two high {}, the cabinet's 27 slots {}, the map table laid {}: {}", tape, cabinet, table,
@@ -421,7 +419,7 @@ public final class PortCheck {
             case 1340 -> onServer(mc, level -> {
                 boolean pipes = level.getBlockState(new BlockPos(-50, -59, -55)).getValue(dev.groundburst.content.construction.WallPipesBlock.LEFT);
                 boolean bunk = level.getBlockState(new BlockPos(-39, -59, -56)).is(dev.groundburst.content.construction.GBConstruction.BUNK_BED.block().get());
-                boolean locker = level.getBlockEntity(new BlockPos(-41, -60, -55)) instanceof dev.groundburst.content.construction.SteelLockerBlockEntity l
+                boolean locker = ((Object) level.getBlockEntity(new BlockPos(-41, -60, -55))) instanceof dev.groundburst.content.construction.SteelLockerBlockEntity l
                         && l.getContainerSize() == 27 && level.getBlockState(new BlockPos(-41, -59, -55))
                                 .getValue(dev.groundburst.content.construction.SteelLockerBlock.OPEN);
                 boolean lit = level.getBlockState(new BlockPos(-47, -57, -55)).getLightEmission() == 14;
@@ -469,7 +467,7 @@ public final class PortCheck {
             case 1470 -> onServer(mc, level -> {
                 boolean light = level.getBlockState(new BlockPos(-39, -59, -69)).is(dev.groundburst.content.construction.GBConstruction.SEARCHLIGHT.block().get())
                         && level.getBlockState(new BlockPos(-39, -60, -69)).getLightEmission() == 15;
-                boolean crates = level.getBlockEntity(new BlockPos(-50, -60, -70)) instanceof dev.groundburst.content.construction.AmmoCratesBlockEntity c
+                boolean crates = ((Object) level.getBlockEntity(new BlockPos(-50, -60, -70))) instanceof dev.groundburst.content.construction.AmmoCratesBlockEntity c
                         && c.getContainerSize() == 27;
                 boolean drums = level.getBlockState(new BlockPos(-47, -60, -70)).getValue(dev.groundburst.content.construction.DrumBlock.DRUMS) == 4;
                 GroundBurst.LOGGER.info("Port check: the searchlight two high and lit {}, the crates' 27 slots {}, four drums {}: {}", light, crates, drums,

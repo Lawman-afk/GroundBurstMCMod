@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": {
+      "item": "groundburst:battery"
+    },
+    "C": {
+      "item": "groundburst:military_circuit"
+    },
+    "G": {
+      "tag": "forge:glass_panes/colorless"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    },
+    "R": {
+      "item": "minecraft:redstone_torch"
+    },
+    "S": {
+      "item": "groundburst:sensor_array"
+    }
+  },
+  "pattern": [
+    "GSR",
+    "PCP",
+    " B "
+  ],
+  "result": {
+    "item": "groundburst:laser_designator"
+  }
+}

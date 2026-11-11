@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "groundburst:radome_panel"
+  },
+  "result": "groundburst:radome_panel_slab",
+  "count": 2
+}

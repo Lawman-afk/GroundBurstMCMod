@@ -31,15 +31,15 @@ public class CoriumBlock extends Block {
 
     @Override
     public void stepOn(Level level, BlockPos pos, BlockState onState, Entity entity) {
-        if (entity instanceof LivingEntity living && !living.fireImmune() && level instanceof ServerLevel server) {
+        if (((Object) entity) instanceof LivingEntity living && !living.fireImmune() && ((Object) level) instanceof ServerLevel server) {
             living.hurt(level.damageSources().hotFloor(), 3.0f);
-            living.igniteForSeconds(4);
+            living.setSecondsOnFire((int) (4));
         }
         super.stepOn(level, pos, onState, entity);
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (random.nextFloat() < COOL_CHANCE) {
             level.setBlockAndUpdate(pos, this.cooled.get().defaultBlockState());
             level.levelEvent(1501, pos, 0);                // the hiss of lava cooling

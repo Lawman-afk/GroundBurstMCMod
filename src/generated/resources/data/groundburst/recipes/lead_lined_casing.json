@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "tag": "groundburst:concretes"
+    },
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "L": {
+      "tag": "forge:plates/lead"
+    }
+  },
+  "pattern": [
+    "LDL",
+    "DCD",
+    "LDL"
+  ],
+  "result": {
+    "item": "groundburst:lead_lined_casing",
+    "count": 4
+  }
+}

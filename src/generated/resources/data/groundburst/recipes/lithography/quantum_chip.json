@@ -1,0 +1,53 @@
+{
+  "type": "groundburst:lithography",
+  "energy_per_tick": 320,
+  "fluids": [
+    {
+      "amount": 500,
+      "ingredient": {
+        "tag": "forge:photoresist"
+      }
+    },
+    {
+      "amount": 500,
+      "ingredient": {
+        "tag": "forge:hydrofluoric_acid"
+      }
+    },
+    {
+      "amount": 1000,
+      "ingredient": {
+        "tag": "forge:argon"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "groundburst:sapphire_wafer"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "groundburst:stabilised_exotic_matter"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "groundburst:ceramic_package"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:quantum_chip"
+      }
+    }
+  ],
+  "time": 1600
+}

@@ -18,7 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 /** Phase 4 slice 5: Circuit Fabricator, Gas Centrifuge (and its cascade), Fusion Fuel Synthesizer, Exotic Matter Fabricator. */
 final class AdvancedMachineTests {

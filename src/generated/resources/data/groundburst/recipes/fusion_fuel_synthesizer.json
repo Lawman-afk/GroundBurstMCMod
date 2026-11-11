@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "A": {
+      "tag": "forge:circuits/advanced"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "H": {
+      "item": "groundburst:heating_element"
+    },
+    "T": {
+      "tag": "forge:plates/tungsten"
+    },
+    "V": {
+      "item": "groundburst:pressure_vessel"
+    }
+  },
+  "pattern": [
+    " T ",
+    "VFV",
+    "HA "
+  ],
+  "result": {
+    "item": "groundburst:fusion_fuel_synthesizer"
+  }
+}

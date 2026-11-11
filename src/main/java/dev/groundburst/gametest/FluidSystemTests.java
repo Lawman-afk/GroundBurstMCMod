@@ -63,7 +63,7 @@ final class FluidSystemTests {
             helper.setBlock(new BlockPos(x, 1, 3), GBFluids.FLUID_PIPE.block().get());
         }
         var level = helper.getLevel();
-        var end = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(7, 1, 3)), Direction.EAST);
+        var end = dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(7, 1, 3)), Direction.EAST);
         helper.assertTrue(end != null, "a pipe takes fluid");
         try (var tx = Transaction.openRoot()) {
             helper.assertTrue(end.insert(FluidResource.of(Fluids.WATER), 500, tx) == 500, "the pipe passes 500 mB on");
@@ -81,14 +81,14 @@ final class FluidSystemTests {
         helper.setBlock(new BlockPos(5, 1, 3), GBFluids.COPPER_FLUID_PIPE.block().get());
         helper.setBlock(new BlockPos(6, 1, 3), GBFluids.FLUID_PIPE.block().get());
         var level = helper.getLevel();
-        var end = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(6, 1, 3)), Direction.EAST);
+        var end = dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(6, 1, 3)), Direction.EAST);
         try (var tx = Transaction.openRoot()) {
             helper.assertTrue(end.insert(FluidResource.of(Fluids.WATER), 5_000, tx) == 150, "a copper pipe in the run caps it at 150 mB/t");
             tx.commit();
         }
         helper.setBlock(new BlockPos(3, 1, 8), GBMachines.ELECTROLYTIC_SEPARATOR.block().get());
         helper.setBlock(new BlockPos(4, 1, 8), GBFluids.PRESSURIZED_FLUID_PIPE.block().get());
-        var fast = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(4, 1, 8)), Direction.EAST);
+        var fast = dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(4, 1, 8)), Direction.EAST);
         try (var tx = Transaction.openRoot()) {
             helper.assertTrue(fast.insert(FluidResource.of(Fluids.WATER), 5_000, tx) == 2_400, "pressurized carries 2400 mB/t");
             tx.commit();
@@ -146,20 +146,20 @@ final class FluidSystemTests {
     /** Canisters and our buckets fill and pour like vanilla buckets. */
     private static void containers(GameTestHelper helper) {
         ItemStack canister = new ItemStack(GBChemicals.SULFURIC_ACID_CANISTER.get());
-        var handler = ItemAccess.forStack(canister).getCapability(Capabilities.Fluid.ITEM);
+        var handler = dev.groundburst.legacy.Caps.get(ItemAccess.forStack(canister), Capabilities.Fluid.ITEM);
         helper.assertTrue(handler != null && handler.getAmountAsLong(0) == 1_000
                 && handler.getResource(0).getFluid() == GBFluids.SULFURIC_ACID.source().get(), "a filled canister holds 1000 mB of its fluid");
         ItemStack empty = new ItemStack(GBChemicals.EMPTY_GAS_CANISTER.get());
-        var gas = ItemAccess.forStack(empty).getCapability(Capabilities.Fluid.ITEM);
+        var gas = dev.groundburst.legacy.Caps.get(ItemAccess.forStack(empty), Capabilities.Fluid.ITEM);
         try (var tx = Transaction.openRoot()) {
             helper.assertTrue(gas.insert(FluidResource.of(GBFluids.SULFURIC_ACID.source().get()), 1_000, tx) == 0, "gas canisters refuse liquids");
         }
         ItemStack bucket = new ItemStack(GBFluids.NAPALM.bucket().get());
-        var b = ItemAccess.forStack(bucket).getCapability(Capabilities.Fluid.ITEM);
+        var b = dev.groundburst.legacy.Caps.get(ItemAccess.forStack(bucket), Capabilities.Fluid.ITEM);
         helper.assertTrue(b != null && b.getResource(0).getFluid() == GBFluids.NAPALM.source().get(), "the napalm bucket holds napalm");
-        var gasBucket = ItemAccess.forStack(new ItemStack(GBFluids.DEUTERIUM.bucket().get())).getCapability(Capabilities.Fluid.ITEM);
+        var gasBucket = dev.groundburst.legacy.Caps.get(ItemAccess.forStack(new ItemStack(GBFluids.DEUTERIUM.bucket().get())), Capabilities.Fluid.ITEM);
         helper.assertTrue(gasBucket != null && gasBucket.getResource(0).getFluid() == GBFluids.DEUTERIUM.source().get(), "a gas bucket holds its gas");
-        helper.assertTrue(new ItemStack(Items.BUCKET).getCapability(Capabilities.Fluid.ITEM, ItemAccess.forStack(new ItemStack(Items.BUCKET))) != null,
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(new ItemStack(Items.BUCKET), Capabilities.Fluid.ITEM, ItemAccess.forStack(new ItemStack(Items.BUCKET))) != null,
                 "vanilla buckets still work");
         helper.succeed();
     }
@@ -170,12 +170,12 @@ final class FluidSystemTests {
         var level = helper.getLevel();
         BlockPos c = plant.controllerPos();
         for (Direction d : Direction.values()) {
-            helper.assertTrue(level.getCapability(Capabilities.Energy.BLOCK, c, d) == null
-                    && level.getCapability(Capabilities.Fluid.BLOCK, c, d) == null
-                    && level.getCapability(Capabilities.Item.BLOCK, c, d) == null, "the controller exposes nothing on " + d);
+            helper.assertTrue(dev.groundburst.legacy.Caps.get(level, Capabilities.Energy.BLOCK, c, d) == null
+                    && dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, c, d) == null
+                    && dev.groundburst.legacy.Caps.get(level, Capabilities.Item.BLOCK, c, d) == null, "the controller exposes nothing on " + d);
         }
         BlockPos port = c.east();                            // facing north, the Energy Port is to the controller's right
-        var energy = level.getCapability(Capabilities.Energy.BLOCK, port, Direction.EAST);
+        var energy = dev.groundburst.legacy.Caps.get(level, Capabilities.Energy.BLOCK, port, Direction.EAST);
         helper.assertTrue(energy != null, "the Energy Port takes power");
         int in;
         try (var tx = Transaction.openRoot()) {

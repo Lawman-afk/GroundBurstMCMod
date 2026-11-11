@@ -1,0 +1,27 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:trichlorosilane"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": {
+        "tag": "forge:hydrogen_chloride"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "groundburst:silicon"
+      }
+    }
+  ],
+  "time": 300
+}

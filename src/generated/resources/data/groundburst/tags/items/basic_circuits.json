@@ -1,0 +1,9 @@
+{
+  "values": [
+    "groundburst:handmade_circuit_board",
+    {
+      "id": "#forge:circuits/basic",
+      "required": false
+    }
+  ]
+}

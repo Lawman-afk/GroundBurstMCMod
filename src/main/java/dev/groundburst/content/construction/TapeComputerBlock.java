@@ -47,10 +47,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * halves stand or fall together, as a door's do; the lower drops the item.
  */
 public class TapeComputerBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends TapeComputerBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
     public static final BooleanProperty ACTIVE = MachineBlock.ACTIVE;
@@ -96,7 +93,7 @@ public class TapeComputerBlock extends HorizontalDirectionalBlock implements Ent
 
     /** A half whose other half is gone goes too. */
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         DoubleBlockHalf half = state.getValue(HALF);
         if (direction.getAxis() == Direction.Axis.Y && (half == DoubleBlockHalf.LOWER) == (direction == Direction.UP)) {
             return neighbor.is(this) && neighbor.getValue(HALF) != half
@@ -108,19 +105,18 @@ public class TapeComputerBlock extends HorizontalDirectionalBlock implements Ent
 
     /** A player breaking the upper half breaks the lower, which drops the item (none in creative). */
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && state.getValue(HALF) == DoubleBlockHalf.UPPER) {
             BlockPos below = pos.below();
             if (level.getBlockState(below).is(this)) {
                 level.destroyBlock(below, !player.getAbilities().instabuild, player);
             }
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player); return;
     }
 
     /** A click stops it, or starts it again. */
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide()) {
             boolean on = Fittings.clickTall(this, state, level, pos, ACTIVE);
             level.playSound(null, pos, GBSounds.TAPE_SWITCH.get(), SoundSource.BLOCKS, 0.7f, on ? 1.1f : 0.9f);
@@ -130,29 +126,35 @@ public class TapeComputerBlock extends HorizontalDirectionalBlock implements Ent
 
     /** A redstone signal at either block keeps it running; gone, it is as its last click left it. */
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
         if (!level.isClientSide()) {
             Fittings.lookTall(this, state, level, pos, ACTIVE);
         }
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES[state.getValue(FACING).get2DDataValue()][state.getValue(HALF) == DoubleBlockHalf.LOWER ? 0 : 1];
     }
 
     @Override
-    protected boolean isPathfindable(BlockState state, PathComputationType type) {
+    public boolean isPathfindable(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_, net.minecraft.world.level.pathfinder.PathComputationType type) {
         return false;
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;                            // the lower block's block entity draws the cabinet
     }
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return state.getValue(HALF) == DoubleBlockHalf.LOWER ? this.type.get().create(pos, state) : null;
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

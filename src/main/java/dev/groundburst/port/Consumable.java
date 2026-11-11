@@ -55,7 +55,7 @@ public final class Consumable {
         }
 
         public FoodProperties build() {
-            FoodProperties.Builder food = new FoodProperties.Builder().nutrition(0).saturationModifier(0).alwaysEdible();
+            FoodProperties.Builder food = new FoodProperties.Builder().nutrition(0).saturationMod(0).alwaysEat();
             if (this.seconds < 1.2f) {
                 food.fast();
             }

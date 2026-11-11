@@ -9,8 +9,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
+import net.minecraftforge.fluids.FluidStack;
+import dev.groundburst.legacy.FluidIngredient;
 
 /** Minecraft 26.x's ingredient contents (the items or fluids an ingredient takes), from 1.21.1's stacks. */
 public final class Ingredients {
@@ -21,6 +21,6 @@ public final class Ingredients {
     }
 
     public static List<Holder<Fluid>> fluids(FluidIngredient ingredient) {
-        return Arrays.stream(ingredient.getStacks()).map(FluidStack::getFluidHolder).distinct().toList();
+        return Arrays.stream(ingredient.getStacks()).map(dev.groundburst.legacy.FluidStacks::holder).distinct().toList();
     }
 }

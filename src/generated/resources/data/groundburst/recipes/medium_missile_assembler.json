@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    },
+    {
+      "item": "groundburst:basic_circuit"
+    },
+    {
+      "item": "groundburst:electric_motor"
+    },
+    {
+      "item": "groundburst:electric_motor"
+    },
+    {
+      "item": "groundburst:servo"
+    },
+    {
+      "item": "groundburst:crt_display"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    }
+  ],
+  "result": {
+    "item": "groundburst:medium_missile_assembler"
+  }
+}

@@ -3,15 +3,15 @@ package dev.groundburst.registry;
 import com.mojang.serialization.Codec;
 
 import dev.groundburst.GroundBurst;
-import net.minecraft.core.component.DataComponentType;
+import dev.groundburst.legacy.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredRegister;
 
 /** Item data components. */
 public final class GBDataComponents {
-    public static final DeferredRegister.DataComponents COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, GroundBurst.MODID);
+    public static final DeferredRegister.DataComponents COMPONENTS = DeferredRegister.createDataComponents(GroundBurst.MODID);
 
     /** Stored FE: batteries, and capacitor banks picked up with their charge. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> ENERGY = COMPONENTS.registerComponentType("energy",
@@ -32,7 +32,7 @@ public final class GBDataComponents {
     /** A Laser Designator's picked launcher (DESIGN.md §17.13): its controller (none: its network's first laser-guided one). */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.core.BlockPos>> DESIGNATOR_PICK =
             COMPONENTS.registerComponentType("designator_pick", b -> b.persistent(net.minecraft.core.BlockPos.CODEC)
-                    .networkSynchronized(net.minecraft.core.BlockPos.STREAM_CODEC));
+                    .networkSynchronized(dev.groundburst.legacy.net.Codecs.BLOCK_POS));
 
     /** Launch Codes: the code of the network they are for (DESIGN.md §17.12; empty: blank). */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> LAUNCH_CODES = COMPONENTS.registerComponentType("launch_codes",

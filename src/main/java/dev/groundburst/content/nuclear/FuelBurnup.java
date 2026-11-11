@@ -4,8 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
 
 /**
  * How far a uranium fuel rod has burned (the {@code groundburst:fuel_burnup} item component, DESIGN.md §7): ticks of full

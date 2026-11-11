@@ -47,14 +47,14 @@ public class GunSeat extends Entity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(GUN, BlockPos.ZERO);
+    protected void defineSynchedData() {
+        this.entityData.define(GUN, BlockPos.ZERO);
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (level() instanceof ServerLevel server && (this.tickCount > 5 && getPassengers().isEmpty()
+        if (((Object) level()) instanceof ServerLevel server && (this.tickCount > 5 && getPassengers().isEmpty()
                 || !(server.getBlockEntity(gun()) instanceof GunBlockEntity))) {
             ejectPassengers();
             discard();
@@ -62,8 +62,10 @@ public class GunSeat extends Entity {
     }
 
     @Override
-    protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
-        return new Vec3(0, LIFT, 0);
+    protected void positionRider(Entity passenger, Entity.MoveFunction move) {
+        if (this.hasPassenger(passenger)) {
+            move.accept(passenger, this.getX(), this.getY() + LIFT, this.getZ());
+        }
     }
 
     /** Its crewman stands at the gun: drawn standing, not sitting. */
@@ -83,7 +85,7 @@ public class GunSeat extends Entity {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float damage) { if (!(this.level() instanceof ServerLevel level)) return false;
+    public boolean hurt(DamageSource source, float damage) { if (!(((Object) this.level()) instanceof ServerLevel level)) return false;
         return false;
     }
 
@@ -93,12 +95,12 @@ public class GunSeat extends Entity {
     }
 
     @Override
-    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, this.registryAccess());
+    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, dev.groundburst.legacy.Regs.access());
         this.entityData.set(GUN, BlockPos.of(input.getLongOr("gun", 0)));
     }
 
     @Override
-    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, this.registryAccess());
+    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, dev.groundburst.legacy.Regs.access());
         output.putLong("gun", gun().asLong());
     }
 }

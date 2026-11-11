@@ -1,9 +1,0 @@
-{
-  "values": [
-    "groundburst:handmade_circuit_board",
-    {
-      "id": "#c:circuits/basic",
-      "required": false
-    }
-  ]
-}

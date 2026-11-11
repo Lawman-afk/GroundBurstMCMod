@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "item": "groundburst:superconducting_coil"
+    },
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "R": {
+      "tag": "forge:rods/tungsten"
+    },
+    "W": {
+      "tag": "forge:wires/copper"
+    }
+  },
+  "pattern": [
+    "WCW",
+    "WRW",
+    "WDW"
+  ],
+  "result": {
+    "item": "groundburst:central_solenoid"
+  }
+}

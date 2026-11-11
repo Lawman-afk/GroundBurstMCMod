@@ -1,0 +1,40 @@
+{
+  "values": [
+    {
+      "id": "#forge:ingots/uranium",
+      "required": false
+    },
+    {
+      "id": "#forge:ingots/lead",
+      "required": false
+    },
+    {
+      "id": "#forge:ingots/tungsten",
+      "required": false
+    },
+    {
+      "id": "#forge:ingots/steel",
+      "required": false
+    },
+    {
+      "id": "#forge:ingots/cobalt",
+      "required": false
+    },
+    {
+      "id": "#forge:ingots/tungsten_carbide",
+      "required": false
+    },
+    {
+      "id": "#forge:ingots/depleted_uranium",
+      "required": false
+    },
+    {
+      "id": "#forge:ingots/enriched_uranium",
+      "required": false
+    },
+    {
+      "id": "#forge:ingots/plutonium",
+      "required": false
+    }
+  ]
+}

@@ -12,9 +12,9 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredItem;
+import dev.groundburst.legacy.DeferredRegister;
 
 /** Ordnance (DESIGN.md §14): thrown explosives so far (Phase 6 slice 6a), their entities, sounds, damage types and the toxin's sludge. */
 public final class GBOrdnance {
@@ -39,7 +39,7 @@ public final class GBOrdnance {
     public static final DeferredItem<GrenadeItem> CLUSTER_BOMBLET = grenade(GrenadeType.BOMBLET, "Cluster Bomblet");
 
     /** The film of toxin a toxin grenade leaves on the ground. */
-    public static final net.neoforged.neoforge.registries.DeferredBlock<ToxicSludgeBlock> TOXIC_SLUDGE = dev.groundburst.registry.GBBlocks.blockOnly(
+    public static final dev.groundburst.legacy.DeferredBlock<ToxicSludgeBlock> TOXIC_SLUDGE = dev.groundburst.registry.GBBlocks.blockOnly(
             "toxic_sludge", "Toxic Sludge", ToxicSludgeBlock::new,
             p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GREEN).replaceable().noCollission().noOcclusion()
                     .instabreak().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
@@ -47,7 +47,7 @@ public final class GBOrdnance {
                     .lightLevel(s -> 7 - s.getValue(ToxicSludgeBlock.AGE)));
 
     /** The glowing residue a toxin SCUD spreads over the ground (DESIGN.md §19.5). */
-    public static final net.neoforged.neoforge.registries.DeferredBlock<AnthraxResidueBlock> ANTHRAX_RESIDUE = dev.groundburst.registry.GBBlocks.blockOnly(
+    public static final dev.groundburst.legacy.DeferredBlock<AnthraxResidueBlock> ANTHRAX_RESIDUE = dev.groundburst.registry.GBBlocks.blockOnly(
             "anthrax_residue", "Anthrax Residue", AnthraxResidueBlock::new,
             p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GREEN).replaceable().noCollission().noOcclusion()
                     .instabreak().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
@@ -159,7 +159,7 @@ public final class GBOrdnance {
                     FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD, THERMONUCLEAR_WARHEAD, COBALT_WARHEAD, TSAR_WARHEAD,
                     ANTIMATTER_WARHEAD, SINGULARITY_WARHEAD, STORM_WARHEAD, CRYOGENIC_WARHEAD, SCUD_STORM_WARHEAD, NUCLEAR_MISSILE_WARHEAD);
     /** Burning napalm from a napalm warhead. */
-    public static final net.neoforged.neoforge.registries.DeferredBlock<NapalmFireBlock> NAPALM_FIRE = dev.groundburst.registry.GBBlocks.blockOnly(
+    public static final dev.groundburst.legacy.DeferredBlock<NapalmFireBlock> NAPALM_FIRE = dev.groundburst.registry.GBBlocks.blockOnly(
             "napalm_fire", "Napalm Fire", NapalmFireBlock::new,
             p -> p.mapColor(net.minecraft.world.level.material.MapColor.FIRE).replaceable().noCollission().instabreak().noLootTable()
                     .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY).sound(net.minecraft.world.level.block.SoundType.WOOL)
@@ -239,7 +239,7 @@ public final class GBOrdnance {
     public static void register() {
         dev.groundburst.content.ordnance.charge.Charges.register();
         ToxinSpreads.register();
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingEvent.LivingVisibilityEvent e) -> {
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.entity.living.LivingEvent.LivingVisibilityEvent e) -> {
             var seen = e.getEntity();
             var looker = e.getLookingEntity();
             if (seen.level().isClientSide()) {

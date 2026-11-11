@@ -188,7 +188,7 @@ public final class Scars {
             return false;                                  // (its chunk is not one with damage: at once)
         }
         LevelChunk c = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-        ChunkScars scars = c == null ? null : c.getExistingDataOrNull(GBHeal.SCARS.get());
+        ChunkScars scars = c == null ? null : dev.groundburst.legacy.Attachments.getExistingOrNull(c, GBHeal.SCARS.get());
         return scars != null && scars.has(pos);
     }
 
@@ -198,7 +198,7 @@ public final class Scars {
      */
     public static void claim(ServerLevel level, BlockPos pos) {
         LevelChunk chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-        ChunkScars scars = chunk == null ? null : chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+        ChunkScars scars = chunk == null ? null : dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
         if (scars == null || !scars.has(pos)) {
             return;
         }
@@ -223,7 +223,7 @@ public final class Scars {
                 }
                 int x = pos.getX() + dx, z = pos.getZ() + dz;
                 LevelChunk chunk = level.getChunkSource().getChunkNow(x >> 4, z >> 4);
-                ChunkScars scars = chunk == null ? null : chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+                ChunkScars scars = chunk == null ? null : dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
                 if (scars == null) {
                     continue;
                 }
@@ -254,7 +254,7 @@ public final class Scars {
         if (chunk == null) {
             return false;
         }
-        ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+        ChunkScars scars = dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
         boolean known_ = scars != null && scars.has(pos) && !scars.claimed(pos);
         if (!known_) {
             BlockState original = unburnt(known != null ? known : chunk.getBlockState(pos));
@@ -272,7 +272,7 @@ public final class Scars {
                 scars = new ChunkScars();
                 scars.jitter = level.getRandom().nextFloat();
                 scars.changed = level.getGameTime();
-                chunk.setData(GBHeal.SCARS.get(), scars);
+                dev.groundburst.legacy.Attachments.set(chunk, GBHeal.SCARS.get(), scars);
             }
             scars.put(pos, original, be);
             Healer.of(level).track(chunk);
@@ -302,7 +302,7 @@ public final class Scars {
      */
     static void spilled(ServerLevel level, BlockPos pos, Block broke) {
         LevelChunk chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-        ChunkScars scars = chunk == null ? null : chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+        ChunkScars scars = chunk == null ? null : dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
         BlockState was = scars == null ? null : scars.original(pos);
         if (was != null && was.getBlock() == broke) {
             scars.spilled(pos);
@@ -313,7 +313,7 @@ public final class Scars {
     /** The block remembered at {@code pos}, or null if none is (or its chunk is not loaded). */
     static @Nullable BlockState rememberedAs(ServerLevel level, BlockPos pos) {
         LevelChunk chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-        ChunkScars scars = chunk == null ? null : chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+        ChunkScars scars = chunk == null ? null : dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
         return scars == null ? null : scars.original(pos);
     }
 
@@ -545,12 +545,12 @@ public final class Scars {
             if (this.settings == null || !this.settings.biomes()) {
                 return;
             }
-            ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+            ChunkScars scars = dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
             if (scars == null) {
                 scars = new ChunkScars();
                 scars.jitter = this.level.getRandom().nextFloat();
                 scars.changed = this.level.getGameTime();
-                chunk.setData(GBHeal.SCARS.get(), scars);
+                dev.groundburst.legacy.Attachments.set(chunk, GBHeal.SCARS.get(), scars);
                 Healer.of(this.level).track(chunk);
             }
             String id = before.unwrapKey().map(k -> k.location().toString()).orElse(null);
@@ -651,12 +651,12 @@ public final class Scars {
         if (chunk == null || tag == null) {
             return false;
         }
-        ChunkScars scars = chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+        ChunkScars scars = dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
         if (scars == null) {
             scars = new ChunkScars();
             scars.jitter = level.getRandom().nextFloat();
             scars.changed = level.getGameTime();
-            chunk.setData(GBHeal.SCARS.get(), scars);
+            dev.groundburst.legacy.Attachments.set(chunk, GBHeal.SCARS.get(), scars);
         }
         scars.entities.add(tag);
         if (holdOff) {

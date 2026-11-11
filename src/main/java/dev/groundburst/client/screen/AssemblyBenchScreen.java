@@ -21,7 +21,7 @@ import dev.groundburst.port.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * The Ordnance Assembly Bench's screen (DESIGN.md §10): core, casing, fuze; the fitted fuze's setting under the readout
@@ -151,8 +151,8 @@ public class AssemblyBenchScreen extends MachineScreen {
      */
     private ItemStack subject() {
         var inv = this.menu.machine().inventory();
-        if (inv.getItem(AssemblyBenchBlockEntity.SLOT_CORE).getItem() instanceof ComponentItems.PayloadCore core) {
-            return inv.getItem(AssemblyBenchBlockEntity.SLOT_FUZE).getItem() instanceof ComponentItems.FuzeItem fuze
+        if (((Object) inv.getItem(AssemblyBenchBlockEntity.SLOT_CORE).getItem()) instanceof ComponentItems.PayloadCore core) {
+            return ((Object) inv.getItem(AssemblyBenchBlockEntity.SLOT_FUZE).getItem()) instanceof ComponentItems.FuzeItem fuze
                     ? WarheadAssembly.assemble(core, fuze, this.menu.extra(AssemblyBenchBlockEntity.DATA_FUZE_VALUE)) : new ItemStack(core.warhead());
         }
         return inv.getItem(AssemblyBenchBlockEntity.SLOT_WARHEAD);

@@ -43,10 +43,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * the door and moves it.
  */
 public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends SiloDoorBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final IntegerProperty U = IntegerProperty.create("u", 0, 14);
     public static final IntegerProperty GAP = IntegerProperty.create("gap", 0, 4);
@@ -112,7 +109,7 @@ public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityB
                 }
             }
         }
-        if (level.getBlockEntity(pos) instanceof SiloDoorBlockEntity door) {
+        if (((Object) level.getBlockEntity(pos)) instanceof SiloDoorBlockEntity door) {
             door.checkPower();
         }
     }
@@ -136,19 +133,19 @@ public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityB
 
     /** A player breaking any block breaks the middle (it drops the item, unless in creative); the rest follow it. */
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && !state.getValue(CENTER)) {
             BlockPos c = centerOf(level, pos, state);
             if (c != null) {
                 level.destroyBlock(c, !player.getAbilities().instabuild, player);
             }
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player); return;
     }
 
     /** A block gone however it went (a player, a blast): the rest are told to look again (they go with it). */
     @Override
-    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+    public void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(((Object) level_l) instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
         
         Direction facing = state.getValue(FACING);
         BlockPos c = state.getValue(CENTER) ? pos : centerOf(level, pos, state);
@@ -167,7 +164,7 @@ public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityB
 
     /** Looking again: a door missing a block falls apart, its middle dropping the one item, the rest nothing. */
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         BlockPos c = centerOf(level, pos, state);
         if (c == null) {
             level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
@@ -193,10 +190,10 @@ public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityB
 
     // --- redstone -------------------------------------------------------------------------------------------------------------------
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
         if (level instanceof ServerLevel) {
             BlockPos c = centerOf(level, pos, state);
-            if (c != null && level.getBlockEntity(c) instanceof SiloDoorBlockEntity door) {
+            if (c != null && ((Object) level.getBlockEntity(c)) instanceof SiloDoorBlockEntity door) {
                 door.checkPower();
             }
         }
@@ -231,7 +228,7 @@ public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityB
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         int u = state.getValue(U);
         if (leafOver(u, state.getValue(GAP))) {
             return LEAF;
@@ -240,7 +237,7 @@ public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityB
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;                            // the middle's block entity draws the whole door
     }
 

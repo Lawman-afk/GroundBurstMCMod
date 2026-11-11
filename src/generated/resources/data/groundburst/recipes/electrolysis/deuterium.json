@@ -1,0 +1,19 @@
+{
+  "type": "groundburst:electrolysis",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:deuterium"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 8000,
+      "ingredient": {
+        "tag": "minecraft:water"
+      }
+    }
+  ],
+  "time": 400
+}

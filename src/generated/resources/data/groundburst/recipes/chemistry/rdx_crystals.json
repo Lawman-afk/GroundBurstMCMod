@@ -1,0 +1,35 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": {
+        "tag": "forge:nitric_acid"
+      }
+    },
+    {
+      "amount": 500,
+      "ingredient": {
+        "tag": "minecraft:water"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "minecraft:coals"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:rdx_crystals"
+      }
+    }
+  ],
+  "time": 300
+}

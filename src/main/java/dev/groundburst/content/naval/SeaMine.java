@@ -123,12 +123,12 @@ public class SeaMine extends Entity implements ShockReceiver {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(STAGE, (byte) Stage.ADRIFT.ordinal());
-        builder.define(MOORED, false);
-        builder.define(ANCHOR_X, 0f);
-        builder.define(ANCHOR_Y, 0f);
-        builder.define(ANCHOR_Z, 0f);
+    protected void defineSynchedData() {
+        this.entityData.define(STAGE, (byte) Stage.ADRIFT.ordinal());
+        this.entityData.define(MOORED, false);
+        this.entityData.define(ANCHOR_X, 0f);
+        this.entityData.define(ANCHOR_Y, 0f);
+        this.entityData.define(ANCHOR_Z, 0f);
     }
 
     public Stage stage() {
@@ -187,7 +187,7 @@ public class SeaMine extends Entity implements ShockReceiver {
     @Override
     public void tick() {
         super.tick();                                      // fire, water, and the current's push (flowing water)
-        if (!(level() instanceof ServerLevel level) || isRemoved()) {
+        if (!(((Object) level()) instanceof ServerLevel level) || isRemoved()) {
             return;
         }
         switch (stage()) {
@@ -373,7 +373,7 @@ public class SeaMine extends Entity implements ShockReceiver {
 
     /** Live, anything striking it sets it off; safe, a punch takes it up (its item, its sinker and chain with it). */
     @Override
-    public boolean hurt(DamageSource source, float damage) { if (!(this.level() instanceof ServerLevel level)) return false;
+    public boolean hurt(DamageSource source, float damage) { if (!(((Object) this.level()) instanceof ServerLevel level)) return false;
         if (isRemoved()) {
             return false;
         }
@@ -381,7 +381,7 @@ public class SeaMine extends Entity implements ShockReceiver {
             goOff(level);
             return true;
         }
-        if (!this.armed && source.getDirectEntity() instanceof Player player && source.getEntity() == player) {
+        if (!this.armed && ((Object) source.getDirectEntity()) instanceof Player player && source.getEntity() == player) {
             if (!player.getAbilities().instabuild) {
                 GBNaval.drop(level, centre(), item());
             }
@@ -394,7 +394,7 @@ public class SeaMine extends Entity implements ShockReceiver {
     /** Used: made safe, or armed again (live 5 s later). */
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
-        if (level() instanceof ServerLevel level) {
+        if (((Object) level()) instanceof ServerLevel level) {
             this.armed = !this.armed;
             this.plug = this.armed ? ARM_TICKS : -1;
             level.playSound(null, getX(), getY(), getZ(), (this.armed ? GBOrdnance.CHARGE_ARM : GBOrdnance.CHARGE_DISARM).get(), SoundSource.PLAYERS,
@@ -408,7 +408,7 @@ public class SeaMine extends Entity implements ShockReceiver {
     public ItemStack item() {
         ItemStack s = new ItemStack(moored() ? GBNaval.MOORED_MINE.get() : GBNaval.DRIFTING_MINE.get());
         if (moored()) {
-            s.set(GBDataComponents.NAVAL_DEPTH.get(), this.depth);
+            dev.groundburst.legacy.component.Comps.set(s, GBDataComponents.NAVAL_DEPTH.get(), this.depth);
         }
         return s;
     }
@@ -428,14 +428,13 @@ public class SeaMine extends Entity implements ShockReceiver {
         return false;
     }
 
-    @Override
-    protected double getDefaultGravity() {
+        protected double getDefaultGravity() {
         return 0;
     }
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, this.registryAccess());
+    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, dev.groundburst.legacy.Regs.access());
         output.putInt("stage", stage().ordinal());
         output.putBoolean("moored", moored());
         output.putBoolean("armed", this.armed);
@@ -449,7 +448,7 @@ public class SeaMine extends Entity implements ShockReceiver {
     }
 
     @Override
-    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, this.registryAccess());
+    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, dev.groundburst.legacy.Regs.access());
         setStage(Stage.values()[Mth.clamp(input.getIntOr("stage", Stage.ADRIFT.ordinal()), 0, 3)]);
         this.entityData.set(MOORED, input.getBooleanOr("moored", false));
         this.armed = input.getBooleanOr("armed", true);

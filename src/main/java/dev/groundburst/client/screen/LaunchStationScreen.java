@@ -42,7 +42,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * The Launch Control Station's screen (DESIGN.md §17.12): on the left a green phosphor map of the whole dimension with
@@ -246,7 +246,7 @@ public class LaunchStationScreen extends Screen {
 
     private StationPayloads.@Nullable MemberView single() {
         List<StationPayloads.MemberView> ms = pickedMembers();
-        return ms.size() == 1 ? ms.getFirst() : null;
+        return ms.size() == 1 ? dev.groundburst.legacy.J21.first(ms) : null;
     }
 
     private int number(BlockPos member) {
@@ -304,7 +304,7 @@ public class LaunchStationScreen extends Screen {
         this.laserButton = addRenderableWidget(Button.builder(Component.translatable(T_LASER), b -> {
             StationPayloads.Scope s = scope();
             if (s != null && !s.spots().isEmpty()) {
-                StationPayloads.SpotView spot = s.spots().getFirst();
+                StationPayloads.SpotView spot = dev.groundburst.legacy.J21.first(s.spots());
                 aimAt(spot.x(), spot.z());
             }
         }).bounds(x + CW - 38, t + BOX_Y, 38, 16).build());
@@ -439,15 +439,15 @@ public class LaunchStationScreen extends Screen {
         List<StationPayloads.MemberView> ms = members();
         this.picked.removeIf(p -> ms.stream().noneMatch(m -> m.pos().equals(p)));
         if (this.picked.isEmpty() && !ms.isEmpty() && this.boxesFor == null) {
-            this.picked.add(ms.getFirst().pos());
+            this.picked.add(dev.groundburst.legacy.J21.first(ms).pos());
         }
         this.scroll = Mth.clamp(this.scroll, 0, Math.max(0, ms.size() - ROWS));
         StationPayloads.MemberView one = single();
         List<StationPayloads.MemberView> picks = pickedMembers();
-        BlockPos first = picks.isEmpty() ? null : picks.getFirst().pos();
+        BlockPos first = picks.isEmpty() ? null : dev.groundburst.legacy.J21.first(picks).pos();
         if (this.xBox != null && this.zBox != null && first != null && !first.equals(this.boxesFor)) {
             this.boxesFor = first;
-            StationPayloads.MemberView m = picks.getFirst();
+            StationPayloads.MemberView m = dev.groundburst.legacy.J21.first(picks);
             this.xBox.setValue(m.hasTarget() ? Integer.toString(m.targetX()) : "");
             this.zBox.setValue(m.hasTarget() ? Integer.toString(m.targetZ()) : "");
         }
@@ -577,7 +577,7 @@ public class LaunchStationScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double x, double y, double scrollY) { double scrollX = 0;
         if (inList(x, y)) {
             if (this.showLog) {
                 StationPayloads.Scope s = scope();
@@ -596,7 +596,7 @@ public class LaunchStationScreen extends Screen {
             clampView();
             return true;
         }
-        return super.mouseScrolled(x, y, scrollX, scrollY);
+        return super.mouseScrolled(x, y, scrollY);
     }
 
     @Override
@@ -712,9 +712,8 @@ public class LaunchStationScreen extends Screen {
     }
 
     // --- drawing ------------------------------------------------------------------------------------------------------------
-    @Override
     public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
-        super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
+        super.renderBackground(g.unwrap());
         g.fill(left(), top(), left() + W, top() + H, PANEL);
         g.outline(left(), top(), W, H, EDGE);
         drawMap(g, mouseX, mouseY);
@@ -951,6 +950,7 @@ public class LaunchStationScreen extends Screen {
 
     @Override
     public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        this.renderBackground(g.unwrap(), mouseX, mouseY, partial);   // (1.20.1's Screen.render draws no background)
         super.render(g.unwrap(), mouseX, mouseY, partial);
         int x = col(), t = top();
         StationPayloads.Scope s = scope();

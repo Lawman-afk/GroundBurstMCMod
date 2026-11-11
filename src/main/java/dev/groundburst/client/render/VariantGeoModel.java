@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.machine.AnimatedMachine;
 import net.minecraft.resources.ResourceLocation;
-import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
 
 /**
  * A block model whose texture its block entity may choose ({@code AnimatedMachine.textureVariant}: the Warning Beacon's
@@ -24,17 +24,17 @@ public class VariantGeoModel<T extends GeoAnimatable> extends PolyGeoModel<T> {
 
     @Override
     public ResourceLocation getModelResource(T animatable) {
-        String model = animatable instanceof AnimatedMachine machine ? machine.modelVariant() : null;
+        String model = ((Object) animatable) instanceof AnimatedMachine machine ? machine.modelVariant() : null;
         return model != null ? other(model)[0] : super.getModelResource(animatable);
     }
 
     @Override
     public ResourceLocation getTextureResource(T animatable) {
-        ResourceLocation variant = animatable instanceof AnimatedMachine machine ? machine.textureVariant() : null;
+        ResourceLocation variant = ((Object) animatable) instanceof AnimatedMachine machine ? machine.textureVariant() : null;
         if (variant != null) {
             return variant;
         }
-        String model = animatable instanceof AnimatedMachine machine ? machine.modelVariant() : null;
+        String model = ((Object) animatable) instanceof AnimatedMachine machine ? machine.modelVariant() : null;
         return model != null ? other(model)[1] : super.getTextureResource(animatable);
     }
 

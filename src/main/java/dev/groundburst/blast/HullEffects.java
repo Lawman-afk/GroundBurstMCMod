@@ -33,7 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.common.Tags;
 
 /**
  * What the slower weapons do to the hulls round them ({@link Hulls}: ships' and contraptions' blocks, which the world's
@@ -272,7 +272,7 @@ final class HullEffects {
                 hull.set(pos, (s.getFluidState().isSource() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE).defaultBlockState());
             } else if (s.getBlock() instanceof BaseFireBlock || s.is(GBOrdnance.NAPALM_FIRE.get())) {
                 hull.destroy(pos);
-            } else if (s.is(Tags.Blocks.GLASS_BLOCKS) || s.is(Tags.Blocks.GLASS_PANES)) {
+            } else if (s.is(Tags.Blocks.GLASS) || s.is(Tags.Blocks.GLASS_PANES)) {
                 hull.destroy(pos);                                   // cracked by the cold, it falls apart
                 if (this.shattered++ < 3) {
                     BlockPos w = BlockPos.containing(hull.toWorld(Vec3.atCenterOf(pos)));

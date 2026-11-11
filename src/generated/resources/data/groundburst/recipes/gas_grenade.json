@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:chlorine_canister"
+    },
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
+  ],
+  "result": {
+    "item": "groundburst:gas_grenade",
+    "count": 2
+  }
+}

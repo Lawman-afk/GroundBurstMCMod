@@ -14,7 +14,7 @@ import dev.groundburst.content.strategic.StrategicAssembly;
 import dev.groundburst.content.strategic.StrategicAssemblyBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
+import dev.groundburst.legacy.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -97,13 +97,13 @@ final class SpecialWeaponsTests {
             MissileSpec spec = MissileItem.spec(out);
             helper.assertTrue(spec != null && spec.intercontinental() && spec.exotic() && spec.needsComplex() && spec.hardened()
                     && AssemblyStats.kindOf(spec.warhead()) == ChargeKind.ANTIMATTER_WARHEAD, "a hardened Antimatter ICBM: " + spec);
-            var look = out.get(DataComponents.CUSTOM_MODEL_DATA);
+            var look = dev.groundburst.legacy.component.Comps.get(out, DataComponents.CUSTOM_MODEL_DATA);
             helper.assertTrue(look != null && look.value() == dev.groundburst.port.Looks.id("antimatter_warhead"), "its own model: " + look);
             helper.assertTrue(inv.getItem(SpecialWeaponsBlockEntity.SLOT_CORE).isEmpty() && inv.getItem(SpecialWeaponsBlockEntity.SLOT_BOOSTER).isEmpty(),
                     "the parts used up");
             var shown = special.shownMissile();
             helper.assertTrue(special.laid() == SpecialWeaponsBlockEntity.SECTIONS && shown != null
-                    && shown.looks().getLast().equals("antimatter_warhead_part4"), "on the cradles: " + shown);
+                    && dev.groundburst.legacy.J21.last(shown.looks()).equals("antimatter_warhead_part4"), "on the cradles: " + shown);
             helper.assertTrue(special.takeApart(), "taken apart");
             helper.assertTrue(inv.getItem(SpecialWeaponsBlockEntity.SLOT_CORE).is(GBAssembly.ANTIMATTER_TRAP.get())
                     && inv.getItem(SpecialWeaponsBlockEntity.SLOT_BOOSTER).is(GBStrategic.INTERCONTINENTAL_BOOSTER.get())
@@ -128,12 +128,12 @@ final class SpecialWeaponsTests {
             MissileSpec spec = MissileItem.spec(out);
             helper.assertTrue(spec != null && spec.intercontinental() && spec.exotic() && spec.needsComplex()
                     && AssemblyStats.kindOf(spec.warhead()) == ChargeKind.CRYOGENIC_WARHEAD, "a Cryo ICBM: " + spec);
-            helper.assertTrue(out.getHoverName().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
+            helper.assertTrue(((Object) out.getHoverName().getContents()) instanceof net.minecraft.network.chat.contents.TranslatableContents t
                     && t.getKey().endsWith(".missile.name.cryogenic_warhead"), "named a Cryo ICBM: " + out.getHoverName());
-            var look = out.get(DataComponents.CUSTOM_MODEL_DATA);
+            var look = dev.groundburst.legacy.component.Comps.get(out, DataComponents.CUSTOM_MODEL_DATA);
             helper.assertTrue(look != null && look.value() == dev.groundburst.port.Looks.id("cryogenic_warhead"), "its own model: " + look);
             var shown = special.shownMissile();
-            helper.assertTrue(shown != null && shown.looks().getLast().equals("cryogenic_warhead_part4"), "on the cradles: " + shown);
+            helper.assertTrue(shown != null && dev.groundburst.legacy.J21.last(shown.looks()).equals("cryogenic_warhead_part4"), "on the cradles: " + shown);
         });
     }
 

@@ -17,7 +17,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * The placed-charge screens (DESIGN.md §9.4): fuze settings (Remote frequency or Timer), the timed bomb's defuse panel
@@ -73,7 +73,7 @@ public final class ChargeScreens {
 
     private static int parse(String s, int fallback, int min, int max) {
         try {
-            return Math.clamp(Integer.parseInt(s.trim()), min, max);
+            return dev.groundburst.legacy.J21.clamp(Integer.parseInt(s.trim()), min, max);
         } catch (NumberFormatException e) {
             return fallback;
         }
@@ -196,14 +196,14 @@ public final class ChargeScreens {
             send(ChargePayloads.SAVE);
         }
 
-        @Override
         public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
-            super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
+            super.renderBackground(g.unwrap());
             panel(g, (this.width - W) / 2, top(), W, this.height);
         }
 
         @Override
         public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+            this.renderBackground(g.unwrap(), mouseX, mouseY, partial);   // (1.20.1's Screen.render draws no background)
             super.render(g.unwrap(), mouseX, mouseY, partial);
             int x = (this.width - W) / 2, top = top();
             centred(g, this.font, this.title, this.width / 2, top + 8, TEXT);
@@ -270,9 +270,8 @@ public final class ChargeScreens {
             }
         }
 
-        @Override
         public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
-            super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
+            super.renderBackground(g.unwrap());
             int x = (this.width - W) / 2, y = (this.height - H) / 2;
             panel(g, x, y, W, H);
             ChargeBlockEntity be = bomb();
@@ -290,6 +289,7 @@ public final class ChargeScreens {
 
         @Override
         public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+            this.renderBackground(g.unwrap(), mouseX, mouseY, partial);   // (1.20.1's Screen.render draws no background)
             super.render(g.unwrap(), mouseX, mouseY, partial);
             int y = (this.height - H) / 2;
             ChargeBlockEntity be = bomb();
@@ -337,14 +337,14 @@ public final class ChargeScreens {
             super.onClose();
         }
 
-        @Override
         public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
-            super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
+            super.renderBackground(g.unwrap());
             panel(g, (this.width - W) / 2, (this.height - H) / 2, W, H);
         }
 
         @Override
         public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+            this.renderBackground(g.unwrap(), mouseX, mouseY, partial);   // (1.20.1's Screen.render draws no background)
             super.render(g.unwrap(), mouseX, mouseY, partial);
             centred(g, this.font, this.title, this.width / 2, (this.height - H) / 2 + 8, TEXT);
         }

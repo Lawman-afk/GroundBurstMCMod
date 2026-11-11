@@ -102,7 +102,7 @@ final class CryoTests {
             }
             helper.assertTrue(ring > 20 && snowed >= ring * 0.7, "the grass 5 to 7 off laid with snow: " + snowed + " of " + ring);
             helper.assertTrue(!heart.isAlive(), "nothing lives at its heart");
-            helper.assertTrue(out.isAlive() && out.hasEffect(EffectSystems.FROZEN), "7 off: frozen solid, alive");
+            helper.assertTrue(out.isAlive() && out.hasEffect(EffectSystems.FROZEN.get()), "7 off: frozen solid, alive");
             helper.assertTrue(!helper.getBlockState(new BlockPos(7, 2, 7)).is(Blocks.GLASS), "the glass in its heart shattered");
             BlockState spire = helper.getBlockState(new BlockPos(8, 3, 8));
             helper.assertTrue(spire.is(Blocks.PACKED_ICE) || spire.is(Blocks.BLUE_ICE), "a spire of ice at its middle: " + spire);

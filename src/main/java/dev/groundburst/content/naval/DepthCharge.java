@@ -101,9 +101,9 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(ITEM, ItemStack.EMPTY);
-        builder.define(AXIS, Float.NaN);
+    protected void defineSynchedData() {
+        this.entityData.define(ITEM, ItemStack.EMPTY);
+        this.entityData.define(AXIS, Float.NaN);
     }
 
     public void setItem(ItemStack stack) {
@@ -121,7 +121,7 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
     }
 
     public static int depthOf(ItemStack stack) {
-        return stack.getOrDefault(GBDataComponents.NAVAL_DEPTH.get(), DEFAULT_DEPTH);
+        return dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.NAVAL_DEPTH.get(), DEFAULT_DEPTH);
     }
 
     /** The surface it went in at (NaN until it has). */
@@ -133,7 +133,7 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
     public void tick() {
         super.tick();
         this.prevSpin = this.spin;
-        if (level() instanceof ServerLevel server && this.fuse > 0 && --this.fuse == 0) {
+        if (((Object) level()) instanceof ServerLevel server && this.fuse > 0 && --this.fuse == 0) {
             goOff(server);
             return;
         }
@@ -152,14 +152,14 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
             BlockHitResult b = (BlockHitResult) hit;
             if (wet) {
                 setPos(b.getLocation().add(0, 0.05, 0));
-                if (level() instanceof ServerLevel server) {
+                if (((Object) level()) instanceof ServerLevel server) {
                     goOff(server);                         // on the bottom before its depth
                 }
                 return;
             }
             land(b, v);
-        } else if (hit instanceof EntityHitResult e && !wet) {
-            if (level() instanceof ServerLevel server) {
+        } else if (((Object) hit) instanceof EntityHitResult e && !wet) {
+            if (((Object) level()) instanceof ServerLevel server) {
                 e.getEntity().hurt(damageSources().thrown(this, getOwner()), 2f);   // a heavy drum on the head
             }
             setDeltaMovement(v.scale(-0.2));
@@ -187,7 +187,7 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
         Vec3 out = v.subtract(n.scale(into)).scale(0.5).subtract(n.scale(into * 0.2));
         setPos(hit.getLocation().add(n.scale(0.03)));
         if (face == Direction.UP && out.lengthSqr() < 0.004) {
-            if (level() instanceof ServerLevel server) {
+            if (((Object) level()) instanceof ServerLevel server) {
                 GBNaval.drop(server, position().add(0, 0.1, 0), getItem().copy());
                 discard();
             }
@@ -220,12 +220,12 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
     }
 
     @Override
-    public boolean hurt(DamageSource source, float damage) { if (!(this.level() instanceof ServerLevel level)) return false;
+    public boolean hurt(DamageSource source, float damage) { if (!(((Object) this.level()) instanceof ServerLevel level)) return false;
         return false;
     }
 
     @Override
-    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, this.registryAccess());
+    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, dev.groundburst.legacy.Regs.access());
         super.addAdditionalSaveData(output.tag());
         output.store("item", ItemStack.CODEC, getItem());
         output.putDouble("surface", Double.isNaN(this.surface) ? -1e9 : this.surface);
@@ -236,7 +236,7 @@ public class DepthCharge extends Projectile implements ItemSupplier, ShockReceiv
     }
 
     @Override
-    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, this.registryAccess());
+    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, dev.groundburst.legacy.Regs.access());
         super.readAdditionalSaveData(input.tag());
         input.read("item", ItemStack.CODEC).ifPresent(this::setItem);
         double s = input.getDoubleOr("surface", -1e9);

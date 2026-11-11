@@ -1,0 +1,24 @@
+{
+  "type": "groundburst:pressing",
+  "catalyst": {
+    "item": "groundburst:rod_die"
+  },
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:ingots/steel"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:steel_rod"
+      }
+    }
+  ],
+  "time": 100
+}

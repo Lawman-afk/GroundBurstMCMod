@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "#forge:circuits/basic",
+      "required": false
+    },
+    {
+      "id": "#forge:circuits/advanced",
+      "required": false
+    }
+  ]
+}

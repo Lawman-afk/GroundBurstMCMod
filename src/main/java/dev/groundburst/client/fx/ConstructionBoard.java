@@ -146,7 +146,7 @@ final class ConstructionBoard {
         if (powered) {
             level.setBlock(at.east(8), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
         }
-        if (stuck >= 0 && level.getBlockEntity(at) instanceof dev.groundburst.content.construction.SiloDoorBlockEntity d) {
+        if (stuck >= 0 && ((Object) level.getBlockEntity(at)) instanceof dev.groundburst.content.construction.SiloDoorBlockEntity d) {
             d.setStuck(stuck);
         }
     }

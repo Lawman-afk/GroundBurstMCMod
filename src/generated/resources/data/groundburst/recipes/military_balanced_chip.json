@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "groundburst:military_speed_chip"
+    },
+    {
+      "item": "groundburst:military_efficiency_chip"
+    }
+  ],
+  "result": {
+    "item": "groundburst:military_balanced_chip",
+    "count": 2
+  }
+}

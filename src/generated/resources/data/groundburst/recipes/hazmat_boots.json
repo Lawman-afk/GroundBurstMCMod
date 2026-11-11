@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "P": {
+      "item": "groundburst:plastic_sheet"
+    }
+  },
+  "pattern": [
+    "P P",
+    "L L"
+  ],
+  "result": {
+    "item": "groundburst:hazmat_boots"
+  }
+}

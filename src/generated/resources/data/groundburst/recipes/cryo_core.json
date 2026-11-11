@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:liquid_nitrogen_canister"
+    },
+    {
+      "item": "groundburst:liquid_nitrogen_canister"
+    },
+    {
+      "item": "groundburst:liquid_nitrogen_canister"
+    },
+    {
+      "item": "groundburst:liquid_nitrogen_canister"
+    },
+    {
+      "item": "groundburst:superconducting_coil"
+    },
+    {
+      "item": "groundburst:superconducting_coil"
+    },
+    {
+      "item": "groundburst:stabilised_exotic_matter"
+    },
+    {
+      "item": "groundburst:quantum_circuit"
+    }
+  ],
+  "result": {
+    "item": "groundburst:cryo_core"
+  }
+}

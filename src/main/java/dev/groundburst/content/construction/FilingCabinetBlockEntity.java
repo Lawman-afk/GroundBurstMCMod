@@ -54,7 +54,7 @@ public class FilingCabinetBlockEntity extends RandomizableContainerBlockEntity {
 
         @Override
         protected boolean isOwnContainer(Player player) {
-            return player.containerMenu instanceof ChestMenu menu && menu.getContainer() == FilingCabinetBlockEntity.this;
+            return ((Object) player.containerMenu) instanceof ChestMenu menu && menu.getContainer() == FilingCabinetBlockEntity.this;
         }
     };
 
@@ -63,19 +63,19 @@ public class FilingCabinetBlockEntity extends RandomizableContainerBlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(CompoundTag tag) { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        super.saveAdditional(tag);
         if (!this.trySaveLootTable(tag)) {
-            ContainerHelper.saveAllItems(tag, this.items, registries);
+            ContainerHelper.saveAllItems(tag, this.items);
         }
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    public void load(net.minecraft.nbt.CompoundTag tag) { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        super.load(tag);
         this.items = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
         if (!this.tryLoadLootTable(tag)) {
-            ContainerHelper.loadAllItems(tag, this.items, registries);
+            ContainerHelper.loadAllItems(tag, this.items);
         }
     }
 

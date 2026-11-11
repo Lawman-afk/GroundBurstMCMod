@@ -20,7 +20,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * An alarm device's settings (DESIGN.md §18.6): its channel, its own choices (each a button that steps through them),
@@ -74,7 +74,7 @@ public final class AlarmScreen extends Screen {
 
     private static void open(BlockPos pos) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level != null && mc.level.getBlockEntity(pos) instanceof AlarmBlockEntity be) {
+        if (mc.level != null && ((Object) mc.level.getBlockEntity(pos)) instanceof AlarmBlockEntity be) {
             mc.setScreen(new AlarmScreen(pos, be));
         }
     }
@@ -85,7 +85,7 @@ public final class AlarmScreen extends Screen {
 
     private @Nullable AlarmBlockEntity entity() {
         Minecraft mc = Minecraft.getInstance();
-        return mc.level != null && mc.level.getBlockEntity(this.pos) instanceof AlarmBlockEntity be ? be : null;
+        return mc.level != null && ((Object) mc.level.getBlockEntity(this.pos)) instanceof AlarmBlockEntity be ? be : null;
     }
 
     @Override
@@ -166,7 +166,7 @@ public final class AlarmScreen extends Screen {
             return this.channel;
         }
         try {
-            return Math.clamp(Integer.parseInt(this.channelBox.getValue().trim()), 0, Alarms.MAX_CHANNEL);
+            return dev.groundburst.legacy.J21.clamp(Integer.parseInt(this.channelBox.getValue().trim()), 0, Alarms.MAX_CHANNEL);
         } catch (NumberFormatException e) {
             return this.channel;
         }
@@ -194,9 +194,8 @@ public final class AlarmScreen extends Screen {
         return false;
     }
 
-    @Override
     public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
-        super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
+        super.renderBackground(g.unwrap());
         int x = (this.width - W) / 2, top = top();
         g.fill(x, top, x + W, top + this.panelHeight, PANEL);
         g.outline(x, top, W, this.panelHeight, EDGE);
@@ -204,6 +203,7 @@ public final class AlarmScreen extends Screen {
 
     @Override
     public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        this.renderBackground(g.unwrap(), mouseX, mouseY, partial);   // (1.20.1's Screen.render draws no background)
         super.render(g.unwrap(), mouseX, mouseY, partial);
         int x = (this.width - W) / 2, top = top();
         g.text(this.font, this.title, x + (W - this.font.width(this.title)) / 2, top + 8, TEXT);
@@ -225,7 +225,7 @@ public final class AlarmScreen extends Screen {
         List<Component> out = new ArrayList<>();
         switch (this.device) {
             case RECEIVER -> {
-                int radius = AlarmBlockEntity.RADII[Math.clamp(this.options[this.device.option("radius")], 0, AlarmBlockEntity.RADII.length - 1)];
+                int radius = AlarmBlockEntity.RADII[dev.groundburst.legacy.J21.clamp(this.options[this.device.option("radius")], 0, AlarmBlockEntity.RADII.length - 1)];
                 if (be.count() > 0) {
                     long left = Math.max(0, be.impactAt() - mc.level.getGameTime());
                     out.add(Component.translatable(T_INCOMING, be.count(), radius).withStyle(ChatFormatting.RED));

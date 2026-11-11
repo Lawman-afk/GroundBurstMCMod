@@ -32,8 +32,8 @@ final class StatsTests {
 
     /** "key(arg, arg)" for a translatable component, its text otherwise. */
     private static String flat(Component c) {
-        if (c.getContents() instanceof TranslatableContents t) {
-            return t.getKey() + Arrays.stream(t.getArgs()).map(a -> a instanceof Component ac ? flat(ac) : String.valueOf(a))
+        if (((Object) c.getContents()) instanceof TranslatableContents t) {
+            return t.getKey() + Arrays.stream(t.getArgs()).map(a -> ((Object) a) instanceof Component ac ? flat(ac) : String.valueOf(a))
                     .collect(Collectors.joining(", ", "(", ")"));
         }
         return c.getString();
@@ -52,7 +52,7 @@ final class StatsTests {
     private static void warhead(GameTestHelper helper) {
         var registries = helper.getLevel().registryAccess();
         ItemStack he = new ItemStack(GBOrdnance.HE_WARHEAD.item().get());
-        he.set(GBDataComponents.FUZE.get(), FuzeSettings.of(Fuze.BAROMETRIC, 50));
+        dev.groundburst.legacy.component.Comps.set(he, GBDataComponents.FUZE.get(), FuzeSettings.of(Fuze.BAROMETRIC, 50));
         String s = all(AssemblyStats.warhead(he, registries));
         has(helper, s, "groundburst.stats.class() = S");
         has(helper, s, "groundburst.stats.crater() = groundburst.stats.blocks(6)");

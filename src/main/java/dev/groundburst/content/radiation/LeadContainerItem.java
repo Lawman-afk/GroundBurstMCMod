@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import dev.groundburst.GroundBurst;
 import dev.groundburst.registry.GBLang;
 import dev.groundburst.registry.GBSounds;
-import net.minecraft.core.component.DataComponents;
+import dev.groundburst.legacy.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -16,7 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.ItemContainerContents;
+import dev.groundburst.legacy.component.ItemContainerContents;
 
 import net.minecraft.world.level.Level;
 
@@ -30,14 +30,14 @@ public class LeadContainerItem extends Item {
             "Holds radioactive items; nothing inside reaches you. Use to open.");
 
     public LeadContainerItem(Properties properties) {
-        super(properties.stacksTo(1).component(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
+        super(dev.groundburst.legacy.component.Comps.withDefault(properties.stacksTo(1), DataComponents.CONTAINER, ItemContainerContents.EMPTY));
     }
 
     @Override
     public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(Level level, Player player, InteractionHand hand) {
-        if (player instanceof ServerPlayer server) {
+        if (((Object) player) instanceof ServerPlayer server) {
             ItemStack stack = player.getItemInHand(hand);
-            server.openMenu(new SimpleMenuProvider((id, inventory, p) -> new LeadContainerMenu(id, inventory, hand), stack.getHoverName()),
+            net.minecraftforge.network.NetworkHooks.openScreen((net.minecraft.server.level.ServerPlayer) server, new SimpleMenuProvider((id, inventory, p) -> new LeadContainerMenu(id, inventory, hand), stack.getHoverName()),
                     buf -> buf.writeEnum(hand));
             level.playSound(null, player.getX(), player.getY(), player.getZ(), GBSounds.LEAD_CONTAINER_OPEN.get(), SoundSource.PLAYERS, 0.8f, 1f);
         }
@@ -52,7 +52,7 @@ public class LeadContainerItem extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
-        builder.accept(Component.translatable(HINT).withColor(0xFF9AA0A8));
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
+        builder.accept(Component.translatable(HINT).withStyle(s_ -> s_.withColor(0xFF9AA0A8)));
     }
 }

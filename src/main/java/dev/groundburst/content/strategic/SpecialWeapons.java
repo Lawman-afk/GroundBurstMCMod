@@ -49,7 +49,7 @@ public final class SpecialWeapons {
 
     /** The exotic warhead a core is (an Antimatter Trap's, a Singularity Core's, a Storm Core's, a Cryo Core's); null for anything else. */
     public static @Nullable ChargeBlock core(ItemStack stack) {
-        return stack.getItem() instanceof ComponentItems.IcbmCore core ? core.warhead() : null;
+        return ((Object) stack.getItem()) instanceof ComponentItems.IcbmCore core ? core.warhead() : null;
     }
 
     /** Whether a stack is an exotic core. */
@@ -80,7 +80,7 @@ public final class SpecialWeapons {
         if (warhead == null) {
             return ItemStack.EMPTY;
         }
-        MissileParts.Guidance g = guidance.getItem() instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
+        MissileParts.Guidance g = ((Object) guidance.getItem()) instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
         return MissileAssembly.missile(new MissileSpec(new ItemStack(warhead), SizeClass.XXL, MissileParts.Motor.ICBM, g,
                 module.getItem() instanceof MissileParts.HardenedModule));
     }

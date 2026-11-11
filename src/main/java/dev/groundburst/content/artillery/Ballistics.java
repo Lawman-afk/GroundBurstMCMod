@@ -114,7 +114,7 @@ public final class Ballistics {
             if (p.y < level.getMinBuildHeight() - 16 || !level.isLoaded(BlockPos.containing(p))) {
                 return null;
             }
-            BlockHitResult hit = level.clip(new ClipContext(prev, p, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, ctx));
+            BlockHitResult hit = level.clip(new ClipContext(prev, p, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, (net.minecraft.world.entity.Entity) null));
             if (hit.getType() != HitResult.Type.MISS) {
                 // A ship's block is met where it is seen (another mod's clip reports it in the ship's plot, far off).
                 Frame frame = Frames.at(level, hit.getBlockPos());

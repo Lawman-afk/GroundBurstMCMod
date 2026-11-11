@@ -12,10 +12,10 @@ import dev.groundburst.content.radiation.RadiationSource;
 import dev.groundburst.content.radiation.RadiationSources;
 import dev.groundburst.network.GBNetwork;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -27,11 +27,11 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.saveddata.SavedData;
 import dev.groundburst.port.SavedDataType;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.level.LevelEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.TickEvent;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * Every fallout plume in a level (DESIGN.md §21.8, slice 12b), as its saved data ({@code fallout_plumes.dat}). Once a
@@ -63,22 +63,22 @@ public final class Plumes extends SavedData {
     }
 
     static void register() {
-        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
-            if (event.getLevel() instanceof ServerLevel level && level.getGameTime() % 20 == 0) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent event) -> {if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) event.level) instanceof ServerLevel level && level.getGameTime() % 20 == 0) {
                 of(level).tick(level);
             }
         });
-        NeoForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
-            if (event.getLevel() instanceof ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
+            if (((Object) event.getLevel()) instanceof ServerLevel level) {
                 BY_LEVEL.remove(level);
             }
         });
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> tell(event.getEntity()));
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent event) -> tell(event.getEntity()));
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> tell(event.getEntity()));
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent event) -> tell(event.getEntity()));
     }
 
     private static void tell(Player player) {
-        if (player instanceof ServerPlayer p) {
+        if (((Object) player) instanceof ServerPlayer p) {
             PacketDistributor.sendToPlayer(p, Sync.of(of((ServerLevel) p.level()).plumes));
         }
     }
@@ -202,7 +202,7 @@ public final class Plumes extends SavedData {
     /** Every plume in the receiving player's level (empty: none). */
     public record Sync(List<Cloud> clouds) implements CustomPacketPayload {
         public static final Type<Sync> TYPE = GBNetwork.type("fallout_plumes");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Sync> CODEC = Cloud.CODEC.apply(ByteBufCodecs.list())
+        public static final StreamCodec<FriendlyByteBuf, Sync> CODEC = Cloud.CODEC.apply(ByteBufCodecs.list())
                 .map(Sync::new, Sync::clouds).cast();
         /** Client hook (set by the client). */
         public static Consumer<Sync> hook = s -> {};
@@ -222,7 +222,7 @@ public final class Plumes extends SavedData {
     }
 
     @Override
-    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access();
         return TYPE.save(this, tag_, registries_);
     }
 }

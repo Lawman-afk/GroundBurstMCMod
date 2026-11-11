@@ -183,9 +183,9 @@ public final class Manual {
             case "crafting" -> new CraftingSpec(item(json, "item"), false, text);
             case "smelting" -> new CraftingSpec(item(json, "item"), true, text);
             case "machine" -> new MachineSpec(string(json, "kind", ""), json.has("item") ? item(json, "item") : null,
-                    json.has("fluid") ? ResourceLocation.parse(json.get("fluid").getAsString()) : null, text);
-            case "structure" -> new StructureSpec(ResourceLocation.parse(string(json, "structure", "")), text);
-            case "image" -> new ImageSpec(ResourceLocation.parse(string(json, "image", "")), integer(json, "width"), integer(json, "height"), text);
+                    json.has("fluid") ? new ResourceLocation(json.get("fluid").getAsString()) : null, text);
+            case "structure" -> new StructureSpec(new ResourceLocation(string(json, "structure", "")), text);
+            case "image" -> new ImageSpec(new ResourceLocation(string(json, "image", "")), integer(json, "width"), integer(json, "height"), text);
             case "table" -> {
                 List<List<String>> rows = new ArrayList<>();
                 for (JsonElement row : array(json, "rows")) {
@@ -225,7 +225,7 @@ public final class Manual {
     }
 
     private static Item item(String id) {
-        return BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(id)).orElseGet(() -> {
+        return BuiltInRegistries.ITEM.getOptional(new ResourceLocation(id)).orElseGet(() -> {
             GroundBurst.LOGGER.error("Field Manual: unknown item {}", id);
             return Items.BARRIER;
         });

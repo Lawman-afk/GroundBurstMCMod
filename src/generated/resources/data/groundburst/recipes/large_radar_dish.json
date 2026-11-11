@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "groundburst:radar_dish"
+    },
+    {
+      "item": "groundburst:radar_dish"
+    },
+    {
+      "item": "groundburst:radar_dish"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    }
+  ],
+  "result": {
+    "item": "groundburst:large_radar_dish"
+  }
+}

@@ -167,11 +167,11 @@ public final class GuiGraphicsExtractor {
     }
 
     public void blitSprite(RenderPipeline pipeline, ResourceLocation sprite, int x, int y, int width, int height) {
-        this.g.blitSprite(sprite, x, y, width, height);
+        this.g.blit(sprite.withPath(p -> "textures/gui/sprites/" + p + ".png"), x, y, 0, 0, width, height, width, height);
     }
 
     public void blitSprite(RenderPipeline pipeline, ResourceLocation sprite, int x, int y, int width, int height, int color) {
-        tinted(color, () -> this.g.blitSprite(sprite, x, y, width, height));
+        tinted(color, () -> this.g.blit(sprite.withPath(p -> "textures/gui/sprites/" + p + ".png"), x, y, 0, 0, width, height, width, height));
     }
 
     public void blitSprite(RenderPipeline pipeline, TextureAtlasSprite sprite, int x, int y, int width, int height) {

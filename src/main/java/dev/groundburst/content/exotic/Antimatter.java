@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.common.Tags;
 
 /**
  * The antimatter warhead (DESIGN.md §16.3, Phase 11): antimatter held in a Penning trap. Delivered by a missile, the
@@ -75,9 +75,9 @@ public final class Antimatter {
      * radiation-sick. Inside the sphere there is nothing left to dose.
      */
     static void gamma(ServerLevel level, Vec3 at, float sphere, float lethal, float reach, @Nullable Entity by) {
-        DamageSource source = level.damageSources().source(GAMMA_FLASH, null, by);
+        DamageSource source = dev.groundburst.legacy.Game.source(level, GAMMA_FLASH, null, by);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(reach))) {
-            if (e instanceof Player p && (p.isCreative() || p.isSpectator())) {
+            if (((Object) e) instanceof Player p && (p.isCreative() || p.isSpectator())) {
                 continue;
             }
             Vec3 body = e.getBoundingBox().getCenter();
@@ -125,7 +125,7 @@ public final class Antimatter {
         if (s.getBlock() instanceof LiquidBlock) {
             return LIQUID;
         }
-        if (s.is(Blocks.OBSIDIAN) || s.is(Blocks.CRYING_OBSIDIAN) || s.is(Blocks.REINFORCED_DEEPSLATE) || s.is(Tags.Blocks.CONCRETES)
+        if (s.is(Blocks.OBSIDIAN) || s.is(Blocks.CRYING_OBSIDIAN) || s.is(Blocks.REINFORCED_DEEPSLATE) || s.is(dev.groundburst.legacy.Tags2.CONCRETES)
                 || s.is(dev.groundburst.content.resource.GBResources.LEAD_BLOCK.block().get())) {
             return DENSE;
         }

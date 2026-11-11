@@ -26,10 +26,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * runs some eight blocks from the block toward its facing; only the tail here stands in the way.
  */
 public class MissileWreckBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends MissileWreckBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     /** The tail's body lying across the block on its fins. */
     static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 16, 15);
@@ -52,12 +49,12 @@ public class MissileWreckBlock extends HorizontalDirectionalBlock implements Ent
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
     }
 

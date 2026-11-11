@@ -40,12 +40,12 @@ final class TallMachineTests {
         BlockPos lower = helper.absolutePos(new BlockPos(3, 1, 3)), upper = lower.above();
         var cap = dev.groundburst.port.transfer.Capabilities.Item.BLOCK;
         net.minecraft.core.Direction front = level.getBlockState(lower).getValue(dev.groundburst.content.machine.MachineBlock.FACING);
-        helper.assertTrue(level.getCapability(cap, lower, front) != null && level.getCapability(cap, upper, front) != null, "both fronts open");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, cap, lower, front) != null && dev.groundburst.legacy.Caps.get(level, cap, upper, front) != null, "both fronts open");
         press.changeSides(true, c -> c.cycleItems(dev.groundburst.content.machine.SideConfig.Face.FRONT, true, press.allowedItemModes()));
-        helper.assertTrue(level.getCapability(cap, upper, front) == null, "the upper front closed on its own");
-        helper.assertTrue(level.getCapability(cap, lower, front) != null, "the lower front still open");
-        helper.assertTrue(level.getCapability(cap, lower, net.minecraft.core.Direction.UP) == null
-                && level.getCapability(cap, upper, net.minecraft.core.Direction.DOWN) == null, "nothing between the halves");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, cap, upper, front) == null, "the upper front closed on its own");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, cap, lower, front) != null, "the lower front still open");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, cap, lower, net.minecraft.core.Direction.UP) == null
+                && dev.groundburst.legacy.Caps.get(level, cap, upper, net.minecraft.core.Direction.DOWN) == null, "nothing between the halves");
         helper.succeed();
     }
 
@@ -113,7 +113,7 @@ final class TallMachineTests {
         BlockPos pos = new BlockPos(3, 1, 3);
         IndustrialPressBlockEntity press = place(helper, GBMachines.INDUSTRIAL_PRESS.block().get(), pos, IndustrialPressBlockEntity.class);
         BlockPos upperAbs = helper.absolutePos(pos.above());
-        var energy = helper.getLevel().getCapability(Capabilities.Energy.BLOCK, upperAbs, Direction.EAST);
+        var energy = dev.groundburst.legacy.Caps.get(helper.getLevel(), Capabilities.Energy.BLOCK, upperAbs, Direction.EAST);
         helper.assertTrue(energy != null, "upper half should expose the machine's energy");
         helper.assertTrue(energy.getCapacityAsLong() == press.energy().capacity(), "upper half energy is not the machine's buffer");
         // A cable beside the upper half connects to it.

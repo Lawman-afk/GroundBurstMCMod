@@ -2,7 +2,7 @@ package dev.groundburst.port;
 
 import java.util.function.Function;
 
-import net.minecraft.network.codec.StreamCodec;
+import dev.groundburst.legacy.net.StreamCodec;
 
 /** Minecraft 26.x's composite stream codecs of more fields than 1.21.1's six. */
 public final class StreamCodecs {

@@ -22,9 +22,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.Tags;
+import net.minecraftforge.event.TickEvent;
 
 /**
  * A neutron warhead's burst (DESIGN.md §15, Phase 8 slice 8b): a small blast, but a flood of neutrons deadly to every
@@ -55,8 +55,8 @@ public final class NeutronBurst {
     private NeutronBurst() {}
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
-            if (e.getLevel() instanceof ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent e) -> {if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) e.level) instanceof ServerLevel level) {
                 tick(level);
             }
         });
@@ -66,7 +66,7 @@ public final class NeutronBurst {
     public static void burst(ServerLevel level, Vec3 at, @Nullable Entity by, float scale) {
         float reach = Math.max(4, LETHAL_RADIUS * scale);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(reach))) {
-            if (e.getType().is(EntityTypeTags.UNDEAD) || e instanceof Player p && (p.isCreative() || p.isSpectator())) {
+            if (dev.groundburst.legacy.Game.undead(e) || ((Object) e) instanceof Player p && (p.isCreative() || p.isSpectator())) {
                 continue;
             }
             Vec3 body = e.getBoundingBox().getCenter();
@@ -76,7 +76,7 @@ public final class NeutronBurst {
             }
             double dose = (1 - Math.pow(d / reach, 2)) * shielding(level, at, body) * (1 - SUIT_SHARE * GBArmor.radiationProtection(e));
             if (dose >= LETHAL_DOSE) {
-                e.hurt(level.damageSources().source(GBEffects.RADIATION_DAMAGE), 1000);
+                e.hurt(dev.groundburst.legacy.Game.source(level, GBEffects.RADIATION_DAMAGE), 1000);
             } else if (dose > 0.001) {
                 // Taken at once, as rad (DESIGN.md §21.8): from SICK_DOSE (120 rad) it brings Radiation Sickness I and up.
                 dev.groundburst.content.radiation.Radiation.addDose(e, (float) (dose * RAD_PER_DOSE));
@@ -114,7 +114,7 @@ public final class NeutronBurst {
         if (s.getBlock() instanceof LiquidBlock) {
             return LIQUID;
         }
-        if (s.is(Blocks.OBSIDIAN) || s.is(Blocks.CRYING_OBSIDIAN) || s.is(Blocks.REINFORCED_DEEPSLATE) || s.is(Tags.Blocks.CONCRETES)
+        if (s.is(Blocks.OBSIDIAN) || s.is(Blocks.CRYING_OBSIDIAN) || s.is(Blocks.REINFORCED_DEEPSLATE) || s.is(dev.groundburst.legacy.Tags2.CONCRETES)
                 || s.is(dev.groundburst.content.resource.GBResources.LEAD_BLOCK.block().get())) {
             return DENSE;
         }
@@ -128,7 +128,7 @@ public final class NeutronBurst {
         }
         int budget = COLUMNS_PER_TICK;
         while (budget > 0 && !jobs.isEmpty()) {
-            Withering w = jobs.getFirst();
+            Withering w = dev.groundburst.legacy.J21.first(jobs);
             int side = 2 * w.radius() + 1, total = side * side;
             while (budget > 0 && w.next()[0] < total) {
                 int i = w.next()[0]++;
@@ -140,7 +140,7 @@ public final class NeutronBurst {
                 wither(level, w.centre().getX() + dx, w.centre().getZ() + dz);
             }
             if (w.next()[0] >= total) {
-                jobs.removeFirst();
+                dev.groundburst.legacy.J21.removeFirst(jobs);
             }
         }
     }

@@ -22,10 +22,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * clicked (out of a wall, up from the ground, down from a ceiling), lighting at full strength.
  */
 public class FloodlightBlock extends DirectionalBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends FloodlightBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     /** The head's shape facing each way: a housing 10 wide and 7 deep, the lens at its face, on a bracket back to the mount. */
     private static final Map<Direction, VoxelShape> SHAPES = new EnumMap<>(Direction.class);
@@ -52,17 +49,17 @@ public class FloodlightBlock extends DirectionalBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES.get(state.getValue(FACING));
     }
 
     @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 

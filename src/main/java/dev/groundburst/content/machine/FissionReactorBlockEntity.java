@@ -301,7 +301,7 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
                 this.level.setBlock(pos, state.setValue(MultiblockPartBlock.FORMED, formed).setValue(MultiblockPartBlock.CUT, PartCut.NONE),
                         Block.UPDATE_ALL);
             }
-            if (this.level.getBlockEntity(pos) instanceof PortBlockEntity port) {
+            if (((Object) this.level.getBlockEntity(pos)) instanceof PortBlockEntity port) {
                 port.setController(formed ? this.worldPosition : null);
             }
         }
@@ -615,7 +615,7 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
                 this.pending[slot] = 0;
                 continue;
             }
-            FuelBurnup burnup = rod.get(GBDataComponents.FUEL_BURNUP.get());
+            FuelBurnup burnup = dev.groundburst.legacy.component.Comps.get(rod, GBDataComponents.FUEL_BURNUP.get());
             if (burnup == null) {
                 burnup = new FuelBurnup(0, rollLife(random));
             }
@@ -625,7 +625,7 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
                 this.inventory.setItem(slot, new ItemStack(GBNuclear.SPENT_FUEL_ROD.get()));
             } else {
                 ItemStack burned = rod.copy();
-                burned.set(GBDataComponents.FUEL_BURNUP.get(), burnup);
+                dev.groundburst.legacy.component.Comps.set(burned, GBDataComponents.FUEL_BURNUP.get(), burnup);
                 this.inventory.setItem(slot, burned);
             }
         }
@@ -769,9 +769,9 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
             }
             int axis = (button - BUTTON_PLAN) / 2, step = (button - BUTTON_PLAN) % 2 == 0 ? -1 : 1;
             switch (axis) {
-                case 0 -> this.planW = Math.clamp(this.planW + step, FissionCore.MIN, FissionCore.MAX);
-                case 1 -> this.planH = Math.clamp(this.planH + step, FissionCore.MIN, FissionCore.MAX);
-                default -> this.planD = Math.clamp(this.planD + step, FissionCore.MIN, FissionCore.MAX);
+                case 0 -> this.planW = dev.groundburst.legacy.J21.clamp(this.planW + step, FissionCore.MIN, FissionCore.MAX);
+                case 1 -> this.planH = dev.groundburst.legacy.J21.clamp(this.planH + step, FissionCore.MIN, FissionCore.MAX);
+                default -> this.planD = dev.groundburst.legacy.J21.clamp(this.planD + step, FissionCore.MIN, FissionCore.MAX);
             }
             this.planned = null;
             setChanged();
@@ -869,8 +869,8 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -884,8 +884,8 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("insertion", this.insertion);
         output.putFloat("heat", this.heat);
         output.putFloat("breed0", this.breed[0]);
@@ -907,13 +907,13 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
         // Sized first, so the saved energy and coolant load into buffers big enough for them.
         int[] c = input.getIntArray("core").orElse(null);
         this.core = c != null && c.length == 5
                 ? new FissionCore(this.worldPosition, controllerFacing(), c[0], c[1], c[2], c[3], c[4], input.getLongOr("channels", 0L)) : null;
         size(input.getIntOr("sized_for", this.core == null ? 0 : this.core.channelCount()));
-        super.loadAdditional(input.tag(), input.lookup());
+        super.load(input.tag());
         this.insertion = input.getIntOr("insertion", 100);
         this.heat = input.getFloatOr("heat", AMBIENT);
         this.breed[0] = input.getFloatOr("breed0", 0);
@@ -923,9 +923,9 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         this.viewLayer = input.getIntOr("layer", 0);
         int[] plan = input.getIntArray("plan").orElse(null);
         if (plan != null && plan.length == 3) {
-            this.planW = Math.clamp(plan[0], FissionCore.MIN, FissionCore.MAX);
-            this.planH = Math.clamp(plan[1], FissionCore.MIN, FissionCore.MAX);
-            this.planD = Math.clamp(plan[2], FissionCore.MIN, FissionCore.MAX);
+            this.planW = dev.groundburst.legacy.J21.clamp(plan[0], FissionCore.MIN, FissionCore.MAX);
+            this.planH = dev.groundburst.legacy.J21.clamp(plan[1], FissionCore.MIN, FissionCore.MAX);
+            this.planD = dev.groundburst.legacy.J21.clamp(plan[2], FissionCore.MIN, FissionCore.MAX);
         }
         for (int slot = 0; slot < CHANNELS; slot++) {
             this.pending[slot] = input.getFloatOr("pending" + slot, 0);

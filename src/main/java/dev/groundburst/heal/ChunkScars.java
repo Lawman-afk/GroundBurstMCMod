@@ -380,13 +380,13 @@ public final class ChunkScars {
      */
     public static @Nullable String checkSaving(net.minecraft.server.level.ServerLevel level, BlockPos pos) {
         var chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-        ChunkScars before = chunk == null ? null : chunk.getExistingDataOrNull(GBHeal.SCARS.get());
+        ChunkScars before = chunk == null ? null : dev.groundburst.legacy.Attachments.getExistingOrNull(chunk, GBHeal.SCARS.get());
         if (before == null) {
             return "nothing is remembered there";
         }
         var ops = net.minecraft.resources.RegistryOps.create(net.minecraft.nbt.NbtOps.INSTANCE, level.registryAccess());
-        var tag = CODEC.codec().encodeStart(ops, before).getOrThrow();
-        ChunkScars after = CODEC.codec().parse(ops, tag).getOrThrow();
+        var tag = CODEC.codec().encodeStart(ops, before).getOrThrow(false, error_ -> {});
+        ChunkScars after = CODEC.codec().parse(ops, tag).getOrThrow(false, error_ -> {});
         if (after.count != before.count || after.entities.size() != before.entities.size() || after.changed != before.changed) {
             return "counts differ: " + before.count + " / " + after.count;
         }

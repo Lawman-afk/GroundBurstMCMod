@@ -82,12 +82,12 @@ public class VentilationDuctBlock extends Block {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         return state.setValue(SIDES.get(direction), joins(neighbor, direction));
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         int mask = 0;
         for (Direction d : Direction.values()) {
             if (state.getValue(SIDES.get(d))) {
@@ -98,7 +98,7 @@ public class VentilationDuctBlock extends Block {
     }
 
     @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         BlockState out = state;
         for (Direction d : Direction.Plane.HORIZONTAL) {
             out = out.setValue(SIDES.get(rotation.rotate(d)), state.getValue(SIDES.get(d)));
@@ -107,7 +107,7 @@ public class VentilationDuctBlock extends Block {
     }
 
     @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         BlockState out = state;
         for (Direction d : Direction.Plane.HORIZONTAL) {
             out = out.setValue(SIDES.get(mirror.mirror(d)), state.getValue(SIDES.get(d)));

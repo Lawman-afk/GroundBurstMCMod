@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "tag": "forge:rods/steel"
+    },
+    {
+      "tag": "forge:rods/steel"
+    },
+    {
+      "tag": "forge:rods/steel"
+    },
+    {
+      "tag": "forge:rods/steel"
+    },
+    {
+      "tag": "forge:plates/steel"
+    }
+  ],
+  "result": {
+    "item": "groundburst:radar_mast",
+    "count": 2
+  }
+}

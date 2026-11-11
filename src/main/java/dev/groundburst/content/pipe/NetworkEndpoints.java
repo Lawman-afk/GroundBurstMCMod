@@ -9,8 +9,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
+import dev.groundburst.legacy.BlockCapability;
+import dev.groundburst.legacy.BlockCapabilityCache;
 
 /**
  * The blocks a pipe or cable network delivers to, found once when the network is built (they only change when a
@@ -43,9 +43,9 @@ public final class NetworkEndpoints<T> {
 
     /** The handler at endpoint {@code index}, or null if there is none right now (or its chunk is not loaded). */
     public @Nullable T handler(Level level, int index) {
-        if (!(level instanceof ServerLevel server)) {
+        if (!(((Object) level) instanceof ServerLevel server)) {
             Endpoint e = this.endpoints.get(index);
-            return level.isLoaded(e.pos()) ? level.getCapability(this.capability, e.pos(), e.side()) : null;
+            return level.isLoaded(e.pos()) ? dev.groundburst.legacy.Caps.get(level, this.capability, e.pos(), e.side()) : null;
         }
         if (this.caches == null) {
             List<BlockCapabilityCache<T, @Nullable Direction>> list = new ArrayList<>(this.endpoints.size());

@@ -8,11 +8,11 @@ import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.material.FlowingFluid;
-import net.neoforged.neoforge.fluids.BaseFlowingFluid;
-import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
+import net.minecraftforge.fluids.ForgeFlowingFluid;
+import net.minecraftforge.fluids.FluidType;
+import dev.groundburst.legacy.DeferredBlock;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredItem;
 
 /**
  * One of the mod's chemical fluids (DESIGN.md §6.4): its fluid type, still and flowing fluids, its bucket, and its
@@ -26,8 +26,8 @@ import net.neoforged.neoforge.registries.DeferredItem;
  */
 public record ChemFluid(String name, Look look, int color, Hazard hazard,
                         DeferredHolder<FluidType, FluidType> type,
-                        DeferredHolder<net.minecraft.world.level.material.Fluid, BaseFlowingFluid.Source> source,
-                        DeferredHolder<net.minecraft.world.level.material.Fluid, BaseFlowingFluid.Flowing> flowing,
+                        DeferredHolder<net.minecraft.world.level.material.Fluid, ForgeFlowingFluid.Source> source,
+                        DeferredHolder<net.minecraft.world.level.material.Fluid, ForgeFlowingFluid.Flowing> flowing,
                         @Nullable DeferredBlock<? extends LiquidBlock> block, @Nullable DeferredBlock<GasCloudBlock> cloud,
                         DeferredItem<? extends BucketItem> bucket,
                         Supplier<? extends Item> canister, Supplier<? extends Item> emptyCanister) {
@@ -47,7 +47,7 @@ public record ChemFluid(String name, Look look, int color, Hazard hazard,
     /** The common tag other mods use for this fluid, e.g. {@code c:sulfuric_acid}; recipes take it, not our fluid. */
     public net.minecraft.tags.TagKey<net.minecraft.world.level.material.Fluid> commonTag() {
         return net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.FLUID,
-                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("c", this.name));
+                dev.groundburst.legacy.Tags2.commonFluid(this.name));
     }
 
     public boolean isGas() {

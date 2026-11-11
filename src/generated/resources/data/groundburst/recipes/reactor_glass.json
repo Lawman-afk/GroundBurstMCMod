@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": {
+      "tag": "forge:glass/colorless"
+    },
+    "L": {
+      "tag": "forge:plates/lead"
+    }
+  },
+  "pattern": [
+    "LGL",
+    "G G",
+    "LGL"
+  ],
+  "result": {
+    "item": "groundburst:reactor_glass",
+    "count": 4
+  }
+}

@@ -25,7 +25,7 @@ import net.minecraft.world.phys.Vec3;
  * up to the fill level. Liquids fill from the bottom; gases, being lighter than air, collect from the top down. Draws the
  * fluid tank and the creative fluid tank alike (both are {@link TankDisplay}s).
  */
-public class FluidTankRenderer<T extends BlockEntity & TankDisplay> extends dev.groundburst.port.render.StateBlockEntityRenderer<T, FluidTankRenderer.State> {
+public class FluidTankRenderer<T extends BlockEntity & TankDisplay> extends dev.groundburst.port.render.StateBlockEntityRenderer<T, FluidTankRenderer.State> implements dev.groundburst.legacy.client.RenderBox<T> {
     /** Inside the 1 px recessed glass, clear of the frame. */
     private static final float INSET = 1.2f / 16f;
 
@@ -57,7 +57,7 @@ public class FluidTankRenderer<T extends BlockEntity & TankDisplay> extends dev.
         state.fill = Math.min(1f, f.getAmount() / (float) Math.max(1, be.shownCapacity()));
         state.width = be.boxWidth();
         state.height = be.boxHeight();
-        state.gas = f.getFluidType().isLighterThanAir();
+        state.gas = f.getFluid().getFluidType().isLighterThanAir();
         int tint = FluidVisuals.tintInWorld(f.getFluid(), be.getLevel(), be.getBlockPos());
         state.color = (state.gas ? 0xA0000000 : 0xD8000000) | (tint & 0xFFFFFF);
     }
@@ -112,13 +112,12 @@ public class FluidTankRenderer<T extends BlockEntity & TankDisplay> extends dev.
     private static void quad(VertexConsumer buffer, PoseStack.Pose pose, int color, int light, float nx, float ny, float nz,
             float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz, float dx, float dy, float dz,
             float u0, float v0, float u1, float v1) {
-        buffer.addVertex(pose, ax, ay, az).setColor(color).setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, bx, by, bz).setColor(color).setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, cx, cy, cz).setColor(color).setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, dx, dy, dz).setColor(color).setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), ax, ay, az).color(color).uv(u0, v0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), bx, by, bz).color(color).uv(u0, v1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), cx, cy, cz).color(color).uv(u1, v1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), dx, dy, dz).color(color).uv(u1, v0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
     }
 
-    @Override
     public AABB getRenderBoundingBox(T be) {
         return new AABB(be.getBlockPos()).expandTowards(be.boxWidth() - 1, be.boxHeight() - 1, be.boxWidth() - 1);
     }

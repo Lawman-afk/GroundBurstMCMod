@@ -66,7 +66,7 @@ final class SpentStages {
             return;                                                // (the plain missile has one stage)
         }
         ItemStack look = new ItemStack(dev.groundburst.content.assembly.GBAssembly.MISSILE.get());
-        look.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(dev.groundburst.port.Looks.id(MissileParts.spentStage(missile.look(), k))));
+        dev.groundburst.legacy.component.Comps.set(look, dev.groundburst.legacy.component.DataComponents.CUSTOM_MODEL_DATA, new dev.groundburst.legacy.component.CustomModelData(dev.groundburst.port.Looks.id(MissileParts.spentStage(missile.look(), k))));
         // The model is drawn about its own middle (item pixel 8): lifted to stand the stage's middle on its position. The
         // stage's middle is the world's pixels up from the tail; in the model, a quarter of that up from its tail.
         float middle = shape.stageMiddle(k);
@@ -164,7 +164,7 @@ final class SpentStages {
             puffs.add(p, quality);
         }
         level.playLocalSound(s.x, s.y, s.z, net.minecraft.sounds.SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 3f, 0.4f, false);
-        level.playLocalSound(s.x, s.y, s.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 1.5f, 1.6f, false);
+        level.playLocalSound(s.x, s.y, s.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.5f, 1.6f, false);
     }
 
     static void submit(SubmitNodeCollector collector, PoseStack poseStack, ClientLevel level, Vec3 camera, float partial) {

@@ -20,8 +20,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.Shapes;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredItem;
 
 /**
  * Components and assembly (DESIGN.md §9-10, Phase 7): the payload cores, warhead casings and fuzes, and the Ordnance

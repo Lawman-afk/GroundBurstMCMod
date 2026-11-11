@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "groundburst:rusted_corrugated_steel"
+  },
+  "result": "groundburst:rusted_corrugated_steel_slab",
+  "count": 2
+}

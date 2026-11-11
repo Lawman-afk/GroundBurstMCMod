@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 /**
  * How fluid tank blocks join up (DESIGN.md §6.4). Touching tank blocks become one tank when together they fill a box
@@ -73,7 +73,7 @@ public final class FluidTankStructure {
         FluidStack contents = box == null ? null : combinedContents(level, blocks);
         if (box != null && contents != null) {
             form(level, blocks, (BlockPos) box[0], (int) box[1], (int) box[2], contents);
-        } else if (level.getBlockEntity(pos) instanceof FluidTankBlockEntity be && be.isController() && be.width() == 1 && be.height() == 1) {
+        } else if (((Object) level.getBlockEntity(pos)) instanceof FluidTankBlockEntity be && be.isController() && be.width() == 1 && be.height() == 1) {
             form(level, Set.of(pos.immutable()), pos.immutable(), 1, 1, be.tank().fluid().copy());
         }
     }
@@ -82,7 +82,7 @@ public final class FluidTankStructure {
     private static @Nullable FluidStack combinedContents(ServerLevel level, Set<BlockPos> blocks) {
         Map<BlockPos, FluidTankBlockEntity> controllers = new LinkedHashMap<>();
         for (BlockPos p : blocks) {
-            if (level.getBlockEntity(p) instanceof FluidTankBlockEntity be) {
+            if (((Object) level.getBlockEntity(p)) instanceof FluidTankBlockEntity be) {
                 FluidTankBlockEntity c = be.controllerEntity();
                 controllers.put(c.getBlockPos(), c);
             }
@@ -95,7 +95,7 @@ public final class FluidTankStructure {
             }
             if (total.isEmpty()) {
                 total = f.copy();
-            } else if (FluidStack.isSameFluidSameComponents(total, f)) {
+            } else if (total.isFluidStackIdentical(f)) {
                 total.grow(f.getAmount());
             } else {
                 return null;
@@ -107,7 +107,7 @@ public final class FluidTankStructure {
     /** Makes the blocks one tank: the min corner holds the fluid, every block shows the connected frame. */
     static void form(ServerLevel level, Set<BlockPos> blocks, BlockPos min, int width, int height, FluidStack contents) {
         for (BlockPos p : blocks) {
-            if (level.getBlockEntity(p) instanceof FluidTankBlockEntity be) {
+            if (((Object) level.getBlockEntity(p)) instanceof FluidTankBlockEntity be) {
                 be.join(p.equals(min) ? null : min, width, height, contents);
             }
             BlockState state = level.getBlockState(p);
@@ -145,7 +145,7 @@ public final class FluidTankStructure {
         // Each remaining block becomes a tank of its own with its share...
         int share = total.isEmpty() ? 0 : total.getAmount() / blocks;
         for (BlockPos p : rest) {
-            form(level, Set.of(p), p, 1, 1, share > 0 ? total.copyWithAmount(share) : FluidStack.EMPTY);
+            form(level, Set.of(p), p, 1, 1, share > 0 ? dev.groundburst.legacy.Game.copyWithAmount(total, share) : FluidStack.EMPTY);
         }
         // ...then each connected group that still makes a box merges again.
         Set<BlockPos> done = new HashSet<>();

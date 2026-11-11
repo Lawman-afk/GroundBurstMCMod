@@ -17,7 +17,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * EMP fields (DESIGN.md §21.4): a sphere that, for as long as it lasts, shuts down every machine in it (they lose half
@@ -65,7 +65,7 @@ public final class EmpFields {
 
     /** Whether {@code pos} is inside a live field. */
     public static boolean inField(Level level, Vec3 pos) {
-        if (!(level instanceof ServerLevel server)) {
+        if (!(((Object) level) instanceof ServerLevel server)) {
             return false;
         }
         List<Field> fields = BY_LEVEL.get(server);
@@ -87,7 +87,7 @@ public final class EmpFields {
 
     /** Whether any field is up in {@code level} (a quick look before working out where anything is). */
     public static boolean any(Level level) {
-        List<Field> fields = level instanceof ServerLevel server ? BY_LEVEL.get(server) : null;
+        List<Field> fields = ((Object) level) instanceof ServerLevel server ? BY_LEVEL.get(server) : null;
         return fields != null && !fields.isEmpty();
     }
 

@@ -3,7 +3,7 @@ package dev.groundburst.content.fluid;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.fluids.FluidType;
+import net.minecraftforge.fluids.FluidType;
 import dev.groundburst.port.transfer.ItemAccessResourceHandler;
 import dev.groundburst.port.transfer.access.ItemAccess;
 import dev.groundburst.port.transfer.fluid.FluidResource;

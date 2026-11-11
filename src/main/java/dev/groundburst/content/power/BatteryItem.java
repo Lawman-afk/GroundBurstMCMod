@@ -26,7 +26,7 @@ public class BatteryItem extends Item {
     }
 
     public static int stored(ItemStack stack) {
-        return stack.getOrDefault(GBDataComponents.ENERGY.get(), 0);
+        return dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.ENERGY.get(), 0);
     }
 
     @Override
@@ -46,12 +46,12 @@ public class BatteryItem extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
         builder.accept(chargeLine(stored(stack), CAPACITY));
     }
 
     public static Component chargeLine(int stored, int capacity) {
         java.text.NumberFormat f = java.text.NumberFormat.getIntegerInstance(java.util.Locale.ROOT);
-        return Component.translatable(CHARGE, f.format(stored), f.format(capacity)).withColor(0xFF9AA0A8);
+        return Component.translatable(CHARGE, f.format(stored), f.format(capacity)).withStyle(s_ -> s_.withColor(0xFF9AA0A8));
     }
 }

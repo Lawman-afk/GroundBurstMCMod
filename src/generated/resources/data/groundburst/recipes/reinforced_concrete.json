@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "tag": "groundburst:concretes"
+    },
+    "R": {
+      "tag": "forge:rods/steel"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "CRC",
+    "CCC"
+  ],
+  "result": {
+    "item": "groundburst:reinforced_concrete",
+    "count": 8
+  }
+}

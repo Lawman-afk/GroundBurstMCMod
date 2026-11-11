@@ -23,7 +23,7 @@ public class MachineInventory extends ItemStacksResourceHandler implements Conta
 
     /** {@code onChanged} receives the slot that changed, or -1 when any slot may have. */
     public MachineInventory(int size, BiPredicate<Integer, ItemStack> validator, IntConsumer onChanged) {
-        this(size, validator, onChanged, slot -> Item.ABSOLUTE_MAX_STACK_SIZE);
+        this(size, validator, onChanged, slot -> 64);
     }
 
     public MachineInventory(int size, BiPredicate<Integer, ItemStack> validator, IntConsumer onChanged, IntUnaryOperator limit) {
@@ -98,7 +98,7 @@ public class MachineInventory extends ItemStacksResourceHandler implements Conta
             }
             return stack.copyWithCount(stack.getCount() - moved);
         }
-        if (!ItemStack.isSameItemSameComponents(current, stack)) {
+        if (!ItemStack.isSameItemSameTags(current, stack)) {
             return stack;
         }
         int moved = Math.min(limit - current.getCount(), stack.getCount());

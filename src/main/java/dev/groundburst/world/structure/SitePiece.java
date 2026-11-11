@@ -27,7 +27,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnorePr
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockRotProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
-import net.neoforged.neoforge.common.world.PieceBeardifierModifier;
+import net.minecraftforge.common.world.PieceBeardifierModifier;
 
 /**
  * One template of a {@link SiteStructure}, turned with the site, weathered ({@link Weathering}) and decayed (its
@@ -106,7 +106,7 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
             CompoundTag mark = chunk.getBlockEntityNbt(pos);
             BlockState state = chunk.getBlockState(pos);
             if (mark != null && "DUMMY".equals(dev.groundburst.port.Nbt.getStringOr(mark, "id", "")) && this.boundingBox.isInside(pos)
-                    && state.getBlock() instanceof EntityBlock block && block.newBlockEntity(pos, state) == null) {
+                    && ((Object) state.getBlock()) instanceof EntityBlock block && block.newBlockEntity(pos, state) == null) {
                 chunk.removeBlockEntity(pos);
             }
         }
@@ -199,8 +199,8 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
                     net.minecraft.world.item.Items.LEATHER_LEGGINGS, net.minecraft.world.item.Items.LEATHER_BOOTS};
             for (int k = 1; k < 4; k++) {
                 ItemStack piece = new ItemStack(wear[k]);
-                piece.set(net.minecraft.core.component.DataComponents.DYED_COLOR,
-                        new net.minecraft.world.item.component.DyedItemColor(cloth[random.nextInt(cloth.length)], true));
+                dev.groundburst.legacy.component.Comps.set(piece, dev.groundburst.legacy.component.DataComponents.DYED_COLOR,
+                        new dev.groundburst.legacy.component.DyedItemColor(cloth[random.nextInt(cloth.length)], true));
                 stand.setItemSlot(slots[k], piece);
             }
         }
@@ -226,7 +226,7 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
     @Override
     public BoundingBox getBeardifierBox() {
         BoundingBox b = this.boundingBox;
-        if (this.terrain == TerrainAdjustment.ENCAPSULATE && b.maxY() > this.ground - 1 - ENCAPSULATE_REACH) {
+        if (this.terrain == TerrainAdjustment.BEARD_BOX && b.maxY() > this.ground - 1 - ENCAPSULATE_REACH) {
             int top = Math.max(b.minY(), this.ground - 1 - ENCAPSULATE_REACH);
             return new BoundingBox(b.minX(), b.minY(), b.minZ(), b.maxX(), top, b.maxZ());
         }
@@ -262,6 +262,6 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
 
     /** For previews and tests: the template this piece places. */
     public ResourceLocation templateId() {
-        return ResourceLocation.parse(this.templateName);
+        return new ResourceLocation(this.templateName);
     }
 }

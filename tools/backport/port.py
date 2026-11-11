@@ -1,13 +1,19 @@
-"""Turns main's sources (Minecraft 26.3) into this branch's (Minecraft 1.21.1): docs/BACKPORT.md.
+"""Turns the 1.21.1 build's sources (branch 1.21.1: Minecraft 1.21.1 on NeoForge 21.1) into this branch's (Minecraft 1.20.1
+on Forge 47): docs/BACKPORT.md.
 
-Reads every file of main at the commit in base.txt straight from git (so each run starts from main's own text) and writes
-its port here: the Java sources through RULES, the resources through their moves and fixes. Main's files that have no
-place here (DROP) are left out; files edited by hand here (manual.txt) are kept as they are. This branch's own files
-(the compatibility classes in dev.groundburst.port, this tool, docs/BACKPORT.md) are not main's and are never touched.
+Reads every file of the 1.21.1 build at the commit in base.txt straight from git (so each run starts from that build's own
+text) and writes its port here: the Java sources through IMPORTS, RULES and the functions after them, the resources through
+their moves and fixes. The 1.21.1 build's files with no place here (DROP) are left out; files edited by hand here
+(manual.txt) are kept as they are. This branch's own files (its stand-ins for 1.21.1's API in dev.groundburst.legacy, this
+tool, docs/BACKPORT.md, the build files) are not the 1.21.1 build's and are never touched.
+
+The 1.21.1 build is itself main's (Minecraft 26.3) ported by its own tool, so a change on main reaches this branch in two
+steps: the 1.21.1 branch's `port.py --sync`, then this one's.
 
     tools\\.venv\\Scripts\\python.exe tools\\backport\\port.py              (everything)
-    tools\\.venv\\Scripts\\python.exe tools\\backport\\port.py <path> ...   (just those of main's files)
+    tools\\.venv\\Scripts\\python.exe tools\\backport\\port.py <path> ...   (just those of the 1.21.1 build's files)
     tools\\.venv\\Scripts\\python.exe tools\\backport\\port.py --show <path> (print one file's port)
+    tools\\.venv\\Scripts\\python.exe tools\\backport\\port.py --sync <commit of the 1.21.1 branch>
 """
 from __future__ import annotations
 
@@ -23,39 +29,40 @@ BASE = (HERE / "base.txt").read_text(encoding="utf-8").split()[0]
 MANUAL = {line.strip() for line in (HERE / "manual.txt").read_text(encoding="utf-8").splitlines()
           if line.strip() and not line.startswith("#")} if (HERE / "manual.txt").exists() else set()
 
-# Main's files with no place here: its development tools (photographers, the blast bench, the world survey) and its data
-# generators (their output is ported instead, below). Its GameTests are ported (gametest/GameTestRegistration.java,
-# how they reach the game, is this branch's own: manual.txt).
+# The 1.21.1 build's files with no place here: its own tool and notes, its build files (this branch has its own), and
+# for now its support for Create and Sable (Create Aeronautics) with the checks and test world built on them.
 DROP = [re.compile(p) for p in (
-    r"src/main/java/dev/groundburst/datagen/.*",
-    r"src/main/java/dev/groundburst/client/fx/(FxPhotographer|SitePhotographer|HealPhotographer|BlastBenchClient|WorldSurveyClient|DevWorlds|Showroom|ShowroomWalk)\.java",
-    r"src/main/java/dev/groundburst/client/manual/ManualPhotographer\.java",
-    # Main's test worlds' builders (the War Room range: a 26.3 world, built by main's dev run).
-    r"src/main/java/dev/groundburst/devworld/.*",
-    # Main's model loader for polygons (26.x's model API): this branch's FreeRotationModels bakes them.
-    r"src/main/java/dev/groundburst/client/render/PolygonModels\.java",
-    r"src/main/java/dev/groundburst/blast/BlastBench\.java",
-    r"src/main/java/dev/groundburst/world/structure/WorldSurvey\.java",
-    r"src/main/resources/data/groundburst/structure/test/.*",          # the GameTests' structures
     r"docs/BACKPORT\.md", r"tools/backport/.*",
+    r"src/main/java/dev/groundburst/compat/(create|sable|range)/.*",
+    r"src/main/java/dev/groundburst/compat/(GBCompat|CreateCheck|HealCheck|RackCheck|ShipCheck)\.java",
+    r"src/main/templates/META-INF/neoforge\.mods\.toml",
+    # 1.21's block hit by an explosion (onExplosionHit): 1.20.1 has none (dev.groundburst.legacy.mixin.ExplosionHitMixin).
+    r"src/main/java/dev/groundburst/mixin/BlockStateBaseMixin\.java",
 )]
-# Main's paths that are this branch's own (build files changed here by hand): never overwritten.
-OWN = {"build.gradle", "gradle.properties", "src/main/templates/META-INF/neoforge.mods.toml"}
+# Mixins of the 1.21.1 build left out of its mixin configs here (their files dropped above).
+DROPPED_MIXINS = {"BlockStateBaseMixin"}
+# This branch's own files (changed or written here by hand): never overwritten.
+OWN = {"build.gradle", "gradle.properties", "settings.gradle", "src/main/templates/META-INF/mods.toml",
+       "src/main/resources/pack.mcmeta",
+       # The clouds' shader (the 1.21.1 build's own): 1.20.1's fog distance takes the model view.
+       "src/main/resources/assets/groundburst/shaders/core/rendertype_fx_cloud.vsh",
+       "src/main/resources/assets/groundburst/shaders/core/rendertype_fx_cloud.fsh",
+       "src/main/resources/assets/groundburst/shaders/core/rendertype_fx_cloud.json"}
 
 
 def git(*args: str) -> bytes:
     return subprocess.run(["git", "-C", str(ROOT), *args], check=True, capture_output=True).stdout
 
 
-def main_files() -> list[str]:
+def source_files() -> list[str]:
     return git("ls-tree", "-r", "--name-only", BASE).decode("utf-8").splitlines()
 
 
 _batch = None
 
 
-def read_main(path: str) -> bytes:
-    """A file of main's at BASE (through one long-running `git cat-file --batch`: thousands of files)."""
+def read_source(path: str) -> bytes:
+    """A file of the 1.21.1 build's at BASE (through one long-running `git cat-file --batch`: thousands of files)."""
     global _batch
     if _batch is None:
         _batch = subprocess.Popen(["git", "-C", str(ROOT), "cat-file", "--batch"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -74,373 +81,493 @@ def sub(pattern: str, repl, flags: int = 0):
     return re.compile(pattern, flags), repl
 
 
-# Whole lines removed: hooks into the dropped tools.
-DROP_LINES = [re.compile(p) for p in (
-    r"^\s*dev\.groundburst\.client\.fx\.(FxPhotographer|BlastBenchClient|WorldSurveyClient|SitePhotographer|HealPhotographer|Showroom)\.register\(\);\s*$",
-    r"^\s*ManualPhotographer\.register\(\);\s*$",
-    r"^\s*dev\.groundburst\.client\.render\.PolygonModels\.register\(modBus\);\s*$",
-    r"^\s*// Models with flat polygons beside their elements: round parts' caps, rings' sides \(DESIGN\.md §4\.4\)\.\s*$",
-    r"^\s*BlastBench\.register\(\);\s*$",
-    r"^\s*WorldSurvey\.register\(\);\s*$",
-    r"^\s*GBDataGen\.register\(modBus\);\s*$",
-    r"^import dev\.groundburst\.datagen\.\w+;\s*$",
-    r"^\s*\w+\.registerCategory\(\w+\);\s*$",                         # 1.21.1's key categories are names, not registered
-)]
-# Whole statements removed (they may run over several lines): hooks into the dropped tools, and 26.x's
-# picture-in-picture renderers (1.21.1 draws those views straight into the screen: dev.groundburst.port.render.PictureInPicture).
-DROP_STATEMENTS = [re.compile(p, re.M) for p in (
-    r"^[ \t]*dev\.groundburst\.client\.fx\.FxPhotographer\.\w+ = [^;]*;[ \t]*\r?\n",
-    r"^[ \t]*modBus\.addListener\(\((?:net\.neoforged\.neoforge\.client\.event\.)?RegisterPictureInPictureRenderersEvent \w+\) ->[^;]*;[ \t]*\r?\n",
-)]
+L = "dev.groundburst.legacy"                               # this branch's stand-ins for 1.21.1's API
 
-# Imports: 26.x class -> 1.21.1 class (or this branch's stand-in); None drops the import.
+# Imports: 1.21.1 class -> 1.20.1 class (or this branch's stand-in); None drops the import.
 IMPORTS = {
-    "net.minecraft.resources.Identifier": "net.minecraft.resources.ResourceLocation",
-    "net.minecraft.world.entity.EntityTypes": "net.minecraft.world.entity.EntityType",
-    "net.minecraft.client.renderer.rendertype.RenderTypes": "net.minecraft.client.renderer.RenderType",
-    "net.minecraft.client.renderer.rendertype.RenderType": "net.minecraft.client.renderer.RenderType",
-    "net.minecraft.util.LightCoordsUtil": "net.minecraft.client.renderer.LightTexture",
-    "net.minecraft.world.level.storage.ValueInput": "dev.groundburst.port.ValueInput",
-    "net.minecraft.world.level.storage.ValueOutput": "dev.groundburst.port.ValueOutput",
-    "net.minecraft.client.gui.GuiGraphicsExtractor": "dev.groundburst.port.GuiGraphicsExtractor",
-    "net.minecraft.util.ARGB": "dev.groundburst.port.ARGB",
-    "net.neoforged.neoforge.client.network.ClientPacketDistributor": "net.neoforged.neoforge.network.PacketDistributor",
-    "net.minecraft.world.entity.animal.pig.Pig": "net.minecraft.world.entity.animal.Pig",
-    "net.minecraft.world.entity.animal.cow.Cow": "net.minecraft.world.entity.animal.Cow",
-    "net.minecraft.client.renderer.RenderPipelines": "dev.groundburst.port.RenderPipelines",
-    "com.mojang.blaze3d.pipeline.RenderPipeline": "dev.groundburst.port.RenderPipeline",
-    "org.joml.Matrix3x2fStack": "dev.groundburst.port.Matrix3x2fStack",
-    "net.minecraft.util.Util": "net.minecraft.Util",
-    "net.minecraft.world.level.ScheduledTickAccess": "net.minecraft.world.level.LevelAccessor",
-    "net.minecraft.world.level.redstone.Orientation": None,
-    "net.minecraft.world.entity.InsideBlockEffectApplier": None,
-    "net.minecraft.world.item.component.TooltipDisplay": None,
-    "net.minecraft.world.level.block.VegetationBlock": "net.minecraft.world.level.block.BushBlock",
-    # 26.x's render states and submit nodes: this branch's stand-ins over 1.21.1's direct rendering (dev.groundburst.port.render)
-    "net.minecraft.client.renderer.SubmitNodeCollector": "dev.groundburst.port.render.SubmitNodeCollector",
-    "net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState": "dev.groundburst.port.render.BlockEntityRenderState",
-    "net.minecraft.client.renderer.entity.state.EntityRenderState": "dev.groundburst.port.render.EntityRenderState",
-    "net.minecraft.client.renderer.feature.ModelFeatureRenderer": "dev.groundburst.port.render.ModelFeatureRenderer",
-    "net.minecraft.client.renderer.item.ItemModelResolver": "dev.groundburst.port.render.ItemModelResolver",
-    "net.minecraft.client.renderer.item.ItemStackRenderState": "dev.groundburst.port.render.ItemStackRenderState",
-    "net.minecraft.client.renderer.state.level.CameraRenderState": "dev.groundburst.port.render.CameraRenderState",
-    "net.minecraft.client.renderer.state.level.SkyRenderState": "dev.groundburst.port.render.SkyRenderState",
-    "net.minecraft.client.renderer.state.level.LevelRenderState": "dev.groundburst.port.render.LevelRenderState",
-    "net.minecraft.util.context.ContextKey": "dev.groundburst.port.ContextKey",
-    "net.minecraft.world.level.saveddata.SavedDataType": "dev.groundburst.port.SavedDataType",
-    "net.minecraft.client.input.MouseButtonEvent": "dev.groundburst.port.input.MouseButtonEvent",
-    "net.minecraft.client.input.KeyEvent": "dev.groundburst.port.input.KeyEvent",
-    "net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent": "dev.groundburst.port.render.ExtractLevelRenderStateEvent",
-    "net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent": "dev.groundburst.port.render.SubmitCustomGeometryEvent",
-    # Recipes: 26.x's results are templates and its recipes show through displays (stand-ins built from 1.21.1's recipes).
-    "net.minecraft.world.item.ItemStackTemplate": "dev.groundburst.port.ItemStackTemplate",
-    "net.neoforged.neoforge.fluids.FluidStackTemplate": "dev.groundburst.port.FluidStackTemplate",
-    "net.minecraft.util.context.ContextMap": "dev.groundburst.port.ContextMap",
-    "net.minecraft.world.item.crafting.display.RecipeDisplay": "dev.groundburst.port.recipe.RecipeDisplay",
-    "net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay": "dev.groundburst.port.recipe.ShapedCraftingRecipeDisplay",
-    "net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay": "dev.groundburst.port.recipe.ShapelessCraftingRecipeDisplay",
-    "net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay": "dev.groundburst.port.recipe.FurnaceRecipeDisplay",
-    "net.minecraft.world.item.crafting.display.SlotDisplay": "dev.groundburst.port.recipe.SlotDisplay",
-    "net.minecraft.world.item.crafting.display.SlotDisplayContext": "dev.groundburst.port.recipe.SlotDisplayContext",
-    "net.minecraft.util.TriState": "net.neoforged.neoforge.common.util.TriState",
-    "net.minecraft.world.entity.EntitySpawnReason": "net.minecraft.world.entity.MobSpawnType",
-    "net.neoforged.neoforge.registries.NewDatapackRegistryEvent": "net.neoforged.neoforge.registries.DataPackRegistryEvent",
-    "net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent": "dev.groundburst.port.net.RegisterClientPayloadHandlersEvent",
-    "net.minecraft.world.item.ItemUseAnimation": "net.minecraft.world.item.UseAnim",
-    "net.minecraft.tags.BlockItemTagId": "dev.groundburst.port.BlockItemTagId",
-    "net.minecraft.core.component.DataComponentGetter": None,
-    "net.minecraft.world.attribute.EnvironmentAttributes": None,
-    "net.minecraft.world.item.component.CookingFuel": None,
-    "net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt": None,
-    "com.mojang.blaze3d.platform.cursor.CursorTypes": "dev.groundburst.port.CursorTypes",
-    "com.mojang.blaze3d.vertex.QuadInstance": "dev.groundburst.port.render.QuadInstance",
-    "net.minecraft.client.color.block.BlockTintSource": "net.minecraft.client.color.block.BlockColor",
-    "net.minecraft.client.renderer.block.BlockAndTintGetter": "net.minecraft.world.level.BlockAndTintGetter",
-    "net.neoforged.neoforge.client.event.AddClientReloadListenersEvent": None,
-    "net.minecraft.world.item.component.Consumable": "dev.groundburst.port.Consumable",
-    "net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect": "dev.groundburst.port.ApplyStatusEffectsConsumeEffect",
-    "net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty": None,
-    "net.minecraft.world.entity.ItemOwner": None,
-    "net.neoforged.neoforge.client.event.RegisterRangeSelectItemModelPropertyEvent": None,
-    "net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent": None,
-    "net.minecraft.client.renderer.block.dispatch.BlockStateModel": "dev.groundburst.port.render.BlockStateModel",
-    "net.minecraft.client.renderer.block.dispatch.BlockStateModelPart": "dev.groundburst.port.render.BlockStateModelPart",
-    "net.minecraft.client.resources.model.geometry.BakedQuad": "net.minecraft.client.renderer.block.model.BakedQuad",
-    # JEI 27 -> 19
-    "mezz.jei.api.recipe.types.IRecipeType": "mezz.jei.api.recipe.RecipeType",
-    "mezz.jei.api.recipe.types.IRecipeHolderType": "mezz.jei.api.recipe.RecipeType",
-    # GeckoLib 5 -> 4
-    "com.geckolib.animatable.manager.AnimatableManager": "software.bernie.geckolib.animation.AnimatableManager",
-    "com.geckolib.cache.model.GeoBone": "software.bernie.geckolib.cache.object.GeoBone",
-    "com.geckolib.cache.model.BakedGeoModel": "software.bernie.geckolib.cache.object.BakedGeoModel",
+    # NeoForge's event bus and loading: Forge's own (NeoForge forked from it).
+    "net.neoforged.api.distmarker.Dist": "net.minecraftforge.api.distmarker.Dist",
+    "net.neoforged.api.distmarker.OnlyIn": "net.minecraftforge.api.distmarker.OnlyIn",
+    "net.neoforged.bus.api.Event": "net.minecraftforge.eventbus.api.Event",
+    "net.neoforged.bus.api.EventPriority": "net.minecraftforge.eventbus.api.EventPriority",
+    "net.neoforged.bus.api.IEventBus": "net.minecraftforge.eventbus.api.IEventBus",
+    "net.neoforged.bus.api.SubscribeEvent": "net.minecraftforge.eventbus.api.SubscribeEvent",
+    "net.neoforged.bus.api.ICancellableEvent": None,
+    "net.neoforged.fml.ModContainer": "net.minecraftforge.fml.ModContainer",
+    "net.neoforged.fml.ModList": "net.minecraftforge.fml.ModList",
+    "net.neoforged.fml.common.EventBusSubscriber": "net.minecraftforge.fml.common.Mod.EventBusSubscriber",
+    "net.neoforged.fml.common.Mod": "net.minecraftforge.fml.common.Mod",
+    "net.neoforged.fml.config.ModConfig": "net.minecraftforge.fml.config.ModConfig",
+    "net.neoforged.fml.event.IModBusEvent": "net.minecraftforge.fml.event.IModBusEvent",
+    "net.neoforged.fml.event.lifecycle.FMLClientSetupEvent": "net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent",
+    "net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent": "net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent",
+    "net.neoforged.fml.loading.FMLPaths": "net.minecraftforge.fml.loading.FMLPaths",
+    "net.neoforged.fml.loading.FMLEnvironment": "net.minecraftforge.fml.loading.FMLEnvironment",
+    "net.neoforged.neoforge.common.NeoForge": "net.minecraftforge.common.MinecraftForge",
+    "net.neoforged.neoforge.common.ModConfigSpec": "net.minecraftforge.common.ForgeConfigSpec",
+    "net.neoforged.neoforge.common.SoundActions": "net.minecraftforge.common.SoundActions",
+    "net.neoforged.neoforge.common.Tags": "net.minecraftforge.common.Tags",
+    "net.neoforged.neoforge.common.util.BlockSnapshot": "net.minecraftforge.common.util.BlockSnapshot",
+    "net.neoforged.neoforge.common.world.PieceBeardifierModifier": "net.minecraftforge.common.world.PieceBeardifierModifier",
+    "net.neoforged.neoforge.common.extensions.IMenuTypeExtension": "net.minecraftforge.common.extensions.IForgeMenuType",
+    "net.neoforged.neoforge.client.ClientHooks": "net.minecraftforge.client.ForgeHooksClient",
+    "net.neoforged.neoforge.client.settings.KeyConflictContext": "net.minecraftforge.client.settings.KeyConflictContext",
+    "net.neoforged.neoforge.client.model.ExtraFaceData": "net.minecraftforge.client.model.ForgeFaceData",
+    "net.neoforged.neoforge.client.model.IModelBuilder": "net.minecraftforge.client.model.IModelBuilder",
+    "net.neoforged.neoforge.client.model.data.ModelData": "net.minecraftforge.client.model.data.ModelData",
+    "net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext": "net.minecraftforge.client.model.geometry.IGeometryBakingContext",
+    "net.neoforged.neoforge.client.model.geometry.IGeometryLoader": "net.minecraftforge.client.model.geometry.IGeometryLoader",
+    "net.neoforged.neoforge.client.model.geometry.SimpleUnbakedGeometry": "net.minecraftforge.client.model.geometry.SimpleUnbakedGeometry",
+    "net.neoforged.neoforge.client.model.geometry.UnbakedGeometryHelper": "net.minecraftforge.client.model.geometry.UnbakedGeometryHelper",
+    "net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer": "net.minecraftforge.client.model.pipeline.QuadBakingVertexConsumer",
+    "net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions": "net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions",
+    "net.neoforged.neoforge.client.extensions.common.IClientItemExtensions": "net.minecraftforge.client.extensions.common.IClientItemExtensions",
+    "net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions": "net.minecraftforge.client.extensions.common.IClientBlockExtensions",
+    # Client events Forge 1.20.1 has under the same names.
+    "net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent": "net.minecraftforge.client.event.ClientPlayerNetworkEvent",
+    "net.neoforged.neoforge.client.event.ComputeFovModifierEvent": "net.minecraftforge.client.event.ComputeFovModifierEvent",
+    "net.neoforged.neoforge.client.event.EntityRenderersEvent": "net.minecraftforge.client.event.EntityRenderersEvent",
+    "net.neoforged.neoforge.client.event.InputEvent": "net.minecraftforge.client.event.InputEvent",
+    "net.neoforged.neoforge.client.event.ModelEvent": "net.minecraftforge.client.event.ModelEvent",
+    "net.neoforged.neoforge.client.event.RegisterColorHandlersEvent": "net.minecraftforge.client.event.RegisterColorHandlersEvent",
+    "net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent": "net.minecraftforge.client.event.RegisterKeyMappingsEvent",
+    "net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent": "net.minecraftforge.client.event.RegisterParticleProvidersEvent",
+    "net.neoforged.neoforge.client.event.RegisterShadersEvent": "net.minecraftforge.client.event.RegisterShadersEvent",
+    "net.neoforged.neoforge.client.event.RenderHandEvent": "net.minecraftforge.client.event.RenderHandEvent",
+    "net.neoforged.neoforge.client.event.RenderLevelStageEvent": "net.minecraftforge.client.event.RenderLevelStageEvent",
+    "net.neoforged.neoforge.client.event.RenderLivingEvent": "net.minecraftforge.client.event.RenderLivingEvent",
+    "net.neoforged.neoforge.client.event.ScreenEvent": "net.minecraftforge.client.event.ScreenEvent",
+    "net.neoforged.neoforge.client.event.ViewportEvent": "net.minecraftforge.client.event.ViewportEvent",
+    # Game events.
+    "net.neoforged.neoforge.event.RegisterCommandsEvent": "net.minecraftforge.event.RegisterCommandsEvent",
+    "net.neoforged.neoforge.event.entity.EntityJoinLevelEvent": "net.minecraftforge.event.entity.EntityJoinLevelEvent",
+    "net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent": "net.minecraftforge.event.entity.EntityLeaveLevelEvent",
+    "net.neoforged.neoforge.event.entity.living.LivingHealEvent": "net.minecraftforge.event.entity.living.LivingHealEvent",
+    # NeoForge's damage before the armour: Forge's hurt event, before the armour too.
+    "net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent": "net.minecraftforge.event.entity.living.LivingHurtEvent",
+    "net.neoforged.neoforge.event.entity.player.PlayerEvent": "net.minecraftforge.event.entity.player.PlayerEvent",
+    "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent": "net.minecraftforge.event.entity.player.PlayerInteractEvent",
+    "net.neoforged.neoforge.event.level.BlockEvent": "net.minecraftforge.event.level.BlockEvent",
+    "net.neoforged.neoforge.event.level.ChunkEvent": "net.minecraftforge.event.level.ChunkEvent",
+    "net.neoforged.neoforge.event.level.LevelEvent": "net.minecraftforge.event.level.LevelEvent",
+    "net.neoforged.neoforge.event.level.ExplosionEvent": "net.minecraftforge.event.level.ExplosionEvent",
+    "net.neoforged.neoforge.event.server.ServerStoppedEvent": "net.minecraftforge.event.server.ServerStoppedEvent",
+    "net.neoforged.neoforge.event.server.ServerStartingEvent": "net.minecraftforge.event.server.ServerStartingEvent",
+    # NeoForge's tick events (a class each, Pre and Post): Forge's, with a phase (rules below).
+    "net.neoforged.neoforge.event.tick.LevelTickEvent": "net.minecraftforge.event.TickEvent",
+    "net.neoforged.neoforge.event.tick.PlayerTickEvent": "net.minecraftforge.event.TickEvent",
+    "net.neoforged.neoforge.event.tick.ServerTickEvent": "net.minecraftforge.event.TickEvent",
+    "net.neoforged.neoforge.client.event.ClientTickEvent": "net.minecraftforge.event.TickEvent",
+    "net.neoforged.neoforge.client.event.RenderFrameEvent": "net.minecraftforge.event.TickEvent",
+    # Fluids, items, energy.
+    "net.neoforged.neoforge.fluids.BaseFlowingFluid": "net.minecraftforge.fluids.ForgeFlowingFluid",
+    "net.neoforged.neoforge.fluids.FluidStack": "net.minecraftforge.fluids.FluidStack",
+    "net.neoforged.neoforge.fluids.FluidType": "net.minecraftforge.fluids.FluidType",
+    "net.neoforged.neoforge.fluids.FluidUtil": "net.minecraftforge.fluids.FluidUtil",
+    "net.neoforged.neoforge.fluids.capability.IFluidHandler": "net.minecraftforge.fluids.capability.IFluidHandler",
+    "net.neoforged.neoforge.fluids.capability.IFluidHandlerItem": "net.minecraftforge.fluids.capability.IFluidHandlerItem",
+    "net.neoforged.neoforge.fluids.capability.templates.FluidTank": "net.minecraftforge.fluids.capability.templates.FluidTank",
+    "net.neoforged.neoforge.items.IItemHandler": "net.minecraftforge.items.IItemHandler",
+    "net.neoforged.neoforge.items.IItemHandlerModifiable": "net.minecraftforge.items.IItemHandlerModifiable",
+    "net.neoforged.neoforge.items.ItemStackHandler": "net.minecraftforge.items.ItemStackHandler",
+    "net.neoforged.neoforge.items.ItemHandlerHelper": "net.minecraftforge.items.ItemHandlerHelper",
+    "net.neoforged.neoforge.energy.IEnergyStorage": "net.minecraftforge.energy.IEnergyStorage",
+    "net.neoforged.neoforge.energy.EnergyStorage": "net.minecraftforge.energy.EnergyStorage",
+    # Registries.
+    "net.neoforged.neoforge.registries.DataPackRegistryEvent": "net.minecraftforge.registries.DataPackRegistryEvent",
+    "net.neoforged.neoforge.registries.NeoForgeRegistries": "net.minecraftforge.registries.ForgeRegistries",
+    "net.neoforged.neoforge.registries.RegisterEvent": "net.minecraftforge.registries.RegisterEvent",
+    "net.neoforged.neoforge.gametest.GameTestHolder": "net.minecraftforge.gametest.GameTestHolder",
+    "net.neoforged.neoforge.gametest.PrefixGameTestTemplate": "net.minecraftforge.gametest.PrefixGameTestTemplate",
+    # NeoForge's own systems, as this branch's stand-ins over Forge's (dev.groundburst.legacy).
+    "net.neoforged.neoforge.registries.DeferredRegister": f"{L}.DeferredRegister",
+    "net.neoforged.neoforge.registries.DeferredHolder": f"{L}.DeferredHolder",
+    "net.neoforged.neoforge.registries.DeferredBlock": f"{L}.DeferredBlock",
+    "net.neoforged.neoforge.registries.DeferredItem": f"{L}.DeferredItem",
+    "net.neoforged.neoforge.registries.datamaps.DataMapType": f"{L}.DataMapType",
+    "net.neoforged.neoforge.registries.datamaps.DataMapsUpdatedEvent": f"{L}.DataMapsUpdatedEvent",
+    "net.neoforged.neoforge.registries.datamaps.RegisterDataMapTypesEvent": f"{L}.RegisterDataMapTypesEvent",
+    "net.neoforged.neoforge.attachment.AttachmentType": f"{L}.AttachmentType",
+    "net.neoforged.neoforge.capabilities.BlockCapability": f"{L}.BlockCapability",
+    "net.neoforged.neoforge.capabilities.BlockCapabilityCache": f"{L}.BlockCapabilityCache",
+    "net.neoforged.neoforge.capabilities.ItemCapability": f"{L}.ItemCapability",
+    "net.neoforged.neoforge.capabilities.Capabilities": f"{L}.Capabilities",
+    "net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent": f"{L}.RegisterCapabilitiesEvent",
+    "net.neoforged.neoforge.network.PacketDistributor": f"{L}.net.PacketDistributor",
+    "net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent": f"{L}.net.RegisterPayloadHandlersEvent",
+    "net.neoforged.neoforge.network.handling.IPayloadContext": f"{L}.net.IPayloadContext",
+    "net.neoforged.neoforge.network.handling.IPayloadHandler": f"{L}.net.IPayloadHandler",
+    "net.neoforged.neoforge.network.registration.PayloadRegistrar": f"{L}.net.PayloadRegistrar",
+    "net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent": f"{L}.RegisterTicketControllersEvent",
+    "net.neoforged.neoforge.common.world.chunk.TicketController": f"{L}.TicketController",
+    "net.neoforged.neoforge.common.util.TriState": f"{L}.TriState",
+    "net.neoforged.neoforge.common.TranslatableEnum": f"{L}.TranslatableEnum",
+    "net.neoforged.neoforge.common.crafting.SizedIngredient": f"{L}.SizedIngredient",
+    "net.neoforged.neoforge.fluids.crafting.FluidIngredient": f"{L}.FluidIngredient",
+    "net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient": f"{L}.SizedFluidIngredient",
+    "net.neoforged.neoforge.client.event.RegisterMenuScreensEvent": f"{L}.client.RegisterMenuScreensEvent",
+    "net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent": f"{L}.client.RegisterClientExtensionsEvent",
+    "net.neoforged.neoforge.client.event.RegisterGuiLayersEvent": f"{L}.client.RegisterGuiLayersEvent",
+    "net.neoforged.neoforge.client.event.RenderGuiLayerEvent": f"{L}.client.RenderGuiLayerEvent",
+    "net.neoforged.neoforge.client.gui.VanillaGuiLayers": f"{L}.client.VanillaGuiLayers",
+    "net.neoforged.neoforge.client.event.CalculatePlayerTurnEvent": f"{L}.client.CalculatePlayerTurnEvent",
+    "net.neoforged.neoforge.client.gui.ConfigurationScreen": f"{L}.client.ConfigurationScreen",
+    "net.neoforged.neoforge.client.gui.IConfigScreenFactory": f"{L}.client.IConfigScreenFactory",
+    # Vanilla 1.21.1 types 1.20.1 lacks: this branch's stand-ins.
+    "net.minecraft.world.ItemInteractionResult": f"{L}.ItemInteractionResult",
+    "net.minecraft.client.DeltaTracker": f"{L}.DeltaTracker",
+    "net.minecraft.network.RegistryFriendlyByteBuf": "net.minecraft.network.FriendlyByteBuf",
+    "net.minecraft.network.codec.StreamCodec": f"{L}.net.StreamCodec",
+    "net.minecraft.network.codec.ByteBufCodecs": f"{L}.net.ByteBufCodecs",
+    "net.minecraft.network.protocol.common.custom.CustomPacketPayload": f"{L}.net.CustomPacketPayload",
+    "net.minecraft.core.component.DataComponentType": f"{L}.component.DataComponentType",
+    "net.minecraft.core.component.DataComponents": f"{L}.component.DataComponents",
+    "net.minecraft.world.item.component.CustomData": f"{L}.component.CustomData",
+    "net.minecraft.world.item.component.ItemContainerContents": f"{L}.component.ItemContainerContents",
+    "net.minecraft.world.item.crafting.RecipeHolder": f"{L}.recipe.RecipeHolder",
+    "net.minecraft.world.item.crafting.RecipeInput": f"{L}.recipe.RecipeInput",
+    "net.minecraft.world.item.crafting.SingleRecipeInput": f"{L}.recipe.SingleRecipeInput",
+    "net.minecraft.world.item.crafting.CraftingInput": f"{L}.recipe.CraftingInput",
 }
 
-RULES = [
-    # --- the GameTests' helper (26.x's names and overloads) ----------------------------------------------------------------
-    sub(r"\bhelper\.getBlockEntity\(((?:[^(),]|\((?:[^()]|\([^()]*\))*\))+),\s*([\w.]+)\.class\)", r"((\2) helper.getBlockEntity(\1))"),
-    sub(r"\bhelper\.makeMockServerPlayer\(((?:[^()]|\([^()]*\))*)\)", r"dev.groundburst.port.Tests.mockServerPlayer(helper, \1)"),
-    sub(r"\bhelper\.getBlockEntity\(((?:[^(),]|\((?:[^()]|\([^()]*\))*\))+),\s*([a-z]\w*)\)", r"\2.cast(helper.getBlockEntity(\1))"),
-    # 26.x names a missile's look in its custom model data; 1.21.1's is a number (port/Looks).
-    sub(r"(\b\w+)\.strings\(\)\.getFirst\(\)\.equals\((\"[^\"]*\")\)", r"\1.value() == dev.groundburst.port.Looks.id(\2)"),
-    sub(r"\.getVisibilityPercent\((?:[^(),]|\([^()]*\))+,\s*", ".getVisibilityPercent("),
-    sub(r"\bEntityTypes?\.OAK_BOAT\b", "EntityType.BOAT"),
-    sub(r"\bnet\.minecraft\.world\.inventory\.ContainerInput\b", "net.minecraft.world.inventory.ClickType"),
-    sub(r"\bBlocks\.LIGHTNING_ROD\.asList\(\)\.getFirst\(\)", "Blocks.LIGHTNING_ROD"),
-    sub(r"\.getAnalogOutputSignal\(((?:[^(),]|\((?:[^()]|\([^()]*\))*\))+),\s*((?:[^(),]|\((?:[^()]|\([^()]*\))*\))+),\s*"
-        r"(?:net\.minecraft\.core\.)?Direction\.\w+\)", r".getAnalogOutputSignal(\1, \2)"),
-    # --- names ------------------------------------------------------------------------------------------------------------
-    sub(r"\bIdentifier\b", "ResourceLocation"),
-    sub(r"\bcom\.geckolib\.", "software.bernie.geckolib."),
-    sub(r"\bsoftware\.bernie\.geckolib\.cache\.model\.", "software.bernie.geckolib.cache.object."),
-    sub(r"\bsoftware\.bernie\.geckolib\.animatable\.manager\.AnimatableManager\b", "software.bernie.geckolib.animation.AnimatableManager"),
-    # GeckoLib 4's controllers are given their animatable, and their handlers its state.
-    sub(r"\bnew AnimationController<(\w*)>\(\"", r'new AnimationController<\1>(this, "'),
-    sub(r"\btest\.animatable\(\)", "test.getAnimatable()"),
-    sub(r"\bEntityTypes\.", "EntityType."),
-    sub(r"\bRenderTypes\.", "RenderType."),
-    sub(r"\bLightCoordsUtil\.", "LightTexture."),
-    sub(r"\bClientPacketDistributor\.sendToServer\(", "PacketDistributor.sendToServer("),
-    sub(r"\bPushReaction\.IMMOVEABLE\b", "PushReaction.BLOCK"),
-    sub(r"\bPushReaction\.POPPED\b", "PushReaction.DESTROY"),
-    sub(r"\bTags\.BlockItems\.(\w+)\.block\(\)", r"Tags.Blocks.\1"),
-    sub(r"\bTags\.BlockItems\.(\w+)\.item\(\)", r"Tags.Items.\1"),
-    # NeoForge 26.x's transfer API: this branch's own (dev.groundburst.port.transfer), bridged to 1.21.1's handlers.
-    sub(r"\bnet\.neoforged\.neoforge\.transfer\.", "dev.groundburst.port.transfer."),
-    sub(r"\bnet\.neoforged\.neoforge\.capabilities\.Capabilities\b", "dev.groundburst.port.transfer.Capabilities"),
-    sub(r"\bnet\.minecraft\.world\.level\.storage\.Value(Input|Output)\b", r"dev.groundburst.port.Value\1"),
-    # --- methods --------------------------------------------------------------------------------------------------------
-    sub(r"\.sendOverlayMessage\(((?:[^()]|\((?:[^()]|\([^()]*\))*\))*)\)", r".displayClientMessage(\1, true)"),
-    # An entity used by a player (a sea mine): 26.x also hands it where it was used; 1.21.1 does not.
-    sub(r"\bpublic InteractionResult interact\(Player (\w+), InteractionHand (\w+), Vec3 \w+\)",
-        r"public InteractionResult interact(Player \1, InteractionHand \2)"),
-    sub(r"\bChunkPos\.containing\(", "new ChunkPos("),
-    sub(r"\bChunkPos\.pack\(", "ChunkPos.asLong("),
-    sub(r"\.getMinY\(\)", ".getMinBuildHeight()"),
-    # 26.x's top is the highest block (inclusive); 1.21.1's getMaxBuildHeight is the first above it.
-    sub(r"((?:[A-Za-z_]\w*(?:\([^()]*\))?\.)*[A-Za-z_]\w*(?:\([^()]*\))?)\.getMaxY\(\)", r"(\1.getMaxBuildHeight() - 1)"),
-    sub(r"\.gui\.screen\(\)", ".screen"),
-    sub(r"\.gui\.setScreen\(", ".setScreen("),
-    sub(r"\.mainCamera\(\)", ".getMainCamera()"),
-    sub(r"\.getMainCamera\(\)\.position\(\)", ".getMainCamera().getPosition()"),
-    sub(r"\bget([XY])Rot\((\w+)\)", r"getView\1Rot(\2)"),
-    # Renderers: 26.x's take a state and submit it; the stand-in bases do both in 1.21.1's render call.
-    sub(r"\bextends EntityRenderer<(\w+), ([\w.]+)>", r"extends dev.groundburst.port.render.StateEntityRenderer<\1, \2>"),
-    sub(r"\bimplements BlockEntityRenderer<([^<>{]+(?:<[^<>{]*>)?[^<>{]*),\s*([\w.]+)>", r"extends dev.groundburst.port.render.StateBlockEntityRenderer<\1, \2>"),
-    sub(r"\bBlockEntityRenderer\.super\.", "super."),
-    sub(r"\b[\w.]*(?:\(\))?\.getItemModelResolver\(\)", "dev.groundburst.port.render.ItemModelResolver.INSTANCE"),
-    # The pose stack turns by quaternions in both; 26.x's rotate is 1.21.1's mulPose.
-    sub(r"\.rotate\(((?:com\.mojang\.math\.)?Axis\.|new (?:org\.joml\.)?Quaternionf)", r".mulPose(\1"),
-    sub(r"\.rotateDegrees\(((?:[^,()]|\([^()]*\))+),\s*((?:[^()]|\([^()]*\))+)\)", r".mulPose(\1.rotationDegrees(\2))"),
-    sub(r"\.damageCooldownTime\b", ".invulnerableTime"),
-    sub(r"\bInteractionResult\.SUCCESS_SERVER\b", "InteractionResult.SUCCESS"),
-    sub(r"\.getUnitVec3i\(\)", ".getNormal()"),
-    sub(r"\.noCollision\(\)", ".noCollission()"),
-    sub(r"\bVegetationBlock\b", "BushBlock"),
-    sub(r"\bScheduledTickAccess\b", "LevelAccessor"),
-    # Entities are hurt on the server in 26.x (hurtServer, given the level); 1.21.1's hurt runs on either side.
-    sub(r"(\b(?:public|protected) boolean )hurtServer\(ServerLevel (\w+), DamageSource (\w+), float (\w+)\)(\s*\{)",
-        r"\1hurt(DamageSource \3, float \4)\5 if (!(this.level() instanceof ServerLevel \2)) return false;"),
-    sub(r"\bsuper\.hurtServer\(\w+, ", "super.hurt("),
-    sub(r"\.hurtServer\((?:[^,()]|\([^()]*\))+, ", ".hurt("),
-    # A missile's look: a string in 26.x's custom model data, a number in 1.21.1's (dev.groundburst.port.Looks).
-    sub(r"\bnew (?:net\.minecraft\.world\.item\.component\.)?CustomModelData\(\s*(?:java\.util\.)?List\.of\(\),\s*(?:java\.util\.)?List\.of\(\),\s*"
-        r"(?:java\.util\.)?List\.of\(((?:[^()]|\((?:[^()]|\([^()]*\))*\))*)\),\s*(?:java\.util\.)?List\.of\(\)\)",
-        r"new net.minecraft.world.item.component.CustomModelData(dev.groundburst.port.Looks.id(\1))"),
-    # Dust takes its colour as a vector in 1.21.1.
-    sub(r"\bnew (?:net\.minecraft\.core\.particles\.)?DustParticleOptions\(((?:[^,()]|\([^()]*\))+), ",
-        r"new net.minecraft.core.particles.DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(\1).toVector3f(), "),
-    # Block entity types: built with 1.21.1's builder (26.x constructs them from the factory and the blocks).
-    sub(r"\bnew (?:net\.minecraft\.world\.level\.block\.entity\.)?BlockEntityType<>\(((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*)\)",
-        r"net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(\1).build(null)"),
-    # Items and blocks name their own registry key in 26.x (Properties.setId); 1.21.1 has no such step.
-    sub(r"\.setId\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)", ""),
-    # --- saving: main's ValueOutput / ValueInput over 1.21.1's CompoundTag (dev.groundburst.port) -----------------------
-    sub(r"(\b(?:public|protected) void saveAdditional\()ValueOutput (\w+)\)(\s*\{)",
-        r"\1net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_)\3 ValueOutput \2 = new ValueOutput(tag_, registries_);"),
-    sub(r"\bsuper\.saveAdditional\((\w+)\);", r"super.saveAdditional(\1.tag(), \1.lookup());"),
-    sub(r"(\b(?:public|protected) void loadAdditional\()ValueInput (\w+)\)(\s*\{)",
-        r"\1net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_)\3 ValueInput \2 = new ValueInput(tag_, registries_);"),
-    sub(r"\bsuper\.loadAdditional\((\w+)\);", r"super.loadAdditional(\1.tag(), \1.lookup());"),
-    sub(r"(\b(?:public|protected) void addAdditionalSaveData\()ValueOutput (\w+)\)(\s*\{)",
-        r"\1net.minecraft.nbt.CompoundTag tag_)\3 ValueOutput \2 = new ValueOutput(tag_, this.registryAccess());"),
-    sub(r"\bsuper\.addAdditionalSaveData\((\w+)\);", r"super.addAdditionalSaveData(\1.tag());"),
-    sub(r"(\b(?:public|protected) void readAdditionalSaveData\()ValueInput (\w+)\)(\s*\{)",
-        r"\1net.minecraft.nbt.CompoundTag tag_)\3 ValueInput \2 = new ValueInput(tag_, this.registryAccess());"),
-    sub(r"\bsuper\.readAdditionalSaveData\((\w+)\);", r"super.readAdditionalSaveData(\1.tag());"),
-    # --- screens: 26.x extracts what a screen draws, 1.21.1 renders it (the graphics wrapped: GuiGraphicsExtractor) --------
-    sub(r"(\bpublic void )extractRenderState\(GuiGraphicsExtractor (\w+), (int \w+, int \w+, float \w+)\)(\s*\{)",
-        r"\1render(net.minecraft.client.gui.GuiGraphics gg_, \3)\4 GuiGraphicsExtractor \2 = new GuiGraphicsExtractor(gg_);"),
-    sub(r"\bsuper\.extractRenderState\((\w+), (\w+, \w+, \w+)\)", r"super.render(\1.unwrap(), \2)"),
-    sub(r"(\bpublic void )extractBackground\(GuiGraphicsExtractor (\w+), (int \w+, int \w+, float \w+)\)(\s*\{)",
-        r"\1renderBackground(net.minecraft.client.gui.GuiGraphics gg_, \3)\4 GuiGraphicsExtractor \2 = new GuiGraphicsExtractor(gg_);"),
-    sub(r"\bsuper\.extractBackground\((\w+), (\w+, \w+, \w+)\)", r"super.renderBackground(\1.unwrap(), \2)"),
-    sub(r"(\bprotected void )extractLabels\(GuiGraphicsExtractor (\w+), (int \w+, int \w+)\)(\s*\{)",
-        r"\1renderLabels(net.minecraft.client.gui.GuiGraphics gg_, \3)\4 GuiGraphicsExtractor \2 = new GuiGraphicsExtractor(gg_);"),
-    sub(r"\bsuper\.extractLabels\((\w+), (\w+, \w+)\)", r"super.renderLabels(\1.unwrap(), \2)"),
-    # Saved data: 26.x's storage takes the type; the stand-in builds 1.21.1's factory with the level (dev.groundburst.port).
-    sub(r"((?:\w|\.|\(\))+)\.getDataStorage\(\)\.computeIfAbsent\((\w+)\)", r"\2.get(\1)"),
-    sub(r"((?:\w|\.|\(\))+)\.getDataStorage\(\)\.get\((\w+)\)", r"\2.find(\1)"),
-    # Screens' input: 26.x hands an event, 1.21.1 the position and button (or key); the event made from them.
-    sub(r"(\bpublic boolean )mouseClicked\(MouseButtonEvent (\w+), boolean (\w+)\)(\s*\{)",
-        r"\1mouseClicked(double mouseX_, double mouseY_, int button_)\4 MouseButtonEvent \2 = new MouseButtonEvent(mouseX_, mouseY_, button_); boolean \3 = false;"),
-    sub(r"\bsuper\.mouseClicked\((\w+), \w+\)", r"super.mouseClicked(\1.x(), \1.y(), \1.button())"),
-    sub(r"(\bpublic boolean )mouseReleased\(MouseButtonEvent (\w+)\)(\s*\{)",
-        r"\1mouseReleased(double mouseX_, double mouseY_, int button_)\3 MouseButtonEvent \2 = new MouseButtonEvent(mouseX_, mouseY_, button_);"),
-    sub(r"\bsuper\.mouseReleased\((\w+)\)", r"super.mouseReleased(\1.x(), \1.y(), \1.button())"),
-    sub(r"(\bpublic boolean )mouseDragged\(MouseButtonEvent (\w+), double (\w+), double (\w+)\)(\s*\{)",
-        r"\1mouseDragged(double mouseX_, double mouseY_, int button_, double \3, double \4)\5 MouseButtonEvent \2 = new MouseButtonEvent(mouseX_, mouseY_, button_);"),
-    sub(r"\bsuper\.mouseDragged\((\w+), (\w+), (\w+)\)", r"super.mouseDragged(\1.x(), \1.y(), \1.button(), \2, \3)"),
-    sub(r"(\bpublic boolean )keyPressed\(KeyEvent (\w+)\)(\s*\{)",
-        r"\1keyPressed(int key_, int scancode_, int modifiers_)\3 KeyEvent \2 = new KeyEvent(key_, scancode_, modifiers_);"),
-    sub(r"\bsuper\.keyPressed\((\w+)\)", r"super.keyPressed(\1.key(), \1.scancode(), \1.modifiers())"),
-    # 1.21.1's container screens draw their panel in renderBg, called from renderBackground (which main's code overrides).
-    sub(r"(\bclass \w+(?:<[^{]*?>)? extends AbstractContainerScreen<[^{]*\{)",
-        r"\1\n    @Override\n    protected void renderBg(net.minecraft.client.gui.GuiGraphics gg_, float partial_, int mouseX_, int mouseY_) {}\n"),
-    # --- renamed or reshaped since 1.21.1 ------------------------------------------------------------------------------------
-    sub(r"\bMobEffects\.NAUSEA\b", "MobEffects.CONFUSION"),
-    sub(r"\bMobEffects\.MINING_FATIGUE\b", "MobEffects.DIG_SLOWDOWN"),
-    sub(r"\bMobEffects\.SLOWNESS\b", "MobEffects.MOVEMENT_SLOWDOWN"),
-    sub(r"\bMobEffects\.HASTE\b", "MobEffects.DIG_SPEED"),
-    sub(r"\bMobEffects\.SPEED\b", "MobEffects.MOVEMENT_SPEED"),
-    sub(r"\bMobEffects\.STRENGTH\b", "MobEffects.DAMAGE_BOOST"),
-    sub(r"\bMobEffects\.INSTANT_HEALTH\b", "MobEffects.HEAL"),
-    sub(r"\bMobEffects\.INSTANT_DAMAGE\b", "MobEffects.HARM"),
-    sub(r"\bMobEffects\.JUMP_BOOST\b", "MobEffects.JUMP"),
-    sub(r"\bMobEffects\.RESISTANCE\b", "MobEffects.DAMAGE_RESISTANCE"),
-    sub(r"\.getDeltaTracker\(\)", ".getTimer()"),
-    sub(r"\.preventsBlockDrops\(\)", ".getAbilities().instabuild"),
-    sub(r"\b(?:net\.minecraft\.world\.phys\.shapes\.)?Shapes\.rotateHorizontal\(", "dev.groundburst.port.Shapes2.rotateHorizontal("),
-    sub(r"\.recipeAccess\(\)\.recipeMap\(\)\.byType\(", ".getRecipeManager().byType("),
-    sub(r"\.recipeAccess\(\)", ".getRecipeManager()"),
-    sub(r"\.identifier\(\)", ".location()"),
-    sub(r"\bTags\.EntityType\.", "Tags.EntityTypes."),
-    sub(r"\.typeHolder\(\)\.is\(", ".getType().is("),
-    sub(r"(\b\w+)\.is\(EntityTypeTags\.", r"\1.getType().is(EntityTypeTags."),
-    sub(r"\bBlockTags\.GRASS_BLOCKS\b", "BlockTags.DIRT"),          # 1.21.1's dirt tag still holds the grass blocks
-    sub(r"\bBlockTags\.MUD\b", "net.minecraft.world.level.block.Blocks.MUD"),
-    sub(r"\bBlockTags\.MOSS_BLOCKS\b", "net.minecraft.world.level.block.Blocks.MOSS_BLOCK"),
-    sub(r"(\w+)\.is\(BlockTags\.ICE_MELTS_WHEN_DESTROYED_ABOVE\)", r"\1.blocksMotion()"),
-    sub(r"\s*\|\|\s*\w+\.is\(Blocks\.BUSH\)", ""),                     # 26.x's bush block
-    sub(r"\s*\|\s*Block\.UPDATE_SKIP_(?:BLOCK_ENTITY_SIDEEFFECTS|ON_PLACE)\b", ""),
-    sub(r"\.getRespawnData\(\)\.pos\(\)", ".getSharedSpawnPos()"),
-    sub(r"\.spawnProtectionRadius\(\)", ".getSpawnProtectionRadius()"),
-    sub(r"\.requires\(Commands\.hasPermission\(([^()]+)\)\)", r".requires(source_ -> source_.hasPermission(\1))"),
-    sub(r"\bResourceKeyArgument\.getRegistryKey\(", "dev.groundburst.port.Args.getRegistryKey("),
-    sub(r"\.needsSync\b", ".hurtMarked"),
-    sub(r"((?:\w+\.)*\w+)\.canSpreadFireAround\([^()]*\)", r"\1.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOFIRETICK)"),
-    sub(r"\b(?:net\.minecraft\.client\.)?Minecraft\.getInstance\(\)\.has(Shift|Control|Alt)Down\(\)", r"net.minecraft.client.gui.screens.Screen.has\1Down()"),
-    sub(r"\b(?:this\.)?minecraft\.has(Shift|Control|Alt)Down\(\)", r"net.minecraft.client.gui.screens.Screen.has\1Down()"),
-    sub(r"\bnew DynamicTexture\(\(\) -> \"[^\"]*\", ", "new DynamicTexture("),
-    # 26.3 tells the overworld's clock apart from a level's own time; this version has the one.
-    sub(r"\.getOverworldClockTime\(\)", ".getDayTime()"),
-    # 26.x's images take ARGB colours, 1.21.1's ABGR.
-    sub(r"\.setPixel\(((?:[^,()]|\([^()]*\))+), ((?:[^,()]|\([^()]*\))+), ((?:[^()]|\((?:[^()]|\([^()]*\))*\))+)\)",
-        r".setPixelRGBA(\1, \2, dev.groundburst.port.ARGB.toABGR(\3))"),
-    # (A field read through this. keeps its this.: this.base.getPixel(...) must not become this.ARGB.toABGR(base...).)
-    sub(r"(\b(?:this\.)?\w+)\.getPixel\(((?:[^()]|\([^()]*\))*)\)", r"dev.groundburst.port.ARGB.toABGR(\1.getPixelRGBA(\2))"),
-    sub(r"\.isViewBlocking\(\((\w+), (\w+), (\w+), \w+\) -> ", r".isViewBlocking((\1, \2, \3) -> "),
-    sub(r"\.emissiveRendering\((\w+) -> ", r".emissiveRendering((\1, level_, pos_) -> "),
-    sub(r"\.coldEnoughToSnow\(((?:[^,()]|\([^()]*\))+), (?:[^()]|\([^()]*\))+\)", r".coldEnoughToSnow(\1)"),
-    sub(r"\.warmEnoughToRain\(((?:[^,()]|\([^()]*\))+), (?:[^()]|\([^()]*\))+\)", r".warmEnoughToRain(\1)"),
-    sub(r"\.getPos\(\)\.pack\(\)", ".getPos().toLong()"),
-    sub(r"\.markUnsaved\(\)", ".setUnsaved(true)"),
-    sub(r"\.isSolidRender\(\)", ".isSolidRender(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO)"),
-    sub(r"\.snapTo\(", ".moveTo("),
-    sub(r"((?:net\.minecraft\.client\.)?Minecraft\.getInstance\(\)|\b\w+)\.getWindow\(\)\.getGuiScale\(\)", r"((int) \1.getWindow().getGuiScale())"),
-    sub(r"\.lookupOrThrow\(([^()]+)\)\.getOptional\(", r".registryOrThrow(\1).getOptional("),
-    sub(r"\.lookupOrThrow\(([^()]+)\)\.getValue\(", r".registryOrThrow(\1).get("),
-    sub(r"\.getStructureTemplateManager\(\)", ".getStructureManager()"),
-    sub(r"\bNewDatapackRegistryEvent\b", "DataPackRegistryEvent.NewRegistry"),
-    sub(r"\.worldRegistry\(", ".dataPackRegistry("),
-    sub(r"\.create\(([^,()]+), EntitySpawnReason\.\w+\)", r".create(\1)"),
-    sub(r"\bEntitySpawnReason\.", "MobSpawnType."),
-    sub(r"\bItemUseAnimation\b", "UseAnim"),
-    sub(r"\bDeferredRegister\.Entities\b", "dev.groundburst.port.EntityRegister"),
-    sub(r"\bDeferredRegister\.createEntities\(", "new dev.groundburst.port.EntityRegister("),
-    # A server player's level is a server level in 26.x.
-    sub(r"\bServerLevel (\w+) = (\w+)\.level\(\);", r"ServerLevel \1 = (ServerLevel) \2.level();"),
-    # HUD layers: 26.x's draw through the extractor (dev.groundburst.port.GuiGraphicsExtractor).
-    sub(r"\.register(Above|Below)\(([^,()]+(?:\([^()]*\))?), ([^,()]+(?:\([^()]*\))?), (\w+)::(\w+)\)",
-        r".register\1(\2, \3, (gg_, dt_) -> \4.\5(new dev.groundburst.port.GuiGraphicsExtractor(gg_), dt_))"),
-    sub(r"\.register(Above|Below)All\(([^,()]+(?:\([^()]*\))?), (\w+)::(\w+)\)",
-        r".register\1All(\2, (gg_, dt_) -> \3.\4(new dev.groundburst.port.GuiGraphicsExtractor(gg_), dt_))"),
-    # Client-bound payloads: 1.21.1 takes the handler with the codec (the client's, registered later: dev.groundburst.port.net).
-    sub(r"\.playToClient\(([\w.]+)\.TYPE, ([\w.]+)\.CODEC\)",
-        r".playToClient(\1.TYPE, \2.CODEC, dev.groundburst.port.net.RegisterClientPayloadHandlersEvent.handler(\1.TYPE))"),
-    # A bundle's or a container's contents: 26.x's are templates, 1.21.1's stacks.
-    sub(r"\bfor \(ItemStackTemplate (\w+) : ((?:[^()]|\([^()]*\))+)\)", r"for (ItemStackTemplate \1 : ItemStackTemplate.of(\2))"),
-    # Attachments: 26.x serializes them with a map codec.
-    sub(r"(AttachmentType\.builder\([^;]*?)\.serialize\(([\w.]+)\)", r"\1.serialize(\2.codec())"),
-    sub(r"\.getRecipeManager\(\)\.byType\(", ".getRecipeManager().getAllRecipesFor("),
-    sub(r"\.addCraftingStation\(", ".addRecipeCatalysts("),
-    # Key mappings: 1.21.1's categories are translation keys (26.x's KeyMapping.Category of an id: key.category.<ns>.<path>).
-    sub(r"\bnew KeyMapping\.Category\(((?:[^()]|\([^()]*\))+)\)", r"dev.groundburst.port.input.KeyEvent.category(\1)"),
-    sub(r"\bKeyMapping\.Category\b", "String"),
-    sub(r"(\b[A-Z_]+)\.matches\((\w+)\)", r"\1.matches(\2.key(), \2.scancode())"),
-    sub(r"(\b\w+)\.getKeyEvent\(\)", r"new dev.groundburst.port.input.KeyEvent(\1.getKeyCode(), \1.getScanCode(), \1.getModifiers())"),
-    sub(r"\.getHoveredSlot\(\)", ".getSlotUnderMouse()"),
-    # A block state's particle sprite (26.x: its model set's particle material).
-    sub(r"\.getModelManager\(\)\.getBlockStateModelSet\(\)\.get\(((?:[^()]|\([^()]*\))+)\)\.particleMaterial\(\)\.sprite\(\)",
-        r".getBlockRenderer().getBlockModelShaper().getParticleIcon(\1)"),
-    # Block models' parts and quads (dev.groundburst.port.render: BlockStateModel, BlockStateModelPart, QuadInstance).
-    sub(r"\b(?:\w+(?:\.\w+\(\))*)\.getModelManager\(\)\.getBlockStateModelSet\(\)\.get\(", "dev.groundburst.port.render.BlockStateModel.of("),
-    sub(r"(\b\w+)\.putBakedQuad\(", r"dev.groundburst.port.render.QuadInstance.put(\1, "),
-    sub(r"\bRenderType\.itemTranslucent\(", "RenderType.itemEntityTranslucentCull("),
-    sub(r"\bSheets\.cutoutBlockItemSheet\(\)", "Sheets.cutoutBlockSheet()"),
-    sub(r"\b\w+\.gameRenderer\.gameRenderState\(\)\.windowRenderState\.appropriateLineWidth\b", "2.0F"),
-    sub(r"\bLightTexture\.max\(", "dev.groundburst.port.Lights.max("),
-    # A crystal cluster: 26.x gives its width, 1.21.1 how far its box is inset from each side.
-    sub(r"\bnew AmethystClusterBlock\(((?:[^,()]|\([^()]*\))+), ((?:[^,()]|\([^()]*\))+), ", r"new AmethystClusterBlock(\1, (16 - (\2)) / 2, "),
-    # Consumables: 1.21.1's food (dev.groundburst.port.Consumable).
-    sub(r"\.component\(DataComponents\.CONSUMABLE, ", ".food("),
-    sub(r"\bnet\.minecraft\.client\.renderer\.item\.ItemStackRenderState\b", "dev.groundburst.port.render.ItemStackRenderState"),
-    sub(r"\bnet\.minecraft\.util\.Util\b", "net.minecraft.Util"),
-    sub(r"\bprotected void applyImplicitComponents\(DataComponentGetter (\w+)\)",
-        r"protected void applyImplicitComponents(net.minecraft.world.level.block.entity.BlockEntity.DataComponentInput \1)"),
-    sub(r"\bLightTexture\.getLightCoords\(", "net.minecraft.client.renderer.LevelRenderer.getLightColor("),
-    sub(r"\bInputConstants\.Type\.KEYBOARD\b", "InputConstants.Type.KEYSYM"),
-    sub(r"\.getCamera\(\)\.entity\(\)", ".getCamera().getEntity()"),
-    sub(r"\.getCamera\(\)\.position\(\)", ".getCamera().getPosition()"),
-    sub(r"\.startRiding\(((?:[^,()]|\([^()]*\))+), (true|false), (?:true|false)\)", r".startRiding(\1, \2)"),
-    sub(r"\.isSectionCompiledAndVisible\(((?:[^()]|\([^()]*\))+), [^,()]+\)", r".isSectionCompiled(\1)"),
-    sub(r"\bDirection\.getApproximateNearest\(", "Direction.getNearest("),
-    sub(r"\bFogType\.ATMOSPHERIC\b", "FogType.NONE"),
-    sub(r"\.getSelectedSlot\(\)", ".selected"),
-    sub(r"\bcontext\.font\(\)", "context.getFont()"),
-    sub(r"\bnet\.minecraft\.client\.renderer\.rendertype\.RenderTypes?\b", "net.minecraft.client.renderer.RenderType"),
-    sub(r"\bBuiltInRegistries\.(\w+)\.getValue\(", r"BuiltInRegistries.\1.get("),
-    sub(r"(\b\w+)\.get\(DataComponents\.DYE\)", r"dev.groundburst.port.Stacks.dye(\1)"),
-    sub(r"\bsuper\.getOcclusionShape\((\w+)\)", r"super.getOcclusionShape(\1, level_, pos_)"),
-    sub(r"\bsuper\.propagatesSkylightDown\((\w+)\)", r"super.propagatesSkylightDown(\1, level_, pos_)"),
-    sub(r"\bsuper\.getLightDampening\((\w+)\)", r"super.getLightBlock(\1, level_, pos_)"),
-    # 26.x's flash takes a colour; 1.21.1's is plain.
-    sub(r"\b(?:net\.minecraft\.core\.particles\.)?ColorParticleOption\.create\(ParticleTypes\.FLASH, [^()]*\)", "ParticleTypes.FLASH"),
-    sub(r"\bBlock\.column\(", "dev.groundburst.port.Shapes2.column("),
-    sub(r"(\b\w+(?:\.\w+\(\))*\.getPersistentData\(\))\.(get(?:String|Int|Long|Float|Double|Boolean)Or)\(", r"dev.groundburst.port.Nbt.\2(\1, "),
-    sub(r"\.placeItemBackInInventory\(((?:[^()]|\([^()]*\))+), net\.minecraft\.util\.Prediction\.\w+\)", r".placeItemBackInInventory(\1)"),
-    sub(r"\.getCooldowns\(\)\.(addCooldown|isOnCooldown|removeCooldown)\((\w+)\b(?!\.)", r".getCooldowns().\1(\2.getItem()"),
-    sub(r"\bModConfig\.Type\.SYNCED\b", "ModConfig.Type.SERVER"),
-    sub(r"\bModConfig\.Type\.LOCAL\b", "ModConfig.Type.COMMON"),
-    sub(r"\(net\.neoforged\.neoforge\.client\.event\.AddClientReloadListenersEvent (\w+)\) -> \1\.addListener\(\s*(?:[^,()]|\([^()]*\))+,\s*",
-        r"(net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent \1) -> \1.registerReloadListener("),
-    sub(r"\(AddClientReloadListenersEvent (\w+)\) -> \1\.addListener\(\s*(?:[^,()]|\([^()]*\))+,\s*",
-        r"(net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent \1) -> \1.registerReloadListener("),
-    sub(r"(\w+)\.biomeResolver\(\)\.getNoiseBiome\(((?:[^()]|\([^()]*\))+)\)", r"\1.biomeSource().getNoiseBiome(\2, \1.randomState().sampler())"),
-    sub(r"\bRotation\.LEGACY_CODEC\b", "dev.groundburst.port.LegacyCodecs.ROTATION"),
-    sub(r"(\b\w+)\.environmentAttributes\(\)\.getValue\(EnvironmentAttributes\.WATER_EVAPORATES, [^()]*\)", r"\1.dimensionType().ultraWarm()"),
-    sub(r"(\b\w+)\.getLightDampening\(\)", r"\1.getLightBlock(level, pos)"),         # (a block's own state, in its place)
-    sub(r"(\bthis\.\w+)\.keyPressed\((\w+)\)", r"\1.keyPressed(\2.key(), \2.scancode(), \2.modifiers())"),
-    # An ingredient's contents.
-    sub(r"((?:this\.)?(?:\w+\.)*(?:ingredient\(\)|catalyst\(\)\.get\(\)))\.items\(\)", r"dev.groundburst.port.Ingredients.items(\1)"),
-    sub(r"((?:this\.)?(?:\w+\.)*ingredient\(\))\.fluids\(\)", r"dev.groundburst.port.Ingredients.fluids(\1)"),
-    # JEI 19's recipe types (26.x's JEI: IRecipeType, IRecipeHolderType).
-    sub(r"\bIRecipeType\.create\(", "new RecipeType<>("),
-    sub(r"\bIRecipeType<", "RecipeType<"),
-    sub(r"\bIRecipeHolderType<(\w+)>", r"RecipeType<net.minecraft.world.item.crafting.RecipeHolder<\1>>"),
-    sub(r"\bIRecipeHolderType\.create\(", "RecipeType.createFromVanilla("),
-    sub(r"\bRecipeIngredientRole\.CRAFTING_STATION\b", "RecipeIngredientRole.CATALYST"),
-    sub(r"\bnew (?:net\.minecraft\.world\.item\.component\.)?DyedItemColor\(((?:[^(),]|\([^()]*\))+)\)", r"new net.minecraft.world.item.component.DyedItemColor(\1, true)"),
+# Fully qualified names written in the code (and imports not in IMPORTS): moved by prefix, the longest first.
+PACKAGES = [
+    ("net.neoforged.neoforge.common.NeoForge", "net.minecraftforge.common.MinecraftForge"),
+    ("net.neoforged.neoforge.common.ModConfigSpec", "net.minecraftforge.common.ForgeConfigSpec"),
+    ("net.neoforged.neoforge.registries.DeferredHolder", f"{L}.DeferredHolder"),
+    ("net.neoforged.neoforge.registries.DeferredItem", f"{L}.DeferredItem"),
+    ("net.neoforged.neoforge.registries.DeferredBlock", f"{L}.DeferredBlock"),
+    ("net.neoforged.neoforge.registries.DeferredRegister", f"{L}.DeferredRegister"),
+    ("net.neoforged.neoforge.network.PacketDistributor", f"{L}.net.PacketDistributor"),
+    ("net.neoforged.neoforge.network.handling.IPayloadContext", f"{L}.net.IPayloadContext"),
+    ("net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent", f"{L}.net.RegisterPayloadHandlersEvent"),
+    ("net.neoforged.neoforge.network.registration.PayloadRegistrar", f"{L}.net.PayloadRegistrar"),
+    ("net.neoforged.neoforge.network.handling.IPayloadHandler", f"{L}.net.IPayloadHandler"),
+    ("net.neoforged.neoforge.capabilities.", f"{L}."),
+    ("net.neoforged.neoforge.attachment.AttachmentType", f"{L}.AttachmentType"),
+    ("net.neoforged.neoforge.common.world.chunk.TicketController", f"{L}.TicketController"),
+    ("net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent", f"{L}.RegisterTicketControllersEvent"),
+    ("net.neoforged.neoforge.common.world.chunk.TicketHelper", "net.minecraftforge.common.world.ForgeChunkManager.TicketHelper"),
+    ("net.neoforged.neoforge.common.world.chunk.LoadingValidationCallback",
+     "net.minecraftforge.common.world.ForgeChunkManager.LoadingValidationCallback"),
+    ("net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent", f"{L}.RegisterCapabilitiesEvent"),
+    ("net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent", f"{L}.client.RegisterClientExtensionsEvent"),
+    ("net.neoforged.neoforge.client.event.RegisterGuiLayersEvent", f"{L}.client.RegisterGuiLayersEvent"),
+    ("net.neoforged.neoforge.client.event.RenderGuiLayerEvent", f"{L}.client.RenderGuiLayerEvent"),
+    ("net.neoforged.neoforge.client.gui.VanillaGuiLayers", f"{L}.client.VanillaGuiLayers"),
+    ("net.neoforged.neoforge.client.event.CalculatePlayerTurnEvent", f"{L}.client.CalculatePlayerTurnEvent"),
+    ("net.neoforged.neoforge.registries.datamaps.", f"{L}."),
+    ("net.neoforged.neoforge.common.crafting.SizedIngredient", f"{L}.SizedIngredient"),
+    ("net.neoforged.neoforge.fluids.crafting.", f"{L}."),
+    ("net.neoforged.neoforge.event.tick.RenderFrameEvent", "net.minecraftforge.event.TickEvent.RenderTickEvent"),
+    ("net.neoforged.neoforge.client.event.RenderFrameEvent", "net.minecraftforge.event.TickEvent.RenderTickEvent"),
+    ("net.neoforged.neoforge.fluids.BaseFlowingFluid", "net.minecraftforge.fluids.ForgeFlowingFluid"),
+    ("net.neoforged.neoforge.event.tick.ServerTickEvent", "net.minecraftforge.event.TickEvent.ServerTickEvent"),
+    ("net.neoforged.neoforge.event.tick.LevelTickEvent", "net.minecraftforge.event.TickEvent.LevelTickEvent"),
+    ("net.neoforged.neoforge.event.tick.PlayerTickEvent", "net.minecraftforge.event.TickEvent.PlayerTickEvent"),
+    ("net.neoforged.neoforge.client.event.ClientTickEvent", "net.minecraftforge.event.TickEvent.ClientTickEvent"),
+    ("net.neoforged.neoforge.client.event.RegisterMenuScreensEvent", f"{L}.client.RegisterMenuScreensEvent"),
+    ("net.neoforged.neoforge.client.event.", "net.minecraftforge.client.event."),
+    ("net.neoforged.neoforge.event.", "net.minecraftforge.event."),
+    ("net.neoforged.neoforge.fluids.", "net.minecraftforge.fluids."),
+    ("net.neoforged.neoforge.items.", "net.minecraftforge.items."),
+    ("net.neoforged.neoforge.energy.", "net.minecraftforge.energy."),
+    ("net.neoforged.neoforge.client.", "net.minecraftforge.client."),
+    ("net.neoforged.neoforge.common.", "net.minecraftforge.common."),
+    ("net.neoforged.neoforge.registries.", "net.minecraftforge.registries."),
+    ("net.neoforged.fml.", "net.minecraftforge.fml."),
+    ("net.neoforged.bus.api.", "net.minecraftforge.eventbus.api."),
+    ("net.neoforged.api.distmarker.", "net.minecraftforge.api.distmarker."),
+    ("net.minecraft.world.ItemInteractionResult", f"{L}.ItemInteractionResult"),
+    ("net.minecraft.client.DeltaTracker", f"{L}.DeltaTracker"),
+    ("net.minecraft.network.RegistryFriendlyByteBuf", "net.minecraft.network.FriendlyByteBuf"),
+    ("net.minecraft.network.codec.StreamCodec", f"{L}.net.StreamCodec"),
+    ("net.minecraft.network.codec.ByteBufCodecs", f"{L}.net.ByteBufCodecs"),
+    ("net.minecraft.network.protocol.common.custom.CustomPacketPayload", f"{L}.net.CustomPacketPayload"),
+    ("net.minecraft.network.codec.", f"{L}.net."),
+    ("net.minecraft.core.component.", f"{L}.component."),
+    ("net.minecraft.world.item.component.", f"{L}.component."),
+    ("net.minecraft.world.item.crafting.RecipeHolder", f"{L}.recipe.RecipeHolder"),
+    ("net.minecraft.world.item.crafting.RecipeInput", f"{L}.recipe.RecipeInput"),
+    ("net.minecraft.world.item.crafting.SingleRecipeInput", f"{L}.recipe.SingleRecipeInput"),
+    ("net.minecraft.world.item.crafting.CraftingInput", f"{L}.recipe.CraftingInput"),
+    # 1.20.5's names for blocks 1.20.1 has under its own.
+    ("net.minecraft.world.level.block.TransparentBlock", "net.minecraft.world.level.block.AbstractGlassBlock"),
+    ("net.minecraft.world.level.block.WaterloggedTransparentBlock", f"{L}.WaterloggedTransparentBlock"),
+    # GeckoLib 4 on 1.20.1 keeps its animation core in its core packages.
+    ("software.bernie.geckolib.animatable.GeoAnimatable", "software.bernie.geckolib.core.animatable.GeoAnimatable"),
+    ("software.bernie.geckolib.animatable.instance.", "software.bernie.geckolib.core.animatable.instance."),
+    ("software.bernie.geckolib.animation.PlayState", "software.bernie.geckolib.core.object.PlayState"),
+    ("software.bernie.geckolib.animation.state.", "software.bernie.geckolib.core.state."),
+    ("software.bernie.geckolib.animation.", "software.bernie.geckolib.core.animation."),
+    ("software.bernie.geckolib.constant.dataticket.DataTicket", "software.bernie.geckolib.core.object.DataTicket"),
+    ("software.bernie.geckolib.util.Color", "software.bernie.geckolib.core.object.Color"),
+    ("software.bernie.geckolib.util.RenderUtil", "software.bernie.geckolib.util.RenderUtils"),
 ]
+PACKAGES.sort(key=lambda p: -len(p[0]))
+
+# A class's name with or without its package before it (and nothing else of a name).
+PK = r"(?<![\w.])(?:[a-z]\w*\.)*"
+
+# Plain textual rules, in order.
+RULES = [
+    # Forge 1.20.1's ResourceLocation is made with new (1.21's factories).
+    sub(r"\b(net\.minecraft\.resources\.)?ResourceLocation\.fromNamespaceAndPath\(", r"new \1ResourceLocation("),
+    sub(r"\b(net\.minecraft\.resources\.)?ResourceLocation\.withDefaultNamespace\(", r"new \1ResourceLocation("),
+    sub(r"\b(net\.minecraft\.resources\.)?ResourceLocation\.parse\(", r"new \1ResourceLocation("),
+    # NeoForge's common tags (c:) by name in the code: Forge 1.20.1's (dev.groundburst.legacy.Tags2; a fluid's water is vanilla's).
+    sub(r"(Registries\.FLUID,\s*)new\s+(?:net\.minecraft\.resources\.)?ResourceLocation\(\s*\"c\"\s*,\s*", rf"\1{L}.Tags2.commonFluid("),
+    sub(r"\bnew\s+(?:net\.minecraft\.resources\.)?ResourceLocation\(\s*\"c\"\s*,\s*", f"{L}.Tags2.common("),
+    # Java 21's Math.clamp: this branch's, with the same overloads (Java 17 has none).
+    sub(r"\bMath\.clamp\(", f"{L}.J21.clamp("),
+    sub(r"\bNeoForge\.EVENT_BUS\b", "MinecraftForge.EVENT_BUS"),
+    sub(r"\bModConfigSpec\b", "ForgeConfigSpec"),
+    sub(r"\bBaseFlowingFluid\b", "ForgeFlowingFluid"),
+    sub(r"\bNeoForgeRegistries\b", "ForgeRegistries"),
+    sub(r"\bIMenuTypeExtension\b", "IForgeMenuType"),
+    sub(r"\bClientHooks\b", "ForgeHooksClient"),
+    sub(r"\bLivingIncomingDamageEvent\b", "LivingHurtEvent"),
+    sub(r"\bExtraFaceData\b", "ForgeFaceData"),
+    sub(r"\bRegistryFriendlyByteBuf\b", "FriendlyByteBuf"),
+    sub(r"\bRenderUtil\b", "RenderUtils"),
+    sub(r"\bTransparentBlock\b", "AbstractGlassBlock"),
+    # Stream codecs vanilla 1.21 keeps on its own classes (dev.groundburst.legacy.net.Codecs on 1.20.1).
+    # (Each with or without its class's package.)
+    sub(PK + r"BlockPos\.STREAM_CODEC\b", f"{L}.net.Codecs.BLOCK_POS"),
+    sub(PK + r"ItemStack\.OPTIONAL_STREAM_CODEC\b", f"{L}.net.Codecs.OPTIONAL_ITEM_STACK"),
+    sub(PK + r"ItemStack\.STREAM_CODEC\b", f"{L}.net.Codecs.ITEM_STACK"),
+    sub(PK + r"FluidStack\.(?:OPTIONAL_)?STREAM_CODEC\b", f"{L}.net.Codecs.FLUID_STACK"),
+    sub(PK + r"ResourceLocation\.STREAM_CODEC\b", f"{L}.net.Codecs.RESOURCE_LOCATION"),
+    sub(PK + r"UUIDUtil\.STREAM_CODEC\b", f"{L}.net.Codecs.UUID_CODEC"),
+    sub(PK + r"ComponentSerialization\.STREAM_CODEC\b", f"{L}.net.Codecs.COMPONENT"),
+    sub(PK + r"Ingredient\.CONTENTS_STREAM_CODEC\b", f"{L}.net.Codecs.INGREDIENT"),
+    sub(PK + r"Ingredient\.CODEC_NONEMPTY\b", f"{L}.net.Codecs.INGREDIENT_NONEMPTY_CODEC"),
+    sub(PK + r"Ingredient\.CODEC\b", f"{L}.net.Codecs.INGREDIENT_CODEC"),
+    # JEI 19's recipe types of the game's (JEI 15: an id and a class, dev.groundburst.legacy.jei.JeiTypes).
+    sub(PK + r"RecipeType\.createFromVanilla\(", f"{L}.jei.JeiTypes.fromVanilla("),
+    # NeoForge's registries 1.20.1 has none of.
+    sub(r"\bForgeRegistries\.Keys\.ATTACHMENT_TYPES\b", f"{L}.Attachments.REGISTRY_KEY"),
+    sub(r"\bDeferredRegister\.createDataComponents\(\s*Registries\.DATA_COMPONENT_TYPE\s*,\s*", "DeferredRegister.createDataComponents("),
+    # NeoForge's tri-state answers to an interaction event: Forge's results.
+    sub(r"\bTriState\.TRUE\b", "net.minecraftforge.eventbus.api.Event.Result.ALLOW"),
+    sub(r"\bTriState\.FALSE\b", "net.minecraftforge.eventbus.api.Event.Result.DENY"),
+    sub(r"\bTriState\.DEFAULT\b", "net.minecraftforge.eventbus.api.Event.Result.DEFAULT"),
+]
+
+# Imports with nothing left to name on 1.20.1.
+IMPORTS.update({
+    # A test player's connection: 1.20.1's is made without the client's settings (rules below).
+    "net.minecraft.server.network.CommonListenerCookie": None,
+    "net.minecraft.server.level.ClientInformation": None,
+    "net.minecraft.util.ProblemReporter": None,
+    "net.minecraft.core.dispenser.BlockSource": "net.minecraft.core.BlockSource",
+    "net.neoforged.neoforge.common.util.TriState": None,
+    "net.neoforged.neoforge.client.gui.ConfigurationScreen": None,
+    "net.neoforged.neoforge.client.gui.IConfigScreenFactory": None,
+})
+
+# Whole lines removed: NeoForge's that have no counterpart on Forge 1.20.1.
+DROP_LINES = [re.compile(p) for p in (
+    # NeoForge draws a config screen of its own for any mod's settings; Forge 1.20.1 has none.
+    r"^\s*\w+\.registerExtensionPoint\(IConfigScreenFactory\.class, ConfigurationScreen::new\);\s*$",
+    # The client half is not a mod of its own on Forge 1.20.1 (one @Mod a mod): the mod starts it.
+    r"^@Mod\(value = GroundBurst\.MODID, dist = Dist\.CLIENT\)\s*$",
+)]
+
+
+def skip(text: str, i: int) -> int:
+    """If a string, character literal, text block or comment starts at {i}, the index just past it; else {i}."""
+    if text.startswith('"""', i):
+        end = text.find('"""', i + 3)
+        return len(text) if end < 0 else end + 3
+    ch = text[i]
+    if ch in "\"'":
+        j = i + 1
+        while j < len(text) and text[j] != ch and text[j] != "\n":
+            j += 2 if text[j] == "\\" else 1
+        return j + 1
+    if text.startswith("//", i):
+        end = text.find("\n", i)
+        return len(text) if end < 0 else end
+    if text.startswith("/*", i):
+        end = text.find("*/", i + 2)
+        return len(text) if end < 0 else end + 2
+    return i
+
+
+def find_close(text: str, i: int) -> int:
+    """The index just past the bracket that closes the one opened just before {i} (past strings and comments)."""
+    depth = 1
+    while i < len(text) and depth:
+        j = skip(text, i)
+        if j != i:
+            i = j
+            continue
+        ch = text[i]
+        if ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            depth -= 1
+        i += 1
+    return i
+
+
+def receiver_calls(text: str, method: str, make, accept=lambda recv, args: True) -> str:
+    """Each call {recv}.{method}({args}) (recv the whole expression before the dot) as make(recv, args), where accept says,
+    nested and chained ones too. make returns (prefix, rest): the text scanned again starts after the prefix."""
+    pat = re.compile(r"\.\s*" + method + r"\s*\(")
+    pos = 0
+    while True:
+        m = pat.search(text, pos)
+        if not m:
+            return text
+        dot = m.start()
+        start = receiver_start(text, dot)
+        recv = text[start:dot].strip()
+        end = find_close(text, m.end())
+        args = text[m.end():end - 1]
+        if not recv or recv in ("super", "this") or not accept(recv, args):
+            pos = m.end()
+            continue
+        prefix, rest = make(recv, args)
+        text = text[:start] + prefix + rest + text[end:]
+        pos = start + len(prefix)
+
+
+COMPONENT_ARG = re.compile(r"^\s*(?:(?:dev\.groundburst\.registry\.)?GBDataComponents\.\w+(?:\.get\(\))?"
+                           r"|(?:dev\.groundburst\.legacy\.component\.)?DataComponents\.[A-Z_]+)\s*$")
+
+
+def first_arg(args: str) -> str:
+    return split_args(args)[0] if args.strip() else ""
+
+
+def components(text: str) -> str:
+    """1.21's component calls on an item stack: dev.groundburst.legacy.component.Comps's (1.20.1 keeps them in its NBT)."""
+    for op, fn in (("get", "get"), ("getOrDefault", "getOrDefault"), ("has", "has"), ("set", "set"), ("remove", "remove"),
+                   ("update", "update")):
+        text = receiver_calls(text, op, lambda recv, args, fn=fn: (f"{L}.component.Comps.{fn}(", f"{recv}, {args})"),
+                              lambda recv, args: bool(COMPONENT_ARG.match(first_arg(args))))
+    # An item's default components, given with its properties.
+    text = receiver_calls(text, "component", lambda recv, args: (f"{L}.component.Comps.withDefault(", f"{recv}, {args})"),
+                          lambda recv, args: len(split_args(args)) == 2)
+    return text
+
+
+def capabilities(text: str) -> str:
+    """NeoForge's capability lookups on a level, a stack or an entity: dev.groundburst.legacy.Caps's."""
+    return receiver_calls(text, "getCapability", lambda recv, args: (f"{L}.Caps.get(", f"{recv}, {args})"),
+                          lambda recv, args: bool(args.strip()))   # a capability cache's own getCapability() takes none
+
+
+def attachments(text: str) -> str:
+    """NeoForge's data attachments on an entity or a chunk, and its data maps on a registry's holder."""
+    text = receiver_calls(text, "getData", lambda recv, args: ("", f"{args.strip()}.get({recv})"),
+                          lambda recv, args: recv.endswith("builtInRegistryHolder()"))
+    for op, fn in (("hasData", "has"), ("getData", "get"), ("setData", "set"), ("removeData", "remove"),
+                   ("getExistingDataOrNull", "getExistingOrNull"), ("getExistingData", "getExisting")):
+        text = receiver_calls(text, op, lambda recv, args, fn=fn: (f"{L}.Attachments.{fn}(", f"{recv}, {args})"))
+    return text
+
+
+def recipe_lookups(text: str) -> str:
+    """1.21's recipe manager hands back holders: dev.groundburst.legacy.recipe.Recipes over 1.20.1's."""
+    text = receiver_calls(text, "getAllRecipesFor", lambda recv, args: (f"{L}.recipe.Recipes.all(", f"{recv}, {args})"))
+    text = receiver_calls(text, "getRecipeFor", lambda recv, args: (f"{L}.recipe.Recipes.find(", f"{recv}, {args})"),
+                          lambda recv, args: len(split_args(args)) == 3)
+    return text
+
+
+# Java 21's first and last of a list (Java 17 has them on a deque only: J21 takes both). Pair.getFirst is DFU's own.
+def sequenced(text: str) -> str:
+    pairs = set(re.findall(r"\bPair<[^;=]*?>\s+(\w+)\s*[=;,)]", text))
+
+    def ok(recv: str, args: str) -> bool:
+        return not args.strip() and not re.search(r"(?i)pair|either|\bp\d*$|entry$", recv) and recv not in pairs
+    for op, fn in (("getFirst", "first"), ("getLast", "last"), ("removeFirst", "removeFirst"), ("removeLast", "removeLast")):
+        text = receiver_calls(text, op, lambda recv, args, fn=fn: (f"{L}.J21.{fn}(", f"{recv})"), ok)
+    return text
+
+
+TICK_EVENTS = {"ServerTickEvent": "ServerTickEvent", "LevelTickEvent": "LevelTickEvent", "PlayerTickEvent": "PlayerTickEvent",
+               "ClientTickEvent": "ClientTickEvent"}
+
+
+def tick_events(text: str) -> str:
+    """NeoForge's tick events (Pre and Post, a class each) as Forge's (one, with a phase): a guard at the top of each
+    listener for its phase, and the level's and player's getters as Forge's fields."""
+    def accessors(body: str, name: str, kind: str) -> str:
+        if kind == "LevelTickEvent":
+            body = re.sub(rf"\b{name}\.getLevel\(\)", f"{name}.level", body)
+        if kind == "PlayerTickEvent":
+            body = re.sub(rf"\b{name}\.getEntity\(\)", f"{name}.player", body)
+        if kind in ("RenderFrameEvent", "RenderTickEvent"):
+            body = re.sub(rf"\b{name}\.getPartialTick\(\)", f"{L}.DeltaTracker.of({name}.renderTickTime)", body)
+        return body
+
+    # Methods: void name(XTickEvent.Post event) { ... }
+    def method(m: re.Match) -> str:
+        return m.group(0)
+    pat = re.compile(r"\((?:final\s+)?(?:net\.minecraftforge\.event\.TickEvent\.|TickEvent\.)?(ServerTickEvent|LevelTickEvent|PlayerTickEvent|ClientTickEvent"
+                     r"|RenderFrameEvent|RenderTickEvent)\.(Pre|Post)\s+(\w+)\)")
+    out, pos = [], 0
+    for m in pat.finditer(text):
+        if m.start() < pos:
+            continue
+        kind, phase, name = m.group(1), m.group(2), m.group(3)
+        if kind in ("RenderFrameEvent", "RenderTickEvent"):
+            kind = "RenderTickEvent"
+        guard = f"if ({name}.phase != net.minecraftforge.event.TickEvent.Phase.{'START' if phase == 'Pre' else 'END'}) return;"
+        head = f"(net.minecraftforge.event.TickEvent.{kind} {name})"
+        after = text[m.end():]
+        lam = re.match(r"\s*->\s*", after)
+        brace = re.match(r"\s*(?:throws [\w., ]+)?\s*\{", after)
+        if lam:
+            body_start = m.end() + lam.end()
+            if text[body_start] == "{":
+                end = find_close(text, body_start + 1)
+                body = accessors(text[body_start + 1:end - 1], name, kind)
+                out.append(text[pos:m.start()] + head + " -> {" + guard + body + "}")
+            else:
+                # An expression body: to the end of the call it is the last argument of.
+                depth, i = 0, body_start
+                while i < len(text):
+                    ch = text[i]
+                    if ch in "([{":
+                        depth += 1
+                    elif ch in ")]}":
+                        if depth == 0:
+                            break
+                        depth -= 1
+                    elif ch in "\"'":
+                        q = ch
+                        i += 1
+                        while i < len(text) and text[i] != q:
+                            i += 2 if text[i] == "\\" else 1
+                    elif ch == ";" and depth == 0:
+                        break
+                    i += 1
+                end = i
+                body = accessors(text[body_start:end].rstrip(), name, kind)
+                out.append(text[pos:m.start()] + head + " -> { " + guard + " " + body + "; }")
+            pos = end
+        elif brace:
+            body_start = m.end() + brace.end()
+            end = find_close(text, body_start)
+            body = accessors(text[body_start:end - 1], name, kind)
+            out.append(text[pos:m.start()] + head + text[m.end():body_start] + " " + guard + body + "}")
+            pos = end
+        else:
+            out.append(text[pos:m.end()])
+            pos = m.end()
+    out.append(text[pos:])
+    text = "".join(out)
+    # Bare references to the classes (an addListener's class argument): Forge's.
+    text = re.sub(r"(net\.minecraftforge\.event\.TickEvent\.)(?:RenderFrameEvent|RenderTickEvent)\.(?:Pre|Post)\b", r"\1RenderTickEvent", text)
+    text = re.sub(r"(net\.minecraftforge\.event\.TickEvent\.\w+)\.(?:Pre|Post)\b", r"\1", text)
+    text = re.sub(r"(?<![\w.])(?:RenderFrameEvent)\.(?:Pre|Post)\b", "net.minecraftforge.event.TickEvent.RenderTickEvent", text)
+    text = re.sub(r"(?<![\w.])(ServerTickEvent|LevelTickEvent|PlayerTickEvent|ClientTickEvent)\.(?:Pre|Post)\b", r"net.minecraftforge.event.TickEvent.\1", text)
+    return text
 
 
 def param(type_re: str) -> str:
@@ -449,74 +576,53 @@ def param(type_re: str) -> str:
 
 
 C = r"\s*,\s*"
-QN = r"(?:[\w.]+\.)?"                                     # an optional package or outer class before a type's name
+QN = r"(?:[\w.]+\.)?"
+REGISTRIES = f"{L}.Regs.access()"
 
-# Overridden methods whose signatures changed: main's parameter names and body kept, the signature 1.21.1's, and a line or
-# two at the body's top giving main's code what it had (a server level, a tick scheduler).
+# Overridden methods whose signatures changed: the 1.21.1 build's body kept, the signature 1.20.1's, and a line at the
+# body's top giving the body what it had.
 SIGNATURES = [
-    # Tooltips: 26.x hands a consumer and the display settings; 1.21.1 a list.
-    sub(r"(\bpublic void appendHoverText\(\s*)" + param(QN + "ItemStack") + C + param(QN + "TooltipContext") + C + param(QN + "TooltipDisplay")
-        + C + param(QN + r"Consumer<(?:[\w.]+\.)?Component>") + C + param(QN + "TooltipFlag") + r"\s*\)(\s*\{)",
-        r"\1net.minecraft.world.item.ItemStack \2, net.minecraft.world.item.Item.TooltipContext \3, java.util.List<net.minecraft.network.chat.Component> \5_list, "
-        r"net.minecraft.world.item.TooltipFlag \6)\7 java.util.function.Consumer<net.minecraft.network.chat.Component> \5 = \5_list::add;"),
-    sub(r"\bsuper\.appendHoverText\((\w+), (\w+), \w+, (\w+), (\w+)\)", r"super.appendHoverText(\1, \2, \3_list, \4)"),
-    # Neighbour changes: 26.x passes a tick scheduler and a random; 1.21.1 the level does both.
-    sub(r"(\bprotected BlockState updateShape\(\s*)" + param("BlockState") + C + param(QN + "LevelReader") + C + param(QN + "LevelAccessor") + C
-        + param("BlockPos") + C + param("Direction") + C + param("BlockPos") + C + param("BlockState") + C + param(QN + "RandomSource") + r"\s*\)(\s*\{)",
-        r"\1BlockState \2, Direction \6, BlockState \8, net.minecraft.world.level.LevelAccessor \3, BlockPos \5, BlockPos \7)\10 "
-        r"net.minecraft.world.level.LevelAccessor \4 = \3; net.minecraft.util.RandomSource \9 = \3.getRandom();"),
-    sub(r"\bsuper\.updateShape\((\w+), (\w+), \w+, (\w+), (\w+), (\w+), (\w+), \w+\)", r"super.updateShape(\1, \4, \6, \2, \3, \5)"),
-    sub(r"(\bprotected void neighborChanged\(\s*" + param("BlockState") + C + param(QN + "Level") + C + param("BlockPos") + C + param(QN + "Block") + C + r")"
-        + param(QN + "Orientation") + r"(" + C + r")", r"\1BlockPos fromPos_\7"),
-    sub(r"\bsuper\.neighborChanged\((\w+), (\w+), (\w+), (\w+), \w+, (\w+)\)", r"super.neighborChanged(\1, \2, \3, \4, fromPos_, \5)"),
-    sub(r"\.updateNeighborsAt\(([^,()]+), ([^,()]+), [^,()]+\)", r".updateNeighborsAt(\1, \2)"),
-    # A neighbour update with no orientation (26.x's may be null): 1.21.1 takes where it comes from, which must be given.
-    sub(r"(\b\w+)\.neighborChanged\(([^,()]+), ((?:[^,()]|\([^()]*\))+), null\)", r"\1.neighborChanged(\2, \3, \2)"),
-    # Entities inside a block: 26.x adds an effect applier and whether it was a precise check.
-    sub(r"(\bprotected void entityInside\(\s*" + param("BlockState") + C + param(QN + "Level") + C + param("BlockPos") + C + param(QN + "Entity") + r")"
-        + C + param(QN + "InsideBlockEffectApplier") + C + param("boolean") + r"\s*\)", r"\1)"),
-    sub(r"\bsuper\.entityInside\((\w+), (\w+), (\w+), (\w+), \w+, \w+\)", r"super.entityInside(\1, \2, \3, \4)"),
-    # After a block is removed: 1.21.1 tells the block on removal, with what replaced it.
-    sub(r"(\bprotected void )affectNeighborsAfterRemoval\(\s*" + param("BlockState") + C + param(QN + "ServerLevel") + C + param("BlockPos") + C
-        + param("boolean") + r"\s*\)(\s*\{)",
-        r"\1onRemove(BlockState \2, net.minecraft.world.level.Level \3_l, BlockPos \4, BlockState newState_, boolean \5)\6 "
-        r"super.onRemove(\2, \3_l, \4, newState_, \5); if (!(\3_l instanceof net.minecraft.server.level.ServerLevel \3) || \2.is(newState_.getBlock())) return;"),
-    sub(r"\bsuper\.affectNeighborsAfterRemoval\([^;]*\);", ""),
-    # Light and shape questions about a state: 1.21.1 asks them of a state in a place.
-    sub(r"(\bprotected boolean propagatesSkylightDown\(\s*" + param("BlockState") + r")\s*\)",
-        r"\1, net.minecraft.world.level.BlockGetter level_, BlockPos pos_)"),
-    sub(r"(\bprotected int )getLightDampening\(\s*" + param("BlockState") + r"\s*\)",
-        r"\1getLightBlock(BlockState \2, net.minecraft.world.level.BlockGetter level_, BlockPos pos_)"),
-    sub(r"(\bprotected VoxelShape getOcclusionShape\(\s*" + param("BlockState") + r")\s*\)",
-        r"\1, net.minecraft.world.level.BlockGetter level_, BlockPos pos_)"),
-    sub(r"(\bprotected int getAnalogOutputSignal\(\s*" + param("BlockState") + C + param(QN + "Level") + C + param("BlockPos") + r")" + C
-        + param(QN + "Direction") + r"\s*\)(\s*\{)", r"\1)\6 Direction \5 = Direction.NORTH;"),
-    # Effects tick on the server in 26.x, given its level.
-    sub(r"(\bpublic boolean applyEffectTick\(\s*)" + param(QN + "ServerLevel") + C + param(QN + "LivingEntity") + C + param("int") + r"\s*\)(\s*\{)",
-        r"\1net.minecraft.world.entity.LivingEntity \3, int \4)\5 if (!(\3.level() instanceof net.minecraft.server.level.ServerLevel \2)) return true;"),
-    sub(r"(\bpublic void inventoryTick\(\s*" + param(QN + "ItemStack") + C + r")" + param(QN + "ServerLevel") + C + param(QN + "Entity") + C
-        + param(QN + "EquipmentSlot") + r"\s*\)(\s*\{)",
-        r"\1net.minecraft.world.level.Level \3_l, net.minecraft.world.entity.Entity \4, int slotId_, boolean selected_)\6 "
-        r"if (!(\3_l instanceof net.minecraft.server.level.ServerLevel \3)) return; "
-        r"net.minecraft.world.entity.EquipmentSlot \5 = selected_ ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : null;"),
-    sub(r"(\bpublic void playerDestroy\(\s*)" + param(QN + "ServerLevel") + C + param(QN + "ServerPlayer") + r"(" + C + r")",
-        r"\1net.minecraft.world.level.Level \2, net.minecraft.world.entity.player.Player \3\4"),
-    # (A type-use annotation goes before the simple name of a qualified type: none is kept.)
-    sub(r"(\bpublic ItemStack pickupBlock\(\s*)(?:@[\w.]+\s+)*" + QN + r"LivingEntity(\s+\w+)", r"\1net.minecraft.world.entity.player.Player\2"),
-    sub(r"(\bpublic boolean emptyContents\(\s*)(?:@[\w.]+\s+)*" + QN + r"LivingEntity(\s+\w+)", r"\1net.minecraft.world.entity.player.Player\2"),
-    sub(r"(\bprotected void onExplosionHit\(\s*)" + param("BlockState") + C + param(QN + "ServerLevel") + C + param("BlockPos") + C
-        + param(QN + "Explosion") + C + param(QN + r"BiConsumer<[^>]*>") + r"\s*\)(\s*\{)",
-        r"\1BlockState \2, net.minecraft.world.level.Level \3_l, BlockPos \4, net.minecraft.world.level.Explosion \5, "
-        r"java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, BlockPos> \6)\7 "
-        r"if (!(\3_l instanceof net.minecraft.server.level.ServerLevel \3)) { super.onExplosionHit(\2, \3_l, \4, \5, \6); return; }"),
-    sub(r"(\bprotected boolean hasClickedOutside\(\s*" + param("double") + C + param("double") + C + param("int") + C + param("int") + r")\s*\)",
-        r"\1, int button_)"),
-    sub(r"\bsuper\.hasClickedOutside\(((?:[^()]|\([^()]*\))*)\)", r"super.hasClickedOutside(\1, button_)"),
-    # Using an item: 1.21.1's use answers with the held stack too.
-    sub(r"(\bpublic )InteractionResult( use\(\s*" + param(QN + "Level") + C + param(QN + "Player") + C + param(QN + "InteractionHand") + r"\s*\)\s*\{)",
-        r"\1net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack>\2"),
-    sub(r"(\bpublic )boolean( releaseUsing\()", r"\1void\2"),
+    # Saving a block entity: 1.21 hands the registries along (1.20.1's are found: dev.groundburst.legacy.Regs).
+    sub(r"(\bprotected void saveAdditional\(\s*" + param(QN + "CompoundTag") + r")" + C + param(QN + r"HolderLookup\.Provider") + r"\s*\)(\s*\{)",
+        rf"\1)\4 net.minecraft.core.HolderLookup.Provider \3 = {REGISTRIES};"),
+    sub(r"(\b(?:protected|public) )void loadAdditional\(\s*" + param(QN + "CompoundTag") + C + param(QN + r"HolderLookup\.Provider") + r"\s*\)(\s*\{)",
+        rf"public void load(net.minecraft.nbt.CompoundTag \2)\4 net.minecraft.core.HolderLookup.Provider \3 = {REGISTRIES};"),
+    sub(r"\bsuper\.saveAdditional\((\w+), \w+\)", r"super.saveAdditional(\1)"),
+    sub(r"\bsuper\.loadAdditional\((\w+), \w+\)", r"super.load(\1)"),
+    sub(r"(\bpublic )([\w.]+) getUpdateTag\(\s*" + param(QN + r"HolderLookup\.Provider") + r"\s*\)(\s*\{)",
+        rf"\1\2 getUpdateTag()\4 net.minecraft.core.HolderLookup.Provider \3 = {REGISTRIES};"),
+    sub(r"(\bpublic void handleUpdateTag\(\s*" + param(QN + "CompoundTag") + r")" + C + param(QN + r"HolderLookup\.Provider") + r"\s*\)(\s*\{)",
+        rf"\1)\4 net.minecraft.core.HolderLookup.Provider \3 = {REGISTRIES};"),
+    sub(r"(\bpublic void onDataPacket\(\s*" + param(QN + "Connection") + C + param(QN + r"ClientboundBlockEntityDataPacket") + r")" + C
+        + param(QN + r"HolderLookup\.Provider") + r"\s*\)(\s*\{)",
+        rf"\1)\5 net.minecraft.core.HolderLookup.Provider \4 = {REGISTRIES};"),
+    sub(r"\bsuper\.getUpdateTag\(\w+\)", "super.getUpdateTag()"),
+    sub(r"\bsuper\.handleUpdateTag\((\w+), \w+\)", r"super.handleUpdateTag(\1)"),
+    sub(r"\.saveWithoutMetadata\(\s*\w+\s*\)", ".saveWithoutMetadata()"),
+    sub(r"\.saveWithFullMetadata\(\s*\w+\s*\)", ".saveWithFullMetadata()"),
+    sub(r"\.saveWithId\(\s*\w+\s*\)", ".saveWithId()"),
+    sub(r"\bBlockEntity\.loadStatic\(([^,()]+), ([^,()]+), ([^,()]+), [^,()]+\)", r"BlockEntity.loadStatic(\1, \2, \3)"),
+    sub(r"\bItemStack\.parseOptional\(\s*\w+(?:\(\))?\s*,\s*", "ItemStack.of("),
+    sub(r"\bItemStack\.parse\(\s*\w+(?:\(\))?\s*,\s*([^()]+(?:\([^()]*\))?)\)", r"java.util.Optional.of(ItemStack.of(\1))"),
+    sub(r"\bContainerHelper\.(saveAllItems|loadAllItems)\(([^,()]+), ([^,()]+), [^,()]+\)", r"ContainerHelper.\1(\2, \3)"),
+    sub(r"\bComponent\.Serializer\.toJson\(([^,()]+(?:\([^()]*\))?), [^,()]+\)", r"Component.Serializer.toJson(\1)"),
+    sub(r"\bComponent\.Serializer\.fromJson\(([^,()]+(?:\([^()]*\))?), [^,()]+\)", r"Component.Serializer.fromJson(\1)"),
+    sub(r"\bFluidStack\.parseOptional\(\s*\w+(?:\(\))?\s*,\s*", "FluidStack.loadFluidStackFromNBT("),
 ]
+
+
+def stack_saves(text: str) -> str:
+    """1.21's item and fluid stack saves take the registries: 1.20.1's write into a tag of their own."""
+    text = receiver_calls(text, "saveOptional", lambda recv, args: ("", f"{recv}.save(new net.minecraft.nbt.CompoundTag())"),
+                          lambda recv, args: len(split_args(args)) == 1)
+    text = receiver_calls(text, "save", lambda recv, args: ("", f"{recv}.save({split_args(args)[1].strip()})"),
+                          lambda recv, args: len(split_args(args)) == 2 and re.search(r"(?i)regist|provider|lookup", split_args(args)[0]))
+    text = receiver_calls(text, "save", lambda recv, args: ("", f"{recv}.save(new net.minecraft.nbt.CompoundTag())"),
+                          lambda recv, args: len(split_args(args)) == 1 and re.search(r"(?i)regist|provider|lookup|level\(\)\.registryAccess", args))
+    return text
+
+
+FUNCTIONS: list = [tick_events, components, capabilities, attachments, recipe_lookups, sequenced, stack_saves]
 
 
 def method_bodies(text: str, signature: str, fn) -> str:
@@ -525,99 +631,12 @@ def method_bodies(text: str, signature: str, fn) -> str:
     for m in re.compile(signature, re.S).finditer(text):
         if m.start() < pos:
             continue
-        depth, i = 0, m.end() - 1
-        while i < len(text):
-            ch = text[i]
-            if ch == "{":
-                depth += 1
-            elif ch == "}":
-                depth -= 1
-                if depth == 0:
-                    break
-            elif ch == '"':                               # skip string literals
-                i += 1
-                while i < len(text) and text[i] != '"':
-                    i += 2 if text[i] == "\\" else 1
-            i += 1
+        end = find_close(text, m.end())                   # the declaration's match ends just past its opening brace
         out.append(text[pos:m.start()])
-        out.append(fn(text[m.start():i + 1]))
-        pos = i + 1
+        out.append(fn(text[m.start():end]))
+        pos = end
     out.append(text[pos:])
     return "".join(out)
-
-
-def use_holder(method: str) -> str:
-    """26.x's use returns an InteractionResult; 1.21.1's a holder of it and the held stack."""
-    names = re.search(r"use\(\s*" + param(QN + "Level") + C + param(QN + "Player") + C + param(QN + "InteractionHand"), method)
-    player, hand = names.group(2), names.group(3)
-    return re.sub(r"\breturn ([^;]+);", rf"return dev.groundburst.port.Results.holder(\1, {player}, {hand});", method)
-
-
-def item_result(method: str) -> str:
-    """26.x's useItemOn answers with an InteractionResult; 1.21.1's with an ItemInteractionResult. (So do the helpers
-    that answer for it: those that may try the empty hand.)"""
-    method = re.sub(r"\bInteractionResult (\w+)\(", r"net.minecraft.world.ItemInteractionResult \1(", method, count=1)
-    method = re.sub(r"\bInteractionResult\.TRY_WITH_EMPTY_HAND\b", "net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION", method)
-    method = re.sub(r"\bInteractionResult\.PASS\b", "net.minecraft.world.ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION", method)
-    method = re.sub(r"\bInteractionResult\.(SUCCESS|CONSUME|FAIL)\b", r"net.minecraft.world.ItemInteractionResult.\1", method)
-    return method
-
-
-def release_void(method: str) -> str:
-    return re.sub(r"\breturn (?:true|false);", "return;", method)
-
-
-def try_empty_hand(method: str) -> str:
-    return item_result(method) if "TRY_WITH_EMPTY_HAND" in method else method
-
-
-BODIES = [
-    (r"\bpublic net\.minecraft\.world\.InteractionResultHolder<net\.minecraft\.world\.item\.ItemStack> use\([^)]*\)\s*\{", use_holder),
-    (r"\bprotected InteractionResult useItemOn\([^)]*\)\s*\{", item_result),
-    (r"\b(?:public |protected |private )?(?:static )?InteractionResult \w+\([^)]*\)\s*\{", try_empty_hand),
-    (r"\bpublic void releaseUsing\([^)]*\)\s*\{", release_void),
-]
-
-# Vanilla 1.21.1 classes whose codec() is abstract: a block extending one directly needs its own.
-CODEC_BASES = r"(?:BaseEntityBlock|HorizontalDirectionalBlock|DirectionalBlock|FaceAttachedHorizontalDirectionalBlock|BushBlock)"
-
-
-def block_codecs(text: str) -> str:
-    """Blocks give a codec in 1.21.1 (for the block type registry): this one, as it is."""
-    if re.search(r"\bcodec\(\)\s*\{", text):
-        return text
-    def add(m: re.Match) -> str:
-        return m.group(0) + (f"\n    @Override\n    protected com.mojang.serialization.MapCodec<? extends {m.group(2)}> codec() {{\n"
-                             f"        return com.mojang.serialization.MapCodec.unit(this);\n    }}\n")
-    return re.sub(r"(\n(?:public |protected |private )?(?:final )?class (\w+)(?:<[^{]*?>)? extends " + CODEC_BASES + r"\b[^{]*\{)", add, text)
-
-
-def pre_remove(text: str) -> str:
-    """26.x tells a block entity just before its block is replaced while the block entity is still there
-    (preRemoveSideEffects); 1.21.1 only removes it. The topmost of the mod's classes to have it calls it from setRemoved,
-    unless the chunk is being unloaded or its block is still there: something took the block entity away first (Create
-    does, after saving it, as it carries the block off), and 26.x would not call it then either (no drops twice)."""
-    if "preRemoveSideEffects" not in text or not re.search(r"\bextends BlockEntity\b", text):
-        return text
-    text = re.sub(r"@Override\s*\n(\s*public void preRemoveSideEffects\()", r"\1", text)
-    text = re.sub(r"\n\s*super\.preRemoveSideEffects\([^;]*\);", "", text)
-    hook = ("\n    private boolean unloading_;\n\n    @Override\n    public void onChunkUnloaded() {\n        super.onChunkUnloaded();\n"
-            "        this.unloading_ = true;\n    }\n\n    @Override\n    public void setRemoved() {\n"
-            "        if (!this.unloading_ && this.level != null && !this.level.isClientSide()\n"
-            "                && !this.level.getBlockState(this.worldPosition).is(this.getBlockState().getBlock())) {\n"
-            "            preRemoveSideEffects(this.worldPosition, this.getBlockState());\n        }\n        super.setRemoved();\n    }\n")
-    end = text.rstrip().rfind("}")
-    return text[:end] + hook + text[end:]
-
-
-def saved_data(text: str) -> str:
-    """1.21.1's saved data saves itself (26.x's is saved by its type's codec): it does so through its TYPE."""
-    if not re.search(r"\bextends SavedData\b", text) or re.search(r"\bCompoundTag save\(", text):
-        return text
-    end = text.rstrip().rfind("}")
-    hook = ("\n    @Override\n    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {\n"
-            "        return TYPE.save(this, tag_, registries_);\n    }\n")
-    return text[:end] + hook + text[end:]
 
 
 def calls(text: str, start: str, fn) -> str:
@@ -627,18 +646,7 @@ def calls(text: str, start: str, fn) -> str:
     for m in re.compile(start).finditer(text):
         if m.start() < pos:
             continue
-        depth, i = 1, m.end()
-        while i < len(text) and depth:
-            ch = text[i]
-            if ch in "([{":
-                depth += 1
-            elif ch in ")]}":
-                depth -= 1
-            elif ch == '"':
-                i += 1
-                while i < len(text) and text[i] != '"':
-                    i += 2 if text[i] == "\\" else 1
-            i += 1
+        i = find_close(text, m.end())
         out.append(text[pos:m.start()])
         out.append(fn(m, text[m.end():i - 1]))
         pos = i
@@ -646,50 +654,16 @@ def calls(text: str, start: str, fn) -> str:
     return "".join(out)
 
 
-def top_level_commas(args: str) -> int:
-    depth, n, i = 0, 0, 0
-    while i < len(args):
-        ch = args[i]
-        if ch in "([{":
-            depth += 1
-        elif ch in ")]}":
-            depth -= 1
-        elif ch == "," and depth == 0:
-            n += 1
-        elif ch == '"':
-            i += 1
-            while i < len(args) and args[i] != '"':
-                i += 2 if args[i] == "\\" else 1
-        i += 1
-    return n
-
-
-def wide_composites(text: str) -> str:
-    """26.x builds stream codecs of up to twelve fields; 1.21.1's stop at six (dev.groundburst.port.StreamCodecs)."""
-    def fix(m: re.Match, args: str) -> str:
-        fields = top_level_commas(args) // 2
-        name = "dev.groundburst.port.StreamCodecs.composite(" if fields > 6 else m.group(0)
-        return name + args + ")"
-    return calls(text, r"\bStreamCodec\.composite\(", fix)
-
-
-def overlay_messages(text: str) -> str:
-    """26.x's overlay message is 1.21.1's client message shown over the hotbar."""
-    return calls(text, r"\.sendOverlayMessage\(", lambda m, args: f".displayClientMessage({args}, true)")
-
-
 def split_args(args: str) -> list[str]:
     """A call's arguments, split at its own commas."""
     parts, cur, depth, i = [], [], 0, 0
     while i < len(args):
-        ch = args[i]
-        if ch == '"':
-            j = i + 1
-            while j < len(args) and args[j] != '"':
-                j += 2 if args[j] == "\\" else 1
-            cur.append(args[i:j + 1])
-            i = j + 1
+        j = skip(args, i)
+        if j != i:
+            cur.append(args[i:j])
+            i = j
             continue
+        ch = args[i]
         if ch in "([{":
             depth += 1
         elif ch in ")]}":
@@ -705,77 +679,56 @@ def split_args(args: str) -> list[str]:
     return parts
 
 
-def fill_biomes(m: re.Match, args: str) -> str:
-    """26.x's biome resolver is given a quart position; 1.21.1's a climate sampler too (and the fill takes one)."""
-    lam = re.match(r"\s*\((\w+), (\w+), (\w+)\) ->", args)
-    if not lam or len(split_args(args)) != 1:
-        return m.group(0) + args + ")"
-    return f".fillBiomesFromNoise(({lam.group(1)}, {lam.group(2)}, {lam.group(3)}, sampler_) ->{args[lam.end():]}, null)"
-
-
-def call_fixes(text: str) -> str:
-    """Calls whose arguments changed, too deep for a pattern."""
-    text = calls(text, r"\.isSectionCompiledAndVisible\(", lambda m, a: f".isSectionCompiled({split_args(a)[0].strip()})")
-    text = calls(text, r"\.placeItemBackInInventory\(",
-                 lambda m, a: f".placeItemBackInInventory({split_args(a)[0].strip()})" if "Prediction" in a else m.group(0) + a + ")")
-    text = calls(text, r"\.fillBiomesFromNoise\(", fill_biomes)
-    # 26.x sends particles to everyone, forced (seen from far) or not; 1.21.1 forces them player by player.
-    def particles(m: re.Match, a: str) -> str:
-        p = split_args(a)
-        if len(p) == 11 and p[1].strip() in ("true", "false") and p[2].strip() in ("true", "false"):
-            return f"dev.groundburst.port.Particles.send({m.group(1)}, {p[0].strip()}, {p[1].strip()}, {', '.join(x.strip() for x in p[3:])})"
-        return m.group(0) + a + ")"
-    text = calls(text, r"(\b\w+)\.sendParticles\(", particles)
-    # JEI 19's slots take stacks (26.x's JEI adds an item, stack, ingredient or fluid with one method: dev.groundburst.port.Jei).
-    if "mezz.jei" in text:
-        text = calls(text, r"(Background\(\)\s*|\bslot)\.add\(",
-                     lambda m, a: f"{m.group(1)}.addIngredientsUnsafe(dev.groundburst.port.Jei.of({a}))")
-    return text
-
-
-COLOURED = {"DYED_TERRACOTTA": "TERRACOTTA"}
-
-
-def coloured_blocks(text: str) -> str:
-    """26.x keeps a colour's blocks in families (Blocks.CONCRETE.pick(DyeColor.GRAY)); 1.21.1 has each by name."""
-    return re.sub(r"\bBlocks\.([A-Z_]+)\.pick\(DyeColor\.([A-Z_]+)\)",
-                  lambda m: f"Blocks.{m.group(2)}_{COLOURED.get(m.group(1), m.group(1))}", text)
-
-
-NBT_READS = r"get(?:String|Int|Long|Float|Double|Boolean)Or|getCompoundOrEmpty|read|store"
-
-
-def declared_types(text: str) -> str:
-    """Calls on variables of types whose methods changed, found by their declarations: a chunk position's x and z are
-    fields in 1.21.1 (and it packs to a long with toLong), a compound tag's reads with defaults and codec reads and writes
-    are this branch's (dev.groundburst.port.Nbt), and a pose moves through its matrix."""
-    for name in set(re.findall(r"\bChunkPos (\w+)\b", text)):
-        text = re.sub(rf"\b{name}\.([xz])\(\)", rf"{name}.\1", text)
-        text = re.sub(rf"\b{name}\.pack\(\)", rf"{name}.toLong()", text)
-    for name in set(re.findall(r"\bCompoundTag (\w+)\b", text)):
-        text = re.sub(rf"\b{name}\.({NBT_READS})\(", rf"dev.groundburst.port.Nbt.\1({name}, ", text)
-    for name in set(re.findall(r"\bOptional<CompoundTag> (\w+)\b", text)):
-        text = re.sub(rf"\b{name}\.get\(\)\.({NBT_READS})\(", rf"dev.groundburst.port.Nbt.\1({name}.get(), ", text)
-    for name in set(re.findall(r"\b(?:PoseStack\.)?Pose (\w+)\b", text)):
-        text = re.sub(rf"\b{name}\.translate\(", rf"{name}.pose().translate(", text)
-        text = re.sub(rf"\b{name}\.(?:rotate|mulPose)\(", rf"dev.groundburst.port.render.Poses.rotate({name}, ", text)
-        text = re.sub(rf"\b{name}\.scale\(", rf"dev.groundburst.port.render.Poses.scale({name}, ", text)
-        text = re.sub(rf"\b{name}\.set\(", rf"dev.groundburst.port.render.Poses.set({name}, ", text)
-    for name in set(re.findall(r"\bIngredient (\w+)\b", text)):
-        text = re.sub(rf"\b{name}\.items\(\)", rf"dev.groundburst.port.Ingredients.items({name})", text)
-    return text
-
-
-def screen_size(text: str) -> str:
-    """26.x's container screens are given their panel's size; 1.21.1's set it after."""
-    if "extends AbstractContainerScreen" not in text:
-        return text
-    return re.sub(r"\bsuper\((\w+), (\w+), (\w+), ((?:[^,()]|\([^()]*\))+), ((?:[^,()]|\([^()]*\))+)\);",
-                  r"super(\1, \2, \3);\n        this.imageWidth = \4;\n        this.imageHeight = \5;", text)
-
-
-FUNCTIONS = [block_codecs, pre_remove, saved_data, declared_types, screen_size, wide_composites, overlay_messages, coloured_blocks,
-             call_fixes]
+def receiver_start(text: str, dot: int) -> int:
+    """Where the expression that ends at {dot} (the '.' before a method call) begins: walking back over names, dots,
+    calls, indexing and generic arguments, to the first character that cannot be part of it."""
+    i = dot - 1
+    while i >= 0:
+        ch = text[i]
+        if ch in ")]":
+            close, open_ = ch, "(" if ch == ")" else "["
+            depth = 0
+            while i >= 0:
+                if text[i] == close:
+                    depth += 1
+                elif text[i] == open_:
+                    depth -= 1
+                    if depth == 0:
+                        break
+                elif text[i] == '"':
+                    i -= 1
+                    while i >= 0 and text[i] != '"':
+                        i -= 1
+                i -= 1
+            i -= 1
+            continue
+        if ch.isalnum() or ch in "_$.":
+            i -= 1
+            continue
+        if ch == '"':                                       # a string literal's method: "a".equals(b)
+            i -= 1
+            while i >= 0 and text[i] != '"':
+                i -= 1
+            i -= 1
+            continue
+        if ch in " \t\r\n":
+            # Whitespace inside a chain broken over lines ("foo\n    .bar()"): keep going if the next line goes on with a dot.
+            j = i
+            while j >= 0 and text[j] in " \t\r\n":
+                j -= 1
+            k = i + 1
+            while k < len(text) and text[k] in " \t\r\n":
+                k += 1
+            if k < len(text) and text[k] == "." and j >= 0 and (text[j].isalnum() or text[j] in "_)]>"):
+                i = j
+                continue
+            break
+        break
+    start = i + 1
+    m = re.search(r"\bnew\s+$", text[max(0, start - 12):start])
+    if m:
+        start -= len(m.group(0))
+    return start
 
 
 def port_imports(text: str) -> str:
@@ -785,49 +738,70 @@ def port_imports(text: str) -> str:
         if name in IMPORTS:
             new = IMPORTS[name]
             return "" if new is None else f"import {static}{new};"
+        for old, new in PACKAGES:
+            if name.startswith(old):
+                return f"import {static}{new}{name[len(old):]};"
         return m.group(0)
     text = re.sub(r"import (static )?([\w.]+);", repl, text)
-    # One import, once (two 26.x classes may both become the same 1.21.1 one).
+    # One import, once (two 1.21.1 classes may both become the same 1.20.1 one).
     seen, out = set(), []
     for line in text.split("\n"):
-        if line.startswith("import ") and line in seen:
+        key = line.strip()
+        if key.startswith("import ") and key in seen:
             continue
-        if line.startswith("import "):
-            seen.add(line)
+        if key.startswith("import "):
+            seen.add(key)
         out.append(line)
     return "\n".join(out)
 
 
+def qualified_names(text: str) -> str:
+    """Fully qualified names in the code (not in imports): moved as their packages are."""
+    lines = text.split("\n")
+    for n, line in enumerate(lines):
+        if line.startswith("import ") or line.startswith("package "):
+            continue
+        for old, new in PACKAGES:
+            if old in line:
+                line = re.sub(re.escape(old) + (r"\b" if old[-1].isalnum() else ""), new, line)
+        lines[n] = line
+    return "\n".join(lines)
+
+
 def port_java(text: str, path: str) -> str:
-    lines = [ln for ln in text.split("\n") if not any(p.match(ln) for p in DROP_LINES)]
-    text = "\n".join(lines)
-    for p in DROP_STATEMENTS:
-        text = p.sub("", text)
+    text = text.replace("\r\n", "\n")
+    for fix in FILE_FIXES_BEFORE.get(path, []):
+        text = fix(text)
+    text = "\n".join(ln for ln in text.split("\n") if not any(p.match(ln) for p in DROP_LINES))
     text = port_imports(text)
+    text = qualified_names(text)
     for pattern, repl in RULES:
         text = pattern.sub(repl, text)
     for pattern, repl in SIGNATURES:
         text = pattern.sub(repl, text)
-    for signature, fn in BODIES:
-        text = method_bodies(text, signature, fn)
     for fn in FUNCTIONS:
         text = fn(text)
+    # NeoForge's config values answer as suppliers of their primitives; Forge 1.20.1's as plain suppliers.
+    getters = r"\.getAs(?:Boolean|Int|Double|Long)\(\)"
+    if "/config/" in path:
+        text = re.sub(getters, ".get()", text)
+    text = re.sub(r"\b(GB\w*Config\.[A-Z_0-9]+)" + getters, r"\1.get()", text)
     for fix in FILE_FIXES.get(path, []):
         text = fix(text)
     return text
 
 
-# Per-file fixes (a function of the text each), for what only one file does.
+# Per-file fixes (a function of the text each), for what only one file does: on the 1.21.1 text (BEFORE) or the port.
 def after(anchor: str, insert: str):
     def fix(text: str) -> str:
-        assert anchor in text, f"port.py: '{anchor}' is gone from main: update FILE_FIXES"
+        assert anchor in text, f"port.py: '{anchor}' is gone from the 1.21.1 build: update FILE_FIXES"
         return text.replace(anchor, anchor + insert, 1)
     return fix
 
 
 def swap(old: str, new: str):
     def fix(text: str) -> str:
-        assert old in text, f"port.py: '{old}' is gone from main: update FILE_FIXES"
+        assert old in text, f"port.py: '{old}' is gone from the 1.21.1 build: update FILE_FIXES"
         return text.replace(old, new)
     return fix
 
@@ -835,296 +809,1158 @@ def swap(old: str, new: str):
 def replace_method(signature: str, new: str):
     """Replaces the method whose declaration begins with {signature} (to its closing brace) with {new}."""
     def fix(text: str) -> str:
-        assert signature in text, f"port.py: '{signature}' is gone from main: update FILE_FIXES"
+        assert signature in text, f"port.py: '{signature}' is gone from the 1.21.1 build: update FILE_FIXES"
         return method_bodies(text, re.escape(signature) + r"[^{]*\{", lambda method: new)
     return fix
 
 
 def drop_method(signature: str):
-    """Removes the method whose declaration begins with {signature} (and its javadoc's blank line)."""
+    """Removes the method whose declaration begins with {signature}."""
     def fix(text: str) -> str:
-        assert signature in text, f"port.py: '{signature}' is gone from main: update FILE_FIXES"
+        assert signature in text, f"port.py: '{signature}' is gone from the 1.21.1 build: update FILE_FIXES"
         return method_bodies(text, r"\n[ \t]*" + re.escape(signature) + r"[^{]*\{", lambda method: "\n")
     return fix
 
 
+# --- 1.21.1's game API on 1.20.1 ------------------------------------------------------------------------------------------
+_CLASS_INDEX: dict | None = None
+
+
+def class_index() -> dict:
+    """Every class of the 1.21.1 build: its parent's simple name and whether it declares a block's useItemOn or
+    useWithoutItem (so a block's use knows what its own parents answer)."""
+    global _CLASS_INDEX
+    if _CLASS_INDEX is None:
+        _CLASS_INDEX = {}
+        for path in source_files():
+            if not path.endswith(".java") or not path.startswith("src/main/java/"):
+                continue
+            text = read_source(path).decode("utf-8")
+            for m in re.finditer(r"\bclass (\w+)(?:<[^{]*?>)?\s+extends\s+([\w.]+)", text):
+                _CLASS_INDEX[m.group(1)] = (m.group(2).split(".")[-1].split("<")[0],
+                                            bool(re.search(r"\bItemInteractionResult useItemOn\(", text)),
+                                            bool(re.search(r"\bInteractionResult useWithoutItem\(", text)))
+    return _CLASS_INDEX
+
+
+def inherits(cls: str, which: int) -> bool:
+    """Whether a parent of the mod's class {cls} declares useItemOn (which 1) or useWithoutItem (which 2)."""
+    idx = class_index()
+    seen = set()
+    parent = idx.get(cls, (None,))[0]
+    while parent in idx and parent not in seen:
+        seen.add(parent)
+        if idx[parent][which]:
+            return True
+        parent = idx[parent][0]
+    return False
+
+
+USE_SIG_ITEM = re.compile(r"(@Override\s*\n\s*)?((?:public|protected) )(?:net\.minecraft\.world\.)?(?:dev\.groundburst\.legacy\.)?ItemInteractionResult useItemOn\(")
+USE_SIG_WITHOUT = re.compile(r"(@Override\s*\n\s*)?((?:public|protected) )(?:net\.minecraft\.world\.)?InteractionResult useWithoutItem\(")
+
+
+def block_use(text: str) -> str:
+    """1.21's two block clicks (useItemOn, then useWithoutItem) as 1.20.1's one use: the two methods kept (no longer
+    overriding anything), and a use for each class that has them, asking them in turn as 1.21 does."""
+    if "useItemOn(" not in text and "useWithoutItem(" not in text:
+        return text
+    # A state's clicks (a part passing one to its controller): 1.20.1's use of that state.
+    text = receiver_calls(text, "useItemOn", lambda recv, args: (f"{L}.UseOnBlock.itemOn(", f"{recv}, {args})"),
+                          lambda recv, args: len(split_args(args)) == 5 and recv != "super")
+    text = receiver_calls(text, "useWithoutItem", lambda recv, args: (f"{L}.UseOnBlock.withoutItem(", f"{recv}, {args})"),
+                          lambda recv, args: len(split_args(args)) == 3 and recv != "super")
+    out, pos = [], 0
+    for m in re.finditer(r"\bclass (\w+)(?:<[^{]*?>)?\s+extends\s+([\w.]+)[^{]*\{", text):
+        if m.start() < pos:
+            continue
+        name, parent = m.group(1), m.group(2).split(".")[-1]
+        end = find_close(text, m.end())
+        body = text[m.end():end - 1]
+        has_item = bool(USE_SIG_ITEM.search(body))
+        has_without = bool(USE_SIG_WITHOUT.search(body))
+        if not (has_item or has_without):
+            out.append(text[pos:end])
+            pos = end
+            continue
+        idx = class_index()
+        mod_parent_item = inherits(name, 1)
+        mod_parent_without = inherits(name, 2)
+        body = USE_SIG_ITEM.sub(lambda mm: mm.group(2) + "dev.groundburst.legacy.ItemInteractionResult useItemOn(", body)
+        body = USE_SIG_WITHOUT.sub(lambda mm: mm.group(2) + "net.minecraft.world.InteractionResult useWithoutItem(", body)
+        if not mod_parent_without:
+            body = re.sub(r"\bsuper\.useWithoutItem\(([^,()]+), ([^,()]+), ([^,()]+), ([^,()]+), ([^,()]+)\)",
+                          r"super.use(\1, \2, \3, \4, net.minecraft.world.InteractionHand.MAIN_HAND, \5)", body)
+        if not mod_parent_item:
+            body = re.sub(r"\bsuper\.useItemOn\([^;]*?\)(?=;)", f"{L}.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION", body)
+        item = has_item or mod_parent_item
+        without = has_without or mod_parent_without
+        use = ["\n    @Override\n    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, "
+               "net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, "
+               "net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {\n"]
+        if item:
+            use.append(f"        {L}.ItemInteractionResult item_ = this.useItemOn(player_.getItemInHand(hand_), state_, level_, pos_, player_, hand_, hit_);\n"
+                       f"        if (item_ != {L}.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {{\n"
+                       "            return item_.result();\n        }\n")
+        if without:
+            use.append("        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)\n"
+                       "                : net.minecraft.world.InteractionResult.PASS;\n")
+        else:
+            use.append("        return super.use(state_, level_, pos_, player_, hand_, hit_);\n")
+        use.append("    }\n")
+        out.append(text[pos:m.end()] + body + "".join(use) + "}")
+        pos = end
+    out.append(text[pos:])
+    return "".join(out)
+
+
+def drop_codecs(text: str) -> str:
+    """A block's codec (1.20.3's, for the block type registry; the 1.21.1 build's are MapCodec.unit(this)): 1.20.1 has none."""
+    return method_bodies(text, r"(?:@Override\s*\n\s*)?(?:public|protected) (?:com\.mojang\.serialization\.)?MapCodec<[^{;]*?> codec\(\)\s*\{",
+                         lambda method: "" if re.search(r"MapCodec\.unit\(this\)|simpleCodec\(", method) else method)
+
+
+def recipes(text: str) -> str:
+    """A recipe of the mod's: 1.20.1's recipes report their id (kept by dev.groundburst.legacy.recipe.Recipes as the
+    serializer reads them) and are given the registries' access (1.21: a lookup)."""
+    text = re.sub(r"\bnet\.neoforged\.neoforge\.network\.codec\.NeoForgeStreamCodecs\.composite\(", "dev.groundburst.port.StreamCodecs.composite(", text)
+    text = re.sub(r"\bNeoForgeStreamCodecs\.composite\(", "dev.groundburst.port.StreamCodecs.composite(", text)
+    if not re.search(r"\bimplements\s+(?:[\w.]+\.)?Recipe<", text):
+        return text
+    text = re.sub(r"(\bpublic ItemStack (?:assemble|getResultItem)\([^)]*?)(?:net\.minecraft\.core\.)?HolderLookup\.Provider\b",
+                  r"\1net.minecraft.core.RegistryAccess", text)
+    if not re.search(r"\bResourceLocation getId\(\)", text):
+        m = re.search(r"\bimplements\s+(?:[\w.]+\.)?Recipe<[^{]*\{", text)
+        if m:
+            text = (text[:m.end()] + "\n    @Override\n    public net.minecraft.resources.ResourceLocation getId() {\n"
+                    f"        return {L}.recipe.Recipes.idOf(this);\n    }}\n" + text[m.end():])
+    return text
+
+
+def player_will_destroy(text: str) -> str:
+    """1.21's playerWillDestroy answers with the state; 1.20.1's answers nothing."""
+    def fix(method: str) -> str:
+        method = re.sub(r"\b(?:net\.minecraft\.world\.level\.block\.state\.)?BlockState playerWillDestroy\(", "void playerWillDestroy(", method, count=1)
+        method = re.sub(r"\breturn (super\.playerWillDestroy\([^;]*\));", r"\1; return;", method)
+        method = re.sub(r"\breturn [^;]+;", "return;", method)
+        return method
+    return method_bodies(text, r"\b(?:public|protected) (?:net\.minecraft\.world\.level\.block\.state\.)?BlockState playerWillDestroy\([^)]*\)\s*\{", fix)
+
+
+# The game's own screens a mod's screen may extend.
+VANILLA_SCREEN = r"(?:net\.minecraft\.client\.gui\.screens\.(?:inventory\.)?)?(?:Screen|AbstractContainerScreen)"
+
+
+def top_level(body: str, pattern: str) -> list:
+    """The matches of {pattern} in a class's {body} that are its own members' (outside any nested braces)."""
+    depth, i, marks = 0, 0, {}
+    while i < len(body):
+        j = skip(body, i)
+        if j != i:
+            i = j
+            continue
+        marks[i] = depth
+        if body[i] == "{":
+            depth += 1
+        elif body[i] == "}":
+            depth -= 1
+        i += 1
+    return [m for m in re.finditer(pattern, body) if marks.get(m.start(), -1) == 0]
+
+
+def vanilla_screen_body(body: str) -> str:
+    """The body of a screen that extends the game's own: its 1.21 background drawn from its render, where 1.21's
+    Screen.render draws it (just before the game's render), and its own background's call to the game's as 1.20.1's."""
+    four = r"public void renderBackground\(\s*" + param(QN + "GuiGraphics") + C + param("int") + C + param("int") + C + param("float") + r"\s*\)\s*\{"
+    own = top_level(body, four)
+    if own:
+        m = own[0]
+        end = find_close(body, m.end())
+        inner = calls(body[m.end():end], r"\bsuper\.renderBackground\(",
+                      lambda c, a: f"super.renderBackground({split_args(a)[0].strip()})" if len(split_args(a)) == 4 else c.group(0) + a + ")")
+        body = body[:m.end()] + inner + body[end:]
+    render = top_level(body, r"public void render\(\s*" + param(QN + "GuiGraphics") + C + param("int") + C + param("int") + C + param("float")
+                       + r"\s*\)\s*\{")
+    if render:
+        m = render[0]
+        end = find_close(body, m.end())
+        method = body[m.end():end]
+        call = re.search(r"([ \t]*)super\.render\(", method)
+        assert call, "port.py: a screen's render that never calls the game's"
+        args = method[call.end():find_close(method, call.end()) - 1]
+        background = f"this.renderBackground({args if own else split_args(args)[0].strip()});"
+        method = method[:call.start()] + f"{call.group(1)}{background}   // (1.20.1's Screen.render draws no background)\n" + method[call.start():]
+        return body[:m.end()] + method + body[end:]
+    background = "this.renderBackground(graphics, mouseX, mouseY, partial);" if own else "this.renderBackground(graphics);"
+    close = len(body.rstrip())                             # (the body's own end, before the class's closing brace)
+    return (body[:close] + "\n\n    // 1.20.1's Screen.render draws no background (1.20.2's and later draw it there).\n    @Override\n"
+            "    public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partial) {\n"
+            f"        {background}\n        super.render(graphics, mouseX, mouseY, partial);\n    }}" + body[close:])
+
+
+def screens(text: str) -> str:
+    """Screens: 1.20.1's background (the game's renderBackground) takes the graphics alone, and its Screen.render draws
+    none (1.20.2 and later draw a screen's background from render). A screen's own 1.21 background (the four-argument
+    renderBackground) stays its own method, drawn from render by the screen that extends the game's; its scroll takes
+    one amount (1.20.2 split it in two)."""
+    for m in reversed(list(re.finditer(r"\bclass\s+\w+(?:<[^{]*?>)?\s+extends\s+" + VANILLA_SCREEN + r"\b(?:<[^{]*?>)?[^{;]*\{", text))):
+        end = find_close(text, m.end())
+        text = text[:m.end()] + vanilla_screen_body(text[m.end():end - 1]) + text[end - 1:]
+    # (1.20.1's Screen has no four-argument renderBackground for it to override.)
+    text = re.sub(r"[ \t]*@Override[ \t]*\n([ \t]*public void renderBackground\(\s*" + QN + r"GuiGraphics\s+\w+\s*,\s*int\b)", r"\1", text)
+    text = re.sub(r"\b(?:this\.)?renderTransparentBackground\((\w+)\);", r"this.renderBackground(\1);", text)
+    text = re.sub(r"(\bpublic boolean mouseScrolled\(\s*" + param("double") + C + param("double") + r")" + C + param("double") + C + param("double")
+                  + r"\s*\)(\s*\{)", r"\1, double \5)\6 double \4 = 0;", text)
+    text = calls(text, r"\bsuper\.mouseScrolled\(",
+                 lambda m, a: "super.mouseScrolled(" + ", ".join(x.strip() for x in (split_args(a)[0], split_args(a)[1], split_args(a)[3])) + ")"
+                 if len(split_args(a)) == 4 else m.group(0) + a + ")")
+    return text
+
+
+def synced_data(text: str) -> str:
+    """An entity's synced data: 1.20.1 defines it on the entity's own data, not on a builder."""
+    m = re.search(r"\bprotected void defineSynchedData\(\s*" + param(QN + r"SynchedEntityData\.Builder") + r"\s*\)", text)
+    if not m:
+        return text
+    name = m.group(1)
+    text = text[:m.start()] + "protected void defineSynchedData()" + text[m.end():]
+    text = re.sub(rf"\b{name}\.define\(", "this.entityData.define(", text)
+    text = re.sub(rf"\bsuper\.defineSynchedData\(\s*{name}\s*\)", "super.defineSynchedData()", text)
+    return text
+
+
+def pathfinding(text: str) -> str:
+    """1.20.1 asks whether a block can be walked through in a place."""
+    text = re.sub(r"\bprotected boolean isPathfindable\(\s*" + param("BlockState") + C + param(QN + "PathComputationType") + r"\s*\)",
+                  r"public boolean isPathfindable(BlockState \1, net.minecraft.world.level.BlockGetter level_, BlockPos pos_, "
+                  r"net.minecraft.world.level.pathfinder.PathComputationType \2)", text)
+    text = re.sub(r"\bsuper\.isPathfindable\((\w+), (\w+)\)", r"super.isPathfindable(\1, level_, pos_, \2)", text)
+    return text
+
+
+def saved_data_save(text: str) -> str:
+    """1.20.1's saved data saves with no registries."""
+    if not re.search(r"\bextends SavedData\b", text):
+        return text
+    return re.sub(r"(\bpublic (?:net\.minecraft\.nbt\.)?CompoundTag save\(\s*" + param(QN + "CompoundTag") + r")" + C
+                  + param(QN + r"HolderLookup\.Provider") + r"\s*\)(\s*\{)",
+                  rf"\1)\4 net.minecraft.core.HolderLookup.Provider \3 = {REGISTRIES};", text)
+
+
+def effects(text: str) -> str:
+    """Mob effects: 1.20.1's tick says nothing back, and asks a different question of the duration."""
+    text = re.sub(r"\bpublic boolean shouldApplyEffectTickThisTick\(", "public boolean isDurationEffectTick(", text)
+    def tick(method: str) -> str:
+        method = re.sub(r"\bpublic boolean applyEffectTick\(", "public void applyEffectTick(", method, count=1)
+        method = re.sub(r"\breturn (super\.applyEffectTick\([^;]*\));", r"\1; return;", method)
+        method = re.sub(r"\breturn (?:true|false);", "return;", method)
+        return method
+    return method_bodies(text, r"\bpublic boolean applyEffectTick\([^)]*\)\s*\{", tick)
+
+
+def use_duration(text: str) -> str:
+    """1.20.1 asks how long an item is used without who uses it."""
+    return re.sub(r"(\bpublic int getUseDuration\(\s*" + param(QN + "ItemStack") + r")" + C + param(QN + "LivingEntity") + r"\s*\)(\s*\{)",
+                  r"\1)\4 net.minecraft.world.entity.LivingEntity \3 = null;", text)
+
+
+def save_calls(text: str) -> str:
+    """Saves and loads through a block entity's parent: 1.20.1's take the tag alone (load is 1.20.1's loadAdditional)."""
+    text = calls(text, r"\bsuper\.saveAdditional\(",
+                 lambda m, a: f"super.saveAdditional({split_args(a)[0].strip()})" if len(split_args(a)) == 2 else m.group(0) + a + ")")
+    text = calls(text, r"\bsuper\.loadAdditional\(",
+                 lambda m, a: f"super.load({split_args(a)[0].strip()})" if len(split_args(a)) == 2 else m.group(0) + a + ")")
+    text = calls(text, r"\b(this\.)?loadAdditional\(",
+                 lambda m, a: f"{m.group(1) or ''}load({split_args(a)[0].strip()})" if len(split_args(a)) == 2 else m.group(0) + a + ")")
+    text = calls(text, r"\b(this\.)?saveAdditional\(",
+                 lambda m, a: f"{m.group(1) or ''}saveAdditional({split_args(a)[0].strip()})" if len(split_args(a)) == 2 else m.group(0) + a + ")")
+    text = calls(text, r"\bsaveCustomOnly\(", lambda m, a: "saveWithoutMetadata()")
+    return text
+
+
+def misc_calls(text: str) -> str:
+    """Single calls 1.20.1 makes otherwise."""
+    text = receiver_calls(text, "createSerializationContext", lambda recv, args: ("net.minecraft.resources.RegistryOps.create(", f"{args}, {recv})"))
+    text = receiver_calls(text, "invalidateCapabilities", lambda recv, args: (f"{L}.Caps.invalidate(", f"{recv}, {args})"))
+    text = receiver_calls(text, "igniteForSeconds", lambda recv, args: ("", f"{recv}.setSecondsOnFire((int) ({args}))"))
+    text = receiver_calls(text, "consume", lambda recv, args: (f"{L}.Items2.consume(", f"{recv}, {args})"),
+                          lambda recv, args: len(split_args(args)) == 2 and bool(re.search(r"(?i)stack|held|item", recv)))
+    text = receiver_calls(text, "hasInfiniteMaterials", lambda recv, args: ("", f"{recv}.getAbilities().instabuild"),
+                          lambda recv, args: not args.strip())
+    text = receiver_calls(text, "withColor", lambda recv, args: ("", f"{recv}.withStyle(s_ -> s_.withColor({args}))"),
+                          lambda recv, args: bool(re.search(r"Component\.|literal\(|translatable\(|\.copy\(\)|empty\(\)|append\(", recv)))
+    text = re.sub(r"\.listOf\(\s*\d+\s*,\s*\d+\s*\)", ".listOf()", text)
+    text = re.sub(r"\bmakeMockPlayer\([^()]*\)", "makeMockPlayer()", text)
+    text = re.sub(r"\.getOrThrow\(\)", ".getOrThrow(false, error_ -> {})", text)
+    text = re.sub(r"\bisSameItemSameComponents\(", "isSameItemSameTags(", text)
+    text = re.sub(r"\bItemStack\.OPTIONAL_CODEC\b", f"{L}.net.Codecs.OPTIONAL_ITEM_STACK_CODEC", text)
+    text = re.sub(r"\bFluidStack\.OPTIONAL_CODEC\b", f"{L}.net.Codecs.OPTIONAL_FLUID_STACK_CODEC", text)
+    text = re.sub(r"\b(?:net\.minecraft\.world\.item\.)?Item\.ABSOLUTE_MAX_STACK_SIZE\b", "64", text)
+    text = re.sub(r"\bBlocks\.SHORT_GRASS\b", "Blocks.GRASS", text)
+    text = re.sub(r"\bTerrainAdjustment\.ENCAPSULATE\b", "TerrainAdjustment.BEARD_BOX", text)
+    text = re.sub(r"\bSoundType\.COPPER_GRATE\b", "SoundType.COPPER", text)
+    text = re.sub(r"\bOperation\.ADD_VALUE\b", "Operation.ADDITION", text)
+    text = re.sub(r"\bOperation\.ADD_MULTIPLIED_BASE\b", "Operation.MULTIPLY_BASE", text)
+    text = re.sub(r"\bOperation\.ADD_MULTIPLIED_TOTAL\b", "Operation.MULTIPLY_TOTAL", text)
+    text = re.sub(r"\b(?:net\.minecraftforge\.event\.)?EventHooks\b", "net.minecraftforge.event.ForgeEventFactory", text)
+    # An entity's or block entity's registries: 1.20.1's have none of their own (dev.groundburst.legacy.Regs).
+    text = re.sub(r"\bthis\.registryAccess\(\)", f"{L}.Regs.access()", text)
+    text = re.sub(r"(?<![\w.])registryAccess\(\)", f"{L}.Regs.access()", text)
+    # 1.21 built placement modifier and structure types on map codecs; 1.20.1 on plain ones.
+    text = re.sub(r"\(\)\s*->\s*\(\)\s*->\s*([\w.]+)\.CODEC\)", r"() -> () -> \1.CODEC.codec())", text)
+    # Spawning and solidity tests: 1.20.1 keeps Blocks.never to itself.
+    text = re.sub(r"\.isValidSpawn\(\s*Blocks::never\s*\)", ".isValidSpawn((s_, l_, p_, e_) -> false)", text)
+    text = re.sub(r"\bBlocks::never\b", "(s_, l_, p_) -> false", text)
+    # A bucket's fluid: Forge 1.20.1 hands it out (its field is private).
+    if "BucketItem" in text:
+        text = re.sub(r"(?<![\w.])([a-z]\w*)\.content\b(?!\s*\()", r"\1.getFluid()", text)
+    text = calls(text, r"\bDirection\.getNearest\(",
+                 lambda m, a: f"{L}.Dirs.nearest({a})" if len(split_args(a)) == 1 else m.group(0) + a + ")")
+    text = re.sub(r"\bCodec\.withAlternative\(", f"{L}.Codecs2.withAlternative(", text)
+    # The mod's blocks' and items' holders given to 1.20.1's is(...): the objects themselves.
+    text = re.sub(r"\.is\(([\w.]+\.(?:item|block)\(\))\)", r".is(\1.get())", text)
+    text = receiver_calls(text, "getComponents", lambda recv, args: (f"{L}.component.DataComponentMap.of(", f"{recv})"),
+                          lambda recv, args: not args.strip())
+    text = re.sub(r"\.saveWithFullMetadata\([^()]*(?:\([^()]*\))?[^()]*\)", ".saveWithFullMetadata()", text)
+    # The frame's partial tick: 1.20.1's Minecraft keeps it itself.
+    text = re.sub(r"\.getTimer\(\)\.getGameTimeDeltaPartialTick\([^()]*\)", ".getFrameTime()", text)
+    text = re.sub(r"\.getTimer\(\)\.getGameTimeDeltaTicks\(\)", ".getDeltaFrameTime()", text)
+    # Sound events 1.21 holds in holders and 1.20.1 does not.
+    text = re.sub(r"\bSoundEvents\.(\w+)\.value\(\)", lambda m: m.group(0) if m.group(1) in sound_holders() else f"SoundEvents.{m.group(1)}", text)
+    # The mod's mob effects (held by DeferredHolders, given to 1.21's effect methods as holders): the effects themselves.
+    for cls, name in effect_holders():
+        text = re.sub(rf"\b({cls}\.{name})\.value\(\)", r"\1.get()", text)
+        text = re.sub(rf"\b({cls}\.{name})\b(?!\s*[.=(]|\s*,\s*\"|\w)", r"\1.get()", text)
+        if re.search(rf"\bclass {cls}\b", text):
+            text = re.sub(rf"(?<![\w.])({name})\b(?!\s*[.=(]|\w)", r"\1.get()", text)
+    text = re.sub(r"\bMobEffects\.(\w+)\.value\(\)", r"MobEffects.\1", text)
+    # Damage of a type: 1.20.1 keeps DamageSources.source to itself (dev.groundburst.legacy.Game.source).
+    text = receiver_calls(text, "source", lambda recv, args: (f"{L}.Game.source(", f"{recv[:-len('.damageSources()')]}, {args})"),
+                          lambda recv, args: recv.endswith(".damageSources()"))
+    text = receiver_calls(text, "source", lambda recv, args: (f"{L}.Game.source(", f"this, {args})"),
+                          lambda recv, args: recv in ("damageSources()", "this.damageSources()"))
+    # A config list's default element (NeoForge's, for its config screen): Forge 1.20.1 takes none.
+    text = calls(text, r"\.defineListAllowEmpty\(", lambda m, a: (".defineListAllowEmpty(" + ", ".join(x.strip() for x in (split_args(a)[0], split_args(a)[1], split_args(a)[3])) + ")")
+                 if len(split_args(a)) == 4 else m.group(0) + a + ")")
+    text = re.sub(r"(\w+) instanceof (?:net\.minecraft\.world\.entity\.vehicle\.)?VehicleEntity\b(?!\s+\w)", rf"{L}.Game.isVehicle(\1)", text)
+    text = re.sub(r"\bItemStack\.hashItemAndComponents\(", f"{L}.Game.hashItemAndComponents(", text)
+    text = receiver_calls(text, "getRegisteredName", lambda recv, args: (f"{L}.Game.registeredName(", f"{recv})"), lambda recv, args: not args.strip())
+    text = re.sub(r"\.getServerDirectory\(\)\.resolve\(", ".getServerDirectory().toPath().resolve(", text)
+    text = receiver_calls(text, "transformNormal", lambda recv, args: (f"{L}.Game.transformNormal(", f"{recv}, {args})"),
+                          lambda recv, args: len(split_args(args)) == 4)
+    text = receiver_calls(text, "copy", lambda recv, args: (f"{L}.Game.copy(", f"{recv})"),
+                          lambda recv, args: not args.strip() and bool(re.search(r"(?i)pose$|last\(\)$", recv)))
+    text = re.sub(r"\.isSectionCompiled\(", ".isChunkCompiled(", text)
+    text = receiver_calls(text, "hasChannel", lambda recv, args: ("", "true"))      # the mod's one channel: there if the mod is
+    text = receiver_calls(text, "requestedViewDistance", lambda recv, args: (f"{L}.Game.viewDistance(", f"{recv})"),
+                          lambda recv, args: not args.strip())
+    text = re.sub(r"\bnet\.minecraft\.world\.level\.chunk\.status\.ChunkStatus\b", "net.minecraft.world.level.chunk.ChunkStatus", text)
+    text = receiver_calls(text, "getRecipes", lambda recv, args: (f"{L}.recipe.Recipes.everything(", f"{recv})"),
+                          lambda recv, args: not args.strip() and "RecipeManager" in recv)
+    text = receiver_calls(text, "openMenu", lambda recv, args: ("net.minecraftforge.network.NetworkHooks.openScreen(",
+                                                                f"(net.minecraft.server.level.ServerPlayer) {recv}, {args})"),
+                          lambda recv, args: len(split_args(args)) == 2)
+    text = re.sub(r"\bContainers\.dropContentsOnDestroy\(", f"{L}.Game.dropContentsOnDestroy(", text)
+    text = re.sub(r"\b([\w.()]+)\.getType\(\)\.is\(EntityTypeTags\.UNDEAD\)", rf"{L}.Game.undead(\1)", text)
+    text = re.sub(r"\.getScrollDeltaY\(\)", ".getScrollDelta()", text)
+    # NeoForge 1.21's common tags by Forge 1.20.1's names.
+    for old, new in (("GLASS_BLOCKS", "GLASS"), ("COBBLESTONES", "COBBLESTONE"), ("SANDSTONE_BLOCKS", "SANDSTONE"), ("GRAVELS", "GRAVEL"),
+                     ("STONES", "STONE"), ("OBSIDIANS", "OBSIDIAN"), ("SANDS", "SAND")):
+        text = re.sub(rf"\bTags\.(Blocks|Items)\.{old}\b", rf"Tags.\1.{new}", text)
+    text = re.sub(r"\bTags\.Blocks\.CONCRETES\b", f"{L}.Tags2.CONCRETES", text)
+    text = re.sub(r"\.blockInteractionRange\(\)", ".getBlockReach()", text)
+    text = re.sub(r"\bModelResourceLocation\.standalone\(", "(", text)
+    text = re.sub(r"\bnet\.minecraft\.client\.resources\.model\.\(", "(", text)
+    text = calls(text, r"\bnew (?:net\.minecraft\.world\.level\.block\.)?DropExperienceBlock\(",
+                 lambda m, a: f"new net.minecraft.world.level.block.DropExperienceBlock({split_args(a)[1].strip()}, {split_args(a)[0].strip()})"
+                 if len(split_args(a)) == 2 else m.group(0) + a + ")")
+    text = calls(text, r"\bnew (?:net\.minecraft\.world\.level\.block\.)?AmethystClusterBlock\(",
+                 lambda m, a: "new net.minecraft.world.level.block.AmethystClusterBlock(" + ", ".join(
+                     [f"(int) ({split_args(a)[0].strip()})", f"(int) ({split_args(a)[1].strip()})", split_args(a)[2].strip()]) + ")"
+                 if len(split_args(a)) == 3 else m.group(0) + a + ")")
+    text = receiver_calls(text, "center", lambda recv, args: ("", f"{recv}.getPosition()"),
+                          lambda recv, args: not args.strip() and bool(re.search(r"(?i)explosion$", recv)))
+    text = receiver_calls(text, "getBlockInteraction", lambda recv, args: ("", f"(({L}.mixin.ExplosionAccess) {recv}).groundburst$interaction()"),
+                          lambda recv, args: not args.strip())
+    text = calls(text, r"\.saveWithoutMetadata\(", lambda m, a: ".saveWithoutMetadata()")
+    text = calls(text, r"\.getUpdateTag\(", lambda m, a: ".getUpdateTag()")
+    text = receiver_calls(text, "loadWithComponents", lambda recv, args: ("", f"{recv}.load({split_args(args)[0].strip()})"))
+    text = receiver_calls(text, "collectComponents", lambda recv, args: (f"{L}.component.DataComponentMap.collect(", f"{recv})"),
+                          lambda recv, args: not args.strip())
+    text = receiver_calls(text, "applyComponentsFromItemStack", lambda recv, args: (f"{L}.component.DataComponentInput.apply(", f"{recv}, {args})"))
+    text = receiver_calls(text, "canBeHurtBy", lambda recv, args: (f"{L}.Game.canBeHurtBy(", f"{recv}, {args})"))
+    text = re.sub(r"\.getDefaultMaxStackSize\(\)", ".getMaxStackSize()", text)
+    text = re.sub(r"\bAABB\.encapsulatingFullBlocks\(", f"{L}.Game.encapsulatingFullBlocks(", text)
+    text = calls(text, r"\bnew (?:net\.minecraft\.network\.)?(?:Registry)?FriendlyByteBuf\(",
+                 lambda m, a: f"new net.minecraft.network.FriendlyByteBuf({split_args(a)[0].strip()})" if len(split_args(a)) == 2 else m.group(0) + a + ")")
+    # A test player: 1.20.1's is made without the client's settings.
+    text = re.sub(r",\s*(?:net\.minecraft\.server\.level\.)?ClientInformation\.createDefault\(\)", "", text)
+    text = calls(text, r"\bnew (?:net\.minecraft\.server\.network\.)?ServerGamePacketListenerImpl\(",
+                 lambda m, a: "new net.minecraft.server.network.ServerGamePacketListenerImpl(" + ", ".join(x.strip() for x in split_args(a)[:3]) + ")"
+                 if len(split_args(a)) == 4 else m.group(0) + a + ")")
+    text = re.sub(r"\bhelper\.getBounds\(\)", f"(({L}.mixin.GameTestHelperAccess) helper).groundburst$bounds()", text)
+    # Fluid stacks: Forge 1.20.1's names for NeoForge's calls.
+    text = re.sub(r"\bFluidStack\.isSameFluidSameComponents\(([^,()]+), ([^,()]+)\)", r"\1.isFluidStackIdentical(\2)", text)
+    text = re.sub(r"\bFluidStack\.isSameFluid\(([^,()]+), ([^,()]+)\)", r"\1.isFluidEqual(\2)", text)
+    for name in set(re.findall(r"\bFluidStack (\w+)\b", text)):
+        text = re.sub(rf"\b{name}\.getHoverName\(\)", f"{name}.getDisplayName()", text)
+        text = re.sub(rf"\b{name}\.getFluidType\(\)", f"{name}.getFluid().getFluidType()", text)
+        text = re.sub(rf"\b{name}\.copyWithAmount\(", f"{L}.Game.copyWithAmount({name}, ", text)
+    text = re.sub(r"\.isValidSpawn\(\s*Blocks::ocelotOrParrot\s*\)",
+                  ".isValidSpawn((s_, l_, p_, e_) -> e_ == net.minecraft.world.entity.EntityType.OCELOT || e_ == net.minecraft.world.entity.EntityType.PARROT)",
+                  text)
+    # GeckoLib bones set three axes at once (GeckoLib 4.8 on 1.20.1: one by one, and marked: dev.groundburst.legacy.client.Geo).
+    for op in ("updateRotation", "updatePosition", "updateScale"):
+        text = receiver_calls(text, op, lambda recv, args, op=op: (f"{L}.client.Geo.{op}(", f"{recv}, {args})"),
+                              lambda recv, args: len(split_args(args)) == 3)
+    # A new world made by a dev tool: 1.20.1's has no screen to come back to.
+    text = calls(text, r"\.createFreshLevel\(", lambda m, a: ".createFreshLevel(" + ", ".join(x.strip() for x in split_args(a)[:4]) + ")"
+                 if len(split_args(a)) == 5 else m.group(0) + a + ")")
+    text = re.sub(r"\.saturationModifier\(", ".saturationMod(", text)
+    text = re.sub(r"\.alwaysEdible\(\)", ".alwaysEat()", text)
+    text = re.sub(PK + r"FluidStack::getFluidHolder\b", f"{L}.FluidStacks::holder", text)
+    # A recipe's result (1.20.1 asks it with the registries' access: the server's or the client's).
+    text = calls(text, r"\.getResultItem\(", lambda m, a: f".getResultItem({L}.Regs.access())" if a.strip() else m.group(0) + a + ")")
+    # 1.20.5's default gravity of an entity (1.20.1's entities fall as their own code moves them).
+    text = re.sub(r"@Override\s*\n(\s*)(protected|public) double getDefaultGravity\(", r"\1\2 double getDefaultGravity(", text)
+    # A fluid block picked up in a bucket: 1.20.1 is not told by whom.
+    text = re.sub(r"(\bpublic ItemStack pickupBlock\(\s*)" + param(r"(?:@[\w.]+\s+)?" + QN + "Player") + C + r"(" + param(QN + "LevelAccessor") + C
+                  + param("BlockPos") + C + param("BlockState") + r"\s*\)\s*\{)",
+                  r"\1\3 net.minecraft.world.entity.player.Player \2 = null;", text)
+    # A fuel's burning time: NeoForge's stack.getBurnTime(type) is the whole answer; Forge 1.20.1's is only the item's
+    # own (-1 for vanilla's fuels, coal among them), ForgeHooks's the whole.
+    text = receiver_calls(text, "getBurnTime", lambda recv, args: ("net.minecraftforge.common.ForgeHooks.getBurnTime(", f"{recv}, {args})"),
+                          lambda recv, args: len(split_args(args)) == 1)
+    return text
+
+
+_EFFECT_HOLDERS: list | None = None
+
+
+def effect_holders() -> list:
+    """(class, field) of every DeferredHolder of a mob effect in the 1.21.1 build."""
+    global _EFFECT_HOLDERS
+    if _EFFECT_HOLDERS is None:
+        _EFFECT_HOLDERS = []
+        for path in source_files():
+            if path.endswith(".java") and path.startswith("src/main/java/"):
+                text = read_source(path).decode("utf-8")
+                cls = path.rsplit("/", 1)[1][:-5]
+                for m in re.finditer(r"DeferredHolder<MobEffect,\s*[\w.<>]+>\s+(\w+)\s*=", text):
+                    _EFFECT_HOLDERS.append((cls, m.group(1)))
+    return _EFFECT_HOLDERS
+
+
+_SOUND_HOLDERS: set | None = None
+
+
+def sound_holders() -> set:
+    """Vanilla 1.20.1's sound events kept in holders (the rest are plain): read from Forge's sources the build made."""
+    global _SOUND_HOLDERS
+    if _SOUND_HOLDERS is None:
+        import zipfile
+        _SOUND_HOLDERS = set()
+        jar = ROOT / "build" / "moddev" / "artifacts" / "forge-1.20.1-47.4.28-sources.jar"
+        if jar.exists():
+            with zipfile.ZipFile(jar) as z:
+                text = z.read("net/minecraft/sounds/SoundEvents.java").decode("utf-8")
+            _SOUND_HOLDERS = set(re.findall(r"Holder\.Reference<SoundEvent> (\w+) =", text))
+    return _SOUND_HOLDERS
+
+
+SET_TYPE = r"(BlockSetType\.\w+|[\w.]*\.blockSetType\(\)|\w*[Ss]et(?:Type)?(?:\.get\(\))?|[a-z]\w*Type)"
+
+
+def block_set_types(text: str) -> str:
+    """1.20.1's doors and trapdoors take their properties first, then their block set type."""
+    text = re.sub(r"\bnew (?:net\.minecraft\.world\.level\.block\.)?(DoorBlock|TrapDoorBlock)\(" + SET_TYPE + r", ((?:[^,()]|\([^()]*\))+)\)",
+                  r"new net.minecraft.world.level.block.\1(\3, \2)", text)
+    if re.search(r"\bextends (?:net\.minecraft\.world\.level\.block\.)?(?:DoorBlock|TrapDoorBlock)\b", text):
+        text = re.sub(r"\bsuper\(" + SET_TYPE + r", ((?:[^,()]|\([^()]*\))+)\);", r"super(\2, \1);", text)
+    return text
+
+
+BLOCK_BEHAVIOUR_PUBLIC = ("attack", "canBeReplaced", "canSurvive", "entityInside", "getAnalogOutputSignal", "getBlockSupportShape",
+                          "getCollisionShape", "getDestroyProgress", "getDirectSignal", "getDrops", "getFluidState", "getInteractionShape",
+                          "getLightBlock", "getMenuProvider", "getOcclusionShape", "getRenderShape", "getSeed", "getShadeBrightness", "getShape",
+                          "getSignal", "getVisualShape", "hasAnalogOutputSignal", "isPathfindable", "isSignalSource", "mirror", "neighborChanged",
+                          "onPlace", "onProjectileHit", "onRemove", "randomTick", "rotate", "skipRendering", "spawnAfterBreak", "tick",
+                          "triggerEvent", "updateIndirectNeighbourShapes", "updateShape", "use", "useShapeForLightOcclusion",
+                          "propagatesSkylightDown", "getCloneItemStack", "isRandomlyTicking")
+
+
+def block_access(text: str) -> str:
+    """1.20.3 made a block's behaviour methods protected; 1.20.1's are public (an override may not narrow them)."""
+    if not is_block_class(text):
+        return text
+    return re.sub(r"\bprotected ((?:final )?[\w.<>?\[\], ]+? (?:" + "|".join(BLOCK_BEHAVIOUR_PUBLIC) + r")\()", r"public \1", text)
+
+
+def render_boxes(text: str) -> str:
+    """A renderer's culling box (NeoForge 1.21 asks the renderer): this branch's RenderBox, asked in its place on 1.20.1."""
+    m = re.search(r"(?:@Override\s*\n\s*)?public (?:net\.minecraft\.world\.phys\.)?AABB getRenderBoundingBox\(\s*([\w.<>?]+) \w+\s*\)", text)
+    if not m:
+        return text
+    kind = m.group(1)
+    text = text[:m.start()] + re.sub(r"^@Override\s*\n\s*", "", m.group(0)) + text[m.end():]
+
+    def implement(c: re.Match) -> str:
+        head = c.group(0)
+        if " implements " in head:
+            return head.replace(" implements ", f" implements {L}.client.RenderBox<{kind}>, ", 1)
+        return head[:-1].rstrip() + f" implements {L}.client.RenderBox<{kind}> {{"
+    return re.sub(r"\bclass \w+(?:<[^{]*?>)?(?:\s+extends\s+[\w.<>?, ]+?)?(?:\s+implements\s+[\w.<>?, ]+?)?\s*\{", implement, text, count=1)
+
+
+def block_sources(text: str) -> str:
+    """A dispenser's block source: 1.21's record, 1.20.1's interface with getters."""
+    for name in set(re.findall(r"\bBlockSource (\w+)\b", text)):
+        for old, new in (("state", "getBlockState"), ("level", "getLevel"), ("pos", "getPos"), ("blockEntity", "getEntity")):
+            text = re.sub(rf"\b{name}\.{old}\(\)", f"{name}.{new}()", text)
+        text = re.sub(rf"\b{name}\.center\(\)", f"net.minecraft.world.phys.Vec3.atCenterOf({name}.getPos())", text)
+    # A pose's copy (1.20.1's has none).
+    for name in set(re.findall(r"\b(?:PoseStack\.)?Pose (\w+)\b", text)):
+        text = re.sub(rf"\b{name}\.copy\(\)", f"{L}.Game.copy({name})", text)
+    return text
+
+
+def implicit_components(text: str) -> str:
+    """A block entity's data kept in its item (1.21's implicit components): this branch's ImplicitComponents."""
+    if "collectImplicitComponents" not in text and "applyImplicitComponents" not in text:
+        return text
+    text = re.sub(r"(?:@Override\s*\n\s*)?protected void (collectImplicitComponents|applyImplicitComponents)\(", r"public void \1(", text)
+    text = re.sub(r"\n\s*super\.(?:collectImplicitComponents|applyImplicitComponents)\(\w+\);", "", text)
+    text = re.sub(r"\b(?:net\.minecraft\.world\.level\.block\.entity\.)?BlockEntity\.DataComponentInput\b", f"{L}.component.DataComponentInput", text)
+    def implement(m: re.Match) -> str:
+        head = m.group(0)
+        if " implements " in head:
+            return head.replace(" implements ", f" implements {L}.component.ImplicitComponents, ", 1)
+        return head[:-1].rstrip() + f" implements {L}.component.ImplicitComponents {{"
+    return re.sub(r"\bpublic (?:abstract )?class \w+(?:<[^{]*?>)?\s+extends\s+[\w.<>?, ]+?\{", implement, text, count=1)
+
+
+def java17(text: str) -> str:
+    """Java 17 refuses a type pattern its expression's type already is (Java 21 allows it): the expression seen as an Object."""
+    out, pos = [], 0
+    for m in re.finditer(r"\binstanceof\s+(?:final\s+)?[\w.]+(?:<[^>]*>)?\s+[a-z_]\w*\b(?!\s*[.(])", text):
+        if m.start() < pos:
+            continue
+        end = m.start()
+        while end > 0 and text[end - 1] in " \t":
+            end -= 1
+        start = receiver_start(text, end)
+        expr = text[start:end]
+        if not expr.strip() or expr.strip().startswith("(Object)"):
+            continue
+        out.append(text[pos:start] + "((Object) " + expr.strip() + ") ")
+        pos = m.start()
+    out.append(text[pos:])
+    return "".join(out)
+
+
+def attribute_modifiers(text: str) -> str:
+    """1.21 names an attribute modifier by an id; 1.20.1 by a UUID (made from the id: dev.groundburst.legacy.Attrs)."""
+    text = calls(text, r"\baddAttributeModifier\(", lambda m, a: (
+        f"addAttributeModifier({split_args(a)[0].strip()}, {L}.Attrs.uuid({split_args(a)[1].strip()}), "
+        + ", ".join(x.strip() for x in split_args(a)[2:]) + ")")
+        if len(split_args(a)) == 4 and not split_args(a)[1].strip().startswith('"') else m.group(0) + a + ")")
+    text = calls(text, r"\bnew (?:net\.minecraft\.world\.entity\.ai\.attributes\.)?AttributeModifier\(",
+                 lambda m, a: f"{L}.Attrs.modifier({a})" if len(split_args(a)) == 3 else m.group(0) + a + ")")
+    return text
+
+
+def patches(text: str) -> str:
+    """Component patches (1.21): on 1.20.1 a stack's tag (dev.groundburst.legacy.component.DataComponentPatch)."""
+    P = f"{L}.component.DataComponentPatch"
+    text = receiver_calls(text, "getComponentsPatch", lambda recv, args: (f"{P}.of(", f"{recv})"), lambda recv, args: not args.strip())
+    text = receiver_calls(text, "applyComponents", lambda recv, args: ("", f"{args.strip()}.applyTo({recv})"))
+    text = receiver_calls(text, "getFluidHolder", lambda recv, args: (f"{L}.FluidStacks.holder(", f"{recv})"),
+                          lambda recv, args: not args.strip())
+    # 1.21's three-argument stacks are a holder, a count and a patch.
+    text = calls(text, r"\bnew (?:net\.minecraft\.world\.item\.)?ItemStack\(",
+                 lambda m, a: f"{P}.stack({a})" if len(split_args(a)) == 3 else m.group(0) + a + ")")
+    text = calls(text, r"\bnew (?:net\.minecraftforge\.fluids\.)?FluidStack\(",
+                 lambda m, a: f"{P}.fluid({a})" if len(split_args(a)) == 3 else m.group(0) + a + ")")
+    return text
+
+
+def class_name(text: str) -> tuple[str, str] | None:
+    m = re.search(r"\bclass (\w+)(?:<[^{]*?>)?\s+extends\s+([\w.]+)", text)
+    return (m.group(1), m.group(2).split(".")[-1]) if m else None
+
+
+def is_block_class(text: str) -> bool:
+    """Whether the file's class is a block (by its parents' names), not an item."""
+    c = class_name(text)
+    if not c:
+        return False
+    name, parent = c
+    idx = class_index()
+    seen = set()
+    while True:
+        if parent.endswith("Block"):
+            return True
+        if parent.endswith("Item") or parent not in idx or parent in seen:
+            return False
+        seen.add(parent)
+        parent = idx[parent][0]
+
+
+def tooltips(text: str) -> str:
+    """1.21 hands a tooltip a context; 1.20.1 an item the level, a block what it is in (dev.groundburst.legacy.TooltipContext)."""
+    T = f"{L}.TooltipContext"
+    if "TooltipContext" not in text and "getTooltipLines" not in text:
+        return text
+    where = "net.minecraft.world.level.BlockGetter" if is_block_class(text) else "net.minecraft.world.level.Level"
+    text = re.sub(r"(\bpublic void appendHoverText\(\s*" + param(QN + "ItemStack") + C + r")" + param(QN + r"(?:Item\.)?TooltipContext")
+                  + r"(" + C + param(QN + r"List<[^>]*>") + C + param(QN + "TooltipFlag") + r"\s*\)\s*\{)",
+                  rf"\1{where} \3_level\4 {T} \3 = {T}.of(\3_level);", text)
+    text = re.sub(r"\bsuper\.appendHoverText\((\w+), (\w+), (\w+), (\w+)\)", r"super.appendHoverText(\1, \2_level, \3, \4)", text)
+    text = re.sub(r"\b(?:net\.minecraft\.world\.item\.)?Item\.TooltipContext\b", T, text)
+    text = re.sub(r"(?<![\w.])TooltipContext\.(of|EMPTY)\b", rf"{T}.\1", text)
+    text = receiver_calls(text, "getTooltipLines", lambda recv, args: ("", f"{recv}.getTooltipLines({', '.join(x.strip() for x in split_args(args)[1:])})"),
+                          lambda recv, args: len(split_args(args)) == 3)
+    return text
+
+
+def vertex_call(args: str) -> str:
+    p = [x.strip() for x in split_args(args)]
+    if len(p) == 4:
+        return f".vertex({L}.Verts.matrix({p[0]}), {p[1]}, {p[2]}, {p[3]})"
+    return f".vertex({', '.join(p)})"
+
+
+def normal_call(args: str) -> str:
+    p = [x.strip() for x in split_args(args)]
+    if len(p) == 4:
+        return f".normal({L}.Verts.normal({p[0]}), {p[1]}, {p[2]}, {p[3]})"
+    return f".normal({', '.join(p)})"
+
+
+def vertices(text: str) -> str:
+    """1.21's vertices (addVertex, then any of setColor, setUv, setOverlay, setLight, setNormal) as 1.20.1's (vertex, color,
+    uv, overlayCoords, uv2, normal, in that order, and endVertex). 1.21's one-call vertex: dev.groundburst.legacy.Verts.full."""
+    if "addVertex(" not in text:
+        return text
+    text = receiver_calls(text, "addVertex", lambda recv, args: (f"{L}.Verts.full(", f"{recv}, {args})"),
+                          lambda recv, args: len(split_args(args)) == 11)
+    out, pos = [], 0
+    for m in re.finditer(r"\.\s*addVertex\(", text):
+        if m.start() < pos:
+            continue
+        i, depth = m.start(), 0
+        while i < len(text):
+            j = skip(text, i)
+            if j != i:
+                i = j
+                continue
+            ch = text[i]
+            if ch in "([{":
+                depth += 1
+            elif ch in ")]}":
+                if depth == 0:
+                    break
+                depth -= 1
+            elif ch == ";" and depth == 0:
+                break
+            i += 1
+        chain = text[m.start():i]
+        chain = calls(chain, r"\.\s*addVertex\(", lambda mm, a: vertex_call(a))
+        for old, new in (("setColor", "color"), ("setUv1", "overlayCoords"), ("setUv2", "uv2"), ("setUv", "uv"),
+                         ("setOverlay", "overlayCoords"), ("setLight", "uv2")):
+            chain = re.sub(rf"\.\s*{old}\(", f".{new}(", chain)
+        chain = calls(chain, r"\.\s*setNormal\(", lambda mm, a: normal_call(a))
+        out.append(text[pos:m.start()] + chain.rstrip() + ".endVertex()")
+        pos = i
+    out.append(text[pos:])
+    return "".join(out)
+
+
+FUNCTIONS.extend([drop_codecs, block_use, player_will_destroy, screens, synced_data, pathfinding, saved_data_save, effects, use_duration,
+                  save_calls, misc_calls, block_set_types, patches, tooltips, vertices, java17, attribute_modifiers, implicit_components,
+                  block_sources, block_access, render_boxes, recipes])
+
+
+FILE_FIXES_BEFORE: dict[str, list] = {}
 FILE_FIXES: dict[str, list] = {
-    # A site gives way to the rarer ones near it (main's DESIGN.md §22.8), asking them in a generation context of its own
-    # making: this version's has no climate sampler of its own.
-    "src/main/java/dev/groundburst/world/structure/SiteStructure.java": [
-        swap("context.biomeSource(), context.climateSampler(),\n                context.randomState()",
-             "context.biomeSource(),\n                context.randomState()"),
+    # Forge 1.20.1 makes a mod with no arguments: its bus and container are found; this branch's stand-ins start first,
+    # and the client half (no mod of its own here) is started by the mod on the client.
+    "src/main/java/dev/groundburst/GroundBurst.java": [
+        swap("    public GroundBurst(IEventBus modBus, ModContainer modContainer) {\n",
+             "    public GroundBurst() {\n"
+             "        IEventBus modBus = net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext.get().getModEventBus();\n"
+             "        ModContainer modContainer = net.minecraftforge.fml.ModLoadingContext.get().getActiveContainer();\n"
+             "        dev.groundburst.legacy.Lifecycle.install(modBus, modContainer);\n"),
+        swap("        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, GBCommonConfig.SPEC);\n",
+             "        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, GBCommonConfig.SPEC);\n"
+             "        net.minecraftforge.fml.DistExecutor.unsafeRunWhenOn(net.minecraftforge.api.distmarker.Dist.CLIENT,\n"
+             "                () -> () -> new GroundBurstClient(modBus, modContainer));\n"),
     ],
-    # --- the Steel Locker (main's DESIGN.md §22.5): its lower block's contents dropped as it goes, as the cabinet's -------
-    "src/main/java/dev/groundburst/content/construction/SteelLockerBlock.java": [
-        swap("{ super.onRemove(state, level_l, pos, newState_, movedByPiston);",
-             "{ if (!state.is(newState_.getBlock())) { Containers.dropContentsOnDestroy(state, newState_, level_l, pos); } "
-             "super.onRemove(state, level_l, pos, newState_, movedByPiston);"),
-        swap("        Containers.updateNeighboursAfterDestroy(state, level, pos);\n", ""),
+    # Ice that a silk touch tool keeps (1.21 asks the tool's enchantments for a tag; 1.20.1, as vanilla's ice, for silk touch).
+    "src/main/java/dev/groundburst/content/fallout/CryoIceBlock.java": [
+        swap("EnchantmentHelper.hasTag(destroyedWith, EnchantmentTags.PREVENTS_ICE_MELTING)",
+             "EnchantmentHelper.getItemEnchantmentLevel(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH, destroyedWith) != 0"),
+        swap("import net.minecraft.tags.EnchantmentTags;\n", ""),
     ],
-    # --- the Bunk Bed (main's DESIGN.md §22.5): this version's bed is drawn by a block entity and puts its sleeper at a
-    # height of its own (no sleep height, no "destroy on use" of its bed rule): drawn by its blockstate's model here, no
-    # block entity, the bed's own way of blowing up where beds do.
-    "src/main/java/dev/groundburst/content/construction/BunkBedBlock.java": [
-        swap("    /** A sleeper lies on the mattress (not on the posts' tops), and only in a bunk whose four blocks all stand. */\n"
-             "    @Override\n", ""),
-        drop_method("public OptionalDouble getSleepHeight("),
-        swap("    /** Where it may not be slept in (the Nether, the End), it blows up as a bed does, all four blocks gone first. */\n"
-             "    @Override\n", ""),
-        drop_method("protected InteractionResult destroyOnUse("),
-        lambda text: re.sub(r"\n{3,}(    @Override\n    protected VoxelShape getShape)", r"\n\n\1", text),
-        swap("import java.util.OptionalDouble;\n", ""),
-        swap("import net.minecraft.world.InteractionResult;\n", ""),
-        swap("import net.minecraft.world.phys.Vec3;\n", ""),
-        swap("import net.minecraft.world.level.block.BedBlock;\n",
-             "import net.minecraft.world.level.block.BedBlock;\nimport net.minecraft.world.level.block.RenderShape;\n"
-             "import net.minecraft.world.level.block.entity.BlockEntity;\n"),
-        after("        builder.add(HALF);\n    }\n",
-              "\n    @Override\n    protected RenderShape getRenderShape(BlockState state) {\n"
-              "        return RenderShape.MODEL;                            // its own model, not a bed's block entity\n    }\n"
-              "\n    @Override\n    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {\n        return null;\n    }\n"),
+    # 1.20.1's test functions: no manual-only or sky access setting, and their names asked by getter.
+    "src/main/java/dev/groundburst/gametest/GameTestRegistration.java": [
+        swap("0L, true, false,\n                    1, 1, spec.sky(), spec.body()));",
+             "0L, true, 1, 1, helper -> {\n"
+             "                encase(helper, spec.sky());\n"
+             "                spec.body().accept(helper);\n"
+             "            }));"),
+        swap("f.testName()", "f.getTestName()"),
+        # 1.21's test framework walls each test round with barriers, and roofs those with no sky; 1.20.1's leaves them open
+        # (a blast in one reached the next): its walls built here as each test starts.
+        after("    private GameTestRegistration() {}\n",
+              "\n"
+              "    /**\n"
+              "     * 1.21's walls round a test as it starts (StructureUtils.encaseStructure): barriers just outside its\n"
+              "     * structure, and a roof of them over it unless it has the sky. 1.20.1's tests stand open to their neighbours.\n"
+              "     */\n"
+              "    private static void encase(net.minecraft.gametest.framework.GameTestHelper helper, boolean sky) {\n"
+              "        net.minecraft.world.phys.AABB bounds = ((dev.groundburst.legacy.mixin.GameTestHelperAccess) helper).groundburst$bounds();\n"
+              "        // (1.20.1's bounds run from the structure block, a block under the structure, a size long: the size is all.)\n"
+              "        int sx = (int) Math.round(bounds.maxX - bounds.minX) + 1;\n"
+              "        int sy = (int) Math.round(bounds.maxY - bounds.minY) + 1;\n"
+              "        int sz = (int) Math.round(bounds.maxZ - bounds.minZ) + 1;\n"
+              "        net.minecraft.core.BlockPos corner = helper.absolutePos(net.minecraft.core.BlockPos.ZERO);\n"
+              "        net.minecraft.core.BlockPos lo = corner.offset(-1, 0, -1), hi = corner.offset(sx, sy, sz);\n"
+              "        for (net.minecraft.core.BlockPos p : net.minecraft.core.BlockPos.betweenClosed(lo, hi)) {\n"
+              "            boolean wall = p.getX() == lo.getX() || p.getX() == hi.getX() || p.getZ() == lo.getZ() || p.getZ() == hi.getZ();\n"
+              "            if (wall || !sky && p.getY() == hi.getY()) {\n"
+              "                helper.getLevel().setBlockAndUpdate(p, net.minecraft.world.level.block.Blocks.BARRIER.defaultBlockState());\n"
+              "            }\n"
+              "        }\n"
+              "    }\n"),
+        # (gradlew runGameTestServer -PonlyTests=<name>,<name>: only those, for a look at a few.)
+        swap("            if (PortSkips.skipped(spec.name())) {\n",
+             "            String only = System.getProperty(\"groundburst.onlyTests\", \"\");\n"
+             "            if (!only.isBlank() && !java.util.Arrays.asList(only.split(\",\")).contains(spec.name())) {\n"
+             "                continue;\n"
+             "            }\n"
+             "            if (PortSkips.skipped(spec.name())) {\n"),
     ],
-    # --- the Filing Cabinet (main's DESIGN.md §22.4): 1.21.1's containers drop their contents as their block goes ----------
-    "src/main/java/dev/groundburst/content/construction/FilingCabinetBlock.java": [
-        swap("{ super.onRemove(state, level_l, pos, newState_, movedByPiston);",
-             "{ if (!state.is(newState_.getBlock())) { Containers.dropContentsOnDestroy(state, newState_, level_l, pos); } "
-             "super.onRemove(state, level_l, pos, newState_, movedByPiston);"),
-        swap("        Containers.updateNeighboursAfterDestroy(state, level, pos);\n", ""),
+    # 1.20.1's GameTests have no sky access setting (its test structures stand open to the sky).
+    "src/main/java/dev/groundburst/port/SmokeTest.java": [
+        swap(", skyAccess = true)", ")"),
     ],
-    # --- main's GameTests, ported (what only one test file does) -------------------------------------------------------
-    "src/main/java/dev/groundburst/gametest/CarryTests.java": [
-        swap("import net.minecraft.world.level.storage.TagValueInput;\n", ""),
-        swap("there.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), saved));",
-             "there.loadWithComponents(saved, level.registryAccess());"),
+    # A charge caught in a blast: 1.20.1 (Forge) tells the block as the blast destroys it.
+    "src/main/java/dev/groundburst/content/ordnance/charge/ChargeBlock.java": [
+        replace_method("protected void onExplosionHit(",
+                       "public void onBlockExploded(BlockState state, net.minecraft.world.level.Level level, BlockPos pos,\n"
+                       "            net.minecraft.world.level.Explosion explosion) {\n"
+                       "        if (level instanceof net.minecraft.server.level.ServerLevel server) {\n"
+                       "            Charges.caughtInBlast(server, pos, state);\n"
+                       "        }\n"
+                       "        super.onBlockExploded(state, level, pos, explosion);\n"
+                       "    }"),
     ],
+    # Item and fluid resources (the transfer API's): their components through the stack's tag, a fluid's name its own.
+    "src/main/java/dev/groundburst/port/transfer/item/ItemResource.java": [
+        swap("        s.set(type, data);\n", f"        {L}.component.Comps.set(s, type, data);\n"),
+        swap("        s.remove(type);\n", f"        {L}.component.Comps.remove(s, type);\n"),
+    ],
+    "src/main/java/dev/groundburst/port/transfer/fluid/FluidResource.java": [
+        swap("return toStack(1).getHoverName();", "return toStack(1).getDisplayName();"),
+    ],
+    # Forge 1.20.1 names the fire's burning of a block next to it tryCatchFire (its own name, not remapped; the calls in
+    # it are vanilla's, remapped).
+    "src/main/java/dev/groundburst/mixin/FireBlockMixin.java": [
+        swap('@Inject(method = "checkBurnOut", at = {', '@Inject(method = "tryCatchFire", remap = false, at = {'),
+        swap('setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"),',
+             'setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z", remap = true),'),
+        swap('removeBlock(Lnet/minecraft/core/BlockPos;Z)Z")})', 'removeBlock(Lnet/minecraft/core/BlockPos;Z)Z", remap = true)})'),
+        swap('@WrapMethod(method = "checkBurnOut")', '@WrapMethod(method = "tryCatchFire", remap = false)'),
+    ],
+    # The GameTests' mock server player: in no player list, as main's, but on a connection that sends nothing (Forge
+    # 1.20.1's player inventory wrapper, which hands a player an item, tells a server player's client the slot).
+    "src/main/java/dev/groundburst/port/Tests.java": [
+        swap("in no one's player list and on no connection (",
+             "in no one's player list, on a connection that sends nothing (Forge 1.20.1 hands a server player an item through a\n"
+             "     * wrapper that tells its client; "),
+        swap("        mode.updatePlayerAbilities(player.getAbilities());\n",
+             "        mode.updatePlayerAbilities(player.getAbilities());\n"
+             "        net.minecraft.network.Connection nowhere = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND) {\n"
+             "            @Override\n"
+             "            public void send(net.minecraft.network.protocol.Packet<?> packet) {}\n"
+             "\n"
+             "            @Override\n"
+             "            public void send(net.minecraft.network.protocol.Packet<?> packet, net.minecraft.network.PacketSendListener listener) {}\n"
+             "        };\n"
+             "        new net.minecraft.server.network.ServerGamePacketListenerImpl(level.getServer(), nowhere, player);   // (it sets player.connection)\n"),
+    ],
+    # The effects' glow: a 1.20.1 shader sets its own blending as it is used, over the render type's, and the eyes shader's
+    # is not additive: the glow draws on this branch's own copy of it that adds (shaders/core/rendertype_fx_glow).
+    "src/main/java/dev/groundburst/client/fx/FxRenderTypes.java": [
+        after("    private static @Nullable ShaderInstance cloudShader;\n",
+              "    /** The glow's shader: the eyes shader, its own file blending it additively (1.20.1's shaders set their blending). */\n"
+              "    private static @Nullable ShaderInstance glowShader;\n"),
+        after("                        shader -> cloudShader = shader);\n",
+              "                event.registerShader(new ShaderInstance(event.getResourceProvider(),\n"
+              "                        new ResourceLocation(GroundBurst.MODID, \"rendertype_fx_glow\"), DefaultVertexFormat.NEW_ENTITY),\n"
+              "                        shader -> glowShader = shader);\n"),
+        after("                        : net.minecraft.client.renderer.GameRenderer.getRendertypeEyesShader());\n",
+              "        private static final ShaderStateShard GLOW_SHADER = new ShaderStateShard(\n"
+              "                () -> packDraws() ? net.minecraft.client.renderer.GameRenderer.getRendertypeEyesShader() : glowShader);\n"),
+        swap(".setShaderState(writeDepth ? CLOUD_SHADER : additive ? RENDERTYPE_EYES_SHADER : FIRE_SHADER)",
+             ".setShaderState(writeDepth ? CLOUD_SHADER : additive ? GLOW_SHADER : FIRE_SHADER)"),
+    ],
+    # An item changed in place: its components are its tag on 1.20.1, set back whole.
+    "src/main/java/dev/groundburst/port/transfer/Adapters.java": [
+        swap(f"        if (((Object) {L}.component.DataComponentMap.of(stack)) instanceof {L}.component.PatchedDataComponentMap map) {{\n"
+             "            map.restorePatch(patch);\n"
+             "        }\n",
+             "        stack.setTag(patch.tag());\n"),
+    ],
+    "src/main/java/dev/groundburst/port/transfer/energy/ItemAccessEnergyHandler.java": [
+        swap("accessResource.toStack(1).get(this.energyComponent)", f"{L}.component.Comps.get(accessResource.toStack(1), this.energyComponent)"),
+    ],
+    # The launch station's screen, drawn after its model: GeckoLib 4.8 hands the colour on as four channels.
+    "src/main/java/dev/groundburst/client/render/LaunchStationRenderer.java": [
+        swap("int packedLight, int packedOverlay, int colour) {\n"
+             "        super.postRender(pose, be, model, buffers, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);",
+             "int packedLight, int packedOverlay, float red, float green,\n"
+             "            float blue, float alpha) {\n"
+             "        super.postRender(pose, be, model, buffers, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);"),
+    ],
+    # The stage's partial tick: a float on 1.20.1.
+    "src/main/java/dev/groundburst/port/render/RenderBridge.java": [
+        swap("event.getPartialTick().getGameTimeDeltaPartialTick(false)", "event.getPartialTick()"),
+    ],
+    "src/main/java/dev/groundburst/content/fluid/CreativeFluidTankBlock.java": [swap("f.getHoverName()", "f.getDisplayName()")],
+    "src/main/java/dev/groundburst/content/fluid/FluidTankBlock.java": [swap("f.getHoverName()", "f.getDisplayName()")],
+    "src/main/java/dev/groundburst/client/render/FluidTankRenderer.java": [swap("f.getFluidType().isLighterThanAir()", "f.getFluid().getFluidType().isLighterThanAir()")],
+    # The closest forest (a pair of its place and biome; DataFixerUpper's Pair has its own getFirst).
+    "src/main/java/dev/groundburst/blast/PlayBench.java": [swap(f"{L}.J21.first(found)", "found.getFirst()")],
+    # A sprite of the GUI atlas by name (1.20.2's): its texture file drawn whole on 1.20.1.
+    "src/main/java/dev/groundburst/port/GuiGraphicsExtractor.java": [
+        swap("        this.g.blitSprite(sprite, x, y, width, height);\n",
+             "        this.g.blit(sprite.withPath(p -> \"textures/gui/sprites/\" + p + \".png\"), x, y, 0, 0, width, height, width, height);\n"),
+        swap("tinted(color, () -> this.g.blitSprite(sprite, x, y, width, height));",
+             "tinted(color, () -> this.g.blit(sprite.withPath(p -> \"textures/gui/sprites/\" + p + \".png\"), x, y, 0, 0, width, height, width, height));"),
+    ],
+    # The machines' recipe serializers: by their 1.21 codecs, read and written by 1.20.1's serializer calls.
+    "src/main/java/dev/groundburst/content/recipe/GBRecipes.java": [
+        replace_method("private static RecipeSerializer<ProcessingRecipe> serializer(MapCodec<ProcessingRecipe> codec,",
+                       "private static RecipeSerializer<ProcessingRecipe> serializer(MapCodec<ProcessingRecipe> codec,\n"
+                       "            StreamCodec<FriendlyByteBuf, ProcessingRecipe> streamCodec) {\n"
+                       f"        return {L}.recipe.Recipes.serializer(codec, streamCodec);\n"
+                       "    }"),
+    ],
+    # The Frozen effect asked of an effect instance or event (1.21's holders: is(...); 1.20.1's effects themselves).
+    "src/main/java/dev/groundburst/content/effect/EffectSystems.java": [
+        swap("e.getEffectInstance().is(FROZEN.get())", "e.getEffectInstance().getEffect() == FROZEN.get()"),
+        swap("e.getEffect().is(FROZEN.get())", "e.getEffect() == FROZEN.get()"),
+    ],
+    # Sounds 1.21 hands out in holders: the registered holder (1.20.1's DeferredHolder is no holder itself).
+    "src/main/java/dev/groundburst/content/superweapon/SuperweaponBlockEntity.java": [
+        swap("dev.groundburst.registry.GBSounds.SUPERWEAPON_READY\n", "dev.groundburst.registry.GBSounds.SUPERWEAPON_READY.getDelegate()\n"),
+        swap("dev.groundburst.registry.GBSounds.SUPERWEAPON_WARNING;", "dev.groundburst.registry.GBSounds.SUPERWEAPON_WARNING.getDelegate();"),
+    ],
+    "src/main/java/dev/groundburst/content/radiation/RadiationItems.java": [
+        swap(".soundAfterConsume(GBSounds.MEDICAL_INJECTOR)", ".soundAfterConsume(GBSounds.MEDICAL_INJECTOR.getDelegate())"),
+    ],
+    # The bunker's block set (1.20.3 added a wind charge's and an arrow's say and the plates' sensitivity).
+    "src/main/java/dev/groundburst/content/construction/BunkerSet.java": [
+        swap("true, false, false,\n                    BlockSetType.PressurePlateSensitivity.MOBS, SoundType.NETHERITE_BLOCK,",
+             "true, SoundType.NETHERITE_BLOCK,"),
+    ],
+    "src/main/java/dev/groundburst/content/machine/DecontaminationShowerBlockEntity.java": [
+        swap("public static final List<Holder<MobEffect>> WASHED", "public static final List<MobEffect> WASHED"),
+        swap("for (Holder<MobEffect> effect : WASHED)", "for (MobEffect effect : WASHED)"),
+    ],
+    # 1.20.1's ray clip takes an entity for its collision context (none here).
+    "src/main/java/dev/groundburst/content/artillery/Ballistics.java": [
+        swap("ClipContext.Fluid.ANY, ctx))", "ClipContext.Fluid.ANY, (net.minecraft.world.entity.Entity) null))"),
+    ],
+    "src/main/java/dev/groundburst/content/launch/Flights.java": [
+        swap("ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()))",
+             "ClipContext.Fluid.NONE, (net.minecraft.world.entity.Entity) null))"),
+    ],
+    # A shell's random (1.20.1 keeps an entity's own to itself): its level's.
+    "src/main/java/dev/groundburst/client/fx/ArtilleryClient.java": [
+        swap("shell.getRandom().nextFloat()", "shell.level().getRandom().nextFloat()"),
+    ],
+    # A site's loot table: 1.20.1 names loot tables by id (1.20.5 made them a registry).
+    "src/main/java/dev/groundburst/world/structure/GBStructures.java": [
+        swap("    public static ResourceKey<LootTable> loot(String name) {\n        return ResourceKey.create(Registries.LOOT_TABLE, GroundBurst.id(\"chests/\" + name));",
+             "    public static net.minecraft.resources.ResourceLocation loot(String name) {\n        return GroundBurst.id(\"chests/\" + name);"),
+    ],
+    "src/main/java/dev/groundburst/gametest/StructureTests.java": [
+        swap("level.getServer().reloadableRegistries().getLootTable(GBStructures.loot(name))", "level.getServer().getLootData().getLootTable(GBStructures.loot(name))"),
+        swap("c.getLootTable() != null\n                && c.getLootTable().equals(",
+             f"(({L}.mixin.RandomizableContainerAccess) c).groundburst$lootTable() != null\n"
+             f"                && (({L}.mixin.RandomizableContainerAccess) c).groundburst$lootTable().equals("),
+    ],
+    # The game's own explosions in the heal tests, made as 1.20.1 makes them.
     "src/main/java/dev/groundburst/gametest/HealTests.java": [
-        # 1.21.1's explosion is the one class Explosion, which breaks its blocks in finalizeExplosion after explode.
-        swap("import net.minecraft.world.level.ServerExplosion;\n", ""),
-        swap("ServerExplosion theirs = new ServerExplosion(level, null, null, null, at, 3.0F, false, Explosion.BlockInteraction.DESTROY) {};",
-             "Explosion theirs = new Explosion(level, null, null, null, at.x, at.y, at.z, 3.0F, false, Explosion.BlockInteraction.DESTROY,\n"
+        swap("level.explode(primed, Explosion.getDefaultDamageSource(level, primed), null, at.x, at.y, at.z, 4.0F, false, Level.ExplosionInteraction.TNT);",
+             "level.explode(primed, at.x, at.y, at.z, 4.0F, Level.ExplosionInteraction.TNT);"),
+        swap("new Explosion(level, null, null, null, at.x, at.y, at.z, 3.0F, false, Explosion.BlockInteraction.DESTROY,\n"
              "                net.minecraft.core.particles.ParticleTypes.EXPLOSION, net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER,\n"
-             "                net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE) {};"),
-        swap("        theirs.explode();\n", "        theirs.explode();\n        theirs.finalizeExplosion(false);\n"),
-        # 26.x's fire burns out only within a reach of players (a game rule, -1 everywhere); 1.21.1's wherever doFireTick
-        # is on: on, then off, for 26.x's everywhere and then its none here.
-        swap("import net.minecraft.world.level.gamerules.GameRules;", "import net.minecraft.world.level.GameRules;"),
-        swap("        int reach = level.getGameRules().get(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER);\n"
-             "        boolean waits;\n"
-             "        level.getGameRules().set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, -1, level.getServer());\n"
-             "        try {\n"
-             "            waits = Healer.of(level).fireNear(chunk, false);\n"
-             "        } finally {\n"
-             "            level.getGameRules().set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, reach, level.getServer());\n"
-             "        }\n"
-             "        helper.assertTrue(waits, \"a fire burns by the damage: the chunk waits\");\n"
-             "        helper.assertTrue(!Healer.of(level).fireNear(chunk, false) && level.getBlockState(helper.absolutePos(burning)).isAir(),\n"
-             "                \"a fire nobody is near enough to see burn out is no reason to wait: it goes out\");\n",
-             "        boolean ticks = level.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK);\n"
-             "        boolean waits, out;\n"
-             "        try {\n"
-             "            level.getGameRules().getRule(GameRules.RULE_DOFIRETICK).set(true, level.getServer());\n"
-             "            waits = Healer.of(level).fireNear(chunk, false);\n"
-             "            level.getGameRules().getRule(GameRules.RULE_DOFIRETICK).set(false, level.getServer());\n"
-             "            out = !Healer.of(level).fireNear(chunk, false) && level.getBlockState(helper.absolutePos(burning)).isAir();\n"
-             "        } finally {\n"
-             "            level.getGameRules().getRule(GameRules.RULE_DOFIRETICK).set(ticks, level.getServer());\n"
-             "        }\n"
-             "        helper.assertTrue(waits, \"a fire burns by the damage: the chunk waits\");\n"
-             "        helper.assertTrue(out, \"a fire nobody is near enough to see burn out is no reason to wait: it goes out\");\n"),
+             "                net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE) {};",
+             "new Explosion(level, null, null, null, at.x, at.y, at.z, 3.0F, false, Explosion.BlockInteraction.DESTROY) {};"),
     ],
-    "src/main/java/dev/groundburst/gametest/ArtilleryTests.java": [
-        # 1.21.1's ServerPlayer has no gameMode() to answer nor a client-authoritative flag: survival, by being neither.
-        swap("            @Override\n            public GameType gameMode() {\n                return GameType.SURVIVAL;\n            }\n",
-             "            @Override\n            public boolean isCreative() {\n                return false;\n            }\n"),
-        swap("            @Override\n            public boolean isClientAuthoritative() {\n                return false;\n            }\n",
-             "            @Override\n            public boolean isSpectator() {\n                return false;\n            }\n"),
-    ],
-    "src/main/java/dev/groundburst/gametest/ManualContentTests.java": [
-        swap("r.value().display().stream()", "dev.groundburst.port.recipe.Displays.of(r.value(), level.registryAccess()).stream()"),
-    ],
-    "src/main/java/dev/groundburst/gametest/ResourceTests.java": [
-        # 26.3's FEATURE registry is 1.21.1's CONFIGURED_FEATURE.
-        swap("import net.minecraft.world.level.levelgen.feature.Feature;", "import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;"),
-        swap("lookupOrThrow(Registries.FEATURE)", "lookupOrThrow(Registries.CONFIGURED_FEATURE)"),
-        swap("Feature feature = features.getOrThrow(ResourceKey.create(Registries.FEATURE,",
-             "ConfiguredFeature<?, ?> feature = features.getOrThrow(ResourceKey.create(Registries.CONFIGURED_FEATURE,"),
-    ],
-    "src/main/java/dev/groundburst/gametest/SemiconductorTests.java": [
-        swap("h.id().location().toString()", "h.id().toString()"),            # (1.21.1's recipe id is the location itself)
-    ],
-    "src/main/java/dev/groundburst/gametest/BombTests.java": [
-        # 1.21.1 checks the blocks a mob stands in only as it moves, which a mob with no AI never does here.
-        swap("var pig = helper.spawn(EntityType.PIG, at);\n        pig.setNoAi(true);\n",
-             "var pig = helper.spawn(EntityType.PIG, at);   // (with its AI: on 1.21.1 a mob only feels the fire it stands in as it moves)\n"),
-    ],
-    "src/main/java/dev/groundburst/gametest/NavalTests.java": [
-        swap("m.interact(player, InteractionHand.MAIN_HAND, m.centre());", "m.interact(player, InteractionHand.MAIN_HAND);"),
-    ],
-    "src/main/java/dev/groundburst/GroundBurstClient.java": [
-        after("container.registerConfig(ModConfig.Type.CLIENT, GBClientConfig.SPEC);",
-              "\n        dev.groundburst.port.render.RenderBridge.register();   // 26.x's render events, posted from 1.21.1's"
-              "\n        dev.groundburst.port.net.RegisterClientPayloadHandlersEvent.post(modBus);   // and its payload handlers'"
-              "\n        dev.groundburst.port.render.ItemModels.register(modBus);   // what 1.21.1's item models need from code"
-              "\n        dev.groundburst.port.render.FreeRotationModels.register(modBus);   // models turned by any angle"
-              "\n        dev.groundburst.port.PortCheck.register();   // gradlew runPortCheck"),
-    ],
-    # Items and blocks: their properties made when they are registered, as 26.x's registers make them (they may name
-    # other registered things, an effect, a block).
-    "src/main/java/dev/groundburst/registry/GBItems.java": [
-        swap("ITEMS.registerItem(name, factory, properties);", "ITEMS.register(name, () -> factory.apply(properties.apply(new Item.Properties())));"),
-        swap("ITEMS.registerSimpleBlockItem(block, properties);",
-             "ITEMS.register(block.getId().getPath(), () -> new BlockItem(block.get(), properties.apply(new Item.Properties())));"),
-        swap("(DeferredItem<BlockItem>) (DeferredItem<?>) ITEMS.registerItem(block.getId().getPath(),\n"
-             "                props -> factory.apply(block.get(), props), Item.Properties::useBlockDescriptionPrefix);",
-             "(DeferredItem<BlockItem>) (DeferredItem<?>) ITEMS.register(block.getId().getPath(),\n"
-             "                () -> factory.apply(block.get(), new Item.Properties()));"),
-    ],
-    "src/main/java/dev/groundburst/blast/GBBlast.java": [
-        swap("BlastManager.of(player.level())", "BlastManager.of((net.minecraft.server.level.ServerLevel) player.level())"),
-    ],
-    "src/main/java/dev/groundburst/blast/BlastChunks.java": [
-        swap('tag.get().getStringOr("Status", "")', 'dev.groundburst.port.Nbt.getStringOr(tag.get(), "Status", "")'),
-    ],
-    "src/main/java/dev/groundburst/registry/GBBlocks.java": [
-        swap("BLOCKS.registerBlock(name, factory, properties);", "BLOCKS.register(name, () -> factory.apply(properties.apply(BlockBehaviour.Properties.of())));"),
-    ],
-    # Fuel: 1.21.1 asks the stack its burn time (26.x reads the item's cooking-fuel component through a loot context).
-    "src/main/java/dev/groundburst/content/power/CombustionGeneratorBlockEntity.java": [
-        swap("return stack.has(DataComponents.COOKING_FUEL);",
-             "return stack.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0;"),
-        swap("int duration = ResolvableInt.getFromItem(fuel, DataComponents.COOKING_FUEL, CookingFuel::burnTime, lootContext(level, fuel), 0);",
-             "int duration = fuel.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING);"),
-        swap("ItemStackTemplate remainder = fuel.getCraftingRemainder();",
-             "ItemStack remainderStack = fuel.getCraftingRemainingItem();\n"
-             "        ItemStackTemplate remainder = remainderStack.isEmpty() ? null : ItemStackTemplate.fromNonEmptyStack(remainderStack);"),
-        drop_method("private LootContext lootContext(ServerLevel level, ItemStack fuel)"),
-    ],
-    # A block's tint: 1.21.1's block colours answer it straight (26.x's give a tint source).
-    "src/main/java/dev/groundburst/client/fx/Debris.java": [
-        swap("BlockTintSource source = Minecraft.getInstance().getBlockColors().getTintSource(state, 0);\n"
-             "        return source == null ? 0xFFFFFF : source.colorAsTerrainParticle(state, level, at) & 0xFFFFFF;",
-             "int color = Minecraft.getInstance().getBlockColors().getColor(state, level, at, 0);\n"
-             "        return color == -1 ? 0xFFFFFF : color & 0xFFFFFF;"),
-    ],
-    # JEI 19's string subtypes: none is "", not null.
-    "src/main/java/dev/groundburst/compat/jei/GBJeiPlugin.java": [
-        swap("return spec != null ? spec.look() : null;", "return spec != null ? spec.look() : \"\";"),
-    ],
-    # Standalone models: 1.21.1 registers them by location and hands back a baked model.
-    "src/main/java/dev/groundburst/client/render/FissionSections.java": [
-        swap("        private final StandaloneModelKey<BlockStateModelPart> key = new StandaloneModelKey<>(() -> GroundBurst.MODID + \":\" + this.id);\n", ""),
-        swap("return Minecraft.getInstance().getModelManager().getStandaloneModel(this.key);",
-             "var models = Minecraft.getInstance().getModelManager();\n"
-             "            var baked = models.getModel(net.minecraft.client.resources.model.ModelResourceLocation.standalone(model()));\n"
-             "            return baked == models.getMissingModel() ? null : new BlockStateModelPart(baked, null, 0);"),
-        swap("public static void register(ModelEvent.RegisterStandalone event) {", "public static void register(ModelEvent.RegisterAdditional event) {"),
-        swap("event.register(s.key, SimpleUnbakedStandaloneModel.simpleModelWrapper(s.model()));",
-             "event.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(s.model()));"),
-        swap("import net.neoforged.neoforge.client.model.standalone.SimpleUnbakedStandaloneModel;\n", ""),
-        swap("import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;\n", ""),
-    ],
-    # The dosimeter's dose: an item property 1.21.1's model overrides read (dev.groundburst.port.render.ItemModels).
-    "src/main/java/dev/groundburst/client/radiation/RadiationClient.java": [
-        swap('modBus.addListener((RegisterRangeSelectItemModelPropertyEvent event) -> event.register(GroundBurst.id("dose"), Dose.CODEC));',
-             'dev.groundburst.port.render.ItemModels.property(GroundBurst.id("dose"), Dose::get);'),
-        replace_method("public record Dose() implements RangeSelectItemModelProperty",
-                       "public record Dose() {\n"
-                       "        public static float get(ItemStack stack, @Nullable ClientLevel level, net.minecraft.world.entity.@Nullable LivingEntity owner, int seed) {\n"
-                       "            Player local = Minecraft.getInstance().player;\n"
-                       "            if (local == null || owner != null && owner != local) {\n"
-                       "                return 0;\n"
-                       "            }\n"
-                       "            return state(local).dose();\n"
+    # The crewman stands at the gun, LIFT above it (1.20.2 gave a vehicle its passengers' attachment points).
+    "src/main/java/dev/groundburst/content/artillery/GunSeat.java": [
+        replace_method("protected Vec3 getPassengerAttachmentPoint(",
+                       "protected void positionRider(Entity passenger, Entity.MoveFunction move) {\n"
+                       "        if (this.hasPassenger(passenger)) {\n"
+                       "            move.accept(passenger, this.getX(), this.getY() + LIFT, this.getZ());\n"
                        "        }\n"
                        "    }"),
-    ],
-    # Block tints: 1.21.1's block colour handlers (26.x's tint sources).
-    "src/main/java/dev/groundburst/client/fallout/FalloutClient.java": [
-        swap("modBus.addListener((RegisterColorHandlersEvent.BlockTintSources event) -> {", "modBus.addListener((RegisterColorHandlersEvent.Block event) -> {"),
-        swap("event.register(List.of(dead(DEAD_GRASS, BiomeColors::getAverageGrassColor)), ", "event.register(dead(DEAD_GRASS, BiomeColors::getAverageGrassColor), "),
-        swap("event.register(List.of(dead(FROSTED_GRASS, BiomeColors::getAverageGrassColor)), ", "event.register(dead(FROSTED_GRASS, BiomeColors::getAverageGrassColor), "),
-        swap("event.register(List.of(net.minecraft.client.color.block.BlockTintSources.constant(FROZEN_PLANT)), ",
-             "event.register((state, level, pos, tintIndex) -> FROZEN_PLANT, "),
-        replace_method("static BlockTintSource dead(int colour, ToIntBiFunction<BlockAndTintGetter, BlockPos> biome)",
-                       "static BlockColor dead(int colour, ToIntBiFunction<BlockAndTintGetter, BlockPos> biome) {\n"
-                       "        return (state, level, pos, tintIndex) -> level == null || pos == null ? colour\n"
-                       "                : ARGB.srgbLerp(BIOME_SHARE, colour, 0xFF000000 | biome.applyAsInt(level, pos));\n"
-                       "    }"),
-    ],
-    "src/main/java/dev/groundburst/registry/GBCreativeTabs.java": [
-        swap("previous = holder.key();", "previous = holder.getKey();"),
-    ],
-    "src/main/java/dev/groundburst/content/construction/BarbedWireBlock.java": [
-        swap("entity.isClientAuthoritative() ? entity.getKnownMovement() : entity.oldPosition().subtract(entity.position())",
-             "new Vec3(entity.getX() - entity.xOld, entity.getY() - entity.yOld, entity.getZ() - entity.zOld)"),
-    ],
-    "src/main/java/dev/groundburst/content/ordnance/GrenadeItem.java": [
-        swap("ThrownExplosive thrown = Projectile.spawnProjectileFromRotation((l, owner, item) -> new ThrownExplosive(l, owner, item), server, stack,\n"
-             "                    player, 0f, this.type.speed, 1.0f);",
-             "ThrownExplosive thrown = new ThrownExplosive(server, player, stack.copyWithCount(1));\n"
-             "            thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0f, this.type.speed, 1.0f);\n"
-             "            server.addFreshEntity(thrown);"),
-    ],
-    # The play bench (its client half is this branch's own): 1.21.1's game rule for the time of day, and its teleport.
-    "src/main/java/dev/groundburst/blast/PlayBench.java": [
-        swap('"gamerule advance_time false"', '"gamerule doDaylightCycle false"'),
-        swap("java.util.Set.of(), 135, 20, true)", "135, 20)"),
-    ],
-    "src/main/java/dev/groundburst/GroundBurst.java": [
-        after("modBus.addListener(GBBlockEntities::registerCapabilities);",
-              "\n        dev.groundburst.port.transfer.Capabilities.register(modBus);   // the bridge to 1.21.1's handlers"),
-        after("GBItems.ITEMS.register(modBus);",
-              "\n        dev.groundburst.content.gear.GBArmor.register(modBus);   // 1.21.1's armour materials are a registry"),
     ],
 }
 
 
+def config_registration(text: str) -> str:
+    """NeoForge registers a config with the mod's container; Forge 1.20.1 with the loading context (the same container)."""
+    return re.sub(r"\b\w+\.registerConfig\(ModConfig\.Type\.", "net.minecraftforge.fml.ModLoadingContext.get().registerConfig(ModConfig.Type.", text)
+
+
+FUNCTIONS.append(config_registration)
+
+
 # --- resources ------------------------------------------------------------------------------------------------------------
+# 1.21's singular data folders, 1.20.1's plural ones.
+DATA_FOLDERS = {"recipe": "recipes", "loot_table": "loot_tables", "advancement": "advancements", "structure": "structures",
+                "tags/block": "tags/blocks", "tags/item": "tags/items", "tags/fluid": "tags/fluids",
+                "tags/entity_type": "tags/entity_types", "tags/game_event": "tags/game_events", "tags/function": "tags/functions"}
+
+# NeoForge 1.21's common tags (c:) and Forge 1.20.1's (forge:): the same path, but for these.
+TAG_RENAMES = {"glass_blocks": "glass", "glass_blocks/colorless": "glass/colorless", "glass_panes/colorless": "glass_panes/colorless",
+               "slime_balls": "slimeballs", "sands": "sand", "gravels": "gravel", "stones": "stone", "cobblestones": "cobblestone",
+               "obsidians": "obsidian", "strings": "string", "leathers": "leather", "gunpowders": "gunpowder",
+               "sands/colorless": "sand/colorless", "sands/red": "sand/red", "netherracks": "netherrack"}
+# c: fluid tags that are vanilla's on 1.20.1.
+VANILLA_FLUID_TAGS = {"water": "minecraft:water", "lava": "minecraft:lava"}
+# c: tags Forge 1.20.1 has no counterpart of: the mod's own here (src/main/resources/data/groundburst/tags, this branch's;
+# the code's are dev.groundburst.legacy.Tags2's).
+OWN_COMMON_TAGS = {"concretes": "groundburst:concretes"}
+
+
+def common_tag(name: str, fluid: bool = False) -> str:
+    """A c: tag's name (without the c:) as Forge 1.20.1's."""
+    if fluid and name in VANILLA_FLUID_TAGS:
+        return VANILLA_FLUID_TAGS[name]
+    if name in OWN_COMMON_TAGS:
+        return OWN_COMMON_TAGS[name]
+    return "forge:" + TAG_RENAMES.get(name, name)
+
+
+def common_tags_in(text: str) -> str:
+    """Every c: tag named in a JSON text (an id in quotes, with or without #)."""
+    return re.sub(r'"(#?)c:([a-z0-9_/.-]+)"', lambda m: f'"{m.group(1)}{common_tag(m.group(2))}"', text)
+
+
 def port_resource(path: str, data: bytes) -> tuple[str, bytes] | None:
-    """Where main's resource goes here and what it becomes (None: it has no place here)."""
-    # GeckoLib 4 reads geo/ and animations/ (GeckoLib 5: geckolib/models/ and geckolib/animations/).
-    path = re.sub(r"^(src/main/resources/assets/\w+)/geckolib/models/", r"\1/geo/", path)
-    path = re.sub(r"^(src/main/resources/assets/\w+)/geckolib/animations/", r"\1/animations/", path)
-    # Armour: 1.21.1 draws a suit from textures/models/armor/<name>_layer_1 (body) and _layer_2 (legs).
-    path = re.sub(r"^(src/main/resources/assets/\w+)/textures/entity/equipment/humanoid/(\w+)\.png$", r"\1/textures/models/armor/\2_layer_1.png", path)
-    path = re.sub(r"^(src/main/resources/assets/\w+)/textures/entity/equipment/humanoid_leggings/(\w+)\.png$",
-                  r"\1/textures/models/armor/\2_layer_2.png", path)
-    # 1.21.1 takes only lower-case names in a pack (the sound credits).
-    path = re.sub(r"^(src/main/resources/assets/\w+/sounds)/CREDITS\.txt$", r"\1/credits.txt", path)
-    # 26.x's configured features: 1.21.1's worldgen/configured_feature.
-    path = re.sub(r"^(src/(?:main|generated)/resources/data/\w+/worldgen)/feature/", r"\1/configured_feature/", path)
-    if re.match(r"^src/(main|generated)/resources/data/\w+/recipe/.*\.json$", path):
-        data = port_recipe(data)
-        if data is None:
-            return None                              # it needs one of 26.x's items
-    if re.match(r"^src/(main|generated)/resources/data/\w+/advancement/.*\.json$", path):
-        data = port_advancement(data)
-    # 26.x's item model definitions: made into 1.21.1's item models by item_models (below).
-    if re.match(r"^src/(main|generated)/resources/assets/\w+/items/.*\.json$", path):
-        return None
+    """Where the 1.21.1 build's resource goes here and what it becomes (None: it has no place here)."""
+    m = re.match(r"^(src/(?:main|generated)/resources/data/)(\w+)/(.*)$", path)
+    if m:
+        root, ns, rest = m.groups()
+        fluid = rest.startswith("tags/fluid/")
+        for old, new in sorted(DATA_FOLDERS.items(), key=lambda kv: -len(kv[0])):
+            if rest.startswith(old + "/"):
+                rest = new + rest[len(old):]
+                break
+        # The common tags' own files: c's tag folders are forge's (or vanilla's, the water).
+        if ns == "c" and rest.startswith("tags/"):
+            folder, _, name = rest[len("tags/"):].partition("/")
+            tag = name[:-len(".json")] if name.endswith(".json") else name
+            new_ns, new_name = common_tag(tag, fluid).split(":")
+            ns, rest = new_ns, f"tags/{folder}/{new_name}.json"
+        # NeoForge's biome modifiers: Forge's.
+        if rest.startswith("neoforge/biome_modifier/"):
+            rest = "forge/biome_modifier/" + rest[len("neoforge/biome_modifier/"):]
+        path = f"{root}{ns}/{rest}"
+        if path.endswith(".json"):
+            data = port_data_json(path, data)
+            if data is None:
+                return None
+        if path.endswith(".nbt") and "/structures/" in path:
+            data = port_structure(data)
+        return path, data
+    if re.match(r"^src/main/resources/[\w.]*mixins\.json$", path):
+        return path, port_mixins(data)
     if re.match(r"^src/(main|generated)/resources/assets/\w+/models/.*\.json$", path):
-        data = port_model(data)
-    if re.match(r"^src/(main|generated)/resources/data/\w+/loot_table/.*\.json$", path):
-        data = port_loot(data)
-    if re.match(r"^src/(main|generated)/resources/data/\w+/worldgen/biome/.*\.json$", path):
-        data = port_biome(data)
-    if re.match(r"^src/(main|generated)/resources/data/\w+/worldgen/configured_feature/.*\.json$", path):
-        data = port_feature(data)
-    if re.match(r"^src/(main|generated)/resources/data/minecraft/tags/block/dirt\.json$", path):
-        data = grass_into_dirt(path, data)
-    if re.match(r"^src/(main|generated)/resources/data/\w+/tags/.*\.json$", path):
-        data = port_tag(data)
-    if re.match(r"^src/(main|generated)/resources/data/\w+/structure/.*\.nbt$", path):
-        data = port_structure(data)
+        return path, port_model(data)
+    # 1.20.1 refuses a resource whose name has capitals (and logs an error for it): the sounds' credits in lower case.
+    if path == "src/main/resources/assets/groundburst/sounds/CREDITS.txt":
+        return "src/main/resources/assets/groundburst/sounds/credits.txt", data
     return path, data
 
 
+def port_mixins(data: bytes) -> bytes:
+    """A mixin config: Java 17, with the refmap the build makes (build.gradle's mixin block)."""
+    m = json.loads(data)
+    for side in ("mixins", "client", "server"):
+        if side in m:
+            m[side] = [name for name in m[side] if name not in DROPPED_MIXINS]
+    m["compatibilityLevel"] = "JAVA_17"
+    m["refmap"] = "groundburst.refmap.json"
+    # MixinExtras started before these mixins are read (dev.groundburst.legacy.mixin.MixinPlugin).
+    m["plugin"] = "dev.groundburst.legacy.mixin.MixinPlugin"
+    return (json.dumps(m, indent=2) + "\n").encode("utf-8")
+
+
+def port_data_json(path: str, data: bytes) -> bytes | None:
+    text = data.decode("utf-8")
+    text = common_tags_in(text)
+    text = text.replace('"neoforge:', '"forge:')
+    obj = json.loads(text)
+    # (By the folder under the namespace: a recipe's advancement is in advancements/recipes/.)
+    folder = re.match(r"^.*?/data/[^/]+/([^/]+)/", path)
+    folder = folder.group(1) if folder else ""
+    if folder == "recipes":
+        obj = port_recipe(obj)
+        if obj is None:
+            return None
+    elif folder == "advancements":
+        obj = port_advancement(obj)
+    elif folder == "loot_tables":
+        obj = port_loot(obj)
+    elif folder == "tags":
+        obj = port_tag(obj, "/tags/fluids/" in path)
+    return (json.dumps(obj, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+
+
+def port_tag(obj, fluid: bool):
+    def entry(v):
+        if isinstance(v, str):
+            return port_tag_id(v, fluid)
+        if isinstance(v, dict) and "id" in v:
+            return dict(v, id=port_tag_id(v["id"], fluid))
+        return v
+    obj["values"] = [entry(v) for v in obj.get("values", [])]
+    return obj
+
+
+def port_tag_id(v: str, fluid: bool) -> str:
+    if fluid and v.startswith("#forge:"):
+        name = v[len("#forge:"):]
+        if name in VANILLA_FLUID_TAGS:
+            return "#" + VANILLA_FLUID_TAGS[name]
+    return v
+
+
+def port_item_stack(v):
+    """1.21's item stack in JSON ({"id", "count", "components"}) as 1.20.1's ({"item", "count"})."""
+    if not isinstance(v, dict):
+        return v
+    out = {}
+    if "id" in v:
+        out["item"] = v["id"]
+    elif "item" in v:
+        out["item"] = v["item"]
+    if "count" in v:
+        out["count"] = v["count"]
+    for k, x in v.items():
+        if k not in ("id", "item", "count", "components"):
+            out[k] = x
+    return out
+
+
+def port_recipe(obj):
+    if "result" in obj and isinstance(obj["result"], dict):
+        obj["result"] = port_item_stack(obj["result"])
+        # 1.20.1's stonecutting result is an id, its count beside it (and needed).
+        if obj.get("type") == "minecraft:stonecutting":
+            result = obj["result"]
+            obj["result"] = result["item"]
+            obj["count"] = result.get("count", 1)
+    # A machine recipe's fluids: the c: fluid tags that are vanilla's on 1.20.1 (water, lava).
+    for f in obj.get("fluids", []) if isinstance(obj.get("fluids"), list) else []:
+        ing = f.get("ingredient") if isinstance(f, dict) else None
+        for one in (ing if isinstance(ing, list) else [ing]):
+            if isinstance(one, dict) and isinstance(one.get("tag"), str) and one["tag"].startswith("forge:"):
+                name = one["tag"][len("forge:"):]
+                if name in VANILLA_FLUID_TAGS:
+                    one["tag"] = VANILLA_FLUID_TAGS[name]
+    return obj
+
+
+def port_item_predicate(pred):
+    """1.21's item predicate as 1.20.1's: its items one id or a tag string (1.20.1: a list of ids, or a tag), and its
+    enchantments among its sub-predicates ({"predicates": {"minecraft:enchantments": [...]}}, each naming its
+    enchantment "enchantments"; 1.20.1: "enchantments" beside the items, each naming it "enchantment")."""
+    if not isinstance(pred, dict):
+        return pred
+    items = pred.get("items")
+    if isinstance(items, str):
+        if items.startswith("#"):
+            pred.pop("items")
+            pred["tag"] = items[1:]
+        else:
+            pred["items"] = [items]
+    subs = pred.pop("predicates", None)
+    if isinstance(subs, dict):
+        for kind, key in (("minecraft:enchantments", "enchantments"), ("minecraft:stored_enchantments", "stored_enchantments")):
+            if kind in subs:
+                out = []
+                for e in subs.pop(kind):
+                    e = dict(e)
+                    name = e.pop("enchantments", None)
+                    assert name is None or isinstance(name, str) and not name.startswith("#"), \
+                        f"port.py: an enchantment predicate 1.20.1 cannot read ({name})"
+                    if name is not None:
+                        e["enchantment"] = name
+                    out.append(e)
+                pred[key] = out
+        assert not subs, f"port.py: item sub-predicates 1.20.1 has none of: {sorted(subs)}"
+    return pred
+
+
+def port_advancement(obj):
+    """1.21's item predicates in the criteria (an inventory's items, ...): 1.20.1's."""
+    def walk(o, item_predicate=False):
+        if isinstance(o, dict):
+            if item_predicate:
+                port_item_predicate(o)
+            for k, v in o.items():
+                # (an inventory criterion's items: a list of predicates; a consumed or used item: one)
+                walk(v, k in ("items", "item") and not isinstance(v, str))
+        elif isinstance(o, list):
+            for v in o:
+                walk(v, item_predicate)
+    for crit in obj.get("criteria", {}).values():
+        walk(crit.get("conditions", {}))
+    return obj
+
+
+def port_loot(obj):
+    """1.21's copy_components from a block entity: this branch's own loot function (dev.groundburst.legacy.loot); a
+    tool's predicate (shears, silk touch) as 1.20.1's."""
+    def walk(o):
+        if isinstance(o, dict):
+            if o.get("function") == "minecraft:copy_components":
+                o["function"] = "groundburst:copy_components"
+            if o.get("condition") == "minecraft:match_tool" and "predicate" in o:
+                port_item_predicate(o["predicate"])
+            for v in o.values():
+                walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                walk(v)
+    walk(obj)
+    return obj
+
+
+# Vanilla textures 1.20.3 and later renamed (1.20.1's names).
+TEXTURE_RENAMES = {"block/short_grass": "block/grass"}
+
+
+def port_model(data: bytes) -> bytes:
+    text = data.decode("utf-8")
+    out = text.replace('"neoforge:', '"forge:')
+    for new, old in TEXTURE_RENAMES.items():
+        out = re.sub(r'"(minecraft:)?' + re.escape(new) + '"', lambda m: f'"{m.group(1) or ""}{old}"', out)
+    return data if out == text else out.encode("utf-8")
+
+
 # --- structure templates (NBT) --------------------------------------------------------------------------------------------
-# 1.21.1's data version: what its structure templates are saved at.
-DATA_VERSION = 3955
-# 26.x's blocks the sites use that 1.21.1 has under another name, or only plain (the copper age's weathered rods).
-STRUCTURE_ALIASES = {"minecraft:iron_chain": "minecraft:chain", "minecraft:exposed_lightning_rod": "minecraft:lightning_rod",
-                     "minecraft:weathered_lightning_rod": "minecraft:lightning_rod"}
+# 1.20.1's data version: what its structure templates are saved at.
+DATA_VERSION = 3465
 
 
 def _nbt_read(buf, tag: int):
@@ -1212,525 +2048,76 @@ def _nbt_write(out, tag: int, v) -> None:
         raise ValueError(f"NBT tag {tag}")
 
 
-def port_structure(data: bytes) -> bytes:
-    """A structure template: 26.x names a palette's block states "id" and "properties", 1.21.1 "Name" and "Properties"
-    (1.21.1 reads a lowercase entry as air: the world's sites came out empty); saved at 1.21.1's data version, so
-    nothing is updated as it loads."""
+def nbt_load(data: bytes):
     import gzip
     import io
     import struct
     buf = io.BytesIO(gzip.decompress(data))
     tag = struct.unpack(">b", buf.read(1))[0]
     n = struct.unpack(">H", buf.read(2))[0]
-    root_name = buf.read(n).decode("utf-8")
-    root = _nbt_read(buf, tag)
-    palettes = []
-    if "palette" in root:
-        palettes.append(root["palette"][1][1])
-    if "palettes" in root:
-        palettes.extend(p for p in root["palettes"][1][1])
-    for palette in palettes:
-        for i, entry in enumerate(palette):
-            palette[i] = {{"id": "Name", "properties": "Properties"}.get(k, k): v for k, v in entry.items()}
-            name = palette[i].get("Name")
-            if name and name[1] in STRUCTURE_ALIASES:
-                palette[i]["Name"] = (8, STRUCTURE_ALIASES[name[1]])
-    root["DataVersion"] = (3, DATA_VERSION)
+    name = buf.read(n).decode("utf-8")
+    return tag, name, _nbt_read(buf, tag)
+
+
+def nbt_save(tag: int, name: str, root) -> bytes:
+    import gzip
+    import io
+    import struct
     out = io.BytesIO()
     out.write(struct.pack(">b", tag))
-    b = root_name.encode("utf-8")
+    b = name.encode("utf-8")
     out.write(struct.pack(">H", len(b)))
     out.write(b)
     _nbt_write(out, tag, root)
     return gzip.compress(out.getvalue(), mtime=0)
 
 
-VANILLA_ANGLES = {0, 22.5, -22.5, 45, -45}
-
-
-# Vanilla parents whose blocks 1.21.1 draws in a see-through layer by name (not by their models): a model of the mod's
-# on one of them names the layer itself.
-PARENT_LAYERS = {"minecraft:block/grass_block": "minecraft:cutout_mipped", "minecraft:block/leaves": "minecraft:cutout_mipped",
-                 "minecraft:block/cross": "minecraft:cutout", "minecraft:block/tinted_cross": "minecraft:cutout"}
-
-
-def port_model(data: bytes) -> bytes:
-    """A block or item model whose parts turn by angles 1.21.1 will not read (it takes multiples of 22.5 up to 45, about
-    one axis): its parts moved where only this branch's loader reads them (dev.groundburst.port.render.FreeRotationModels).
-    One on a see-through vanilla parent (grass, leaves, a cross) names its layer (PARENT_LAYERS)."""
-    m = json.loads(data)
-    if m.get("parent") in PARENT_LAYERS and "render_type" not in m:
-        m["render_type"] = PARENT_LAYERS[m["parent"]]
-        data = (json.dumps(m, indent=2) + "\n").encode("utf-8")
-    # 26.x's bar templates are 1.21.1's iron bars' models (the same parts and texture names).
-    if isinstance(m.get("parent"), str) and m["parent"].startswith("minecraft:block/template_bars_"):
-        m["parent"] = m["parent"].replace("minecraft:block/template_bars_", "minecraft:block/iron_bars_")
-        data = (json.dumps(m, indent=2) + "\n").encode("utf-8")
-    if m.get("loader") == "groundburst:polygons":
-        # Main's polygons, drawn there by its own loader (client/render/PolygonModels): this branch's bakes them beside
-        # the elements (dev.groundburst.port.render.FreeRotationModels).
-        m["loader"] = "groundburst:free_rotation"
-        m["groundburst:elements"] = m.pop("elements", [])
-        return (json.dumps(m, indent=2) + "\n").encode("utf-8")
-    elements = m.get("elements")
-    if not isinstance(elements, list) or "loader" in m:
-        return data
-    def vanilla(e: dict) -> bool:
-        r = e.get("rotation")              # (26.x's turn about three axes, "x", "y", "z", is this branch's loader's too)
-        return not r or ("axis" in r and float(r.get("angle", 0)) in VANILLA_ANGLES)
-
-    if all(vanilla(e) for e in elements):
-        return data
-    m["loader"] = "groundburst:free_rotation"
-    m["groundburst:elements"] = m.pop("elements")
-    return (json.dumps(m, indent=2) + "\n").encode("utf-8")
-
-
-def vanilla_ids(java: str, pattern: str) -> set[str]:
-    """Ids 1.21.1 registers, read from its sources (build/mcsrc): {pattern} captures each name in {java}."""
-    src = ROOT / "build" / "mcsrc" / java
-    return {"minecraft:" + n for n in re.findall(pattern, src.read_text(encoding="utf-8"))} if src.exists() else set()
-
-
-ENTITY_TYPES = None
-
-
-def port_biome(data: bytes) -> bytes:
-    """26.x keeps a biome's sky, fog, music, ambient particles and mob spawns as environment attributes; 1.21.1 as its
-    effects and spawners (a mob 1.21.1 lacks is left out)."""
-    global ENTITY_TYPES
-    if ENTITY_TYPES is None:
-        ENTITY_TYPES = vanilla_ids("net/minecraft/world/entity/EntityType.java", r'register\(\s*"([a-z0-9_]+)"')
-    b = json.loads(data)
-    attrs = b.pop("attributes", {})
-    effects = b.get("effects", {})
-
-    def colour(v):
-        return int(v.lstrip("#"), 16) if isinstance(v, str) else v
-
-    for key in list(effects):
-        effects[key] = colour(effects[key])
-    effects.pop("dry_foliage_color", None)                    # 26.x's
-    for attr, key in (("minecraft:visual/sky_color", "sky_color"), ("minecraft:visual/fog_color", "fog_color"),
-                      ("minecraft:visual/water_fog_color", "water_fog_color")):
-        if attr in attrs:
-            effects[key] = colour(attrs[attr])
-    effects.setdefault("sky_color", 7907327)
-    effects.setdefault("fog_color", 12638463)
-    effects.setdefault("water_color", 4159204)
-    effects.setdefault("water_fog_color", 329011)
-    particles = attrs.get("minecraft:visual/ambient_particles")
-    if particles:
-        effects["particle"] = {"options": particles[0]["particle"], "probability": particles[0]["probability"]}
-    if "minecraft:audio/background_music" in attrs and attrs.get("minecraft:audio/music_volume", 1) == 0:
-        # No music: 1.21.1 has no silence, so the music is an empty sound that waits long between plays.
-        effects["music"] = {"sound": "minecraft:intentionally_empty", "min_delay": 12000, "max_delay": 24000, "replace_current_music": True}
-    b["effects"] = effects
-    spawns = attrs.get("minecraft:gameplay/natural_mob_spawns", {}).get("argument", {})
-    spawners = {}
-    for category, entries in spawns.get("spawns_by_category", {}).items():
-        out = []
-        for e in entries:
-            if ENTITY_TYPES and e["type"] not in ENTITY_TYPES:
-                continue
-            count = e.get("count", 1)
-            lo, hi = (count["min_inclusive"], count["max_inclusive"]) if isinstance(count, dict) else (count, count)
-            out.append({"type": e["type"], "weight": e["weight"], "minCount": lo, "maxCount": hi})
-        spawners[category] = out
-    b["spawners"] = spawners
-    b["spawn_costs"] = spawns.get("spawn_costs", {})
-    if b.get("carvers") == []:
-        b["carvers"] = {}
-    return (json.dumps(b, indent=2) + "\n").encode("utf-8")
-
-
-# 26.x's named predicates the mod's loot tables use, as 1.21.1 writes them out.
-NAMED_CONDITIONS = {
-    "minecraft:tool/can_silk_touch": {"condition": "minecraft:match_tool", "predicate": {
-        "predicates": {"minecraft:enchantments": [{"enchantments": "minecraft:silk_touch", "levels": {"min": 1}}]}}},
-    "minecraft:tool/can_shear": {"condition": "minecraft:match_tool", "predicate": {"items": "minecraft:shears"}},
+# The sites' blocks 1.20.1 has not (1.20.3's and 1.21's): what stands in their place, and whether their properties stay.
+PALETTE_RENAMES = {
+    "minecraft:short_grass": ("minecraft:grass", True),               # 1.20.3 renamed 1.20.1's grass
+    # 1.21's copper doors (the guard's and the mast's huts): a door a hand opens, as a copper door is (an iron door needs
+    # redstone), dark as the weathered green.
+    "minecraft:weathered_copper_door": ("minecraft:spruce_door", True),
+    # 1.21's heavy core (the test site's device on its stand, hung from its cables): a dense iron-bound block of 1.20.1's.
+    "minecraft:heavy_core": ("minecraft:lodestone", False),
 }
 
 
-def loot_condition(c):
-    """A 26.x loot condition (a named predicate, or {"type", ...}) as 1.21.1 writes one ({"condition", ...})."""
-    if isinstance(c, str):
-        if c in NAMED_CONDITIONS:
-            return json.loads(json.dumps(NAMED_CONDITIONS[c]))
-        return {"condition": "minecraft:reference", "name": c}
-    if not isinstance(c, dict) or "condition" in c:
-        return c
-    c = dict(c)
-    kind = c.pop("type")
-    out = {"condition": kind}
-    if kind == "minecraft:match_block":                      # 1.21.1's block state property: one block
-        out["condition"] = "minecraft:block_state_property"
-        out["block"] = c.pop("blocks")
-        if "state" in c:
-            out["properties"] = c.pop("state")
-    if kind in ("minecraft:any_of", "minecraft:all_of"):
-        out["terms"] = [loot_condition(t) for t in c.pop("terms")]
-    if kind == "minecraft:inverted":
-        out["term"] = loot_condition(c.pop("term"))
-    out.update(c)
-    return port_loot_object(out)
+def port_structure(data: bytes) -> bytes:
+    """A structure template, saved at 1.20.1's data version (so nothing is updated as it loads), its newer blocks as
+    1.20.1's (PALETTE_RENAMES)."""
+    tag, name, root = nbt_load(data)
+    root["DataVersion"] = (3, DATA_VERSION)
+    # (A compound is a dict of name to (tag, value); a list is (element tag, [values]).)
+    palettes = []
+    if "palette" in root:
+        palettes.append(root["palette"][1][1])
+    if "palettes" in root:
+        palettes.extend(p[1] for p in root["palettes"][1][1])
+    for entries in palettes:
+        for state in entries:
+            block = state["Name"][1]
+            if block in PALETTE_RENAMES:
+                new, keep = PALETTE_RENAMES[block]
+                state["Name"] = (8, new)
+                if not keep:
+                    state.pop("Properties", None)
+    return nbt_save(tag, name, root)
 
 
-def loot_function(f):
-    """A 26.x loot function ({"type", ...}) as 1.21.1 writes one ({"function", ...})."""
-    if not isinstance(f, dict) or "function" in f:
-        return port_loot_object(f)
-    f = dict(f)
-    out = {"function": f.pop("type")}
-    out.update(f)
-    return port_loot_object(out)
-
-
-def port_loot_object(o):
-    """26.x's single "condition" and its "modifier" list, wherever they sit (pools, entries, functions), as 1.21.1's
-    "conditions" and "functions"."""
-    if isinstance(o, list):
-        return [port_loot_object(x) for x in o]
-    if not isinstance(o, dict):
-        return o
-    out = {}
-    for k, v in o.items():
-        # A pool's, an entry's or a function's own condition (a condition's "condition" is its 1.21.1 kind: kept).
-        if k == "condition" and (isinstance(v, dict) or (isinstance(v, str) and ("type" in o or "rolls" in o or "entries" in o or "name" in o or "function" in o))):
-            out.setdefault("conditions", []).append(loot_condition(v))
-        elif k == "conditions" and isinstance(v, list):
-            out.setdefault("conditions", []).extend(loot_condition(x) for x in v)
-        elif k == "modifier":
-            out.setdefault("functions", []).extend(loot_function(x) for x in (v if isinstance(v, list) else [v]))
-        elif k == "functions" and isinstance(v, list):
-            out.setdefault("functions", []).extend(loot_function(x) for x in v)
-        else:
-            out[k] = port_loot_object(v)
-    return out
-
-
-def port_loot(data: bytes) -> bytes:
-    t = json.loads(data)
-    new = port_loot_object(t)
-    if new == t:
+# --- the run ----------------------------------------------------------------------------------------------------------------
+def checkout_eol(dest: str, data: bytes) -> bytes:
+    """Text files as git checks them out here (CRLF, but for the generated data: .gitattributes)."""
+    if dest.startswith("src/generated/") or not re.search(r"\.(java|md|txt|py|json|toml|cfg|gradle|properties|ps1|mcmeta|fsh|vsh|glsl)$", dest):
         return data
-    return (json.dumps(new, indent=2) + "\n").encode("utf-8")
-
-
-def block_state(v):
-    """A block state as 1.21.1 writes one ({"Name", "Properties"}), from 26.x's ("name", "name[a=b]" or {"id", ...})."""
-    if isinstance(v, str):
-        m = re.fullmatch(r"([^\[]+)(?:\[(.*)\])?", v)
-        props = dict(p.split("=", 1) for p in m.group(2).split(",")) if m.group(2) else {}
-        return {"Name": m.group(1), **({"Properties": props} if props else {})}
-    if isinstance(v, dict) and "id" in v and "Name" not in v:
-        props = v.get("properties", v.get("Properties", {}))
-        return {"Name": v["id"], **({"Properties": props} if props else {})}
-    return v
-
-
-def state_provider(v):
-    """A block state provider as 1.21.1 writes one (26.x writes a plain state for the simple provider)."""
-    if isinstance(v, dict) and "type" in v:
-        return v
-    return {"type": "minecraft:simple_state_provider", "state": block_state(v)}
-
-
-def port_feature(data: bytes) -> bytes:
-    """26.x writes a configured feature's settings beside its type; 1.21.1 under "config", with full block states."""
-    f = json.loads(data)
-    config = {k: v for k, v in f.items() if k != "type"}
-    if isinstance(config.get("blocks"), dict):                  # a geode's
-        blocks = config["blocks"]
-        for key in list(blocks):
-            if key.endswith("_provider"):
-                blocks[key] = state_provider(blocks[key])
-        if "inner_placements" in blocks:
-            blocks["inner_placements"] = [block_state(s) for s in blocks["inner_placements"]]
-    for target in config.get("targets", []) if isinstance(config.get("targets"), list) else []:   # an ore's
-        if "state" in target:
-            target["state"] = block_state(target["state"])
-    return (json.dumps({"type": f["type"], "config": config}, indent=2) + "\n").encode("utf-8")
-
-
-def grass_into_dirt(path: str, data: bytes) -> bytes:
-    """The mod's grass blocks (dead grass, frosted grass) as dirt too: 26.x's plants stand on #supports_vegetation, which
-    takes in #grass_blocks, where main puts them; 1.21.1's plants stand on #dirt (a cryo burst's frosted grass shed its
-    plants instead of freezing them)."""
-    try:
-        grass = json.loads(read_main(path.replace("/dirt.json", "/grass_blocks.json")))
-    except FileNotFoundError:
-        return data
-    t = json.loads(data)
-    values = t.setdefault("values", [])
-    for v in grass.get("values", []):
-        if isinstance(v, str) and v.startswith("groundburst:") and v not in values:
-            values.append(v)
-    return (json.dumps(t, indent=2) + "\n").encode("utf-8")
-
-
-def port_tag(data: bytes) -> bytes:
-    """A tag's entries from outside the mod (vanilla's, other mods' and the common tags) made optional: 26.x has blocks,
-    items and tags 1.21.1 lacks, and one missing required entry fails the whole tag."""
-    t = json.loads(data)
-    values, changed = [], False
-    for v in t.get("values", []):
-        if isinstance(v, str) and not v.lstrip("#").startswith("groundburst:"):
-            v = {"id": v, "required": False}
-            changed = True
-        values.append(v)
-    if not changed:
-        return data                                  # as main has it
-    t["values"] = values
-    return (json.dumps(t, indent=2) + "\n").encode("utf-8")
-
-
-# --- item models ----------------------------------------------------------------------------------------------------------
-VANILLA_JAR = ROOT / "build" / "moddev" / "artifacts" / "neoforge-21.1.265-client-extra-aka-minecraft-resources.jar"
-LOOK_RANGE = 16_777_213              # dev.groundburst.port.Looks: below 2^24, so every look's number is exact as a float
-
-
-def java_hash(s: str) -> int:
-    h = 0
-    for ch in s.encode("utf-16-be").decode("utf-16-be"):
-        for unit in ([ord(ch)] if ord(ch) < 0x10000 else [0xD800 + ((ord(ch) - 0x10000) >> 10), 0xDC00 + ((ord(ch) - 0x10000) & 0x3FF)]):
-            h = (31 * h + unit) & 0xFFFFFFFF
-    return h - (1 << 32) if h >= 1 << 31 else h
-
-
-def look_id(look: str) -> int:
-    """dev.groundburst.port.Looks.id: a missile look's custom model data number."""
-    return java_hash(look) % LOOK_RANGE + 1
-
-
-def model_json(ref: str) -> dict | None:
-    ns, path = ref.split(":", 1) if ":" in ref else ("minecraft", ref)
-    try:
-        if ns == "minecraft":
-            import zipfile
-            with zipfile.ZipFile(VANILLA_JAR) as jar:
-                return json.loads(jar.read(f"assets/minecraft/models/{path}.json"))
-        return json.loads(read_main(f"src/main/resources/assets/{ns}/models/{path}.json"))
-    except (KeyError, FileNotFoundError):
-        return None
-
-
-def resolved(ref: str, key: str):
-    """A model's {key} (textures, display...), its own or the nearest parent's."""
-    for _ in range(16):
-        m = model_json(ref)
-        if m is None:
-            return None
-        if key in m:
-            return m[key]
-        if "parent" not in m:
-            return None
-        ref = m["parent"]
-    return None
-
-
-def item_models(files: list[str]) -> dict[str, bytes]:
-    """1.21.1's item models (models/item/<name>.json), from main's item model definitions (items/<name>.json):
-      - a plain model: that model (or the item's own model file, when it names it);
-      - GeckoLib's special model: builtin/entity, keeping the base model's textures and display;
-      - a select on the display context: NeoForge's separate transforms;
-      - a select on custom model data (the missile's looks): overrides on dev.groundburst.port.Looks's numbers;
-      - a range dispatch: overrides on the property's thresholds; a condition on using the item: an override on
-        groundburst:using_item.
-    What the models need from code (constant tints, the properties and their items) goes into ItemModelTable.java."""
-    out: dict[str, bytes] = {}
-    tints: dict[str, list[int]] = {}
-    props: dict[str, list[str]] = {}
-    containers: list[str] = []
-    present = set(files)
-    for path in files:
-        m = re.fullmatch(r"src/main/resources/assets/(\w+)/items/(.+)\.json", path)
-        if not m:
-            continue
-        ns, name = m.groups()
-        item_id, own = f"{ns}:{name}", f"{ns}:item/{name}"
-        dest = f"src/main/resources/assets/{ns}/models/item/{name}.json"
-        root = json.loads(read_main(path))["model"]
-        kind = root["type"].removeprefix("minecraft:")
-
-        def ref(model: dict) -> str:
-            assert model["type"].removeprefix("minecraft:") == "model", f"{path}: a {model['type']} inside a {kind}"
-            r = model["model"]
-            if r == own:                             # the item's own model file is about to be the item model: keep it apart
-                kept = f"src/main/resources/assets/{ns}/models/item/{name}_own.json"
-                out[kept] = port_model(read_main(dest))
-                return f"{ns}:item/{name}_own"
-            return r
-
-        if kind == "model":
-            if root.get("tints"):
-                tints[item_id] = [(t["value"] | 0xFF000000) if t["type"] == "minecraft:constant" else -1 for t in root["tints"]]
-            if root["model"] == own and dest in present:
-                continue                             # main's own model is the item's
-            model = {"parent": root["model"]}
-        elif kind == "neoforge:fluid_container":
-            # NeoForge 21.1's bucket model loader takes the same settings.
-            model = {"parent": "neoforge:item/bucket", "loader": "neoforge:fluid_container"}
-            model.update({k: v for k, v in root.items() if k != "type"})
-            containers.append(item_id)                   # its fluid tinted from code in 1.21.1 (ItemModels)
-        elif kind == "special":
-            model = {"parent": "builtin/entity"}
-            for key in ("textures", "display", "gui_light"):
-                v = resolved(root["base"], key)
-                if v is not None:
-                    model[key] = v
-        elif kind == "select" and root["property"] == "minecraft:display_context":
-            perspectives = {}
-            for case in root["cases"]:
-                for when in case["when"] if isinstance(case["when"], list) else [case["when"]]:
-                    perspectives[when] = {"parent": ref(case["model"])}
-            model = {"loader": "neoforge:separate_transforms", "base": {"parent": ref(root["fallback"])}, "perspectives": perspectives}
-        elif kind == "select" and root["property"] == "minecraft:custom_model_data":
-            looks = [(look_id(w), ref(case["model"]), w) for case in root["cases"]
-                     for w in (case["when"] if isinstance(case["when"], list) else [case["when"]])]
-            ids = [i for i, _, _ in looks]
-            assert len(ids) == len(set(ids)), f"{path}: two looks share a number (dev.groundburst.port.Looks)"
-            model = {"parent": ref(root["fallback"]),
-                     "overrides": [{"predicate": {"custom_model_data": i}, "model": r} for i, r, _ in sorted(looks)]}
-        elif kind == "range_dispatch":
-            scale = root.get("scale", 1)
-            props.setdefault(root["property"], []).append(item_id)
-            entries = sorted((e["threshold"] / scale, ref(e["model"])) for e in root["entries"])
-            model = {"parent": ref(root["fallback"]),
-                     "overrides": [{"predicate": {root["property"]: t}, "model": r} for t, r in entries]}
-        elif kind == "condition" and root["property"] == "minecraft:using_item":
-            props.setdefault("groundburst:using_item", []).append(item_id)
-            model = {"parent": ref(root["on_false"]),
-                     "overrides": [{"predicate": {"groundburst:using_item": 1}, "model": ref(root["on_true"])}]}
-        else:
-            raise SystemExit(f"port.py: {path}: no 1.21.1 item model for a {kind} on {root.get('property')}")
-        out[dest] = (json.dumps(model, indent=2) + "\n").encode("utf-8")
-    out["src/main/java/dev/groundburst/port/render/ItemModelTable.java"] = item_model_table(tints, props, containers).encode("utf-8")
-    return out
-
-
-def item_model_table(tints: dict[str, list[int]], props: dict[str, list[str]], containers: list[str]) -> str:
-    def hexes(values: list[int]) -> str:
-        return ", ".join(f"0x{v & 0xFFFFFFFF:08X}" for v in values)
-    tint_rows = ",\n".join(f'            Map.entry("{k}", new int[] {{{hexes(v)}}})' for k, v in sorted(tints.items()))
-    prop_rows = ",\n".join(f'            Map.entry("{k}", List.of({", ".join(chr(34) + i + chr(34) for i in v)}))' for k, v in sorted(props.items()))
-    container_rows = ",\n".join(f'            "{i}"' for i in sorted(containers))
-    return ("package dev.groundburst.port.render;\n\nimport java.util.List;\nimport java.util.Map;\n\n"
-            "/**\n * Written by tools/backport/port.py from main's item model definitions (assets/&lt;ns&gt;/items): what this branch's\n"
-            " * item models need from code ({@link ItemModels}). Not edited by hand.\n */\n"
-            "final class ItemModelTable {\n    private ItemModelTable() {}\n\n"
-            "    /** Items tinted a constant colour, ARGB per tint index. */\n"
-            f"    static final Map<String, int[]> TINTS = Map.ofEntries(\n{tint_rows});\n\n"
-            "    /** The item properties the models' overrides read, and the items that have them. */\n"
-            f"    static final Map<String, List<String>> PROPERTIES = Map.ofEntries(\n{prop_rows});\n\n"
-            "    /** Fluid containers (buckets): their fluid tinted as the fluid is. */\n"
-            f"    static final List<String> FLUID_CONTAINERS = List.of(\n{container_rows});\n}}\n")
-
-
-def ingredient(v):
-    """A 26.x ingredient ("minecraft:stone", "#c:ingots/iron", or a list of them) as 1.21.1 writes it."""
-    if isinstance(v, str):
-        return {"tag": v[1:]} if v.startswith("#") else {"item": v}
-    if isinstance(v, list):
-        return [ingredient(x) for x in v]
-    return v
-
-
-def fluid_ingredient(v):
-    """A 26.x fluid ingredient ("minecraft:water", "#c:argon", or a list of them) as NeoForge 21.1 writes it."""
-    if isinstance(v, str):
-        return {"tag": v[1:]} if v.startswith("#") else {"fluid": v}
-    if isinstance(v, list):
-        return [fluid_ingredient(x) for x in v]
-    return v
-
-
-def sized(entries, convert):
-    return [{**e, "ingredient": convert(e["ingredient"])} if isinstance(e, dict) and "ingredient" in e else e for e in entries]
-
-
-# 26.x's names for things 1.21.1 has under another.
-ITEM_ALIASES = {"minecraft:iron_chain": "minecraft:chain"}
-VANILLA_ITEMS = None
-
-
-def vanilla_items() -> set[str]:
-    """1.21.1's items (and blocks, a few more than have items), read from its sources: enough to tell 26.x's new ones."""
-    global VANILLA_ITEMS
-    if VANILLA_ITEMS is None:
-        blocks_src = (ROOT / "build" / "mcsrc" / "net/minecraft/world/level/block/Blocks.java").read_text(encoding="utf-8")
-        items_src = (ROOT / "build" / "mcsrc" / "net/minecraft/world/item/Items.java").read_text(encoding="utf-8")
-        blocks = dict(re.findall(r'public static final Block (\w+) = register\(\s*"([a-z0-9_]+)"', blocks_src))
-        VANILLA_ITEMS = {"minecraft:" + b for b in blocks.values()} | {"minecraft:" + i for i in re.findall(r'registerItem\(\s*"([a-z0-9_]+)"', items_src)}
-    return VANILLA_ITEMS
-
-
-def missing_items(value) -> list[str]:
-    """The vanilla items named in a recipe that 1.21.1 lacks."""
-    out = []
-    if isinstance(value, dict):
-        for k, v in value.items():
-            if k in ("item", "id") and isinstance(v, str) and v.startswith("minecraft:") and v not in vanilla_items():
-                out.append(v)
-            else:
-                out.extend(missing_items(v))
-    elif isinstance(value, list):
-        for v in value:
-            out.extend(missing_items(v))
-    return out
-
-
-def port_advancement(data: bytes) -> bytes:
-    """A recipe's unlock: 26.x names its recipes, 1.21.1 one recipe."""
-    a = json.loads(data)
-    for criterion in a.get("criteria", {}).values():
-        c = criterion.get("conditions", {})
-        if criterion.get("trigger") == "minecraft:recipe_unlocked" and "recipes" in c and "recipe" not in c:
-            r = c.pop("recipes")
-            c["recipe"] = r[0] if isinstance(r, list) else r
-    return (json.dumps(a, indent=2) + "\n").encode("utf-8")
-
-
-def port_recipe(data: bytes) -> bytes | None:
-    for old, new in ITEM_ALIASES.items():
-        data = data.replace(f'"{old}"'.encode(), f'"{new}"'.encode())
-    r = json.loads(data)
-    if "key" in r:
-        r["key"] = {k: ingredient(v) for k, v in r["key"].items()}
-    if "ingredients" in r:
-        r["ingredients"] = [ingredient(v) for v in r["ingredients"]]
-    for k in ("ingredient", "base", "addition", "template", "catalyst"):
-        if k in r:
-            r[k] = ingredient(r[k])
-    # The machines' own: counted item inputs and fluid inputs.
-    if isinstance(r.get("inputs"), list):
-        r["inputs"] = sized(r["inputs"], ingredient)
-    if isinstance(r.get("fluids"), list):
-        r["fluids"] = sized(r["fluids"], fluid_ingredient)
-    if missing_items(r):
-        return None
-    return (json.dumps(r, indent=2) + "\n").encode("utf-8")
-
-
-# --- driver ---------------------------------------------------------------------------------------------------------------
-def checkout_eol(path: str, data: bytes) -> bytes:
-    """Line endings as git checks the file out here (core.autocrlf: CRLF for text, but LF for the generated JSON that
-    .gitattributes keeps LF), so a file the port leaves as main has it shows no change."""
-    if b"\0" in data[:8000]:
-        return data
-    crlf = subprocess.run(["git", "-C", str(ROOT), "config", "core.autocrlf"], capture_output=True, text=True).stdout.strip() == "true" \
-        if not hasattr(checkout_eol, "crlf") else checkout_eol.crlf
-    checkout_eol.crlf = crlf
-    lf = data.replace(b"\r\n", b"\n")
-    if not crlf or (path.startswith("src/generated/") and (path.endswith(".json") or "/.cache/" in path)):
-        return lf
-    return lf.replace(b"\n", b"\r\n")
+    return data.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
 
 
 def port_file(path: str) -> tuple[str, bytes] | None:
+    """Where the 1.21.1 build's file {path} goes here and what it becomes (None: it has no place here)."""
     if any(p.fullmatch(path) for p in DROP) or path in OWN:
         return None
-    data = read_main(path)
+    data = read_source(path)
     if path.endswith(".java"):
         return path, port_java(data.decode("utf-8"), path).encode("utf-8")
     if path.startswith("src/main/resources/") or path.startswith("src/generated/resources/"):
@@ -1739,9 +2126,9 @@ def port_file(path: str) -> tuple[str, bytes] | None:
 
 
 def sync(new: str) -> None:
-    """Brings this branch up to main's commit {new} from the one in base.txt: each file main changed since is ported again;
-    one edited by hand here (manual.txt) gets main's change merged into it (a three-way merge of ported text: the old
-    port, the new port, and the file as it is here), conflicts left marked for a person; a file main deleted goes."""
+    """Brings this branch up to the 1.21.1 branch's commit {new} from the one in base.txt: each file changed since is ported
+    again; one edited by hand here (manual.txt) gets the change merged into it (a three-way merge of ported text: the old
+    port, the new port, and the file as it is here), conflicts left marked for a person; a file deleted there goes."""
     global BASE
     old = BASE
     new = git("rev-parse", new).decode("utf-8").strip()
@@ -1768,23 +2155,22 @@ def sync(new: str) -> None:
             except FileNotFoundError:
                 out_old = None
             base_file = ROOT / "build" / "port-merge" / (dest + ".base")
-            theirs_file = ROOT / "build" / "port-merge" / (dest + ".main")
+            theirs_file = ROOT / "build" / "port-merge" / (dest + ".source")
             base_file.parent.mkdir(parents=True, exist_ok=True)
             base_file.write_bytes(checkout_eol(dest, out_old[1]) if out_old else b"")
             theirs_file.write_bytes(checkout_eol(dest, data_new))
-            r = subprocess.run(["git", "merge-file", "-L", "here", "-L", "port of old main", "-L", "port of new main",
-                                str(target), str(base_file), str(theirs_file)], capture_output=True)
+            r = subprocess.run(["git", "merge-file", "-L", "here", "-L", "port of the old 1.21.1 build",
+                                "-L", "port of the new 1.21.1 build", str(target), str(base_file), str(theirs_file)],
+                               capture_output=True)
             if r.returncode != 0:
                 conflicts.append(dest)
             continue
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(checkout_eol(dest, data_new))
     BASE = new
-    for dest, data in item_models(main_files()).items():   # every item model again: they come from several of main's files
-        (ROOT / dest).parent.mkdir(parents=True, exist_ok=True)
-        (ROOT / dest).write_bytes(checkout_eol(dest, data))
-    (HERE / "base.txt").write_text(f"{new}   main's commit this branch is brought up to (docs/BACKPORT.md)\n", encoding="utf-8")
-    print(f"{len(changes)} of main's files changed since {old[:8]}; now at {new[:8]}")
+    (HERE / "base.txt").write_text(f"{new}   the 1.21.1 branch's commit this branch is brought up to (docs/BACKPORT.md)\n",
+                                   encoding="utf-8")
+    print(f"{len(changes)} of the 1.21.1 build's files changed since {old[:8]}; now at {new[:8]}")
     for c in conflicts:
         print("  conflict to resolve by hand:", c)
 
@@ -1796,29 +2182,13 @@ def main() -> None:
         sys.stdout.write("(dropped)\n" if out is None else out[1].decode("utf-8"))
         return
     if args and args[0] == "--sync":
-        sync(args[1] if len(args) > 1 else "main")
+        sync(args[1] if len(args) > 1 else "1.21.1")
         return
-    files = args or main_files()
+    files = args or source_files()
     written = kept = dropped = 0
-    derived = item_models(main_files())
-    for dest, data in derived.items():
-        target = ROOT / dest
-        target.parent.mkdir(parents=True, exist_ok=True)
-        data = checkout_eol(dest, data)
-        if not target.exists() or target.read_bytes() != data:
-            target.write_bytes(data)
-            written += 1
     for path in files:
-        if path in derived:
-            continue
         out = port_file(path)
         if out is None:
-            if path in OWN:                               # this branch's own (its build files): never touched
-                kept += 1
-                continue
-            stale = ROOT / path
-            if stale.exists() and (path.startswith("src/") or path.startswith("tools/")) and not path.startswith("tools/backport"):
-                stale.unlink()
             dropped += 1
             continue
         dest, data = out
@@ -1826,14 +2196,29 @@ def main() -> None:
             kept += 1
             continue
         target = ROOT / dest
-        target.parent.mkdir(parents=True, exist_ok=True)
         data = checkout_eol(dest, data)
         if dest != path and (ROOT / path).exists():
-            (ROOT / path).unlink()                    # moved here (GeckoLib's folders)
+            (ROOT / path).unlink()                         # the 1.21.1 build's copy in this checkout, moved (a folder renamed)
         if not target.exists() or target.read_bytes() != data:
+            target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
             written += 1
-    print(f"{len(files)} of main's files: {written} written, {kept} kept (edited by hand), {dropped} left out")
+    # The 1.21.1 build's files dropped here but still in this checkout (it began as a copy of that branch): removed.
+    if not args:
+        for path in source_files():
+            if (any(p.fullmatch(path) for p in DROP) and not path.startswith("tools/backport/")
+                    and path != "docs/BACKPORT.md" and (ROOT / path).exists()):
+                (ROOT / path).unlink()
+        # Folders the moves and drops left empty.
+        for folder in sorted((p for p in (ROOT / "src").rglob("*") if p.is_dir()), key=lambda p: -len(p.parts)):
+            if not any(folder.iterdir()):
+                folder.rmdir()
+    # The code's common tags are renamed by Tags2's table at run time, the data's by TAG_RENAMES here: the same.
+    tags2 = (ROOT / "src/main/java/dev/groundburst/legacy/Tags2.java").read_text(encoding="utf-8")
+    for old, new in TAG_RENAMES.items():
+        assert f'Map.entry("{old}", "{new}")' in tags2, f"port.py: Tags2's renames are not TAG_RENAMES ({old})"
+    assert tags2.count("Map.entry(") == len(TAG_RENAMES), "port.py: Tags2 renames a tag TAG_RENAMES does not"
+    print(f"{written} written, {kept} kept (manual.txt), {dropped} dropped")
 
 
 if __name__ == "__main__":

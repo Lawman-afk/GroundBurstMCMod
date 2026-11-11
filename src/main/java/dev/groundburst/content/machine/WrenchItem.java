@@ -164,11 +164,11 @@ public class WrenchItem extends Item {
         CableBlock.Side next = current == CableBlock.Side.DISABLED ? CableBlock.Side.CONNECTED : CableBlock.Side.DISABLED;
         if (there.getBlock() instanceof CableBlock) {
             level.setBlock(other, there.setValue(CableBlock.SIDES.get(d.getOpposite()), next), Block.UPDATE_ALL);
-            level.invalidateCapabilities(other);
+            dev.groundburst.legacy.Caps.invalidate(level, other);
         }
         level.setBlock(pos, state.setValue(CableBlock.SIDES.get(d), next), Block.UPDATE_ALL);
         level.neighborChanged(pos, state.getBlock(), pos);
-        level.invalidateCapabilities(pos);
+        dev.groundburst.legacy.Caps.invalidate(level, pos);
         CableNetwork.invalidate(level);
         boolean on = CableBlock.side(level.getBlockState(pos), d) == CableBlock.Side.CONNECTED;
         player.displayClientMessage(Component.translatable(CABLE_MODE, d.getSerializedName(), Component.translatable(on ? MODE_ON : MODE_OFF)), true);
@@ -187,14 +187,14 @@ public class WrenchItem extends Item {
                 level.setBlock(base.above(), upper.setValue(MachineBlock.FACING, facing), Block.UPDATE_ALL);
             }
         }
-        if (level.getBlockEntity(base) instanceof MachineBlockEntity machine) {
+        if (((Object) level.getBlockEntity(base)) instanceof MachineBlockEntity machine) {
             machine.changeSides(c -> {});            // faces moved: refresh capabilities and connected pipes and cables
         }
         level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.6f, 1.2f);
     }
 
     @Override
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         tooltip.accept(Component.translatable(TOOLTIP).withStyle(ChatFormatting.GRAY));
     }
 }

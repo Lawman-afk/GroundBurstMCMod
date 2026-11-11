@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:servo"
+    },
+    {
+      "item": "groundburst:servo"
+    },
+    {
+      "item": "groundburst:hazard_concrete"
+    }
+  ],
+  "result": {
+    "item": "groundburst:silo_hatch"
+  }
+}

@@ -1,6 +1,6 @@
 #version 150
 
-// Ground Burst clouds on 1.21.1: vanilla's emissive entity fragment shader ("eyes": texture x vertex colour), with
+// Ground Burst clouds on 1.20.1 (as on 1.21.1): vanilla's emissive entity fragment shader ("eyes": texture x vertex colour), with
 // the faint fringe cut out, as main's cloud shader does, so a cloud can write depth (vanilla's own clouds, drawn later,
 // then stay behind it) without its clear pixels hiding what is drawn behind them after it.
 

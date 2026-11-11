@@ -8,8 +8,8 @@ import java.util.stream.IntStream;
 import dev.groundburst.GroundBurst;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredRegister;
 
 /**
  * Sound events. Each is declared with its subtitle and the synthesised files that back it (tools/sound), so the

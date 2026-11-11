@@ -96,7 +96,7 @@ public final class StrategicAssembly {
 
     /** The intercontinental missile a fusion weapon's parts make (jacket, guidance and module may be empty). */
     public static ItemStack assemble(ItemStack jacket, ItemStack guidance, ItemStack module) {
-        MissileParts.Guidance g = guidance.getItem() instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
+        MissileParts.Guidance g = ((Object) guidance.getItem()) instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
         return MissileAssembly.missile(new MissileSpec(new ItemStack(warhead(jacket)), SizeClass.XXL, MissileParts.Motor.ICBM, g,
                 module.getItem() instanceof MissileParts.HardenedModule));
     }

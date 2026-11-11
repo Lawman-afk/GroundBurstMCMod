@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import dev.groundburst.legacy.DeferredHolder;
 
 /**
  * The base alarm system (DESIGN.md §18.6): its devices, their block entities, and the network's upkeep. Senders: the
@@ -91,16 +91,16 @@ public final class GBAlarms {
 
     /** Keeps the network: lapsed alerts dropped each second; a level's channels forgotten as it unloads. */
     public static void init() {
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.LevelTickEvent.Post e) -> {
-            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent e) -> {if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) e.level) instanceof net.minecraft.server.level.ServerLevel level) {
                 Alarms.tick(level);
             }
         });
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.LevelEvent.Unload e) -> {
-            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.level.LevelEvent.Unload e) -> {
+            if (((Object) e.getLevel()) instanceof net.minecraft.server.level.ServerLevel level) {
                 Alarms.forget(level);
             }
         });
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> Alarms.clear());
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStoppedEvent e) -> Alarms.clear());
     }
 }

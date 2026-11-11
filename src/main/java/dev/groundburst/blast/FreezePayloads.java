@@ -3,9 +3,9 @@ package dev.groundburst.blast;
 import java.util.function.Consumer;
 
 import dev.groundburst.network.GBNetwork;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -29,7 +29,7 @@ public final class FreezePayloads {
     public record Start(int id, Vec3 center, float radius, float core, int frontTicks, int life, int age, float climb)
             implements CustomPacketPayload {
         public static final Type<Start> TYPE = GBNetwork.type("freeze_start");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeDouble(p.center.x);
             buf.writeDouble(p.center.y);
@@ -52,7 +52,7 @@ public final class FreezePayloads {
     /** Freeze {@code id}'s front has run {@code reach} blocks out (sent every few ticks while it runs). */
     public record Front(int id, float reach) implements CustomPacketPayload {
         public static final Type<Front> TYPE = GBNetwork.type("freeze_front");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Front> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Front> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeFloat(p.reach);
         }, buf -> new Front(buf.readVarInt(), buf.readFloat()));
@@ -66,7 +66,7 @@ public final class FreezePayloads {
     /** Freeze {@code id} raises a spire of ice {@code height} blocks tall from {@code foot}, over {@code ticks}. */
     public record Spire(int id, Vec3 foot, float height, int ticks) implements CustomPacketPayload {
         public static final Type<Spire> TYPE = GBNetwork.type("freeze_spire");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Spire> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Spire> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeDouble(p.foot.x);
             buf.writeDouble(p.foot.y);
@@ -84,7 +84,7 @@ public final class FreezePayloads {
     /** Freeze {@code id}'s cold snap is over. */
     public record End(int id) implements CustomPacketPayload {
         public static final Type<End> TYPE = GBNetwork.type("freeze_end");
-        public static final StreamCodec<RegistryFriendlyByteBuf, End> CODEC = StreamCodec.of((buf, p) -> buf.writeVarInt(p.id),
+        public static final StreamCodec<FriendlyByteBuf, End> CODEC = StreamCodec.of((buf, p) -> buf.writeVarInt(p.id),
                 buf -> new End(buf.readVarInt()));
 
         @Override

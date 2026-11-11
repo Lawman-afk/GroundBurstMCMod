@@ -1,9 +1,9 @@
 package dev.groundburst.content.machine;
 
 import software.bernie.geckolib.animatable.GeoBlockEntity;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 

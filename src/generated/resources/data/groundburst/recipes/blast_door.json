@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "I": {
+      "item": "minecraft:iron_door"
+    },
+    "P": {
+      "item": "groundburst:steel_plate"
+    },
+    "S": {
+      "item": "groundburst:steel_rod"
+    }
+  },
+  "pattern": [
+    "PDP",
+    "SIS",
+    "PDP"
+  ],
+  "result": {
+    "item": "groundburst:blast_door"
+  }
+}

@@ -27,7 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 /**
  * The semiconductor chain, for the site photographer ({@code -Psite=chips}; DESIGN.md §8.1): on a concrete pad, fronts
@@ -88,7 +88,7 @@ final class ChipsBoard {
     static BoundingBox build(ServerLevel level, BlockPos o) {
         int x = o.getX(), y = o.getY() + 1, z = o.getZ();
         List<Stop> line = line();
-        int west = line.getFirst().west() - 3, east = line.getLast().west() + line.getLast().width() + 2;
+        int west = dev.groundburst.legacy.J21.first(line).west() - 3, east = dev.groundburst.legacy.J21.last(line).west() + dev.groundburst.legacy.J21.last(line).width() + 2;
         int back = line.stream().mapToInt(Stop::depth).max().orElse(1) + 2;
         BlockState concrete = GBLaunch.REINFORCED_CONCRETE.block().get().defaultBlockState();
         for (BlockPos p : BlockPos.betweenClosed(x + west, y - 1, z - 4, x + east, y - 1, z + back)) {
@@ -106,7 +106,7 @@ final class ChipsBoard {
                 level.setBlockAndUpdate(at, state);
                 block.setPlacedBy(level, at, state, null, ItemStack.EMPTY);
             }
-            if (level.getBlockEntity(at) instanceof MachineBlockEntity machine) {
+            if (((Object) level.getBlockEntity(at)) instanceof MachineBlockEntity machine) {
                 feed(s.name(), machine);
             }
         }
@@ -158,7 +158,7 @@ final class ChipsBoard {
         double x = o.getX(), y = o.getY() + 1, z = o.getZ();
         List<Stop> line = line();
         List<BunkerDoorBoard.CloseUp> out = new ArrayList<>();
-        Stop first = line.getFirst(), last = line.getLast();
+        Stop first = dev.groundburst.legacy.J21.first(line), last = dev.groundburst.legacy.J21.last(line);
         out.add(new BunkerDoorBoard.CloseUp("line_west", new Vec3(x + first.west() - 2.0, y + 0.2, z - 4.0), -52, 9));
         out.add(new BunkerDoorBoard.CloseUp("line_west_night", new Vec3(x + first.west() - 2.0, y + 0.2, z - 4.0), -52, 9));
         for (Stop s : line) {

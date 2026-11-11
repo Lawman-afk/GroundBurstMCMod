@@ -1,0 +1,34 @@
+{
+  "type": "groundburst:crystal_pulling",
+  "energy_per_tick": 160,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": {
+        "tag": "forge:argon"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "count": 4,
+      "ingredient": {
+        "item": "groundburst:alumina"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "groundburst:tungsten_crucible"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:sapphire_boule"
+      }
+    }
+  ],
+  "time": 1600
+}

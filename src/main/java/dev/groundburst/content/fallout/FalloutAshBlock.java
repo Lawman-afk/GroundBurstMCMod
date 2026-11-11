@@ -25,7 +25,7 @@ public class FalloutAshBlock extends AshLayerBlock {
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (random.nextFloat() < WEATHER_CHANCE) {
             weather(state, level, pos);
         }
@@ -33,7 +33,7 @@ public class FalloutAshBlock extends AshLayerBlock {
 
     /** Turns it into plain ash as deep as it is. */
     public void weather(BlockState state, ServerLevel level, BlockPos pos) {
-        if (this.weathersTo.get() instanceof AshLayerBlock ash) {
+        if (((Object) this.weathersTo.get()) instanceof AshLayerBlock ash) {
             level.setBlock(pos, ash.layers(state.getValue(LAYERS)), Block.UPDATE_ALL);
         }
     }

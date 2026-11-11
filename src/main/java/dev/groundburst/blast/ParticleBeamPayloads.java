@@ -3,9 +3,9 @@ package dev.groundburst.blast;
 import java.util.function.Consumer;
 
 import dev.groundburst.network.GBNetwork;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -27,7 +27,7 @@ public final class ParticleBeamPayloads {
      */
     public record Start(int id, Vec3 from, Vec3 at, int age, int uplink, int burn) implements CustomPacketPayload {
         public static final Type<Start> TYPE = GBNetwork.type("particle_beam_start");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeDouble(p.from.x);
             buf.writeDouble(p.from.y);
@@ -50,7 +50,7 @@ public final class ParticleBeamPayloads {
     /** Beam {@code id} touches the ground at {@code at} now (sent every other tick). */
     public record Move(int id, Vec3 at) implements CustomPacketPayload {
         public static final Type<Move> TYPE = GBNetwork.type("particle_beam_move");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Move> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Move> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeDouble(p.at.x);
             buf.writeFloat((float) p.at.y);
@@ -66,7 +66,7 @@ public final class ParticleBeamPayloads {
     /** Beam {@code id} is gone: it burned out, or its cannon stopped firing it (power cut, knocked out, broken). */
     public record End(int id) implements CustomPacketPayload {
         public static final Type<End> TYPE = GBNetwork.type("particle_beam_end");
-        public static final StreamCodec<RegistryFriendlyByteBuf, End> CODEC = StreamCodec.of((buf, p) -> buf.writeVarInt(p.id),
+        public static final StreamCodec<FriendlyByteBuf, End> CODEC = StreamCodec.of((buf, p) -> buf.writeVarInt(p.id),
                 buf -> new End(buf.readVarInt()));
 
         @Override

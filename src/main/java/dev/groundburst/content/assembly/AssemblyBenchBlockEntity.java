@@ -3,7 +3,7 @@ package dev.groundburst.content.assembly;
 import java.util.List;
 import java.util.Set;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -112,7 +112,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
 
     /** The fuze in the fuze slot (null: none). */
     public @org.jspecify.annotations.Nullable Fuze fittedFuze() {
-        return slot(SLOT_FUZE).getItem() instanceof ComponentItems.FuzeItem f ? f.fuze : null;
+        return ((Object) slot(SLOT_FUZE).getItem()) instanceof ComponentItems.FuzeItem f ? f.fuze : null;
     }
 
     /** The setting the fitted fuze will be given. */
@@ -181,7 +181,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
         this.inventory.setItem(SLOT_CORE, parts.get(0));
         this.inventory.setItem(SLOT_CASING, parts.get(1));
         this.inventory.setItem(SLOT_FUZE, parts.get(2));
-        FuzeSettings old = warhead.getOrDefault(dev.groundburst.registry.GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
+        FuzeSettings old = dev.groundburst.legacy.component.Comps.getOrDefault(warhead, dev.groundburst.registry.GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
         this.fuzeValues[old.fuze().ordinal()] = old.value();             // reassembled, it keeps its setting
         warhead.shrink(1);
         this.inventory.setItem(SLOT_WARHEAD, warhead.isEmpty() ? ItemStack.EMPTY : warhead);
@@ -288,18 +288,18 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     public List<Component> readout(MachineMenu menu) {
         int total = menu.extra(DATA_TOTAL);
         ItemStack core = slot(SLOT_CORE), fuze = slot(SLOT_FUZE), out = slot(SLOT_WARHEAD);
-        var problem = WarheadAssembly.Problem.values()[Math.clamp(menu.extra(DATA_PROBLEM), 0, WarheadAssembly.Problem.values().length - 1)];
-        Component first = core.getItem() instanceof ComponentItems.PayloadCore c
+        var problem = WarheadAssembly.Problem.values()[dev.groundburst.legacy.J21.clamp(menu.extra(DATA_PROBLEM), 0, WarheadAssembly.Problem.values().length - 1)];
+        Component first = ((Object) core.getItem()) instanceof ComponentItems.PayloadCore c
                 ? Component.translatable(T_MAKES, c.warhead().getName()) : !out.isEmpty() ? Component.translatable(T_DONE, out.getHoverName())
                 : Component.translatable(T_IDLE);
         Component second;
         if (total > 0) {
             second = menu.status() == MachineStatus.NO_POWER ? Component.translatable(T_NO_POWER, workEnergy(ENERGY_PER_TICK)).withStyle(ChatFormatting.RED)
                     : Component.translatable(T_WORKING, menu.extra(DATA_PROGRESS) * 100 / total);
-        } else if (problem == WarheadAssembly.Problem.NONE && core.getItem() instanceof ComponentItems.PayloadCore c
-                && fuze.getItem() instanceof ComponentItems.FuzeItem f) {
+        } else if (problem == WarheadAssembly.Problem.NONE && ((Object) core.getItem()) instanceof ComponentItems.PayloadCore c
+                && ((Object) fuze.getItem()) instanceof ComponentItems.FuzeItem f) {
             second = Component.translatable(T_READY, c.sizeClass.name(), Component.translatable(f.fuze.name));
-        } else if (problem == WarheadAssembly.Problem.WRONG_CASING && core.getItem() instanceof ComponentItems.PayloadCore c) {
+        } else if (problem == WarheadAssembly.Problem.WRONG_CASING && ((Object) core.getItem()) instanceof ComponentItems.PayloadCore c) {
             second = Component.translatable(problem.key, c.sizeClass.name(),
                     WarheadAssembly.casing(c.sizeClass).getName(new ItemStack(WarheadAssembly.casing(c.sizeClass)))).withStyle(ChatFormatting.RED);
         } else if (problem == WarheadAssembly.Problem.NO_CORE && !out.isEmpty()) {
@@ -330,8 +330,8 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -352,8 +352,8 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("progress", this.progress);
         output.putInt("total", this.total);
         output.putIntArray("fuze_values", this.fuzeValues);
@@ -361,8 +361,8 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.progress = input.getIntOr("progress", 0);
         this.total = input.getIntOr("total", 0);
         input.getIntArray("fuze_values").ifPresent(v -> System.arraycopy(v, 0, this.fuzeValues, 0, Math.min(v.length, this.fuzeValues.length)));

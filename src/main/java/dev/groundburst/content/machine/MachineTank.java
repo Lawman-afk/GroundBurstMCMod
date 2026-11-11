@@ -5,7 +5,7 @@ import java.util.function.Predicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import dev.groundburst.port.transfer.fluid.FluidResource;
 import dev.groundburst.port.transfer.fluid.FluidStacksResourceHandler;
 

@@ -145,7 +145,7 @@ public final class AssemblyStats {
     /** The warhead kind a stack is (null: not a warhead). */
     public static @Nullable ChargeKind kindOf(ItemStack stack) {
         // A warhead: one the bench assembles from a core, or one the ICBM Assembly Hall builds whole (no core).
-        return stack.getItem() instanceof BlockItem b && b.getBlock() instanceof ChargeBlock c && (WarheadAssembly.coreOf(c) != null || c.kind.wholeWeapon())
+        return ((Object) stack.getItem()) instanceof BlockItem b && ((Object) b.getBlock()) instanceof ChargeBlock c && (WarheadAssembly.coreOf(c) != null || c.kind.wholeWeapon())
                 ? c.kind : null;
     }
 
@@ -196,7 +196,7 @@ public final class AssemblyStats {
 
     /** The {@link Area} of the charge a stack is (none for anything else). */
     public static Area area(ItemStack charge, RegistryAccess registries) {
-        return charge.getItem() instanceof BlockItem b && b.getBlock() instanceof ChargeBlock c ? area(c.kind, registries) : Area.NONE;
+        return ((Object) charge.getItem()) instanceof BlockItem b && ((Object) b.getBlock()) instanceof ChargeBlock c ? area(c.kind, registries) : Area.NONE;
     }
 
     public static Area area(ChargeKind kind, RegistryAccess registries) {
@@ -258,7 +258,7 @@ public final class AssemblyStats {
             out.add(Stat.row(CLASS, Component.literal(size.name())));
         }
         blast(out, kind, registries, true);
-        FuzeSettings fuze = warhead.getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
+        FuzeSettings fuze = dev.groundburst.legacy.component.Comps.getOrDefault(warhead, GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
         out.add(Stat.row(FUZE, Component.translatable(fuze.fuze().name)));
         if (fuze.fuze() == Fuze.BAROMETRIC) {
             out.add(Stat.row(BURST, Component.translatable(V_UP, fuze.value())));
@@ -344,7 +344,7 @@ public final class AssemblyStats {
     /** A missile's stats: its warhead (name, crater, lethal radius, effect, fuze), then its flight at full range. */
     public static List<Stat> missile(ItemStack missile, RegistryAccess registries) {
         List<Stat> out = new ArrayList<>();
-        MissileSpec spec = missile.get(GBDataComponents.MISSILE.get());
+        MissileSpec spec = dev.groundburst.legacy.component.Comps.get(missile, GBDataComponents.MISSILE.get());
         if (spec == null) {
             return out;
         }
@@ -353,7 +353,7 @@ public final class AssemblyStats {
         if (kind != null) {
             blast(out, kind, registries, false);
         }
-        FuzeSettings fuze = spec.warhead().getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
+        FuzeSettings fuze = dev.groundburst.legacy.component.Comps.getOrDefault(spec.warhead(), GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
         out.add(Stat.row(FUZE, fuze.fuze() == Fuze.BAROMETRIC ? Component.translatable(V_UP, fuze.value()) : Component.translatable(fuze.fuze().name)));
         int range = spec.range();
         out.add(Stat.header(H_FULL_RANGE));

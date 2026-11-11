@@ -23,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluids;
 import dev.groundburst.port.transfer.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import dev.groundburst.port.transfer.fluid.FluidResource;
 import dev.groundburst.port.transfer.transaction.Transaction;
 
@@ -225,14 +225,14 @@ final class ReactorTests {
         var level = helper.getLevel();
         BlockPos ctrl = r.controllerPos();
         for (Direction d : Direction.values()) {
-            helper.assertTrue(level.getCapability(Capabilities.Item.BLOCK, ctrl, d) == null
-                    && level.getCapability(Capabilities.Fluid.BLOCK, ctrl, d) == null
-                    && level.getCapability(Capabilities.Energy.BLOCK, ctrl, d) == null, "the controller exposes nothing on " + d);
+            helper.assertTrue(dev.groundburst.legacy.Caps.get(level, Capabilities.Item.BLOCK, ctrl, d) == null
+                    && dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, ctrl, d) == null
+                    && dev.groundburst.legacy.Caps.get(level, Capabilities.Energy.BLOCK, ctrl, d) == null, "the controller exposes nothing on " + d);
         }
         BlockPos coolant = cell(r, 'W');
         helper.assertTrue(level.getBlockState(coolant).is(GBMultiblocks.FLUID_PORT.block().get()), "the coolant port is a Fluid Port");
-        var fluids = level.getCapability(Capabilities.Fluid.BLOCK, coolant, Direction.NORTH);
-        helper.assertTrue(fluids != null && level.getCapability(Capabilities.Item.BLOCK, coolant, Direction.NORTH) == null,
+        var fluids = dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, coolant, Direction.NORTH);
+        helper.assertTrue(fluids != null && dev.groundburst.legacy.Caps.get(level, Capabilities.Item.BLOCK, coolant, Direction.NORTH) == null,
                 "the Fluid Port carries fluids, not items");
         try (var tx = Transaction.openRoot()) {
             helper.assertTrue(fluids.insert(0, FluidResource.of(GBFluids.HEAVY_WATER.source().get()), 1_000, tx) == 1_000, "heavy water goes in");
@@ -240,8 +240,8 @@ final class ReactorTests {
         }
         helper.assertTrue(r.tank(0).amount() == 1_000, "the coolant reaches the controller");
         BlockPos fuelPort = cell(r, 'U');
-        helper.assertTrue(level.getCapability(Capabilities.Item.BLOCK, fuelPort, Direction.UP) != null
-                && level.getCapability(Capabilities.Fluid.BLOCK, fuelPort, Direction.UP) == null, "the Item Port carries items, not fluids");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, Capabilities.Item.BLOCK, fuelPort, Direction.UP) != null
+                && dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, fuelPort, Direction.UP) == null, "the Item Port carries items, not fluids");
         helper.succeed();
     }
 
@@ -307,13 +307,13 @@ final class ReactorTests {
                 && dev.groundburst.content.multiblock.PartCut.NORTH_WEST.rotated(Direction.SOUTH) == dev.groundburst.content.multiblock.PartCut.SOUTH_EAST,
                 "cuts turn with the structure");
         for (Direction d : Direction.values()) {
-            helper.assertTrue(level.getCapability(Capabilities.Item.BLOCK, pa.controllerPos(), d) == null
-                    && level.getCapability(Capabilities.Energy.BLOCK, pa.controllerPos(), d) == null, "the controller exposes nothing on " + d);
+            helper.assertTrue(dev.groundburst.legacy.Caps.get(level, Capabilities.Item.BLOCK, pa.controllerPos(), d) == null
+                    && dev.groundburst.legacy.Caps.get(level, Capabilities.Energy.BLOCK, pa.controllerPos(), d) == null, "the controller exposes nothing on " + d);
         }
         // A containment cell goes in through the ring's Item Port.
         BlockPos itemPort = pa.definition().cells(pa.controllerPos(), pa.controllerFacing()).stream()
                 .filter(c -> c.key() == 'I').findFirst().orElseThrow().pos();
-        var items = level.getCapability(Capabilities.Item.BLOCK, itemPort, Direction.EAST);
+        var items = dev.groundburst.legacy.Caps.get(level, Capabilities.Item.BLOCK, itemPort, Direction.EAST);
         helper.assertTrue(items != null, "the Item Port carries items");
         try (var tx = Transaction.openRoot()) {
             int in = 0;
@@ -399,9 +399,9 @@ final class ReactorTests {
         var pig = helper.spawn(net.minecraft.world.entity.EntityType.PIG, new BlockPos(8, 2, 9));
         var zombie = helper.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new BlockPos(9, 2, 8));
         helper.succeedWhen(() -> {
-            var sick = pig.getEffect(GBEffects.RADIATION_SICKNESS);
+            var sick = pig.getEffect(GBEffects.RADIATION_SICKNESS.get());
             helper.assertTrue(sick != null && sick.getAmplifier() >= 2, "the pig is badly sick near the centre");
-            helper.assertTrue(!zombie.hasEffect(GBEffects.RADIATION_SICKNESS), "the undead are immune");
+            helper.assertTrue(!zombie.hasEffect(GBEffects.RADIATION_SICKNESS.get()), "the undead are immune");
             RadiationSources.of(level).removeNear(centre, 1);
         });
     }
@@ -497,12 +497,12 @@ final class ReactorTests {
         BlockPos fluid = cell(r, 'W');
         level.setBlockAndUpdate(fluid, GBMultiblocks.LEAD_LINED_CASING.block().get().defaultBlockState());
         var problem = r.problem(level);
-        helper.assertTrue(!r.isFormed() && problem != null && problem.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
+        helper.assertTrue(!r.isFormed() && problem != null && ((Object) problem.getContents()) instanceof net.minecraft.network.chat.contents.TranslatableContents t
                 && t.getKey().equals(FissionCore.NEEDS_PORT), "without a Fluid Port it asks for one, " + problem);
         // The controller in a corner: the box is found, but the controller cannot stand there.
         FissionReactorBlockEntity cornered = box(helper, new BlockPos(11, 1, 9), 3, 3, 3, 0, (x, y, z) -> true);
         var scan = FissionCore.scan(level, cornered.controllerPos(), Direction.NORTH);
-        helper.assertTrue(!cornered.isFormed() && scan.problem() != null && scan.problem().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents c
+        helper.assertTrue(!cornered.isFormed() && scan.problem() != null && ((Object) scan.problem().getContents()) instanceof net.minecraft.network.chat.contents.TranslatableContents c
                 && c.getKey().equals(FissionCore.CORNER), "a controller in a corner is refused, " + scan.problem());
         helper.succeed();
     }
@@ -551,7 +551,7 @@ final class ReactorTests {
             r.burnForTest();
             java.util.Set<Integer> lives = new java.util.HashSet<>();
             for (int slot : slots) {
-                var burnup = r.inventory().getItem(slot).get(dev.groundburst.registry.GBDataComponents.FUEL_BURNUP.get());
+                var burnup = dev.groundburst.legacy.component.Comps.get(r.inventory().getItem(slot), dev.groundburst.registry.GBDataComponents.FUEL_BURNUP.get());
                 helper.assertTrue(burnup != null && burnup.used() >= 38, "rod in slot " + slot + " has burned, " + burnup);
                 int life = burnup.life();
                 int avg = FissionReactorBlockEntity.ROD_LIFE;
@@ -562,8 +562,8 @@ final class ReactorTests {
             // One rod near its end: it comes out spent; the others go on.
             int first = slots.get(0);
             ItemStack worn = r.inventory().getItem(first).copy();
-            var b = worn.get(dev.groundburst.registry.GBDataComponents.FUEL_BURNUP.get());
-            worn.set(dev.groundburst.registry.GBDataComponents.FUEL_BURNUP.get(), new dev.groundburst.content.nuclear.FuelBurnup(b.life() - 5, b.life()));
+            var b = dev.groundburst.legacy.component.Comps.get(worn, dev.groundburst.registry.GBDataComponents.FUEL_BURNUP.get());
+            dev.groundburst.legacy.component.Comps.set(worn, dev.groundburst.registry.GBDataComponents.FUEL_BURNUP.get(), new dev.groundburst.content.nuclear.FuelBurnup(b.life() - 5, b.life()));
             r.inventory().setItem(first, worn);
             helper.runAfterDelay(25, () -> {
                 r.burnForTest();

@@ -7,8 +7,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredRegister;
 
 /** Status effects and the radiation damage type. */
 public final class GBEffects {

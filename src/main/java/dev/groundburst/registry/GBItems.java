@@ -13,9 +13,9 @@ import dev.groundburst.GroundBurst;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import dev.groundburst.legacy.DeferredBlock;
+import dev.groundburst.legacy.DeferredItem;
+import dev.groundburst.legacy.DeferredRegister;
 
 /**
  * Item registration helpers. Every item is registered together with its English name and creative tab,

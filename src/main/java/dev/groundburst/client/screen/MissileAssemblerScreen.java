@@ -79,7 +79,7 @@ public class MissileAssemblerScreen extends MachineScreen {
         super.render(g.unwrap(), mouseX, mouseY, partial);
         ItemStack guidance = slot(MissileAssemblerBlockEntity.SLOT_GUIDANCE);
         boolean guided = guidance.getItem() instanceof MissileParts.GuidanceItem;
-        Component label = guidance.getItem() instanceof MissileParts.GuidanceItem gi ? gi.guidance.accuracy() : Component.translatable(T_UNGUIDED);
+        Component label = ((Object) guidance.getItem()) instanceof MissileParts.GuidanceItem gi ? gi.guidance.accuracy() : Component.translatable(T_UNGUIDED);
         AssemblyBenchScreen.smallLabel(g, this.font, this.leftPos, this.topPos, label, guided, 134);
         ItemStack subject = subject();
         var level = net.minecraft.client.Minecraft.getInstance().level;

@@ -77,17 +77,17 @@ public class MissileEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(AGE, 0);
-        builder.define(WARHEAD, "");
-        builder.define(BODY, dev.groundburst.content.assembly.SizeClass.M.ordinal());
-        builder.define(DROPPED, 0);
-        builder.define(BURNING, true);
-        builder.define(REENTRY, 0f);
-        builder.define(SILO, java.util.Optional.empty());
-        builder.define(CRUISE, false);
-        builder.define(HOLD, IGNITION);
-        builder.define(CELL, false);
+    protected void defineSynchedData() {
+        this.entityData.define(AGE, 0);
+        this.entityData.define(WARHEAD, "");
+        this.entityData.define(BODY, dev.groundburst.content.assembly.SizeClass.M.ordinal());
+        this.entityData.define(DROPPED, 0);
+        this.entityData.define(BURNING, true);
+        this.entityData.define(REENTRY, 0f);
+        this.entityData.define(SILO, java.util.Optional.empty());
+        this.entityData.define(CRUISE, false);
+        this.entityData.define(HOLD, IGNITION);
+        this.entityData.define(CELL, false);
     }
 
     void setHold(int hold, boolean cell) {
@@ -168,7 +168,7 @@ public class MissileEntity extends Entity {
     /** Its body's size class, as the client knows it. */
     public dev.groundburst.content.assembly.SizeClass body() {
         var all = dev.groundburst.content.assembly.SizeClass.values();
-        return all[Math.clamp(this.entityData.get(BODY), 0, all.length - 1)];
+        return all[dev.groundburst.legacy.J21.clamp(this.entityData.get(BODY), 0, all.length - 1)];
     }
 
     /** The id of the warhead it carries, as the client knows it ("" for none). */
@@ -209,7 +209,7 @@ public class MissileEntity extends Entity {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float damage) { if (!(this.level() instanceof ServerLevel level)) return false;
+    public boolean hurt(DamageSource source, float damage) { if (!(((Object) this.level()) instanceof ServerLevel level)) return false;
         return false;
     }
 
@@ -225,8 +225,8 @@ public class MissileEntity extends Entity {
     }
 
     @Override
-    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, this.registryAccess());}
+    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, dev.groundburst.legacy.Regs.access());}
 
     @Override
-    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, this.registryAccess());}
+    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, dev.groundburst.legacy.Regs.access());}
 }

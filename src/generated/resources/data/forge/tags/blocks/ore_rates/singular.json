@@ -1,0 +1,14 @@
+{
+  "values": [
+    "groundburst:uranium_ore",
+    "groundburst:deepslate_uranium_ore",
+    "groundburst:lithium_ore",
+    "groundburst:deepslate_lithium_ore",
+    "groundburst:tungsten_ore",
+    "groundburst:deepslate_tungsten_ore",
+    "groundburst:lead_ore",
+    "groundburst:deepslate_lead_ore",
+    "groundburst:rare_earth_ore",
+    "groundburst:deepslate_rare_earth_ore"
+  ]
+}

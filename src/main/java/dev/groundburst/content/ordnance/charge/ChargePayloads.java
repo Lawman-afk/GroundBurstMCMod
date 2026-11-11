@@ -5,16 +5,16 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import dev.groundburst.registry.GBDataComponents;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import dev.groundburst.legacy.net.IPayloadContext;
 
 /** Server-bound packets from the charge screens: fuze settings (and arming), cutting a wire, a detonator's frequency. */
 public final class ChargePayloads {
@@ -29,8 +29,8 @@ public final class ChargePayloads {
 
     public record Settings(BlockPos pos, boolean timer, int frequency, int seconds, int action) implements CustomPacketPayload {
         public static final Type<Settings> TYPE = GBNetwork.type("charge_settings");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Settings> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Settings::pos, ByteBufCodecs.BOOL, Settings::timer, ByteBufCodecs.VAR_INT, Settings::frequency,
+        public static final StreamCodec<FriendlyByteBuf, Settings> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, Settings::pos, ByteBufCodecs.BOOL, Settings::timer, ByteBufCodecs.VAR_INT, Settings::frequency,
                 ByteBufCodecs.VAR_INT, Settings::seconds, ByteBufCodecs.VAR_INT, Settings::action, Settings::new);
 
         @Override
@@ -39,7 +39,7 @@ public final class ChargePayloads {
         }
 
         public static void handle(Settings p, IPayloadContext context) {
-            if (context.player() instanceof ServerPlayer player && near(player, p.pos())) {
+            if (((Object) context.player()) instanceof ServerPlayer player && near(player, p.pos())) {
                 ChargeBlockEntity be = ChargeBlock.at(player.level(), p.pos());
                 if (be == null) {
                     return;
@@ -61,8 +61,8 @@ public final class ChargePayloads {
 
     public record CutWire(BlockPos pos, int wire) implements CustomPacketPayload {
         public static final Type<CutWire> TYPE = GBNetwork.type("charge_cut_wire");
-        public static final StreamCodec<RegistryFriendlyByteBuf, CutWire> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, CutWire::pos, ByteBufCodecs.VAR_INT, CutWire::wire, CutWire::new);
+        public static final StreamCodec<FriendlyByteBuf, CutWire> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, CutWire::pos, ByteBufCodecs.VAR_INT, CutWire::wire, CutWire::new);
 
         @Override
         public Type<CutWire> type() {
@@ -70,7 +70,7 @@ public final class ChargePayloads {
         }
 
         public static void handle(CutWire p, IPayloadContext context) {
-            if (context.player() instanceof ServerPlayer player && near(player, p.pos())) {
+            if (((Object) context.player()) instanceof ServerPlayer player && near(player, p.pos())) {
                 ChargeBlockEntity be = ChargeBlock.at(player.level(), p.pos());
                 if (be != null) {
                     be.cut((ServerLevel) player.level(), p.wire());
@@ -81,7 +81,7 @@ public final class ChargePayloads {
 
     public record DetonatorFrequency(boolean mainHand, int frequency) implements CustomPacketPayload {
         public static final Type<DetonatorFrequency> TYPE = GBNetwork.type("detonator_frequency");
-        public static final StreamCodec<RegistryFriendlyByteBuf, DetonatorFrequency> CODEC = StreamCodec.composite(
+        public static final StreamCodec<FriendlyByteBuf, DetonatorFrequency> CODEC = StreamCodec.composite(
                 ByteBufCodecs.BOOL, DetonatorFrequency::mainHand, ByteBufCodecs.VAR_INT, DetonatorFrequency::frequency, DetonatorFrequency::new);
 
         @Override
@@ -90,10 +90,10 @@ public final class ChargePayloads {
         }
 
         public static void handle(DetonatorFrequency p, IPayloadContext context) {
-            if (context.player() instanceof ServerPlayer player) {
+            if (((Object) context.player()) instanceof ServerPlayer player) {
                 ItemStack stack = player.getItemInHand(p.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND);
                 if (stack.getItem() instanceof RemoteDetonatorItem) {
-                    stack.set(GBDataComponents.FREQUENCY.get(), Math.clamp(p.frequency(), 0, ChargeKind.MAX_FREQUENCY));
+                    dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.FREQUENCY.get(), dev.groundburst.legacy.J21.clamp(p.frequency(), 0, ChargeKind.MAX_FREQUENCY));
                 }
             }
         }

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "M": {
+      "item": "groundburst:neodymium_magnet"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    },
+    "R": {
+      "tag": "forge:rods/steel"
+    },
+    "W": {
+      "tag": "forge:wires/copper"
+    }
+  },
+  "pattern": [
+    "WPW",
+    "MRM",
+    "WPW"
+  ],
+  "result": {
+    "item": "groundburst:electric_motor"
+  }
+}

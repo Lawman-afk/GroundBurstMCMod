@@ -19,12 +19,12 @@ public class CryoCrystalBlock extends AmethystClusterBlock {
     }
 
     @Override
-    protected boolean isRandomlyTicking(BlockState state) {
+    public boolean isRandomlyTicking(BlockState state) {
         return true;
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (random.nextFloat() < MELT_CHANCE && !FrostedBlock.cold(level, pos)) {
             level.removeBlock(pos, false);
         }

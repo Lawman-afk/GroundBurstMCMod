@@ -39,7 +39,7 @@ final class AssemblyTests {
 
     private static ItemStack fuzed(Fuze fuze, int value) {
         ItemStack w = new ItemStack(GBOrdnance.HE_WARHEAD.item().get());
-        w.set(GBDataComponents.FUZE.get(), FuzeSettings.of(fuze, value));
+        dev.groundburst.legacy.component.Comps.set(w, GBDataComponents.FUZE.get(), FuzeSettings.of(fuze, value));
         return w;
     }
 
@@ -89,7 +89,7 @@ final class AssemblyTests {
         helper.succeedWhen(() -> {
             ItemStack out = b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_WARHEAD);
             helper.assertTrue(out.is(GBOrdnance.HE_WARHEAD.item().get()), "an HE warhead");
-            helper.assertTrue(out.getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT).fuze() == Fuze.IMPACT, "with an impact fuze");
+            helper.assertTrue(dev.groundburst.legacy.component.Comps.getOrDefault(out, GBDataComponents.FUZE.get(), FuzeSettings.IMPACT).fuze() == Fuze.IMPACT, "with an impact fuze");
             helper.assertTrue(b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_CORE).isEmpty()
                     && b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_CASING).isEmpty()
                     && b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_FUZE).isEmpty(), "the parts are used");
@@ -125,7 +125,7 @@ final class AssemblyTests {
         floor(helper);
         AssemblyBenchBlockEntity b = bench(helper, new BlockPos(8, 2, 8));
         ItemStack warhead = new ItemStack(GBOrdnance.GAS_WARHEAD.item().get());
-        warhead.set(GBDataComponents.FUZE.get(), FuzeSettings.fresh(Fuze.BAROMETRIC));
+        dev.groundburst.legacy.component.Comps.set(warhead, GBDataComponents.FUZE.get(), FuzeSettings.fresh(Fuze.BAROMETRIC));
         b.inventory().setItem(AssemblyBenchBlockEntity.SLOT_WARHEAD, warhead);
         helper.assertTrue(b.takeApart(), "taken apart");
         helper.assertTrue(b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_CORE).is(GBAssembly.GAS_DISPENSER.get()), "the core");
@@ -153,7 +153,7 @@ final class AssemblyTests {
         helper.setBlock(at, GBOrdnance.HE_WARHEAD.block().get().defaultBlockState().setValue(ChargeBlock.FACING, Direction.NORTH));
         ChargeBlockEntity be = ChargeBlock.at(helper.getLevel(), helper.absolutePos(at));
         be.setFuze(FuzeSettings.of(Fuze.BAROMETRIC, 42));
-        FuzeSettings kept = be.collectComponents().get(GBDataComponents.FUZE.get());
+        FuzeSettings kept = dev.groundburst.legacy.component.Comps.get(dev.groundburst.legacy.component.DataComponentMap.collect(be), GBDataComponents.FUZE.get());
         helper.assertTrue(kept != null && kept.fuze() == Fuze.BAROMETRIC && kept.value() == 42, "the item keeps a barometric fuze at 42: " + kept);
         helper.succeed();
     }
@@ -182,7 +182,7 @@ final class AssemblyTests {
         helper.assertTrue(b.startAssembly(), "assembly starts");
         helper.succeedWhen(() -> {
             ItemStack out = b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_WARHEAD);
-            FuzeSettings f = out.get(GBDataComponents.FUZE.get());
+            FuzeSettings f = dev.groundburst.legacy.component.Comps.get(out, GBDataComponents.FUZE.get());
             helper.assertTrue(f != null && f.fuze() == Fuze.BAROMETRIC && f.value() == 75, "a barometric fuze at 75: " + f);
         });
     }
@@ -195,15 +195,15 @@ final class AssemblyTests {
         var level = helper.getLevel();
         BlockPos m = helper.absolutePos(main), s = helper.absolutePos(main.west());
         var cap = dev.groundburst.port.transfer.Capabilities.Item.BLOCK;
-        helper.assertTrue(level.getCapability(cap, m, Direction.DOWN) != null && level.getCapability(cap, s, Direction.DOWN) != null,
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, cap, m, Direction.DOWN) != null && dev.groundburst.legacy.Caps.get(level, cap, s, Direction.DOWN) != null,
                 "both bottoms take items to begin with");
         // The side half's bottom set to None: only that bottom closes.
         b.changeSides(true, c -> c.cycleItems(dev.groundburst.content.machine.SideConfig.Face.BOTTOM, true, b.allowedItemModes()));
         helper.assertTrue(b.sides(true).items(dev.groundburst.content.machine.SideConfig.Face.BOTTOM)
                 == dev.groundburst.content.machine.SideConfig.ItemMode.NONE, "the side half's bottom is None");
-        helper.assertTrue(level.getCapability(cap, s, Direction.DOWN) == null, "the side half's bottom is closed");
-        helper.assertTrue(level.getCapability(cap, m, Direction.DOWN) != null, "the main half's bottom is still open");
-        helper.assertTrue(level.getCapability(cap, m, Direction.WEST) == null && level.getCapability(cap, s, Direction.EAST) == null,
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, cap, s, Direction.DOWN) == null, "the side half's bottom is closed");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, cap, m, Direction.DOWN) != null, "the main half's bottom is still open");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, cap, m, Direction.WEST) == null && dev.groundburst.legacy.Caps.get(level, cap, s, Direction.EAST) == null,
                 "the faces between the halves expose nothing");
         helper.succeed();
     }

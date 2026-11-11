@@ -11,7 +11,7 @@ import dev.groundburst.registry.GBLang;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.bus.api.IEventBus;
+import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
  * GameTest harness: every test, a function run over a structure within a timeout, listed here; how they reach the

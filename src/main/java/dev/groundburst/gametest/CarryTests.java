@@ -19,7 +19,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ProblemReporter;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -92,7 +92,7 @@ final class CarryTests {
         helper.runAfterDelay(5, () -> {
             List<Flights.Flight> ours = Flights.of(level).all().stream().filter(bound).toList();
             helper.assertTrue(ours.size() == 1, "its missile is lit: " + ours.size());
-            Flights.Flight f = ours.getFirst();
+            Flights.Flight f = dev.groundburst.legacy.J21.first(ours);
             Vec3 tail = frame.toWorld(be.tailPoint(CruiseLauncherBlockEntity.SLOT_A));
             helper.assertTrue(f.position().distanceTo(tail) < 1e-6, "lit at its box's tail in the world: " + f.position() + " vs " + tail);
             helper.assertTrue(Math.abs(Math.sin(f.heading()) - 1) < 1e-4, "heading east, the way its boxes point now: " + f.heading());
@@ -129,10 +129,10 @@ final class CarryTests {
             List<Flights.Flight> ours = Flights.of(level).all().stream().filter(bound).toList();
             helper.assertTrue(ours.size() == 1, "its missile is lit: " + ours.size());
             Vec3 pad = frame.toWorld(Vec3.atBottomCenterOf(silo.padCentre()));
-            helper.assertTrue(ours.getFirst().position().distanceTo(pad) < 1e-6, "on its pad where that is in the world: "
-                    + ours.getFirst().position() + " vs " + pad);
+            helper.assertTrue(dev.groundburst.legacy.J21.first(ours).position().distanceTo(pad) < 1e-6, "on its pad where that is in the world: "
+                    + dev.groundburst.legacy.J21.first(ours).position() + " vs " + pad);
             helper.assertTrue(silo.energy().stored() == 0, "on the power it carried: " + silo.energy().stored());
-            Flights.of(level).cancelForTest(level, ours.getFirst());
+            Flights.of(level).cancelForTest(level, dev.groundburst.legacy.J21.first(ours));
             silo.carry(null);
             helper.succeed();
         });
@@ -209,7 +209,7 @@ final class CarryTests {
         helper.assertTrue(nets.link(level, id, silo) == LaunchNetwork.LinkResult.LINKED, "linked");
         helper.runAfterDelay(2, () -> {
             // Picked up: what it saved, then the whole structure taken away.
-            CompoundTag saved = silo.saveWithFullMetadata(level.registryAccess());
+            CompoundTag saved = silo.saveWithFullMetadata();
             List<MultiblockDefinition.Cell> cells = GBLaunch.SILO.cells(from, Direction.NORTH);
             for (MultiblockDefinition.Cell cell : cells) {
                 level.setBlock(cell.pos(), Blocks.AIR.defaultBlockState(), 2 | 16);
@@ -228,7 +228,7 @@ final class CarryTests {
             saved.putInt("x", to.getX());
             saved.putInt("y", to.getY());
             saved.putInt("z", to.getZ());
-            there.loadWithComponents(saved, level.registryAccess());
+            there.load(saved);
             helper.runAfterDelay(3, () -> {
                 helper.assertTrue(nets.networkOf(from) == null, "nothing on the network where it stood");
                 LaunchNetwork.Network n = nets.networkOf(to);

@@ -60,18 +60,18 @@ public class MultiblockControllerBlock extends MachineBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos,
+    public VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos,
             net.minecraft.world.phys.shapes.CollisionContext context) {
         return hidden(state) ? state.getValue(MultiblockPartBlock.CUT).shape() : super.getShape(state, level, pos, context);
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return hidden(state) ? RenderShape.INVISIBLE : RenderShape.MODEL;
     }
 
     @Override
-    protected VoxelShape getOcclusionShape(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
+    public VoxelShape getOcclusionShape(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return hidden(state) ? Shapes.empty() : super.getOcclusionShape(state, level_, pos_);
     }
 
@@ -79,8 +79,7 @@ public class MultiblockControllerBlock extends MachineBlock {
      * Right-clicking an unfinished structure's controller toggles its ghost preview and reports what is missing;
      * once formed (or when sneaking) it opens the machine screen as usual.
      */
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (state.getValue(MultiblockPartBlock.FORMED) || player.isSecondaryUseActive()) {
             return super.useWithoutItem(state, level, pos, player, hit);
         }
@@ -88,7 +87,7 @@ public class MultiblockControllerBlock extends MachineBlock {
             MultiblockClientHooks.togglePreview.accept(pos);
             return InteractionResult.SUCCESS;
         }
-        if (level.getBlockEntity(pos) instanceof MultiblockController controller) {
+        if (((Object) level.getBlockEntity(pos)) instanceof MultiblockController controller) {
             controller.revalidate();
             if (controller.isFormed()) {
                 return super.useWithoutItem(level.getBlockState(pos), level, pos, player, hit);
@@ -108,8 +107,18 @@ public class MultiblockControllerBlock extends MachineBlock {
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MultiblockController controller) {
+        if (!level.isClientSide() && ((Object) level.getBlockEntity(pos)) instanceof MultiblockController controller) {
             controller.revalidate();
         }
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        dev.groundburst.legacy.ItemInteractionResult item_ = this.useItemOn(player_.getItemInHand(hand_), state_, level_, pos_, player_, hand_, hit_);
+        if (item_ != dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+            return item_.result();
+        }
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

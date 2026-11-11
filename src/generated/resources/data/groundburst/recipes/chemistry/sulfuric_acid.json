@@ -1,0 +1,27 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:sulfuric_acid"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": {
+        "tag": "minecraft:water"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:dusts/sulfur"
+      }
+    }
+  ],
+  "time": 200
+}

@@ -20,7 +20,7 @@ public class LargeRadarDishBlock extends SpreadPartBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return state.getValue(FORMED) ? super.getShape(state, level, pos, context) : SHAPE;
     }
 }

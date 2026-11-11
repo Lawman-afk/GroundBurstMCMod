@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "groundburst:lead_lined_casing"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:crt_display"
+    }
+  ],
+  "result": {
+    "item": "groundburst:fission_reactor"
+  }
+}

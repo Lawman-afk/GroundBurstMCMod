@@ -2,8 +2,8 @@ package dev.groundburst.content.radiation;
 
 import dev.groundburst.registry.GBSounds;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import dev.groundburst.legacy.component.DataComponents;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemContainerContents;
+import dev.groundburst.legacy.component.ItemContainerContents;
 
 /**
  * The Lead Container's inside (DESIGN.md §21.8): nine places for radioactive items in a 3x3 grid over the player's
@@ -33,7 +33,7 @@ public class LeadContainerMenu extends AbstractContainerMenu {
     }
 
     /** The client's, from the hand sent with it. */
-    public LeadContainerMenu(int id, Inventory inventory, RegistryFriendlyByteBuf data) {
+    public LeadContainerMenu(int id, Inventory inventory, FriendlyByteBuf data) {
         this(id, inventory, data.readEnum(InteractionHand.class), false);
     }
 
@@ -55,7 +55,7 @@ public class LeadContainerMenu extends AbstractContainerMenu {
             }
         };
         NonNullList<ItemStack> held = NonNullList.withSize(LeadContainerItem.SLOTS, ItemStack.EMPTY);
-        this.stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(held);
+        dev.groundburst.legacy.component.Comps.getOrDefault(this.stack, DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(held);
         for (int i = 0; i < held.size(); i++) {
             this.items.setItem(i, held.get(i));
         }
@@ -94,7 +94,7 @@ public class LeadContainerMenu extends AbstractContainerMenu {
         for (int i = 0; i < LeadContainerItem.SLOTS; i++) {
             list.set(i, this.items.getItem(i).copy());
         }
-        this.stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(list));
+        dev.groundburst.legacy.component.Comps.set(this.stack, DataComponents.CONTAINER, ItemContainerContents.fromItems(list));
     }
 
     @Override

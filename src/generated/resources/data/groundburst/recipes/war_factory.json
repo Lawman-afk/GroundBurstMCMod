@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "groundburst:lead_lined_casing"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:sensor_array"
+    },
+    {
+      "item": "groundburst:electric_motor"
+    },
+    {
+      "item": "groundburst:electric_motor"
+    },
+    {
+      "item": "groundburst:pressure_vessel"
+    },
+    {
+      "item": "groundburst:fieldstone_wall"
+    }
+  ],
+  "result": {
+    "item": "groundburst:war_factory"
+  }
+}

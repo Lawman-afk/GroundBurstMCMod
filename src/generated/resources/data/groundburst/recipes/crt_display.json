@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "B": {
+      "tag": "groundburst:basic_circuits"
+    },
+    "G": {
+      "tag": "forge:glass_panes/colorless"
+    },
+    "L": {
+      "tag": "forge:dusts/glowstone"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    }
+  },
+  "pattern": [
+    " G ",
+    "LBR",
+    " P "
+  ],
+  "result": {
+    "item": "groundburst:crt_display"
+  }
+}

@@ -7,13 +7,13 @@ import org.jspecify.annotations.Nullable;
 
 import dev.groundburst.port.transfer.Resource;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.core.component.DataComponentPatch;
+import dev.groundburst.legacy.component.DataComponentMap;
+import dev.groundburst.legacy.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidType;
 
 /** A fluid with its components, without an amount (a {@link FluidStack} without its amount). */
 public final class FluidResource implements Resource {
@@ -28,7 +28,7 @@ public final class FluidResource implements Resource {
     }
 
     public static FluidResource of(FluidStack stack) {
-        return stack.isEmpty() ? EMPTY : new FluidResource(stack.getFluidHolder(), stack.getComponentsPatch());
+        return stack.isEmpty() ? EMPTY : new FluidResource(dev.groundburst.legacy.FluidStacks.holder(stack), dev.groundburst.legacy.component.DataComponentPatch.of(stack));
     }
 
     @SuppressWarnings("deprecation")
@@ -75,7 +75,7 @@ public final class FluidResource implements Resource {
     }
 
     public boolean matches(FluidStack stack) {
-        return isEmpty() ? stack.isEmpty() : !stack.isEmpty() && stack.getFluid() == getFluid() && stack.getComponentsPatch().equals(this.patch);
+        return isEmpty() ? stack.isEmpty() : !stack.isEmpty() && stack.getFluid() == getFluid() && dev.groundburst.legacy.component.DataComponentPatch.of(stack).equals(this.patch);
     }
 
     public boolean test(Predicate<FluidStack> predicate) {
@@ -87,7 +87,7 @@ public final class FluidResource implements Resource {
     }
 
     public DataComponentMap getComponents() {
-        return toStack(1).getComponents();
+        return dev.groundburst.legacy.component.DataComponentMap.of(toStack(1));
     }
 
     public DataComponentPatch getComponentsPatch() {
@@ -95,16 +95,16 @@ public final class FluidResource implements Resource {
     }
 
     public FluidStack toStack(int amount) {
-        return isEmpty() || amount <= 0 ? FluidStack.EMPTY : new FluidStack(this.fluid, amount, this.patch);
+        return isEmpty() || amount <= 0 ? FluidStack.EMPTY : dev.groundburst.legacy.component.DataComponentPatch.fluid(this.fluid, amount, this.patch);
     }
 
     public Component getHoverName() {
-        return toStack(1).getHoverName();
+        return toStack(1).getDisplayName();
     }
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        return obj instanceof FluidResource r && r.getFluid() == getFluid() && r.patch.equals(this.patch);
+        return ((Object) obj) instanceof FluidResource r && r.getFluid() == getFluid() && r.patch.equals(this.patch);
     }
 
     @Override
@@ -114,6 +114,6 @@ public final class FluidResource implements Resource {
 
     @Override
     public String toString() {
-        return "FluidResource[" + this.fluid.getRegisteredName() + (this.patch.isEmpty() ? "" : " " + this.patch) + "]";
+        return "FluidResource[" + dev.groundburst.legacy.Game.registeredName(this.fluid) + (this.patch.isEmpty() ? "" : " " + this.patch) + "]";
     }
 }

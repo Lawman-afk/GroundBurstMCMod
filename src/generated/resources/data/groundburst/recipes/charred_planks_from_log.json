@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "groundburst:charred_log"
+    }
+  ],
+  "result": {
+    "item": "groundburst:charred_planks",
+    "count": 4
+  }
+}

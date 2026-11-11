@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:solid_rocket_motor_i"
+    },
+    {
+      "item": "groundburst:synthetic_fuel_canister"
+    },
+    {
+      "item": "groundburst:synthetic_fuel_canister"
+    },
+    {
+      "item": "groundburst:pressure_vessel"
+    },
+    {
+      "item": "groundburst:tungsten_plate"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    },
+    {
+      "tag": "forge:plates/steel"
+    }
+  ],
+  "result": {
+    "item": "groundburst:cruise_engine"
+  }
+}

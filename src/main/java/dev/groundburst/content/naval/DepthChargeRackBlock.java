@@ -28,12 +28,12 @@ public class DepthChargeRackBlock extends MultiblockControllerBlock {
     }
 
     @Override
-    protected boolean hasAnalogOutputSignal(BlockState state) {
+    public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
-    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) { Direction direction = Direction.NORTH;
-        return level.getBlockEntity(pos) instanceof DepthChargeRackBlockEntity rack ? rack.comparatorSignal() : 0;
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) { Direction direction = Direction.NORTH;
+        return ((Object) level.getBlockEntity(pos)) instanceof DepthChargeRackBlockEntity rack ? rack.comparatorSignal() : 0;
     }
 }

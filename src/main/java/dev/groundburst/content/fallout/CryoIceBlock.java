@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
 
 import net.minecraft.world.item.ItemStack;
@@ -50,12 +49,12 @@ public class CryoIceBlock extends HalfTransparentBlock {
     }
 
     @Override
-    protected boolean isRandomlyTicking(BlockState state) {
+    public boolean isRandomlyTicking(BlockState state) {
         return true;
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (level.getBrightness(LightLayer.BLOCK, pos) > 11 - state.getLightBlock(level, pos)
                 || random.nextFloat() < THAW_CHANCE && !FrostedBlock.cold(level, pos)) {
             melt(state, level, pos);
@@ -78,7 +77,7 @@ public class CryoIceBlock extends HalfTransparentBlock {
     public void playerDestroy(net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity,
             ItemStack destroyedWith) {
         super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
-        if (!state.getValue(SOURCE) || EnchantmentHelper.hasTag(destroyedWith, EnchantmentTags.PREVENTS_ICE_MELTING)
+        if (!state.getValue(SOURCE) || EnchantmentHelper.getItemEnchantmentLevel(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH, destroyedWith) != 0
                 || level.dimensionType().ultraWarm()) {
             return;
         }

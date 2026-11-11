@@ -3,7 +3,7 @@ package dev.groundburst.content.part;
 import dev.groundburst.registry.GBItems;
 import dev.groundburst.registry.GBTab;
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.registries.DeferredItem;
+import dev.groundburst.legacy.DeferredItem;
 
 /** Crafting parts (DESIGN.md §26.2): alloys, plates, rods, wire, canisters, assemblies and press dies. */
 public final class GBParts {

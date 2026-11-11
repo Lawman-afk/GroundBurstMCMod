@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:frag_grenade"
+    },
+    {
+      "item": "groundburst:frag_grenade"
+    },
+    {
+      "item": "groundburst:frag_grenade"
+    },
+    {
+      "item": "groundburst:frag_grenade"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    }
+  ],
+  "result": {
+    "item": "groundburst:cluster_dispenser"
+  }
+}

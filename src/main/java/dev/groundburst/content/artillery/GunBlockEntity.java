@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -34,7 +34,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * A crewed gun (DESIGN.md §20.1), laid and fired as World of Tanks lays and fires its artillery; its figures are its
@@ -106,7 +106,7 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
 
     /** The rack slot a shell goes in (-1: this gun does not fire it). */
     public int slotFor(ItemStack stack) {
-        return stack.getItem() instanceof ShellItem s && s.calibre() == this.spec.calibre() ? this.spec.shells().indexOf(s.type()) : -1;
+        return ((Object) stack.getItem()) instanceof ShellItem s && s.calibre() == this.spec.calibre() ? this.spec.shells().indexOf(s.type()) : -1;
     }
 
     // --- where it is --------------------------------------------------------------------------------------------------
@@ -234,7 +234,7 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
 
     /** Whether {@code p} stands in this gun's crew place. */
     private boolean seated(ServerPlayer p, ServerLevel level) {
-        return !p.isRemoved() && p.isAlive() && p.level() == level && p.getVehicle() instanceof GunSeat seat && seat.gun().equals(this.worldPosition);
+        return !p.isRemoved() && p.isAlive() && p.level() == level && ((Object) p.getVehicle()) instanceof GunSeat seat && seat.gun().equals(this.worldPosition);
     }
 
     /**
@@ -254,7 +254,7 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
 
     /** Whether someone mans it now. */
     public boolean manned() {
-        return this.level instanceof ServerLevel server ? crewman(server) != null : this.crewId >= 0;
+        return ((Object) this.level) instanceof ServerLevel server ? crewman(server) != null : this.crewId >= 0;
     }
 
     /** A line over {@code player}'s hotbar (none for a player with no connection: a test's). */
@@ -285,7 +285,7 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
                 Ballistics.velocity(this.spec.charges()[this.charge], this.yaw, this.elevation), null, MAX_FLIGHT);
         this.laid = this.aim = startingPoint(level, fall == null ? null : fall.at());
         this.dirty = true;
-        level.playSound(null, this.worldPosition, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_CHAIN.value(), SoundSource.BLOCKS, 0.7f, 0.9f);
+        level.playSound(null, this.worldPosition, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_CHAIN, SoundSource.BLOCKS, 0.7f, 0.9f);
         return true;
     }
 
@@ -791,8 +791,8 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -801,8 +801,8 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         this.rack.serialize(output.child("rack"));
         if (!Float.isNaN(this.yaw)) {
             output.putFloat("yaw", this.yaw);
@@ -814,8 +814,8 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.rack.deserialize(input.childOrEmpty("rack"));
         this.yaw = input.getFloatOr("yaw", Float.NaN);
         this.elevation = Mth.clamp(input.getFloatOr("elevation", this.spec.restElevation()), this.spec.minElevation(), this.spec.maxElevation());
@@ -829,7 +829,7 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
         if (this.level != null) {
             Containers.dropContents(this.level, pos, this.rack);
         }
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             dropTile(server);
             this.tiles.clear();
         }

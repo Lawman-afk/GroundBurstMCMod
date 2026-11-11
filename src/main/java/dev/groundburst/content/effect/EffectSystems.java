@@ -7,12 +7,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.Tags;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.event.TickEvent;
+import dev.groundburst.legacy.DeferredHolder;
 
 /**
  * The aftermath systems built in Phase 6 slice 6e (DESIGN.md §16.4, §16.7, §21.4): the gas grid, EMP fields and
@@ -31,31 +31,31 @@ public final class EffectSystems {
     public static void init() {}
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
-            if (e.getLevel() instanceof ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent e) -> {if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) e.level) instanceof ServerLevel level) {
                 GasGrid.of(level).tick(level);
                 EmpFields.tick(level);
             }
         });
-        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> {
+        MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> {
             GasGrid.clearAll();
             EmpFields.clearAll();
         });
         // When the Frozen effect ends (or is taken off, as by milk) the creature thaws: its ice goes.
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.MobEffectEvent.Expired e) -> {
-            if (e.getEffectInstance() != null && e.getEffectInstance().is(FROZEN)) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.entity.living.MobEffectEvent.Expired e) -> {
+            if (e.getEffectInstance() != null && e.getEffectInstance().getEffect() == FROZEN.get()) {
                 e.getEntity().setTicksFrozen(0);
             }
         });
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.MobEffectEvent.Remove e) -> {
-            if (e.getEffect().is(FROZEN)) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.entity.living.MobEffectEvent.Remove e) -> {
+            if (e.getEffect() == FROZEN.get()) {
                 e.getEntity().setTicksFrozen(0);
             }
         });
         // A frozen mob (not a player, not a boss) of 40 health or less hit hard enough shatters.
-        NeoForge.EVENT_BUS.addListener((LivingIncomingDamageEvent e) -> {
+        MinecraftForge.EVENT_BUS.addListener((LivingHurtEvent e) -> {
             LivingEntity mob = e.getEntity();
-            if (mob.level() instanceof ServerLevel level && mob.hasEffect(FROZEN) && !(mob instanceof Player)
+            if (((Object) mob.level()) instanceof ServerLevel level && mob.hasEffect(FROZEN.get()) && !(mob instanceof Player)
                     && !mob.getType().is(Tags.EntityTypes.BOSSES) && mob.getMaxHealth() <= Frost.SHATTER_MAX_HEALTH
                     && e.getAmount() >= Frost.SHATTER_DAMAGE) {
                 e.setAmount(mob.getHealth() + mob.getAbsorptionAmount() + 100);

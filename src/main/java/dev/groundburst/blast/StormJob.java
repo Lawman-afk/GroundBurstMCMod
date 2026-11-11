@@ -28,7 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * One storm (DESIGN.md §16.14): a supercell over a region {@link #radius} round its eye, raging for {@link #life} ticks
@@ -129,7 +129,7 @@ final class StormJob {
     }
 
     private static boolean spared(Entity e) {
-        return e instanceof Player p && (p.isCreative() || p.isSpectator()) || e instanceof dev.groundburst.content.launch.MissileEntity;
+        return ((Object) e) instanceof Player p && (p.isCreative() || p.isSpectator()) || e instanceof dev.groundburst.content.launch.MissileEntity;
     }
 
     /** Everything but players driven round its eye (every other tick, twice the push). */
@@ -223,7 +223,7 @@ final class StormJob {
      */
     private void grounded(BlockPos rod) {
         BlockState state = this.level.getBlockState(rod);
-        if (state.getBlock() instanceof LightningRodBlock block) {
+        if (((Object) state.getBlock()) instanceof LightningRodBlock block) {
             block.onLightningStrike(state, this.level, rod);
         }
         Vec3 tip = Vec3.atCenterOf(rod).add(0, 0.5, 0);
@@ -289,7 +289,7 @@ final class StormJob {
             e.thunderHit(this.level, bolt);                        // 5 and a burn; a creeper charged, a pig turned...
             damage -= 5;
         } else {
-            e.igniteForSeconds(2);
+            e.setSecondsOnFire((int) (2));
         }
         if (damage > 0 && e.isAlive()) {
             e.invulnerableTime = 0;

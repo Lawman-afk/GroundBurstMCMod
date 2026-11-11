@@ -35,7 +35,7 @@ public class GrenadeItem extends Item {
         } else if (!this.type.lit()) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), GBOrdnance.GRENADE_PIN.get(), SoundSource.PLAYERS, 0.8f, pitch);
         }
-        if (level instanceof ServerLevel server) {
+        if (((Object) level) instanceof ServerLevel server) {
             ThrownExplosive thrown = new ThrownExplosive(server, player, stack.copyWithCount(1));
             thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0f, this.type.speed, 1.0f);
             server.addFreshEntity(thrown);
@@ -46,7 +46,7 @@ public class GrenadeItem extends Item {
         }
         player.awardStat(Stats.ITEM_USED.get(this));
         player.getCooldowns().addCooldown(stack.getItem(), 10);
-        stack.consume(1, player);
+        dev.groundburst.legacy.Items2.consume(stack, 1, player);
         return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
     }
 }

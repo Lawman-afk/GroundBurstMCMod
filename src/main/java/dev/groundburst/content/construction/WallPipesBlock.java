@@ -22,10 +22,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * the left and the right as one looks at them.
  */
 public class WallPipesBlock extends HorizontalDirectionalBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends WallPipesBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final BooleanProperty LEFT = BooleanProperty.create("left");
     public static final BooleanProperty RIGHT = BooleanProperty.create("right");
@@ -63,7 +60,7 @@ public class WallPipesBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         Direction left = left(state);
         if (direction == left) {
             return state.setValue(LEFT, joins(state, neighbor));
@@ -75,13 +72,13 @@ public class WallPipesBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES[state.getValue(FACING).get2DDataValue()];
     }
 
     /** Mirrored, its left is its right. */
     @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         BlockState out = super.mirror(state, mirror);
         return mirror == Mirror.NONE ? out : out.setValue(LEFT, state.getValue(RIGHT)).setValue(RIGHT, state.getValue(LEFT));
     }

@@ -231,14 +231,14 @@ final class AnnihilationJob {
         }
         double r2 = (double) reach * reach;
         Entity source = this.by == null ? null : this.level.getEntity(this.by);
-        DamageSource damage = this.level.damageSources().source(Annihilations.ANNIHILATED, null, source);
+        DamageSource damage = dev.groundburst.legacy.Game.source(this.level, Annihilations.ANNIHILATED, null, source);
         for (Entity e : this.level.getEntities((Entity) null, new AABB(this.center, this.center).inflate(reach), Entity::isAlive)) {
             if (e.getBoundingBox().getCenter().distanceToSqr(this.center) > r2
-                    || e instanceof Player p && (p.isCreative() || p.isSpectator())
+                    || ((Object) e) instanceof Player p && (p.isCreative() || p.isSpectator())
                     || e instanceof dev.groundburst.content.launch.MissileEntity) {     // flights are the flight manager's
                 continue;
             }
-            if (e instanceof LivingEntity living) {
+            if (((Object) e) instanceof LivingEntity living) {
                 living.invulnerableTime = 0;
                 living.hurt(damage, 1.0E6f);
                 this.lastKill = this.level.getGameTime();

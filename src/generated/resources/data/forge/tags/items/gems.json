@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "#forge:gems/fluorite",
+      "required": false
+    },
+    {
+      "id": "#forge:gems/exotic_matter",
+      "required": false
+    }
+  ]
+}

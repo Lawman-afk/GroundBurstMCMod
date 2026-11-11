@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": {
+      "item": "groundburst:sandbags"
+    }
+  },
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "item": "groundburst:sandbag_slab",
+    "count": 6
+  }
+}

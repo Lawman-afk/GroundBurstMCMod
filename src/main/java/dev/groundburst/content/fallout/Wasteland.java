@@ -36,12 +36,12 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
-import net.neoforged.neoforge.common.world.chunk.TicketController;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.common.MinecraftForge;
+import dev.groundburst.legacy.RegisterTicketControllersEvent;
+import dev.groundburst.legacy.TicketController;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.event.TickEvent;
 
 /**
  * The wasteland a nuclear blast leaves (DESIGN.md §21.7, slice 12e). Once a nuclear blast has finished its crater, two
@@ -95,12 +95,12 @@ public final class Wasteland {
 
     public static void register(IEventBus modBus) {
         modBus.addListener((RegisterTicketControllersEvent e) -> e.register(TICKETS));
-        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
-            if (e.getLevel() instanceof ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent e) -> {if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) e.level) instanceof ServerLevel level) {
                 tick(level);
             }
         });
-        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> JOBS.clear());
+        MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> JOBS.clear());
     }
 
     /**

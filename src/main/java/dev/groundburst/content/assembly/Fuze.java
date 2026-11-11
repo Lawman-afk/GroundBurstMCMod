@@ -29,7 +29,7 @@ public enum Fuze {
         }
 
         public int clamp(int value) {
-            return this == NONE ? 0 : Math.clamp(value, this.min, this.max);
+            return this == NONE ? 0 : dev.groundburst.legacy.J21.clamp(value, this.min, this.max);
         }
     }
 

@@ -25,7 +25,7 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
     public static final int DELUGE_TICKS = 100, SMOKE_TICKS = 70;
 
     /** With no missile loaded the umbilical arms rest swung clear (as they are left after a launch). */
-    private static final software.bernie.geckolib.animation.RawAnimation CLEAR = software.bernie.geckolib.animation.RawAnimation.begin().thenPlayAndHold("clear");
+    private static final software.bernie.geckolib.core.animation.RawAnimation CLEAR = software.bernie.geckolib.core.animation.RawAnimation.begin().thenPlayAndHold("clear");
 
     private int smoke;
 
@@ -129,19 +129,19 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
     }
 
     @Override
-    public software.bernie.geckolib.animation.RawAnimation idleAnimation() {
+    public software.bernie.geckolib.core.animation.RawAnimation idleAnimation() {
         return this.inventory.getItem(SLOT_MISSILE).isEmpty() ? CLEAR : IDLE;
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("smoke", this.smoke);
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.smoke = input.getIntOr("smoke", 0);
     }
 }

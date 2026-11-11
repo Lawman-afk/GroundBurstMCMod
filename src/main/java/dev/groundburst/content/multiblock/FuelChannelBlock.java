@@ -33,12 +33,12 @@ public class FuelChannelBlock extends Block {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         // Moved with its structure: its controller sees to it. Healed back as it was: its structure is as it was.
         if (!oldState.is(this) && !movedByPiston && !dev.groundburst.heal.Healer.restoring()) {
@@ -47,7 +47,7 @@ public class FuelChannelBlock extends Block {
     }
 
     @Override
-    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+    public void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(((Object) level_l) instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
         
         if (!movedByPiston) {                                 // carried off with its structure (a Create contraption, a ship)
             Multiblocks.notifyChanged(level, pos);
@@ -55,12 +55,12 @@ public class FuelChannelBlock extends Block {
     }
 
     @Override
-    protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+    public float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
         return 1.0f;
     }
 
     @Override
-    protected boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
+    public boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return true;
     }
 }

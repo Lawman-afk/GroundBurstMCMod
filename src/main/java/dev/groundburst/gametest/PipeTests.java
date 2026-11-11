@@ -87,7 +87,7 @@ final class PipeTests {
     private static void insertion(GameTestHelper helper) {
         helper.setBlock(new BlockPos(2, 1, 2), GBPipes.ITEM_PIPE.block().get());
         helper.setBlock(new BlockPos(3, 1, 2), Blocks.CHEST);
-        var pipe = helper.getLevel().getCapability(Capabilities.Item.BLOCK, helper.absolutePos(new BlockPos(2, 1, 2)), Direction.UP);
+        var pipe = dev.groundburst.legacy.Caps.get(helper.getLevel(), Capabilities.Item.BLOCK, helper.absolutePos(new BlockPos(2, 1, 2)), Direction.UP);
         helper.assertTrue(pipe != null, "the pipe takes items");
         try (Transaction tx = Transaction.openRoot()) {
             int in = pipe.insert(ItemResource.of(Items.IRON_INGOT), 10, tx);

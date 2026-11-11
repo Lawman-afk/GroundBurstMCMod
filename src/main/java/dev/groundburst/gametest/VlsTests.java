@@ -140,9 +140,9 @@ final class VlsTests {
             var now = Flights.of(level).all().stream().filter(bound).toList();
             helper.assertTrue(now.size() == 1, "the first is lit: " + now.size());
             helper.assertTrue(!be.boneRotations(0).isEmpty(), "its cell's hatch swings open");
-            Vec3 at = now.getFirst().position();
+            Vec3 at = dev.groundburst.legacy.J21.first(now).position();
             helper.assertTrue(at.y < be.getBlockPos().getY() - 3, "lit at the foot of its cell, under the deck: " + at.y);
-            first[0] = now.getFirst().id();
+            first[0] = dev.groundburst.legacy.J21.first(now).id();
         });
         helper.runAfterDelay(3 * VerticalLaunchBatteryBlockEntity.RIPPLE + 4, () -> {
             ours.addAll(Flights.of(level).all().stream().filter(bound).toList());

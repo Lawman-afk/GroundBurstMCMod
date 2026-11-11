@@ -3,12 +3,12 @@ package dev.groundburst.port.net;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.bus.api.Event;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.IModBusEvent;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.network.handling.IPayloadHandler;
+import dev.groundburst.legacy.net.CustomPacketPayload;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.IModBusEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import dev.groundburst.legacy.net.IPayloadHandler;
 
 /**
  * NeoForge 26.x's client payload handler registration: client-bound payloads are registered with their codec on both

@@ -10,7 +10,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.world.chunk.TicketController;
+import dev.groundburst.legacy.TicketController;
 
 /**
  * Keeps the chunks a blast is working in loaded (DESIGN.md §11.5). The active band is the ring of chunk columns from

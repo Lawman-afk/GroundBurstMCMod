@@ -106,7 +106,7 @@ public class CableBlock extends Block implements dev.groundburst.heal.Healable {
         if (there.getBlock() instanceof CableBlock) {
             return side(there, d.getOpposite()) != Side.DISABLED;
         }
-        return level instanceof Level real && real.getCapability(Capabilities.Energy.BLOCK, other, d.getOpposite()) != null;
+        return ((Object) level) instanceof Level real && dev.groundburst.legacy.Caps.get(real, Capabilities.Energy.BLOCK, other, d.getOpposite()) != null;
     }
 
     private static Side refresh(LevelReader level, BlockPos pos, BlockState state, Direction d) {
@@ -129,7 +129,7 @@ public class CableBlock extends Block implements dev.groundburst.heal.Healable {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         if (!(level.getBlockState(pos).getBlock() instanceof CableBlock)) {
             return state;                                  // asked about a cable not yet here (another mod setting blocks down): as it was
         }
@@ -138,7 +138,7 @@ public class CableBlock extends Block implements dev.groundburst.heal.Healable {
 
     /** Turned (a Create contraption set down turned, a structure placed turned): each side's setting turns with it. */
     @Override
-    protected BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rotation) {
+    public BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rotation) {
         BlockState out = state;
         for (Direction d : Direction.Plane.HORIZONTAL) {
             out = out.setValue(SIDES.get(rotation.rotate(d)), state.getValue(SIDES.get(d)));
@@ -148,7 +148,7 @@ public class CableBlock extends Block implements dev.groundburst.heal.Healable {
 
     /** Mirrored: each side's setting moves to its mirror side. */
     @Override
-    protected BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
+    public BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
         BlockState out = state;
         for (Direction d : Direction.Plane.HORIZONTAL) {
             out = out.setValue(SIDES.get(mirror.mirror(d)), state.getValue(SIDES.get(d)));
@@ -157,7 +157,7 @@ public class CableBlock extends Block implements dev.groundburst.heal.Healable {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         int mask = 0;
         for (Direction d : Direction.values()) {
             if (side(state, d) == Side.CONNECTED) {
@@ -169,7 +169,7 @@ public class CableBlock extends Block implements dev.groundburst.heal.Healable {
 
     /** A neighbour's capabilities can change without a block change (e.g. a machine's side configuration). */
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos_, boolean movedByPiston) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos_, boolean movedByPiston) {
         BlockState updated = connections(level, pos, state);
         if (updated != state) {
             level.setBlock(pos, updated, Block.UPDATE_CLIENTS);
@@ -182,7 +182,7 @@ public class CableBlock extends Block implements dev.groundburst.heal.Healable {
      * that moved it keeps its sides as they were until the blocks round it are down (their updates fix what changed).
      */
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         if (dev.groundburst.heal.Healer.restoring()) {
             return;                                        // healed back with its sides as they were: healing tells it (healed)
         }
@@ -198,7 +198,7 @@ public class CableBlock extends Block implements dev.groundburst.heal.Healable {
     }
 
     @Override
-    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+    public void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(((Object) level_l) instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
         CableNetwork.invalidate(level);
     }
 

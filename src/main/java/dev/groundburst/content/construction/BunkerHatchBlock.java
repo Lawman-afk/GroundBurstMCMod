@@ -46,7 +46,7 @@ public class BunkerHatchBlock extends TrapDoorBlock {
     }
 
     public BunkerHatchBlock(Properties properties) {
-        super(BunkerSet.get(), properties);
+        super(properties, BunkerSet.get());
     }
 
     /**
@@ -69,7 +69,7 @@ public class BunkerHatchBlock extends TrapDoorBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         VoxelShape[][] shapes = state.getValue(OPEN) ? OPEN_SHAPES : SHUT_SHAPES;
         return shapes[state.getValue(FACING).get2DDataValue()][state.getValue(HALF) == Half.TOP ? 1 : 0];
     }
@@ -85,14 +85,14 @@ public class BunkerHatchBlock extends TrapDoorBlock {
 
     /** Opened or shut (by hand, by redstone, by anything), its lid's block follows it. */
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         BunkerHatchLidBlock.follow(level, pos, state);
     }
 
     /** Gone, its lid's block goes with it. */
     @Override
-    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+    public void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(((Object) level_l) instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
         
         BunkerHatchLidBlock.clear(level, pos, state);
     }

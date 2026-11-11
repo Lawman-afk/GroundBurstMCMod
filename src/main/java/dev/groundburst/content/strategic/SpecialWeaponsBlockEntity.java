@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -345,7 +345,7 @@ public class SpecialWeaponsBlockEntity extends MachineBlockEntity implements Ani
     @Override
     public List<Component> readout(MachineMenu menu) {
         int total = menu.extra(DATA_TOTAL);
-        var problem = SpecialWeapons.Problem.values()[Math.clamp(menu.extra(DATA_PROBLEM), 0, SpecialWeapons.Problem.values().length - 1)];
+        var problem = SpecialWeapons.Problem.values()[dev.groundburst.legacy.J21.clamp(menu.extra(DATA_PROBLEM), 0, SpecialWeapons.Problem.values().length - 1)];
         ItemStack core = slot(SLOT_CORE), out = slot(SLOT_OUTPUT);
         boolean parts = !core.isEmpty() || !slot(SLOT_BOOSTER).isEmpty();
         var warhead = SpecialWeapons.core(core);
@@ -356,7 +356,7 @@ public class SpecialWeaponsBlockEntity extends MachineBlockEntity implements Ani
             second = menu.status() == MachineStatus.NO_POWER ? Component.translatable(T_NO_POWER, workEnergy(ENERGY_PER_TICK)).withStyle(ChatFormatting.RED)
                     : Component.translatable(T_WORKING, menu.extra(DATA_PROGRESS) * 100 / total);
         } else if (problem == SpecialWeapons.Problem.NONE) {
-            MissileParts.Guidance g = slot(SLOT_GUIDANCE).getItem() instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
+            MissileParts.Guidance g = ((Object) slot(SLOT_GUIDANCE).getItem()) instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
             second = Component.translatable(T_READY, MissileParts.Motor.ICBM.range, Component.translatable(MissileParts.guidanceName(g)));
         } else if (problem == SpecialWeapons.Problem.NO_CORE && !parts && !out.isEmpty()) {
             second = Component.translatable(T_APART);
@@ -427,8 +427,8 @@ public class SpecialWeaponsBlockEntity extends MachineBlockEntity implements Ani
 
     // --- model ------------------------------------------------------------------------------------------------------------
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -486,8 +486,8 @@ public class SpecialWeaponsBlockEntity extends MachineBlockEntity implements Ani
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("progress", this.progress);
         output.putInt("total", this.total);
         output.putInt("laid", this.laid);
@@ -496,8 +496,8 @@ public class SpecialWeaponsBlockEntity extends MachineBlockEntity implements Ani
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.progress = input.getIntOr("progress", 0);
         this.total = input.getIntOr("total", 0);
         this.laid = input.getIntOr("laid", 0);

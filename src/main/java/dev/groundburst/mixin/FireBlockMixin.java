@@ -23,19 +23,19 @@ import net.minecraft.world.level.block.FireBlock;
  */
 @Mixin(FireBlock.class)
 abstract class FireBlockMixin {
-    @Inject(method = "checkBurnOut", at = {
-            @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"),
-            @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z")})
+    @Inject(method = "tryCatchFire", remap = false, at = {
+            @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z", remap = true),
+            @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z", remap = true)})
     private void groundburst$burning(Level level, BlockPos pos, int chance, RandomSource random, int age, Direction face, CallbackInfo ci) {
-        if (level instanceof ServerLevel server) {
+        if (((Object) level) instanceof ServerLevel server) {
             dev.groundburst.heal.Scars.aftermath(server, pos, true);
         }
     }
 
-    @WrapMethod(method = "checkBurnOut")
+    @WrapMethod(method = "tryCatchFire", remap = false)
     private void groundburst$burningCourse(Level level, BlockPos pos, int chance, RandomSource random, int age, Direction face,
             Operation<Void> original) {
-        boolean watched = level instanceof ServerLevel server && dev.groundburst.heal.Scars.watching(server, pos);
+        boolean watched = ((Object) level) instanceof ServerLevel server && dev.groundburst.heal.Scars.watching(server, pos);
         if (watched) {
             dev.groundburst.heal.Scars.beginCascade();
         }

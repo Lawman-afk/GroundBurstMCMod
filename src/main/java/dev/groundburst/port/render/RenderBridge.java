@@ -10,8 +10,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * Each frame, after the translucent terrain and the particles (where 26.x draws its custom geometry after terrain):
@@ -22,7 +22,7 @@ public final class RenderBridge {
     private RenderBridge() {}
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(RenderBridge::stage);
+        MinecraftForge.EVENT_BUS.addListener(RenderBridge::stage);
     }
 
     private static void stage(RenderLevelStageEvent event) {
@@ -35,7 +35,7 @@ public final class RenderBridge {
             return;
         }
         Camera camera = event.getCamera();
-        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float partial = event.getPartialTick();
         LevelRenderState state = new LevelRenderState(CameraRenderState.of(camera));
         Vec3 sky = level.getSkyColor(camera.getPosition(), partial);
         state.skyRenderState.skyColor = new Vector3f((float) sky.x, (float) sky.y, (float) sky.z);
@@ -44,10 +44,10 @@ public final class RenderBridge {
         state.skyRenderState.sunriseAndSunsetColor = glow == null ? null : new Vector4f(glow[0], glow[1], glow[2], glow[3]);
         Vec3 cloud = level.getCloudColor(partial);
         state.cloudColor = 0xFF000000 | (int) (cloud.x * 255) << 16 | (int) (cloud.y * 255) << 8 | (int) (cloud.z * 255);
-        NeoForge.EVENT_BUS.post(new ExtractLevelRenderStateEvent(level, state));
+        MinecraftForge.EVENT_BUS.post(new ExtractLevelRenderStateEvent(level, state));
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         PoseStack poseStack = event.getPoseStack() != null ? event.getPoseStack() : new PoseStack();
-        NeoForge.EVENT_BUS.post(new SubmitCustomGeometryEvent(poseStack, new SubmitNodeCollector(buffers), state));
+        MinecraftForge.EVENT_BUS.post(new SubmitCustomGeometryEvent(poseStack, new SubmitNodeCollector(buffers), state));
         buffers.endBatch();
     }
 }

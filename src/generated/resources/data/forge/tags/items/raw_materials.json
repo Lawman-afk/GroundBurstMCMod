@@ -1,0 +1,24 @@
+{
+  "values": [
+    {
+      "id": "#forge:raw_materials/uranium",
+      "required": false
+    },
+    {
+      "id": "#forge:raw_materials/lithium",
+      "required": false
+    },
+    {
+      "id": "#forge:raw_materials/tungsten",
+      "required": false
+    },
+    {
+      "id": "#forge:raw_materials/lead",
+      "required": false
+    },
+    {
+      "id": "#forge:raw_materials/rare_earth",
+      "required": false
+    }
+  ]
+}

@@ -40,7 +40,7 @@ import net.minecraft.world.phys.Vec3;
  * windows) with the coolant, from the floor up to the tank's level; while the core runs the water glows Cherenkov blue,
  * lit whatever the light round it. The panes go in one batch with the water, which is sorted far to near when drawn.
  */
-public class FissionReactorRenderer extends dev.groundburst.port.render.StateBlockEntityRenderer<FissionReactorBlockEntity, FissionReactorRenderer.State> {
+public class FissionReactorRenderer extends dev.groundburst.port.render.StateBlockEntityRenderer<FissionReactorBlockEntity, FissionReactorRenderer.State> implements dev.groundburst.legacy.client.RenderBox<FissionReactorBlockEntity> {
     /** Clear of the walls' inner faces (far enough not to fight them in the depth buffer from afar). */
     private static final float INSET = 0.01f;
     private static final int CHERENKOV = 0x5CD2FF;
@@ -160,7 +160,7 @@ public class FissionReactorRenderer extends dev.groundburst.port.render.StateBlo
 
     /** The vessel's opaque sections, or its panes, each moved into its cell. */
     private static void sections(PoseStack.Pose base, VertexConsumer buffer, List<Piece> pieces, float drop, boolean glass) {
-        PoseStack.Pose pose = base.copy();
+        PoseStack.Pose pose = dev.groundburst.legacy.Game.copy(base);
         QuadInstance instance = new QuadInstance();
         for (Piece piece : pieces) {
             BlockStateModelPart part = piece.section().glass() == glass ? piece.section().part() : null;
@@ -197,13 +197,12 @@ public class FissionReactorRenderer extends dev.groundburst.port.render.StateBlo
     private static void quad(VertexConsumer buffer, PoseStack.Pose pose, int color, int light, float nx, float ny, float nz,
             float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz, float dx, float dy, float dz,
             float u0, float v0, float u1, float v1) {
-        buffer.addVertex(pose, ax, ay, az).setColor(color).setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, bx, by, bz).setColor(color).setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, cx, cy, cz).setColor(color).setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, dx, dy, dz).setColor(color).setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), ax, ay, az).color(color).uv(u0, v0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), bx, by, bz).color(color).uv(u0, v1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), cx, cy, cz).color(color).uv(u1, v1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), dx, dy, dz).color(color).uv(u1, v0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
     }
 
-    @Override
     public AABB getRenderBoundingBox(FissionReactorBlockEntity be) {
         FissionCore core = be.core();
         return core != null ? core.bounds().inflate(1) : new AABB(be.getBlockPos());

@@ -5,16 +5,16 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentPatch;
+import dev.groundburst.legacy.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidType;
 
 /**
  * NeoForge 26.x's fluid stack template (a fluid, an amount and a component patch, fixed: what a recipe makes), written
@@ -28,9 +28,9 @@ public record FluidStackTemplate(Holder<Fluid> fluid, int amount, DataComponentP
             ExtraCodecs.POSITIVE_INT.fieldOf("amount").forGetter(FluidStackTemplate::amount),
             DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(FluidStackTemplate::components)
     ).apply(i, FluidStackTemplate::new));
-    public static final Codec<FluidStackTemplate> CODEC = Codec.withAlternative(MAP_CODEC.codec(), FLUID_CODEC,
+    public static final Codec<FluidStackTemplate> CODEC = dev.groundburst.legacy.Codecs2.withAlternative(MAP_CODEC.codec(), FLUID_CODEC,
             fluid -> new FluidStackTemplate(fluid, FluidType.BUCKET_VOLUME, DataComponentPatch.EMPTY));
-    public static final StreamCodec<RegistryFriendlyByteBuf, FluidStackTemplate> STREAM_CODEC = StreamCodec.composite(
+    public static final StreamCodec<FriendlyByteBuf, FluidStackTemplate> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.holderRegistry(Registries.FLUID), FluidStackTemplate::fluid,
             ByteBufCodecs.VAR_INT, FluidStackTemplate::amount,
             DataComponentPatch.STREAM_CODEC, FluidStackTemplate::components,
@@ -49,7 +49,7 @@ public record FluidStackTemplate(Holder<Fluid> fluid, int amount, DataComponentP
     }
 
     public static FluidStackTemplate fromNonEmptyStack(FluidStack stack) {
-        return new FluidStackTemplate(stack.getFluidHolder(), stack.getAmount(), stack.getComponentsPatch());
+        return new FluidStackTemplate(dev.groundburst.legacy.FluidStacks.holder(stack), stack.getAmount(), dev.groundburst.legacy.component.DataComponentPatch.of(stack));
     }
 
     public FluidStackTemplate withAmount(int amount) {
@@ -57,7 +57,7 @@ public record FluidStackTemplate(Holder<Fluid> fluid, int amount, DataComponentP
     }
 
     public FluidStack create() {
-        return new FluidStack(this.fluid, this.amount, this.components);
+        return dev.groundburst.legacy.component.DataComponentPatch.fluid(this.fluid, this.amount, this.components);
     }
 
     public Holder<Fluid> typeHolder() {

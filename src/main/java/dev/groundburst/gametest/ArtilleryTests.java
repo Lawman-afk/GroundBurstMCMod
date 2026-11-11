@@ -64,7 +64,7 @@ final class ArtilleryTests {
     private static ServerPlayer seatable(GameTestHelper helper) {
         var level = helper.getLevel();
         var profile = new com.mojang.authlib.GameProfile(java.util.UUID.randomUUID(), "test-crewman");
-        ServerPlayer p = new ServerPlayer(level.getServer(), level, profile, net.minecraft.server.level.ClientInformation.createDefault()) {
+        ServerPlayer p = new ServerPlayer(level.getServer(), level, profile) {
             @Override
             public boolean isCreative() {
                 return false;
@@ -82,8 +82,7 @@ final class ArtilleryTests {
         GameType.SURVIVAL.updatePlayerAbilities(p.getAbilities());
         var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
         new io.netty.channel.embedded.EmbeddedChannel(connection);
-        new net.minecraft.server.network.ServerGamePacketListenerImpl(level.getServer(), connection, p,
-                net.minecraft.server.network.CommonListenerCookie.createInitial(profile, false));
+        new net.minecraft.server.network.ServerGamePacketListenerImpl(level.getServer(), connection, p);
         return p;
     }
 
@@ -362,7 +361,7 @@ final class ArtilleryTests {
                     helper.assertTrue(c.size() == want && c.stream().allMatch(ThrownExplosive::smoking), "its canisters pouring out: " + c.size());
                     c.forEach(e -> e.discard());
                 }
-                case CRYO -> helper.assertTrue(pig != null && pig.hasEffect(EffectSystems.FROZEN), "the pig two blocks off frozen");
+                case CRYO -> helper.assertTrue(pig != null && pig.hasEffect(EffectSystems.FROZEN.get()), "the pig two blocks off frozen");
                 case EMP -> helper.assertTrue(EmpFields.inField(level, at.add(0, 0.5, 0)), "an EMP field where it landed");
             }
         });

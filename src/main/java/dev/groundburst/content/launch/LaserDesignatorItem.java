@@ -35,7 +35,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * The Laser Designator (DESIGN.md §17.13): hold use to lase (held to the eye, zoomed): a beam and a spot every player
@@ -81,16 +81,16 @@ public class LaserDesignatorItem extends Item {
     private static final boolean BEAM_TO_SELF = Boolean.getBoolean("groundburst.fxShots");
 
     public LaserDesignatorItem(Properties properties) {
-        super(properties.stacksTo(1).component(GBDataComponents.ENERGY.get(), CAPACITY));
+        super(dev.groundburst.legacy.component.Comps.withDefault(properties.stacksTo(1), GBDataComponents.ENERGY.get(), CAPACITY));
     }
 
     public static int stored(ItemStack stack) {
-        return stack.getOrDefault(GBDataComponents.ENERGY.get(), 0);
+        return dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.ENERGY.get(), 0);
     }
 
     /** Knocked out by an EMP (for a while after leaving the field). */
     public static boolean knockedOut(ItemStack stack, Level level) {
-        return level.getGameTime() < stack.getOrDefault(GBDataComponents.EMP_UNTIL.get(), 0L);
+        return level.getGameTime() < dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.EMP_UNTIL.get(), 0L);
     }
 
     /** Whether it can lase: charged, and not knocked out. */
@@ -99,7 +99,7 @@ public class LaserDesignatorItem extends Item {
     }
 
     @Override
-    public int getUseDuration(ItemStack stack, LivingEntity user) {
+    public int getUseDuration(ItemStack stack) { net.minecraft.world.entity.LivingEntity user = null;
         return 72_000;
     }
 
@@ -128,14 +128,14 @@ public class LaserDesignatorItem extends Item {
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
-        if (player == null || !(LaunchCodesItem.target(level, context.getClickedPos()) instanceof LaunchStationBlockEntity station)) {
+        if (player == null || !(((Object) LaunchCodesItem.target(level, context.getClickedPos())) instanceof LaunchStationBlockEntity station)) {
             return InteractionResult.PASS;
         }
-        if (level instanceof ServerLevel server) {
+        if (((Object) level) instanceof ServerLevel server) {
             LaunchNetwork.Network n = station.network(server);
             if (n != null) {
                 boolean same = n.code().equals(LaunchCodesItem.code(stack));
-                stack.set(GBDataComponents.LAUNCH_CODES.get(), n.code());
+                dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.LAUNCH_CODES.get(), n.code());
                 player.displayClientMessage(Component.translatable(same ? T_SAME : T_LINKED, n.code()).withStyle(ChatFormatting.GOLD), true);
                 server.playSound(null, context.getClickedPos(), GBSounds.DESIGNATOR_LOCK.get(), SoundSource.PLAYERS, 0.4f, 1.2f);
             }
@@ -151,7 +151,7 @@ public class LaserDesignatorItem extends Item {
 
     @Override
     public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int remaining) {
-        if (!(level instanceof ServerLevel server) || !(entity instanceof ServerPlayer player)) {
+        if (!(((Object) level) instanceof ServerLevel server) || !(((Object) entity) instanceof ServerPlayer player)) {
             return;
         }
         if (!works(stack, level)) {
@@ -159,7 +159,7 @@ public class LaserDesignatorItem extends Item {
             return;
         }
         if (!player.isCreative()) {
-            stack.set(GBDataComponents.ENERGY.get(), Math.max(0, stored(stack) - USE));
+            dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.ENERGY.get(), Math.max(0, stored(stack) - USE));
         }
         long net = network(server, stack);
         Designators.Hit hit = Designators.trace(server, player, Designators.range(player));
@@ -210,7 +210,7 @@ public class LaserDesignatorItem extends Item {
         }
         int number = m == null ? 0 : nets.number(net, m);
         if (m != null) {
-            stack.set(GBDataComponents.DESIGNATOR_PICK.get(), m.pos);    // (once fired, the pick moves on to the next)
+            dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.DESIGNATOR_PICK.get(), m.pos);    // (once fired, the pick moves on to the next)
         }
         CLICKS.put(player.getUUID(), new Click(now, result, number));
         level.playSound(null, player.getX(), player.getY(), player.getZ(), result == Result.FIRED ? GBSounds.DESIGNATOR_FIRE.get()
@@ -221,7 +221,7 @@ public class LaserDesignatorItem extends Item {
 
     /** The launcher a designator works with: the one it picked while it can, else the next (null: none). */
     static LaunchNetwork.@Nullable Member picked(ServerLevel level, ItemStack stack, long net) {
-        return net == 0 ? null : LaunchNetwork.of(level).laserSelection(net, stack.get(GBDataComponents.DESIGNATOR_PICK.get()));
+        return net == 0 ? null : LaunchNetwork.of(level).laserSelection(net, dev.groundburst.legacy.component.Comps.get(stack, GBDataComponents.DESIGNATOR_PICK.get()));
     }
 
     /** The mouse wheel while zoomed (its holder's client sends it): picks the next (1) or the previous (-1) launcher. */
@@ -232,11 +232,11 @@ public class LaserDesignatorItem extends Item {
             return;
         }
         long net = network(level, stack);
-        LaunchNetwork.Member m = net == 0 ? null : LaunchNetwork.of(level).laserStep(net, stack.get(GBDataComponents.DESIGNATOR_PICK.get()), step);
+        LaunchNetwork.Member m = net == 0 ? null : LaunchNetwork.of(level).laserStep(net, dev.groundburst.legacy.component.Comps.get(stack, GBDataComponents.DESIGNATOR_PICK.get()), step);
         if (m == null) {
             return;
         }
-        stack.set(GBDataComponents.DESIGNATOR_PICK.get(), m.pos);
+        dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.DESIGNATOR_PICK.get(), m.pos);
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS,
                 0.25f, 1.8f);
         Designators.Spot spot = Designators.spotOf(level, player.getUUID());
@@ -265,7 +265,7 @@ public class LaserDesignatorItem extends Item {
         DesignatorPayloads.Beam payload = at == null ? new DesignatorPayloads.Beam(player.getId(), false, 0, 0, 0)
                 : new DesignatorPayloads.Beam(player.getId(), true, at.x, at.y, at.z);
         PacketDistributor.sendToPlayersTrackingEntity(player, payload);
-        if (BEAM_TO_SELF && player.connection != null && player.connection.hasChannel(DesignatorPayloads.Beam.TYPE)) {
+        if (BEAM_TO_SELF && player.connection != null && true) {
             PacketDistributor.sendToPlayer(player, payload);
         }
     }
@@ -275,7 +275,7 @@ public class LaserDesignatorItem extends Item {
      * last left click's result, and where the network's armed launchers are aimed.
      */
     private static void sendStatus(ServerLevel level, ServerPlayer player, ItemStack stack, long net, @Nullable BlockPos spot) {
-        if (player.connection == null || !player.connection.hasChannel(DesignatorPayloads.Status.TYPE)) {
+        if (player.connection == null || !true) {
             return;                                        // (a GameTest's player: nothing to show it on)
         }
         LaunchNetwork nets = LaunchNetwork.of(level);
@@ -320,16 +320,16 @@ public class LaserDesignatorItem extends Item {
     }
 
     private static void stopLasing(Level level, Entity entity) {
-        if (level instanceof ServerLevel server) {
+        if (((Object) level) instanceof ServerLevel server) {
             Designators.stop(server, entity.getUUID());
             LAST_SENT.remove(entity.getUUID());
         }
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, net.minecraft.world.level.Level level_l, net.minecraft.world.entity.Entity owner, int slotId_, boolean selected_) { if (!(level_l instanceof net.minecraft.server.level.ServerLevel level)) return; net.minecraft.world.entity.EquipmentSlot slot = selected_ ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : null;
+    public void inventoryTick(ItemStack stack, net.minecraft.world.level.Level level_l, net.minecraft.world.entity.Entity owner, int slotId_, boolean selected_) { if (!(((Object) level_l) instanceof net.minecraft.server.level.ServerLevel level)) return; net.minecraft.world.entity.EquipmentSlot slot = selected_ ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : null;
         if (level.getGameTime() % 20 == 0 && owner instanceof Player && EmpFields.inField(level, owner.position())) {
-            stack.set(GBDataComponents.EMP_UNTIL.get(), level.getGameTime() + EMP_TICKS);
+            dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.EMP_UNTIL.get(), level.getGameTime() + EMP_TICKS);
         }
     }
 
@@ -339,7 +339,7 @@ public class LaserDesignatorItem extends Item {
     }
 
     @Override
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         String code = LaunchCodesItem.code(stack);
         tooltip.accept(code.isEmpty() ? Component.translatable(T_NO_NETWORK).withStyle(ChatFormatting.GRAY)
                 : Component.translatable(T_NETWORK, code).withStyle(ChatFormatting.GOLD));

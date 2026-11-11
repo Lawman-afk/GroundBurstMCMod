@@ -99,14 +99,14 @@ public class ChargeBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         Direction to = attached(state);
         BlockPos on = pos.relative(to);
         return level.getBlockState(on).isFaceSturdy(level, on, to.getOpposite());
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         // A burning thermite charge stays where it is while it eats away what it was stuck to.
         boolean burning = state.hasProperty(LIT) && state.getValue(LIT);
         return direction == attached(state) && !burning && !canSurvive(state, level, pos) ? Blocks.AIR.defaultBlockState() : state;
@@ -114,8 +114,8 @@ public class ChargeBlock extends Block implements EntityBlock {
 
     /** Known to the Remote Detonator from the moment it is placed. */
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        if (level instanceof ServerLevel server) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        if (((Object) level) instanceof ServerLevel server) {
             Charges.track(server, pos);
         }
     }
@@ -159,7 +159,7 @@ public class ChargeBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         VoxelShape floor = floorShape(state);
         return this.kind.anyFace ? turn(floor, state.getValue(FACING)) : turnFlat(floor, state.getValue(FACING));
     }
@@ -228,31 +228,29 @@ public class ChargeBlock extends Block implements EntityBlock {
     }
 
     public static @Nullable ChargeBlockEntity at(BlockGetter level, BlockPos pos) {
-        return level.getBlockEntity(pos) instanceof ChargeBlockEntity be ? be : null;
+        return ((Object) level.getBlockEntity(pos)) instanceof ChargeBlockEntity be ? be : null;
     }
 
     // --- using it --------------------------------------------------------------------------------------------------------
-    @Override
-    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+    protected dev.groundburst.legacy.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         if (this.kind == ChargeKind.C4 && stack.is(asItem()) && !player.isSecondaryUseActive()) {
             // Stack another block of C4 on this one.
             int n = state.getValue(COUNT);
             if (n >= 4 || state.getValue(ARMED)) {
-                return net.minecraft.world.ItemInteractionResult.FAIL;
+                return dev.groundburst.legacy.ItemInteractionResult.FAIL;
             }
             if (!level.isClientSide()) {
                 level.setBlock(pos, state.setValue(COUNT, n + 1), Block.UPDATE_ALL);
                 level.playSound(null, pos, SoundEvents.SLIME_BLOCK_PLACE, SoundSource.BLOCKS, 0.8f, 0.9f);
-                stack.consume(1, player);
+                dev.groundburst.legacy.Items2.consume(stack, 1, player);
             }
-            return net.minecraft.world.ItemInteractionResult.SUCCESS;
+            return dev.groundburst.legacy.ItemInteractionResult.SUCCESS;
         }
-        return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        return dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (this.kind.bomb) {
             return InteractionResult.PASS;          // a warhead has no settings of its own: its fuze works in the missile
         }
@@ -263,8 +261,8 @@ public class ChargeBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos_, boolean movedByPiston) {
-        if (level instanceof ServerLevel server && state.getValue(ARMED) && server.hasNeighborSignal(pos)) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos_, boolean movedByPiston) {
+        if (((Object) level) instanceof ServerLevel server && state.getValue(ARMED) && server.hasNeighborSignal(pos)) {
             ChargeBlockEntity be = at(level, pos);
             if (be != null) {
                 be.trigger(server, null);
@@ -274,19 +272,22 @@ public class ChargeBlock extends Block implements EntityBlock {
 
     /** Caught in a vanilla explosion (TNT, a creeper): it goes off too, a moment later. */
     @Override
-    protected void onExplosionHit(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, net.minecraft.world.level.Explosion explosion, java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, BlockPos> onHit) { if (!(level_l instanceof net.minecraft.server.level.ServerLevel level)) { super.onExplosionHit(state, level_l, pos, explosion, onHit); return; }
-        Charges.caughtInBlast(level, pos, state);
-        super.onExplosionHit(state, level, pos, explosion, onHit);
+    public void onBlockExploded(BlockState state, net.minecraft.world.level.Level level, BlockPos pos,
+            net.minecraft.world.level.Explosion explosion) {
+        if (level instanceof net.minecraft.server.level.ServerLevel server) {
+            Charges.caughtInBlast(server, pos, state);
+        }
+        super.onBlockExploded(state, level, pos, explosion);
     }
 
     /** Breaking a timed bomb that is counting down sets it off. */
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         ChargeBlockEntity be = at(level, pos);
-        if (level instanceof ServerLevel server && be != null && be.counting() && this.kind == ChargeKind.TIMED_BOMB && !player.isCreative()) {
+        if (((Object) level) instanceof ServerLevel server && be != null && be.counting() && this.kind == ChargeKind.TIMED_BOMB && !player.isCreative()) {
             Charges.caughtInBlast(server, pos, state);
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player); return;
     }
 
     /** A burning thermite charge throws sparks and drips molten slag. */
@@ -328,5 +329,15 @@ public class ChargeBlock extends Block implements EntityBlock {
             super.createBlockStateDefinition(builder);
             builder.add(LIT);
         }
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        dev.groundburst.legacy.ItemInteractionResult item_ = this.useItemOn(player_.getItemInHand(hand_), state_, level_, pos_, player_, hand_, hit_);
+        if (item_ != dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+            return item_.result();
+        }
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

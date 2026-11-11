@@ -49,7 +49,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class StormFx {
     static final ResourceLocation BOLT = GroundBurst.id("textures/fx/bolt.png");
-    static final ResourceLocation RAIN = ResourceLocation.withDefaultNamespace("textures/environment/rain.png");
+    static final ResourceLocation RAIN = new ResourceLocation("textures/environment/rain.png");
     private static final double SOUND_SPEED = 17.15, VIRTUAL_DISTANCE = 8;
     /** Ticks a bolt shows, its brightness each of them (it flickers, and strikes again down the same channel). */
     private static final float[] FLICKER = {1, 0.35f, 0.95f, 0.4f, 0.65f, 0.35f, 0.22f, 0.12f, 0.05f};

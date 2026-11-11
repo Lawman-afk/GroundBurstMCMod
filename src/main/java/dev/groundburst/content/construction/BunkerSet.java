@@ -18,8 +18,7 @@ public final class BunkerSet {
 
     public static synchronized BlockSetType get() {
         if (type == null) {
-            type = BlockSetType.register(new BlockSetType(GroundBurst.MODID + ":bunker", true, false, false,
-                    BlockSetType.PressurePlateSensitivity.MOBS, SoundType.NETHERITE_BLOCK,
+            type = BlockSetType.register(new BlockSetType(GroundBurst.MODID + ":bunker", true, SoundType.NETHERITE_BLOCK,
                     GBSounds.PRESSURE_DOOR_CLOSE.get(), GBSounds.PRESSURE_DOOR_OPEN.get(),
                     GBSounds.BUNKER_HATCH_CLOSE.get(), GBSounds.BUNKER_HATCH_OPEN.get(),
                     SoundEvents.METAL_PRESSURE_PLATE_CLICK_OFF, SoundEvents.METAL_PRESSURE_PLATE_CLICK_ON,

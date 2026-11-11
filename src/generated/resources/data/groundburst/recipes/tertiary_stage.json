@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:fusion_secondary"
+    },
+    {
+      "item": "groundburst:fusion_secondary"
+    },
+    {
+      "item": "groundburst:lead_plate"
+    },
+    {
+      "item": "groundburst:lead_plate"
+    },
+    {
+      "item": "groundburst:lead_plate"
+    },
+    {
+      "item": "groundburst:lead_plate"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    }
+  ],
+  "result": {
+    "item": "groundburst:tertiary_stage"
+  }
+}

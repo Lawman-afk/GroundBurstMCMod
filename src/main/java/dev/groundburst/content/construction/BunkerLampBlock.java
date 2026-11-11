@@ -31,10 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * user's wish: by redstone, not by a click); it goes dark a moment after the signal does, a relay's click each way.
  */
 public class BunkerLampBlock extends DirectionalBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends BunkerLampBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     private static final Map<Direction, VoxelShape> SHAPES = Fittings.pointing(new double[] {3.8, 0, 3.8, 12.2, 6.7, 12.2});
@@ -57,7 +54,7 @@ public class BunkerLampBlock extends DirectionalBlock {
 
     /** A signal coming lights it at once; one gone puts it out four ticks on (if it has not come back). */
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
         if (level.isClientSide()) {
             return;
         }
@@ -72,7 +69,7 @@ public class BunkerLampBlock extends DirectionalBlock {
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (state.getValue(LIT) && !level.hasNeighborSignal(pos)) {
             switchTo(state, level, pos, false);
         }
@@ -84,17 +81,17 @@ public class BunkerLampBlock extends DirectionalBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES.get(state.getValue(FACING));
     }
 
     @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 }

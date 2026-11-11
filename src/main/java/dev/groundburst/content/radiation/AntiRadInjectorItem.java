@@ -34,7 +34,7 @@ public class AntiRadInjectorItem extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
-        builder.accept(Component.translatable(HINT).withColor(0xFF9AA0A8));
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
+        builder.accept(Component.translatable(HINT).withStyle(s_ -> s_.withColor(0xFF9AA0A8)));
     }
 }

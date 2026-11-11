@@ -49,19 +49,19 @@ final class FluidMachineTests {
         BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
         for (int i = 0; i < 8; i++) {
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
-            level.getBlockState(pos).useItemOn(player.getMainHandItem(), level, player, InteractionHand.MAIN_HAND, hit);
+            dev.groundburst.legacy.UseOnBlock.itemOn(level.getBlockState(pos), player.getMainHandItem(), level, player, InteractionHand.MAIN_HAND, hit);
             helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "the bucket is emptied, holding " + player.getMainHandItem());
         }
         helper.assertTrue(sep.tank(0).amount() == 8_000, "eight buckets give 8000 mB, have " + sep.tank(0).amount());
         // A plain click with an empty bucket must not draw anything out.
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
-        sep.tank(1).fillInternal(new net.neoforged.neoforge.fluids.FluidStack(GBFluids.DEUTERIUM.source().get(), 1_000));
+        sep.tank(1).fillInternal(new net.minecraftforge.fluids.FluidStack(GBFluids.DEUTERIUM.source().get(), 1_000));
         ItemStack canister = new ItemStack(GBChemicals.EMPTY_GAS_CANISTER.get(), 2);
         player.setItemInHand(InteractionHand.MAIN_HAND, canister);
-        level.getBlockState(pos).useItemOn(player.getMainHandItem(), level, player, InteractionHand.MAIN_HAND, hit);
+        dev.groundburst.legacy.UseOnBlock.itemOn(level.getBlockState(pos), player.getMainHandItem(), level, player, InteractionHand.MAIN_HAND, hit);
         helper.assertTrue(sep.tank(1).amount() == 1_000, "a plain click does not draw from the product tank");
         player.setShiftKeyDown(true);
-        level.getBlockState(pos).useItemOn(player.getMainHandItem(), level, player, InteractionHand.MAIN_HAND, hit);
+        dev.groundburst.legacy.UseOnBlock.itemOn(level.getBlockState(pos), player.getMainHandItem(), level, player, InteractionHand.MAIN_HAND, hit);
         helper.assertTrue(sep.tank(1).isEmpty(), "sneak-click fills the canister from the product tank");
         helper.assertTrue(player.getInventory().countItem(GBChemicals.DEUTERIUM_CANISTER.get()) == 1, "the player gets a deuterium canister");
         helper.succeed();
@@ -71,7 +71,7 @@ final class FluidMachineTests {
         BlockPos pos = new BlockPos(3, 1, 3);
         ElectrolyticSeparatorBlockEntity sep = separator(helper, pos);
         var level = helper.getLevel();
-        var handler = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(pos), Direction.UP);
+        var handler = dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, helper.absolutePos(pos), Direction.UP);
         helper.assertTrue(handler != null, "a machine with a tank exposes it to pipes");
         try (var tx = Transaction.openRoot()) {
             int in = handler.insert(0, FluidResource.of(Fluids.WATER), 5000, tx);
@@ -82,7 +82,7 @@ final class FluidMachineTests {
         }
         helper.assertTrue(sep.tank(0).amount() == 5000, "tank should hold 5000 mB");
         sep.changeSides(c -> c.toggleFluid(Face.TOP));
-        helper.assertTrue(level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(pos), Direction.UP) == null, "fluid switched off on top");
+        helper.assertTrue(dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, helper.absolutePos(pos), Direction.UP) == null, "fluid switched off on top");
         helper.succeed();
     }
 

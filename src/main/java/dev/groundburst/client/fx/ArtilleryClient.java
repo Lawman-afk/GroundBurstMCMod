@@ -24,7 +24,7 @@ import dev.groundburst.registry.GBLang;
 import dev.groundburst.registry.GBSounds;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.client.CameraType;
-import net.minecraft.client.DeltaTracker;
+import dev.groundburst.legacy.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -49,20 +49,20 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.event.RenderHandEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.InputEvent;
+import dev.groundburst.legacy.client.RegisterGuiLayersEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import dev.groundburst.legacy.client.RenderGuiLayerEvent;
+import net.minecraftforge.client.event.RenderHandEvent;
 import dev.groundburst.port.render.SubmitCustomGeometryEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.client.event.ViewportEvent;
+import dev.groundburst.legacy.client.VanillaGuiLayers;
+import dev.groundburst.legacy.net.PacketDistributor;
+import net.minecraftforge.client.settings.KeyConflictContext;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * A gun's crewman's side (DESIGN.md §20.1), World of Tanks' way of aiming artillery: manned, the gun follows where they
@@ -126,37 +126,37 @@ public final class ArtilleryClient {
         modBus.addListener((RegisterGuiLayersEvent e) -> e.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, GroundBurst.id("artillery"), (gg_, dt_) -> ArtilleryClient.hud(new dev.groundburst.port.GuiGraphicsExtractor(gg_), dt_)));
         ArtilleryPayloads.stateHook = s -> {
             Minecraft mc = Minecraft.getInstance();
-            if (mc.level != null && mc.level.isLoaded(s.gun()) && mc.level.getBlockEntity(s.gun()) instanceof GunBlockEntity m) {
+            if (mc.level != null && mc.level.isLoaded(s.gun()) && ((Object) mc.level.getBlockEntity(s.gun())) instanceof GunBlockEntity m) {
                 m.applyState(s);
             }
         };
         ArtilleryShell.clientHook = ArtilleryClient::shellTick;
         ArtilleryTerrain.register();
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre e) -> tick(Minecraft.getInstance()));
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> WHISTLING.removeIf(id -> {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent e) -> { if (e.phase != net.minecraftforge.event.TickEvent.Phase.START) return; tick(Minecraft.getInstance()); });
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent e) -> { if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return; WHISTLING.removeIf(id -> {
             ClientLevel level = Minecraft.getInstance().level;
             return level == null || !(level.getEntity(id) instanceof ArtilleryShell);
-        }));
-        NeoForge.EVENT_BUS.addListener(ArtilleryClient::angles);
-        NeoForge.EVENT_BUS.addListener(ArtilleryClient::submit);
-        NeoForge.EVENT_BUS.addListener((InputEvent.MouseScrollingEvent e) -> {
+        }); });
+        MinecraftForge.EVENT_BUS.addListener(ArtilleryClient::angles);
+        MinecraftForge.EVENT_BUS.addListener(ArtilleryClient::submit);
+        MinecraftForge.EVENT_BUS.addListener((InputEvent.MouseScrollingEvent e) -> {
             if (gun != null && Minecraft.getInstance().screen == null) {
                 e.setCanceled(true);
-                scroll(Minecraft.getInstance(), e.getScrollDeltaY());
+                scroll(Minecraft.getInstance(), e.getScrollDelta());
             }
         });
-        NeoForge.EVENT_BUS.addListener((InputEvent.InteractionKeyMappingTriggered e) -> {
+        MinecraftForge.EVENT_BUS.addListener((InputEvent.InteractionKeyMappingTriggered e) -> {
             if (gun != null) {
                 e.setCanceled(true);                       // manning: the hands are on the gun (fire goes by tick)
                 e.setSwingHand(false);
             }
         });
-        NeoForge.EVENT_BUS.addListener((RenderHandEvent e) -> {
+        MinecraftForge.EVENT_BUS.addListener((RenderHandEvent e) -> {
             if (gun != null) {
                 e.setCanceled(true);
             }
         });
-        NeoForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Pre e) -> {
+        MinecraftForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Pre e) -> {
             if (gun == null) {
                 return;
             }
@@ -165,7 +165,7 @@ public final class ArtilleryClient {
                 e.setCanceled(true);
             }
         });
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
+        MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             Minecraft mc = Minecraft.getInstance();
             if (strategic) {
                 leaveView(mc, false);
@@ -219,7 +219,7 @@ public final class ArtilleryClient {
     }
 
     static @Nullable GunBlockEntity gunEntity(Minecraft mc) {
-        return gun != null && mc.level != null && mc.level.getBlockEntity(gun) instanceof GunBlockEntity m ? m : null;
+        return gun != null && mc.level != null && ((Object) mc.level.getBlockEntity(gun)) instanceof GunBlockEntity m ? m : null;
     }
 
     /** How far the aim may wander from the gun (it lays only to its own reach). */
@@ -244,7 +244,7 @@ public final class ArtilleryClient {
     // --- each tick ----------------------------------------------------------------------------------------------------
     private static void tick(Minecraft mc) {
         LocalPlayer p = mc.player;
-        BlockPos now = p != null && mc.level != null && p.getVehicle() instanceof GunSeat seat
+        BlockPos now = p != null && mc.level != null && ((Object) p.getVehicle()) instanceof GunSeat seat
                 && mc.level.getBlockEntity(seat.gun()) instanceof GunBlockEntity ? seat.gun() : null;
         if (now == null ? gun != null : !now.equals(gun)) {
             if (gun != null) {
@@ -533,7 +533,7 @@ public final class ArtilleryClient {
             laid = null;
             return;
         }
-        float partial = mc.isPaused() ? 1 : mc.getTimer().getGameTimeDeltaPartialTick(false);
+        float partial = mc.isPaused() ? 1 : mc.getFrameTime();
         laid = lay(mc, m, partial);
         Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
         ClientLevel level = mc.level;
@@ -633,8 +633,8 @@ public final class ArtilleryClient {
     }
 
     static void vertex(VertexConsumer b, PoseStack.Pose pose, Vec3 p, Vec3 camera, float u, float v, int colour) {
-        b.addVertex(pose, (float) (p.x - camera.x), (float) (p.y - camera.y), (float) (p.z - camera.z)).setColor(colour).setUv(u, v)
-                .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0, 1, 0);
+        b.vertex(dev.groundburst.legacy.Verts.matrix(pose), (float) (p.x - camera.x), (float) (p.y - camera.y), (float) (p.z - camera.z)).color(colour).uv(u, v)
+                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT).normal(dev.groundburst.legacy.Verts.normal(pose), 0, 1, 0).endVertex();
     }
 
     // --- the readout ---------------------------------------------------------------------------------------------------
@@ -738,7 +738,7 @@ public final class ArtilleryClient {
             super(GBSounds.SHELL_INCOMING.get(), SoundSource.HOSTILE, SoundInstance.createUnseededRandom());
             this.shell = shell;
             this.volume = 2.4f * (shell.calibre() == Calibre.MORTAR ? 1 : 1.6f);
-            this.pitch = shell.calibre().whistle * (0.95f + shell.getRandom().nextFloat() * 0.1f);
+            this.pitch = shell.calibre().whistle * (0.95f + shell.level().getRandom().nextFloat() * 0.1f);
             this.attenuation = SoundInstance.Attenuation.LINEAR;
             this.x = shell.getX();
             this.y = shell.getY();

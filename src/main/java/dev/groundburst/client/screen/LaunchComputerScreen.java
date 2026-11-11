@@ -35,7 +35,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * The Launch Computer's screen (DESIGN.md §17.3, basic version): on the left a green phosphor map of the ground round the
@@ -275,7 +275,7 @@ public class LaunchComputerScreen extends Screen {
     public void tick() {
         List<LaunchPayloads.Silo> silos = silos();
         if (selectedSilo() == null) {
-            this.selected = silos.isEmpty() ? null : silos.getFirst().pos();
+            this.selected = silos.isEmpty() ? null : dev.groundburst.legacy.J21.first(silos).pos();
         }
         this.scroll = Mth.clamp(this.scroll, 0, Math.max(0, silos.size() - ROWS));
         LaunchPayloads.Silo silo = selectedSilo();
@@ -350,7 +350,7 @@ public class LaunchComputerScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double x, double y, double scrollY) { double scrollX = 0;
         if (inList(x, y)) {
             this.scroll = Mth.clamp(this.scroll - (int) Math.signum(scrollY), 0, Math.max(0, silos().size() - ROWS));
             return true;
@@ -364,7 +364,7 @@ public class LaunchComputerScreen extends Screen {
             clampView();
             return true;
         }
-        return super.mouseScrolled(x, y, scrollX, scrollY);
+        return super.mouseScrolled(x, y, scrollY);
     }
 
     @Override
@@ -383,9 +383,8 @@ public class LaunchComputerScreen extends Screen {
     }
 
     // --- drawing ------------------------------------------------------------------------------------------------------------
-    @Override
     public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
-        super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
+        super.renderBackground(g.unwrap());
         g.fill(left(), top(), left() + W, top() + H, PANEL);
         g.outline(left(), top(), W, H, EDGE);
         drawMap(g, mouseX, mouseY);
@@ -548,6 +547,7 @@ public class LaunchComputerScreen extends Screen {
 
     @Override
     public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        this.renderBackground(g.unwrap(), mouseX, mouseY, partial);   // (1.20.1's Screen.render draws no background)
         super.render(g.unwrap(), mouseX, mouseY, partial);
         int x = col();
         LaunchPayloads.Scope s = scope();

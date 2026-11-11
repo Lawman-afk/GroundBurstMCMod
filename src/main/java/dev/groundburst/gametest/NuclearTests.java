@@ -106,7 +106,7 @@ final class NuclearTests {
             var ours = Flights.of(helper.getLevel()).all().stream()
                     .filter(f -> !before.contains(f) && f.target().distanceTo(aim) < 4).toList();
             helper.assertTrue(ours.size() == 1, "a missile in the air: " + ours.size());
-            Flights.of(helper.getLevel()).cancelForTest(helper.getLevel(), ours.getFirst());   // no nuke landing on another test
+            Flights.of(helper.getLevel()).cancelForTest(helper.getLevel(), dev.groundburst.legacy.J21.first(ours));   // no nuke landing on another test
             helper.succeed();
         });
     }
@@ -153,7 +153,7 @@ final class NuclearTests {
                 ItemStack.EMPTY, ItemStack.EMPTY);
         MissileSpec spec = dev.groundburst.content.assembly.MissileItem.spec(missile);
         helper.assertTrue(spec != null && spec.body() == SizeClass.XL && spec.range() == 2500 && spec.needsComplex(), "a Strategic missile: " + spec);
-        var look = missile.get(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA);
+        var look = dev.groundburst.legacy.component.Comps.get(missile, dev.groundburst.legacy.component.DataComponents.CUSTOM_MODEL_DATA);
         helper.assertTrue(look != null && look.value() == dev.groundburst.port.Looks.id("tactical_nuclear_warhead"), "its own model: " + look);
         helper.succeed();
     }
@@ -202,7 +202,7 @@ final class NuclearTests {
             helper.setBlock(p, Blocks.OBSIDIAN);
         }
         helper.setBlock(new BlockPos(6, 0, 8), Blocks.GRASS_BLOCK);
-        helper.setBlock(new BlockPos(6, 1, 8), Blocks.SHORT_GRASS);
+        helper.setBlock(new BlockPos(6, 1, 8), Blocks.GRASS);
         helper.setBlock(new BlockPos(10, 1, 9), Blocks.OAK_LOG);
         helper.setBlock(new BlockPos(10, 2, 9), Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true));
         Pig open = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(8, 1, 4));
@@ -216,7 +216,7 @@ final class NuclearTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(!open.isAlive(), "the pig in the open is dead");
             helper.assertTrue(sheltered.isAlive(), "the pig behind obsidian lives: " + sheltered.getHealth());
-            helper.assertTrue(sheltered.hasEffect(GBEffects.RADIATION_SICKNESS), "but it is radiation-sick");
+            helper.assertTrue(sheltered.hasEffect(GBEffects.RADIATION_SICKNESS.get()), "but it is radiation-sick");
             helper.assertBlockPresent(dev.groundburst.content.fallout.GBFallout.DEAD_GRASS_BLOCK.block().get(), new BlockPos(6, 0, 8));
             helper.assertBlockPresent(Blocks.AIR, new BlockPos(6, 1, 8));
             helper.assertBlockPresent(dev.groundburst.content.fallout.GBFallout.DEAD_LEAVES.block().get(), new BlockPos(10, 2, 9));
@@ -273,7 +273,7 @@ final class NuclearTests {
     private static void sourcesPayload(GameTestHelper helper) {
         var sources = java.util.List.of(new RadiationSource(new Vec3(1.5, 64, -2.25), 180, 60_000, 3_824, 1234L),
                 new RadiationSource(new Vec3(-300, 70.5, 9), 90, 20_000, 10_940, 99L));
-        var buf = new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(), helper.getLevel().registryAccess());
+        var buf = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
         RadiationSources.Sync.CODEC.encode(buf, new RadiationSources.Sync(sources));
         var back = RadiationSources.Sync.CODEC.decode(buf);
         helper.assertTrue(back.sources().equals(sources) && buf.readableBytes() == 0, "the sources survive the trip: " + back.sources());

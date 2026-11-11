@@ -3,7 +3,7 @@ package dev.groundburst.content.machine;
 import java.util.List;
 import java.util.Set;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.multiblock.GBMultiblocks;

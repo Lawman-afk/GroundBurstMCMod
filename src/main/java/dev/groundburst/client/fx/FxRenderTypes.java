@@ -19,8 +19,8 @@ import net.minecraft.Util;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.RegisterShadersEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.client.event.RegisterShadersEvent;
 
 /**
  * The Spectacle's render types (the 1.21.1 backport's: main builds them as 26.x render pipelines), all on vanilla's
@@ -47,9 +47,9 @@ import net.neoforged.neoforge.client.event.RegisterShadersEvent;
  */
 final class FxRenderTypes {
     /** Iris is installed: with a shader pack on, the effects are drawn last, or the pack draws them ({@link IrisFx}). */
-    static final boolean IRIS = net.neoforged.fml.ModList.get().isLoaded("iris");
+    static final boolean IRIS = net.minecraftforge.fml.ModList.get().isLoaded("iris");
     /** Distant Horizons is installed: its far terrain is laid over the level after the effects, so they are drawn after it. */
-    static final boolean DISTANT_HORIZONS = net.neoforged.fml.ModList.get().isLoaded("distanthorizons");
+    static final boolean DISTANT_HORIZONS = net.minecraftforge.fml.ModList.get().isLoaded("distanthorizons");
     /** Dev runs: {@code -PpackFx=over|in} sets the way under a pack whatever the config says. */
     private static final String DEV_PACK_FX = System.getProperty("groundburst.packFx", "").trim().toLowerCase(Locale.ROOT);
 
@@ -59,6 +59,8 @@ final class FxRenderTypes {
 
     /** The clouds' shader (loaded with the game's own). */
     private static @Nullable ShaderInstance cloudShader;
+    /** The glow's shader: the eyes shader, its own file blending it additively (1.20.1's shaders set their blending). */
+    private static @Nullable ShaderInstance glowShader;
 
     private FxRenderTypes() {}
 
@@ -66,8 +68,11 @@ final class FxRenderTypes {
         modBus.addListener((RegisterShadersEvent event) -> {
             try {
                 event.registerShader(new ShaderInstance(event.getResourceProvider(),
-                        ResourceLocation.fromNamespaceAndPath(GroundBurst.MODID, "rendertype_fx_cloud"), DefaultVertexFormat.NEW_ENTITY),
+                        new ResourceLocation(GroundBurst.MODID, "rendertype_fx_cloud"), DefaultVertexFormat.NEW_ENTITY),
                         shader -> cloudShader = shader);
+                event.registerShader(new ShaderInstance(event.getResourceProvider(),
+                        new ResourceLocation(GroundBurst.MODID, "rendertype_fx_glow"), DefaultVertexFormat.NEW_ENTITY),
+                        shader -> glowShader = shader);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -138,6 +143,8 @@ final class FxRenderTypes {
         private static final ShaderStateShard FIRE_SHADER = new ShaderStateShard(
                 () -> packDraws() ? net.minecraft.client.renderer.GameRenderer.getRendertypeEntityTranslucentShader()
                         : net.minecraft.client.renderer.GameRenderer.getRendertypeEyesShader());
+        private static final ShaderStateShard GLOW_SHADER = new ShaderStateShard(
+                () -> packDraws() ? net.minecraft.client.renderer.GameRenderer.getRendertypeEyesShader() : glowShader);
 
         /**
          * Blended additively ({@code additive}, as lightning) or over what is behind; writing depth or not. One that writes
@@ -148,7 +155,7 @@ final class FxRenderTypes {
         static RenderType make(String name, ResourceLocation texture, boolean additive, boolean writeDepth) {
             return create(GroundBurst.MODID + "_" + name, DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, false, true,
                     CompositeState.builder()
-                            .setShaderState(writeDepth ? CLOUD_SHADER : additive ? RENDERTYPE_EYES_SHADER : FIRE_SHADER)
+                            .setShaderState(writeDepth ? CLOUD_SHADER : additive ? GLOW_SHADER : FIRE_SHADER)
                             .setTextureState(new TextureStateShard(texture, false, false))
                             .setTransparencyState(additive ? LIGHTNING_TRANSPARENCY : TRANSLUCENT_TRANSPARENCY)
                             .setCullState(NO_CULL)

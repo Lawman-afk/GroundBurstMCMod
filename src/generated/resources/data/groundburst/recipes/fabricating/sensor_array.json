@@ -1,0 +1,38 @@
+{
+  "type": "groundburst:fabricating",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:circuits/advanced"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:glass/colorless"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:dusts/rare_earth"
+      }
+    },
+    {
+      "count": 2,
+      "ingredient": {
+        "tag": "forge:wires/gold"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:sensor_array"
+      }
+    }
+  ],
+  "time": 300
+}

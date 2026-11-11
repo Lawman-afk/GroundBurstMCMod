@@ -20,7 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import dev.groundburst.legacy.recipe.RecipeHolder;
 import dev.groundburst.port.recipe.SlotDisplayContext;
 
 /**
@@ -33,7 +33,7 @@ final class ManualContentTests {
     static void register() {
         GBGameTests.test("manual_content_matches_the_game", GBGameTests.FLOOR_16, 20, ManualContentTests::content);
         GBGameTests.test("manual_item_exists", GBGameTests.FLOOR_16, 20, helper -> {
-            helper.assertTrue(GBManual.FIELD_MANUAL.get().getDefaultMaxStackSize() == 1, "the manual does not stack");
+            helper.assertTrue(GBManual.FIELD_MANUAL.get().getMaxStackSize() == 1, "the manual does not stack");
             helper.succeed();
         });
     }
@@ -53,7 +53,7 @@ final class ManualContentTests {
     private static void content(GameTestHelper helper) {
         var level = helper.getLevel();
         var context = SlotDisplayContext.fromLevel(level);
-        var recipes = level.getServer().getRecipeManager().getRecipes();
+        var recipes = dev.groundburst.legacy.recipe.Recipes.everything(level.getServer().getRecipeManager());
         List<String> problems = new ArrayList<>();
         JsonObject index = read("index.json");
         for (JsonElement c : index.getAsJsonArray("chapters")) {
@@ -97,9 +97,9 @@ final class ManualContentTests {
                             break;
                         }
                         Item item = page.has("item") ? item(page.get("item").getAsString(), id, problems) : null;
-                        ResourceLocation fluid = page.has("fluid") ? ResourceLocation.parse(page.get("fluid").getAsString()) : null;
+                        ResourceLocation fluid = page.has("fluid") ? new ResourceLocation(page.get("fluid").getAsString()) : null;
                         ProcessingKind kk = k;
-                        boolean found = recipes.stream().filter(r -> r.value() instanceof ProcessingRecipe pr && pr.kind() == kk).anyMatch(r -> {
+                        boolean found = recipes.stream().filter(r -> ((Object) r.value()) instanceof ProcessingRecipe pr && pr.kind() == kk).anyMatch(r -> {
                             ProcessingRecipe pr = (ProcessingRecipe) r.value();
                             boolean itemOk = item == null || pr.outputs().stream().anyMatch(o -> o.item().item().value() == item);
                             boolean fluidOk = fluid == null || pr.fluidOutputs().stream()
@@ -111,12 +111,12 @@ final class ManualContentTests {
                         }
                     }
                     case "structure" -> {
-                        if (GBMultiblocks.byId(ResourceLocation.parse(page.get("structure").getAsString())) == null) {
+                        if (GBMultiblocks.byId(new ResourceLocation(page.get("structure").getAsString())) == null) {
                             problems.add(id + ": unknown structure " + page.get("structure").getAsString());
                         }
                     }
                     case "image" -> {
-                        ResourceLocation image = ResourceLocation.parse(page.get("image").getAsString());
+                        ResourceLocation image = new ResourceLocation(page.get("image").getAsString());
                         String path = "/assets/" + image.getNamespace() + "/" + image.getPath();
                         if (ManualContentTests.class.getResource(path) == null) {
                             problems.add(id + ": missing image " + image);
@@ -134,7 +134,7 @@ final class ManualContentTests {
     }
 
     private static Item item(String id, String where, List<String> problems) {
-        var item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(id));
+        var item = BuiltInRegistries.ITEM.getOptional(new ResourceLocation(id));
         if (item.isEmpty()) {
             problems.add(where + ": unknown item " + id);
             return null;

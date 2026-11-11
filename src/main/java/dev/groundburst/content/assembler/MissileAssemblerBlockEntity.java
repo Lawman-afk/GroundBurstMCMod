@@ -5,10 +5,10 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -109,8 +109,8 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
     protected boolean isItemValid(int slot, ItemStack stack) {
         return switch (slot) {
             case SLOT_WARHEAD -> WarheadAssembly.isWarhead(stack) && MissileAssembly.classOf(stack) == this.kind.size;
-            case SLOT_BODY -> stack.getItem() instanceof MissileParts.Body b && b.sizeClass == this.kind.size;
-            case SLOT_MOTOR -> stack.getItem() instanceof MissileParts.MotorItem m && m.motor.fits(this.kind.size);
+            case SLOT_BODY -> ((Object) stack.getItem()) instanceof MissileParts.Body b && b.sizeClass == this.kind.size;
+            case SLOT_MOTOR -> ((Object) stack.getItem()) instanceof MissileParts.MotorItem m && m.motor.fits(this.kind.size);
             case SLOT_GUIDANCE -> stack.getItem() instanceof MissileParts.GuidanceItem;
             case SLOT_MODULE -> stack.getItem() instanceof MissileParts.HardenedModule;
             case SLOT_OUTPUT -> isOwnMissile(stack);
@@ -292,7 +292,7 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
         if (assembling()) {
             laid = sectionsFor(this.progress);
             // (a Cruise Engine in the motor slot: the warhead's cruise missile, laid out section by section the same way)
-            shown = MissileSpec.look(slot(SLOT_WARHEAD), slot(SLOT_MOTOR).getItem() instanceof MissileParts.MotorItem m && m.motor.cruise());
+            shown = MissileSpec.look(slot(SLOT_WARHEAD), ((Object) slot(SLOT_MOTOR).getItem()) instanceof MissileParts.MotorItem m && m.motor.cruise());
         } else if (out != null) {
             laid = SECTIONS;
             shown = out.look();
@@ -343,8 +343,8 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
 
     /** The missile the parts in the slots make (null: they make none yet). */
     public @Nullable ItemStack makes() {
-        if (WarheadAssembly.isWarhead(slot(SLOT_WARHEAD)) && slot(SLOT_BODY).getItem() instanceof MissileParts.Body body
-                && slot(SLOT_MOTOR).getItem() instanceof MissileParts.MotorItem motor) {
+        if (WarheadAssembly.isWarhead(slot(SLOT_WARHEAD)) && ((Object) slot(SLOT_BODY).getItem()) instanceof MissileParts.Body body
+                && ((Object) slot(SLOT_MOTOR).getItem()) instanceof MissileParts.MotorItem motor) {
             return MissileAssembly.assemble(slot(SLOT_WARHEAD), body, motor, slot(SLOT_GUIDANCE), slot(SLOT_MODULE));
         }
         return null;
@@ -353,7 +353,7 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
     @Override
     public List<Component> readout(MachineMenu menu) {
         int total = menu.extra(DATA_TOTAL);
-        var problem = MissileAssembly.Problem.values()[Math.clamp(menu.extra(DATA_PROBLEM), 0, MissileAssembly.Problem.values().length - 1)];
+        var problem = MissileAssembly.Problem.values()[dev.groundburst.legacy.J21.clamp(menu.extra(DATA_PROBLEM), 0, MissileAssembly.Problem.values().length - 1)];
         ItemStack warhead = slot(SLOT_WARHEAD), out = slot(SLOT_OUTPUT);
         ItemStack makes = makes();
         boolean parts = !warhead.isEmpty() || !slot(SLOT_BODY).isEmpty() || !slot(SLOT_MOTOR).isEmpty();
@@ -364,8 +364,8 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
             second = menu.status() == MachineStatus.NO_POWER
                     ? Component.translatable(T_NO_POWER, workEnergy(this.kind.energyPerTick)).withStyle(ChatFormatting.RED)
                     : Component.translatable(T_WORKING, menu.extra(DATA_PROGRESS) * 100 / total);
-        } else if (problem == MissileAssembly.Problem.NONE && slot(SLOT_MOTOR).getItem() instanceof MissileParts.MotorItem m) {
-            MissileParts.Guidance g = slot(SLOT_GUIDANCE).getItem() instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
+        } else if (problem == MissileAssembly.Problem.NONE && ((Object) slot(SLOT_MOTOR).getItem()) instanceof MissileParts.MotorItem m) {
+            MissileParts.Guidance g = ((Object) slot(SLOT_GUIDANCE).getItem()) instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
             second = Component.translatable(T_READY, m.motor.range, Component.translatable(MissileParts.guidanceName(g)));
         } else if (problem == MissileAssembly.Problem.NEEDS_WARHEAD && !parts) {
             second = !out.isEmpty() ? Component.translatable(T_APART) : Component.empty();
@@ -388,7 +388,7 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
             case NEEDS_BODY -> Component.translatable(problem.key,
                     new ItemStack(GBAssembly.BODIES.get(this.kind.size.ordinal()).get()).getHoverName());
             case MOTOR_DOES_NOT_FIT -> Component.translatable(problem.key,
-                    slot(SLOT_MOTOR).getItem() instanceof MissileParts.MotorItem m ? m.motor.bodies() : Component.literal("?"));
+                    ((Object) slot(SLOT_MOTOR).getItem()) instanceof MissileParts.MotorItem m ? m.motor.bodies() : Component.literal("?"));
             default -> Component.translatable(problem.key);
         };
     }
@@ -452,8 +452,8 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
 
     // --- model ------------------------------------------------------------------------------------------------------------
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -515,8 +515,8 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("progress", this.progress);
         output.putInt("total", this.total);
         output.putInt("laid", this.laid);
@@ -525,8 +525,8 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.progress = input.getIntOr("progress", 0);
         this.total = input.getIntOr("total", 0);
         this.laid = input.getIntOr("laid", 0);

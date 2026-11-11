@@ -12,6 +12,6 @@ public final class Stacks {
 
     /** The colour a dye stack dyes (26.x's dye component). */
     public static @Nullable DyeColor dye(ItemStack stack) {
-        return stack.getItem() instanceof DyeItem dye ? dye.getDyeColor() : null;
+        return ((Object) stack.getItem()) instanceof DyeItem dye ? dye.getDyeColor() : null;
     }
 }

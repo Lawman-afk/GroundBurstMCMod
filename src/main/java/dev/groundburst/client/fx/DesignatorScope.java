@@ -8,7 +8,7 @@ import dev.groundburst.content.launch.Designators;
 import dev.groundburst.content.launch.LaserDesignatorItem;
 import dev.groundburst.content.launch.LaunchCodesItem;
 import dev.groundburst.registry.GBLang;
-import net.minecraft.client.DeltaTracker;
+import dev.groundburst.legacy.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import dev.groundburst.port.GuiGraphicsExtractor;
@@ -19,18 +19,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.CalculatePlayerTurnEvent;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.event.RenderHandEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.eventbus.api.IEventBus;
+import dev.groundburst.legacy.client.CalculatePlayerTurnEvent;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.ComputeFovModifierEvent;
+import net.minecraftforge.client.event.InputEvent;
+import dev.groundburst.legacy.client.RegisterGuiLayersEvent;
+import dev.groundburst.legacy.client.RenderGuiLayerEvent;
+import net.minecraftforge.client.event.RenderHandEvent;
+import dev.groundburst.legacy.client.VanillaGuiLayers;
+import dev.groundburst.legacy.net.PacketDistributor;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * The Laser Designator's sight (DESIGN.md §17.13), while we lase in first person: a 2x zoom (and the aim slowed to
@@ -114,42 +114,42 @@ public final class DesignatorScope {
         };
         modBus.addListener((RegisterGuiLayersEvent event) ->
                 event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, GroundBurst.id("designator_scope"), (gg_, dt_) -> DesignatorScope.draw(new dev.groundburst.port.GuiGraphicsExtractor(gg_), dt_)));
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent event) -> {if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
             if (statusAge < Integer.MAX_VALUE) {
                 statusAge++;
             }
         });
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre event) -> clicks(Minecraft.getInstance()));
-        NeoForge.EVENT_BUS.addListener((InputEvent.MouseScrollingEvent event) -> {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent event) -> { if (event.phase != net.minecraftforge.event.TickEvent.Phase.START) return; clicks(Minecraft.getInstance()); });
+        MinecraftForge.EVENT_BUS.addListener((InputEvent.MouseScrollingEvent event) -> {
             Minecraft mc = Minecraft.getInstance();
             if (LaserFx.scoped(mc)) {
                 event.setCanceled(true);                   // zoomed, the wheel picks a launcher, not a hotbar slot
-                scroll(mc, event.getScrollDeltaY());
+                scroll(mc, event.getScrollDelta());
             }
         });
-        NeoForge.EVENT_BUS.addListener((ComputeFovModifierEvent event) -> {
+        MinecraftForge.EVENT_BUS.addListener((ComputeFovModifierEvent event) -> {
             Minecraft mc = Minecraft.getInstance();
             if (event.getPlayer() == mc.player && LaserFx.scoped(mc)) {
                 event.setNewFovModifier(event.getNewFovModifier() * ZOOM);
             }
         });
-        NeoForge.EVENT_BUS.addListener((CalculatePlayerTurnEvent event) -> {
+        MinecraftForge.EVENT_BUS.addListener((CalculatePlayerTurnEvent event) -> {
             if (LaserFx.scoped(Minecraft.getInstance())) {
                 event.setMouseSensitivity(slowed(event.getMouseSensitivity()));
             }
         });
-        NeoForge.EVENT_BUS.addListener((RenderHandEvent event) -> {
+        MinecraftForge.EVENT_BUS.addListener((RenderHandEvent event) -> {
             if (LaserFx.scoped(Minecraft.getInstance())) {
                 event.setCanceled(true);                   // held to the eye: no hand in the sight
             }
         });
-        NeoForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Pre event) -> {
+        MinecraftForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Pre event) -> {
             if ((event.getName().equals(VanillaGuiLayers.CROSSHAIR) || event.getName().equals(VanillaGuiLayers.SELECTED_ITEM_NAME))
                     && LaserFx.scoped(Minecraft.getInstance())) {
                 event.setCanceled(true);                   // the reticle is the crosshair; the readouts are where the item's name goes
             }
         });
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
+        MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
             status = null;
             statusAge = Integer.MAX_VALUE;
         });
@@ -249,9 +249,9 @@ public final class DesignatorScope {
         Component homing = linked || s != null && s.homing() > 0 ? Component.translatable(T_HOMING, s.homing()) : null;
         int charge = (int) ((long) LaserDesignatorItem.stored(stack) * 100 / LaserDesignatorItem.CAPACITY);
         LaserDesignatorItem.Result[] results = LaserDesignatorItem.Result.values();
-        LaserDesignatorItem.Result result = s == null ? LaserDesignatorItem.Result.NONE : results[Math.clamp(s.result(), 0, results.length - 1)];
+        LaserDesignatorItem.Result result = s == null ? LaserDesignatorItem.Result.NONE : results[dev.groundburst.legacy.J21.clamp(s.result(), 0, results.length - 1)];
         LaserDesignatorItem.Pick[] states = LaserDesignatorItem.Pick.values();
-        LaserDesignatorItem.Pick state = states[Math.clamp(p.state(), 0, states.length - 1)];
+        LaserDesignatorItem.Pick state = states[dev.groundburst.legacy.J21.clamp(p.state(), 0, states.length - 1)];
         Component action = result != LaserDesignatorItem.Result.NONE ? Component.translatable(T_RESULT.get(result), s.count())
                 : Component.translatable(T_STATE.get(state));
         boolean armed = state == LaserDesignatorItem.Pick.ARMED;

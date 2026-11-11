@@ -9,7 +9,7 @@ import dev.groundburst.registry.GBMenus;
 import dev.groundburst.registry.GBSounds;
 import dev.groundburst.registry.GBTab;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
+import dev.groundburst.legacy.component.DataComponents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -18,12 +18,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.UseAnim;
 import dev.groundburst.port.Consumable;
 import dev.groundburst.port.ApplyStatusEffectsConsumeEffect;
-import net.neoforged.bus.api.IEventBus;
+import net.minecraftforge.eventbus.api.IEventBus;
 import dev.groundburst.port.transfer.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
+import dev.groundburst.legacy.RegisterCapabilitiesEvent;
+import net.minecraftforge.common.extensions.IForgeMenuType;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredItem;
 
 /** The radiation instruments and medicine (DESIGN.md §21.8), in the Guns & Gear tab. */
 public final class RadiationItems {
@@ -38,21 +38,21 @@ public final class RadiationItems {
     public static final DeferredItem<Item> RAD_AWAY = GBItems.register("rad_away", "Rad-Away", GBTab.GEAR, Item::new,
             p -> p.stacksTo(16).food(Consumable.builder().consumeSeconds(1.6f)
                     .animation(UseAnim.DRINK).sound(SoundEvents.HONEY_DRINK).hasConsumeParticles(false)
-                    .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(GBEffects.RAD_AWAY, 600))).build()));
+                    .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(GBEffects.RAD_AWAY.get(), 600))).build()));
     /** Potassium Iodide: a tablet (0.8 s): half the dose taken up for 10 minutes. */
     public static final DeferredItem<Item> POTASSIUM_IODIDE = GBItems.register("potassium_iodide", "Potassium Iodide Tablets", GBTab.GEAR,
             Item::new, p -> p.stacksTo(32).food(Consumable.builder().consumeSeconds(0.8f)
                     .animation(UseAnim.EAT).sound(SoundEvents.GENERIC_EAT).hasConsumeParticles(false)
-                    .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(GBEffects.POTASSIUM_IODIDE, 12_000))).build()));
+                    .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(GBEffects.POTASSIUM_IODIDE.get(), 12_000))).build()));
     /** The Anti-Rad Injector: pressed to the thigh (0.6 s): 400 rad off at once, a minute's weakness. */
     public static final DeferredItem<AntiRadInjectorItem> ANTI_RAD_INJECTOR = GBItems.register("anti_rad_injector", "Anti-Rad Injector",
             GBTab.GEAR, AntiRadInjectorItem::new, p -> p.stacksTo(8).food(Consumable.builder()
                     .consumeSeconds(0.6f).animation(UseAnim.NONE).sound(Holder.direct(SoundEvents.EMPTY))
-                    .soundAfterConsume(GBSounds.MEDICAL_INJECTOR).hasConsumeParticles(false)
+                    .soundAfterConsume(GBSounds.MEDICAL_INJECTOR.getDelegate()).hasConsumeParticles(false)
                     .onConsume(new ApplyStatusEffectsConsumeEffect(List.of(new MobEffectInstance(MobEffects.WEAKNESS, 1_200)))).build()));
 
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, MenuType<LeadContainerMenu>> LEAD_CONTAINER_MENU =
-            GBMenus.MENUS.register("lead_container", () -> IMenuTypeExtension.create(LeadContainerMenu::new));
+            GBMenus.MENUS.register("lead_container", () -> IForgeMenuType.create(LeadContainerMenu::new));
 
     /** Recipe-viewer info pages (DESIGN.md §21.8). */
     public static final String INFO_GEIGER = dev.groundburst.registry.GBLang.add(dev.groundburst.GroundBurst.MODID + ".info.geiger_counter",

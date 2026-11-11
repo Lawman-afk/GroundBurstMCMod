@@ -17,7 +17,7 @@ public class AshLayerBlock extends SnowLayerBlock {
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         // Ash stays (snow's random tick would melt it under a torch).
     }
 

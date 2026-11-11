@@ -12,9 +12,8 @@ import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * The client half of the play bench ({@link PlayBench}; this branch's own, main's makes its world through 26.x's dev
@@ -34,8 +33,8 @@ public final class PlayBenchClient {
         if (!PlayBench.enabled()) {
             return;
         }
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> tick());
-        NeoForge.EVENT_BUS.addListener((RenderFrameEvent.Pre e) -> frame());
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent e) -> { if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return; tick(); });
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.RenderTickEvent e) -> { if (e.phase != net.minecraftforge.event.TickEvent.Phase.START) return; frame(); });
     }
 
     private static void frame() {
@@ -70,9 +69,7 @@ public final class PlayBenchClient {
             long seed = Long.getLong("groundburst.playBench.seed", 1_230_027_951L);
             LevelSettings settings = new LevelSettings(WORLD, GameType.CREATIVE, false, Difficulty.NORMAL, true, new GameRules(),
                     WorldDataConfiguration.DEFAULT);
-            mc.createWorldOpenFlows().createFreshLevel(WORLD, settings, new WorldOptions(seed, true, false),
-                    registries -> registries.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.NORMAL).value().createWorldDimensions(),
-                    mc.screen);
+            mc.createWorldOpenFlows().createFreshLevel(WORLD, settings, new WorldOptions(seed, true, false), registries -> registries.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.NORMAL).value().createWorldDimensions());
             return;
         }
         if (mc.level == null || mc.player == null) {

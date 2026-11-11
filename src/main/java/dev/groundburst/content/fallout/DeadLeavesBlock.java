@@ -19,7 +19,7 @@ public class DeadLeavesBlock extends Block {
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (random.nextFloat() < DROP_CHANCE) {
             level.removeBlock(pos, false);
         }

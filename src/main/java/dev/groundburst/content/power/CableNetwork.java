@@ -79,7 +79,7 @@ public final class CableNetwork {
         int rate = Integer.MAX_VALUE;
         while (!queue.isEmpty() && seen.size() <= MAX_CABLES) {
             BlockPos p = queue.poll();
-            if (!(level.getBlockState(p).getBlock() instanceof CableBlock cable)) {
+            if (!(((Object) level.getBlockState(p).getBlock()) instanceof CableBlock cable)) {
                 continue;
             }
             rate = Math.min(rate, cable.tier().rate());

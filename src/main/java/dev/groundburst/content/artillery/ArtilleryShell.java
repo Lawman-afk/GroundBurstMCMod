@@ -89,8 +89,8 @@ public class ArtilleryShell extends Projectile {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(TYPE, 0);
+    protected void defineSynchedData() {
+        this.entityData.define(TYPE, 0);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class ArtilleryShell extends Projectile {
             // (a ship's block, where another mod lets the world's clip see it, is hit in its plot: where it is seen)
             to = dev.groundburst.content.machine.Frames.toWorld(level(), hit.getLocation());
         }
-        if (level() instanceof ServerLevel server) {
+        if (((Object) level()) instanceof ServerLevel server) {
             Vec3 hull = dev.groundburst.blast.Hulls.clip(server, from, to);   // a ship or a moving contraption in its way
             if (hull != null) {
                 to = hull;
@@ -116,8 +116,8 @@ public class ArtilleryShell extends Projectile {
         if (struck != null) {
             hit = struck;
         }
-        if (hit.getType() != HitResult.Type.MISS && !net.neoforged.neoforge.event.EventHooks.onProjectileImpact(this, hit)) {
-            if (level() instanceof ServerLevel server) {
+        if (hit.getType() != HitResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hit)) {
+            if (((Object) level()) instanceof ServerLevel server) {
                 Vec3 at = (hit instanceof EntityHitResult ? hit.getLocation() : to).subtract(v.normalize().scale(0.15));
                 burst(server, at, v);
             } else {
@@ -128,7 +128,7 @@ public class ArtilleryShell extends Projectile {
         }
         setPos(to);
         orient();
-        if (level() instanceof ServerLevel server) {
+        if (((Object) level()) instanceof ServerLevel server) {
             hold(server);
             if (getY() < level().getMinBuildHeight() - 64 || this.tickCount > 1200) {
                 discard();
@@ -189,7 +189,7 @@ public class ArtilleryShell extends Projectile {
 
     /** Its bursting charge going off: a crack and a puff (the shells with no blast of their own). */
     private static void pop(ServerLevel level, Vec3 at) {
-        level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 1.5f, 1.6f);
+        level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.5f, 1.6f);
         level.sendParticles(ParticleTypes.POOF, at.x, at.y + 0.2, at.z, 14, 0.4, 0.2, 0.4, 0.05);
     }
 
@@ -242,7 +242,7 @@ public class ArtilleryShell extends Projectile {
         }
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(radius))) {
             if (e.position().distanceTo(at) <= radius && !e.fireImmune()) {
-                e.igniteForSeconds(10);
+                e.setSecondsOnFire((int) (10));
             }
         }
         level.sendParticles(ParticleTypes.FLAME, at.x, at.y + 0.4, at.z, 80, radius * 0.4, 0.4, radius * 0.4, 0.06);
@@ -270,7 +270,7 @@ public class ArtilleryShell extends Projectile {
 
     @Override
     public void remove(RemovalReason reason) {
-        if (level() instanceof ServerLevel server) {
+        if (((Object) level()) instanceof ServerLevel server) {
             for (long c : this.held.toLongArray()) {
                 GBArtillery.TICKETS.forceChunk(server, getUUID(), ChunkPos.getX(c), ChunkPos.getZ(c), false, true);
             }
@@ -280,18 +280,18 @@ public class ArtilleryShell extends Projectile {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float damage) { if (!(this.level() instanceof ServerLevel level)) return false;
+    public boolean hurt(DamageSource source, float damage) { if (!(((Object) this.level()) instanceof ServerLevel level)) return false;
         return false;
     }
 
     @Override
-    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, this.registryAccess());
+    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, dev.groundburst.legacy.Regs.access());
         super.addAdditionalSaveData(output.tag());
         output.putInt("shell", this.entityData.get(TYPE));
     }
 
     @Override
-    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, this.registryAccess());
+    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, dev.groundburst.legacy.Regs.access());
         super.readAdditionalSaveData(input.tag());
         this.entityData.set(TYPE, input.getIntOr("shell", 0));
     }

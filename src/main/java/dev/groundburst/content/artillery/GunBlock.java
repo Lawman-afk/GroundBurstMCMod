@@ -41,10 +41,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * model (GeckoLib) is drawn by its block entity; it faces where its barrel rests (away from whoever places it).
  */
 public class GunBlock extends BaseEntityBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends GunBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -73,22 +70,22 @@ public class GunBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return this.shapes.get(state.getValue(FACING));
     }
 
@@ -106,19 +103,18 @@ public class GunBlock extends BaseEntityBlock {
     }
 
     /** With its shells in hand: load them (as many as its rack takes). Anything else: man it. */
-    @Override
-    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+    protected dev.groundburst.legacy.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         if (!(stack.getItem() instanceof ShellItem)) {
-            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         if (level.isClientSide()) {
-            return net.minecraft.world.ItemInteractionResult.SUCCESS;
+            return dev.groundburst.legacy.ItemInteractionResult.SUCCESS;
         }
-        if (level.getBlockEntity(pos) instanceof GunBlockEntity gun) {
+        if (((Object) level.getBlockEntity(pos)) instanceof GunBlockEntity gun) {
             if (gun.slotFor(stack) < 0) {
                 player.displayClientMessage(Component.translatable(GunBlockEntity.T_WRONG_SHELL), true);
-                return net.minecraft.world.ItemInteractionResult.CONSUME;
+                return dev.groundburst.legacy.ItemInteractionResult.CONSUME;
             }
             int before = stack.getCount();
             ItemStack left = gun.load(stack);
@@ -126,23 +122,32 @@ public class GunBlock extends BaseEntityBlock {
                 if (!player.getAbilities().instabuild) {
                     player.setItemInHand(hand, left);
                 }
-                level.playSound(null, pos, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON.value(), SoundSource.BLOCKS, 0.8f, 0.8f);
-                return net.minecraft.world.ItemInteractionResult.SUCCESS;
+                level.playSound(null, pos, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON, SoundSource.BLOCKS, 0.8f, 0.8f);
+                return dev.groundburst.legacy.ItemInteractionResult.SUCCESS;
             }
             player.displayClientMessage(Component.translatable(GunBlockEntity.T_RACK_FULL), true);
-            return net.minecraft.world.ItemInteractionResult.CONSUME;
+            return dev.groundburst.legacy.ItemInteractionResult.CONSUME;
         }
-        return net.minecraft.world.ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+        return dev.groundburst.legacy.ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
 
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        if (level.getBlockEntity(pos) instanceof GunBlockEntity gun && player instanceof ServerPlayer serverPlayer && !player.isPassenger()) {
+        if (((Object) level.getBlockEntity(pos)) instanceof GunBlockEntity gun && ((Object) player) instanceof ServerPlayer serverPlayer && !player.isPassenger()) {
             gun.man(serverPlayer);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        dev.groundburst.legacy.ItemInteractionResult item_ = this.useItemOn(player_.getItemInHand(hand_), state_, level_, pos_, player_, hand_, hit_);
+        if (item_ != dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+            return item_.result();
+        }
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

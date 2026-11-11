@@ -28,30 +28,30 @@ public class BombBlock extends ChargeBlock implements Fallable {
     }
 
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         return true;                                   // unsupported, it falls rather than popping off
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         level.scheduleTick(pos, this, FALL_DELAY);
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         ticks.scheduleTick(pos, this, FALL_DELAY);
         return state;
     }
 
     /** Nothing under it: it falls, carrying its fuze settings (the falling block entity does not keep them by itself). */
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!FallingBlock.isFree(level.getBlockState(pos.below())) || pos.getY() < level.getMinBuildHeight()) {
             return;
         }
         ChargeBlockEntity be = at(level, pos);
-        CompoundTag data = be == null ? null : be.saveWithoutMetadata(level.registryAccess());
+        CompoundTag data = be == null ? null : be.saveWithoutMetadata();
         int drop = 0;
         while (drop < 64 && FallingBlock.isFree(level.getBlockState(pos.below(drop + 1)))) {
             drop++;
@@ -72,7 +72,7 @@ public class BombBlock extends ChargeBlock implements Fallable {
     /** The impact fuze: an armed bomb that lands goes off. */
     @Override
     public void onLand(Level level, BlockPos pos, BlockState state, BlockState replacedBlock, FallingBlockEntity entity) {
-        if (level instanceof ServerLevel server && state.getValue(ARMED)) {
+        if (((Object) level) instanceof ServerLevel server && state.getValue(ARMED)) {
             ChargeBlockEntity be = at(level, pos);
             float scale = 1 + MAX_DROP_BONUS * (float) Math.min(1, entity.fallDistance / DROP_FOR_MAX);
             Charges.detonate(server, pos, state, be == null || be.owner() == null ? null : server.getEntity(be.owner()), scale);
@@ -81,8 +81,8 @@ public class BombBlock extends ChargeBlock implements Fallable {
 
     /** The impact fuze: an armed bomb hit by a projectile goes off. */
     @Override
-    protected void onProjectileHit(Level level, BlockState state, BlockHitResult hit, Projectile projectile) {
-        if (level instanceof ServerLevel server && state.getValue(ARMED)) {
+    public void onProjectileHit(Level level, BlockState state, BlockHitResult hit, Projectile projectile) {
+        if (((Object) level) instanceof ServerLevel server && state.getValue(ARMED)) {
             Charges.detonate(server, hit.getBlockPos(), state, projectile.getOwner());
         }
     }

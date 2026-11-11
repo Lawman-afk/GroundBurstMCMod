@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "groundburst:sandbags"
+  },
+  "result": "groundburst:sandbag_slab",
+  "count": 2
+}

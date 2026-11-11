@@ -20,8 +20,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import net.minecraftforge.gametest.GameTestHolder;
+import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /**
  * This branch's GameTests (main's own are not ported yet): the game-test server only starts with a test to run, and
@@ -39,7 +39,7 @@ public final class SmokeTest {
     }
 
     /** Main's particle_beam_melts_a_trench, in short: a beam parked on grass over stone eats a trench five deep. */
-    @GameTest(template = "gametest/floor_16", timeoutTicks = 240, skyAccess = true)
+    @GameTest(template = "gametest/floor_16", timeoutTicks = 240)
     public static void uplinkBeamCarves(GameTestHelper helper) {
         for (BlockPos p : BlockPos.betweenClosed(0, 1, 0, 15, 6, 15)) {
             helper.setBlock(p, p.getY() == 6 ? Blocks.GRASS_BLOCK : p.getY() == 5 ? Blocks.DIRT : Blocks.STONE);
@@ -74,7 +74,7 @@ public final class SmokeTest {
         helper.setBlock(chest, Blocks.CHEST);
         ((net.minecraft.world.Container) helper.getBlockEntity(chest)).setItem(4, new ItemStack(net.minecraft.world.item.Items.DIAMOND, 37));
         helper.setBlock(middle.west(), Blocks.OAK_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, Direction.EAST));
-        net.minecraft.world.phys.AABB bounds = helper.getBounds(), area = bounds.inflate(2);
+        net.minecraft.world.phys.AABB bounds = ((dev.groundburst.legacy.mixin.GameTestHelperAccess) helper).groundburst$bounds(), area = bounds.inflate(2);
         java.util.Map<BlockPos, BlockState> before = new java.util.HashMap<>();
         for (BlockPos p : BlockPos.betweenClosed(BlockPos.containing(bounds.minX, bounds.minY, bounds.minZ),
                 BlockPos.containing(bounds.maxX - 1, bounds.maxY - 1, bounds.maxZ - 1))) {
@@ -124,7 +124,7 @@ public final class SmokeTest {
         var frame = new net.minecraft.world.entity.decoration.ItemFrame(level, helper.absolutePos(new BlockPos(8, 5, 10)), Direction.NORTH);
         frame.setItem(new ItemStack(net.minecraft.world.item.Items.EMERALD));
         helper.assertTrue(frame.survives() && level.addFreshEntity(frame), "the frame hangs on its wall");
-        net.minecraft.world.phys.AABB bounds = helper.getBounds(), area = bounds.inflate(2);
+        net.minecraft.world.phys.AABB bounds = ((dev.groundburst.legacy.mixin.GameTestHelperAccess) helper).groundburst$bounds(), area = bounds.inflate(2);
         java.util.Map<BlockPos, BlockState> before = new java.util.HashMap<>();
         for (BlockPos p : BlockPos.betweenClosed(BlockPos.containing(bounds.minX, bounds.minY, bounds.minZ),
                 BlockPos.containing(bounds.maxX - 1, bounds.maxY - 1, bounds.maxZ - 1))) {
@@ -159,7 +159,7 @@ public final class SmokeTest {
         ItemStack held = ((net.minecraft.world.Container) helper.getBlockEntity(chest)).getItem(4);
         helper.assertTrue(held.is(net.minecraft.world.item.Items.DIAMOND) && held.getCount() == 37, "the chest has its diamonds again: " + held);
         var frames = level.getEntitiesOfClass(net.minecraft.world.entity.decoration.ItemFrame.class, area);
-        helper.assertTrue(frames.size() == 1 && frames.getFirst().getItem().is(net.minecraft.world.item.Items.EMERALD),
+        helper.assertTrue(frames.size() == 1 && dev.groundburst.legacy.J21.first(frames).getItem().is(net.minecraft.world.item.Items.EMERALD),
                 "the frame hangs again with its emerald: " + frames);
         helper.succeed();
     }
@@ -194,7 +194,7 @@ public final class SmokeTest {
                 "site/crashed_missile", "site/radar_outpost", "site/research_station", "site/silo_below_collapsed", "site/silo_below_flooded",
                 "site/silo_below_intact", "site/silo_surface_collapsed", "site/silo_surface_flooded", "site/silo_surface_intact",
                 "site/test_room", "site/test_site_tower", "site/test_site_zero", "site/waste_storage")) {
-            var template = manager.get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(GroundBurst.MODID, name));
+            var template = manager.get(new net.minecraft.resources.ResourceLocation(GroundBurst.MODID, name));
             helper.assertTrue(template.isPresent(), "the template " + name + " loads");
             int solid = 0, total = 0;
             for (Object palette : (java.util.List<?>) palettes.get(template.get())) {
@@ -213,7 +213,7 @@ public final class SmokeTest {
     /** The Wrench on a pipe joined to the pipe beside it, then on a cable joined to one: each run split on both, then joined again. */
     @GameTest(template = "gametest/floor_16")
     public static void wrenchSplitsRuns(GameTestHelper helper) {
-        Player player = helper.makeMockPlayer(GameType.CREATIVE);
+        Player player = helper.makeMockPlayer();
         ItemStack wrench = new ItemStack(GBMachines.WRENCH.get());
         player.setItemInHand(InteractionHand.MAIN_HAND, wrench);
         BlockPos a = new BlockPos(4, 2, 4), b = a.east(), c = new BlockPos(4, 2, 8), d = c.east();

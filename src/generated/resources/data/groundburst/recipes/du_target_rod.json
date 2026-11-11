@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "tag": "forge:ingots/depleted_uranium"
+    },
+    {
+      "tag": "forge:ingots/depleted_uranium"
+    },
+    {
+      "tag": "forge:ingots/depleted_uranium"
+    },
+    {
+      "tag": "forge:rods/steel"
+    },
+    {
+      "tag": "forge:rods/steel"
+    }
+  ],
+  "result": {
+    "item": "groundburst:du_target_rod"
+  }
+}

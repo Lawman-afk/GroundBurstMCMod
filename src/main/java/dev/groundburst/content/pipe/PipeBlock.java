@@ -125,7 +125,7 @@ public abstract class PipeBlock extends Block implements dev.groundburst.heal.He
         if (there.getBlock() instanceof PipeBlock) {
             return isSameKind(there) && mode(there, side.getOpposite()) != Mode.DISABLED;
         }
-        return level instanceof Level real && hasHandler(real, other, side.getOpposite());
+        return ((Object) level) instanceof Level real && hasHandler(real, other, side.getOpposite());
     }
 
     /** A side's mode after its neighbour changed: switched-off stays off, pull stays pull while there is something to pull from. */
@@ -154,7 +154,7 @@ public abstract class PipeBlock extends Block implements dev.groundburst.heal.He
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         if (!(level.getBlockState(pos).getBlock() instanceof PipeBlock)) {
             return state;                                  // asked about a pipe not yet here (another mod setting blocks down): as it was
         }
@@ -164,7 +164,7 @@ public abstract class PipeBlock extends Block implements dev.groundburst.heal.He
 
     /** Turned (a Create contraption set down turned, a structure placed turned): each side's setting turns with it. */
     @Override
-    protected BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rotation) {
+    public BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rotation) {
         BlockState out = state;
         for (Direction d : Direction.Plane.HORIZONTAL) {
             out = out.setValue(SIDES.get(rotation.rotate(d)), state.getValue(SIDES.get(d)));
@@ -174,7 +174,7 @@ public abstract class PipeBlock extends Block implements dev.groundburst.heal.He
 
     /** Mirrored: each side's setting moves to its mirror side. */
     @Override
-    protected BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
+    public BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
         BlockState out = state;
         for (Direction d : Direction.Plane.HORIZONTAL) {
             out = out.setValue(SIDES.get(mirror.mirror(d)), state.getValue(SIDES.get(d)));
@@ -183,7 +183,7 @@ public abstract class PipeBlock extends Block implements dev.groundburst.heal.He
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         int mask = 0;
         for (Direction d : Direction.values()) {
             if (mode(state, d).connected()) {
@@ -195,7 +195,7 @@ public abstract class PipeBlock extends Block implements dev.groundburst.heal.He
 
     /** A neighbour's capabilities can change without a block change (e.g. a machine's side configuration). */
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos_, boolean movedByPiston) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos_, boolean movedByPiston) {
         BlockState updated = connections(level, pos, state);
         if (updated != state) {
             level.setBlock(pos, updated, Block.UPDATE_CLIENTS);
@@ -209,7 +209,7 @@ public abstract class PipeBlock extends Block implements dev.groundburst.heal.He
      * sides with them), the blocks round it perhaps not set down yet: their own updates fix what changed.
      */
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         if (dev.groundburst.heal.Healer.restoring()) {
             return;                                        // healed back with its sides as they were: healing tells it (healed)
         }
@@ -224,7 +224,7 @@ public abstract class PipeBlock extends Block implements dev.groundburst.heal.He
     }
 
     @Override
-    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+    public void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(((Object) level_l) instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
         invalidateNetworks(level);
     }
 
@@ -239,11 +239,11 @@ public abstract class PipeBlock extends Block implements dev.groundburst.heal.He
 
     /** Connections changed: rebuild networks and keep pulling sides ticking. */
     public static void changed(Level level, BlockPos pos, BlockState state) {
-        if (!(state.getBlock() instanceof PipeBlock pipe)) {
+        if (!(((Object) state.getBlock()) instanceof PipeBlock pipe)) {
             return;
         }
         pipe.invalidateNetworks(level);
-        level.invalidateCapabilities(pos);
+        dev.groundburst.legacy.Caps.invalidate(level, pos);
         if (!level.isClientSide() && pulls(state)) {
             level.scheduleTick(pos, pipe, pipe.pullInterval());
         }
@@ -260,7 +260,7 @@ public abstract class PipeBlock extends Block implements dev.groundburst.heal.He
 
     /** Pulling sides draw from what they touch and pass it along the network (never back where it came from). */
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!pulls(state)) {
             return;
         }

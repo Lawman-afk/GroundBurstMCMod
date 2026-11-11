@@ -43,8 +43,9 @@ public class LaunchStationRenderer extends MachineGeoRenderer<LaunchStationBlock
 
     @Override
     public void postRender(PoseStack pose, LaunchStationBlockEntity be, BakedGeoModel model, MultiBufferSource buffers, @Nullable VertexConsumer buffer,
-            boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
-        super.postRender(pose, be, model, buffers, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+            boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green,
+            float blue, float alpha) {
+        super.postRender(pose, be, model, buffers, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
         if (isReRender || !be.isFormed() || !be.shownPowered() || be.getLevel() == null) {
             return;
         }

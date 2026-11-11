@@ -1,0 +1,20 @@
+{
+  "type": "groundburst:crushing",
+  "energy_per_tick": 20,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:ingots/tungsten"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:tungsten_dust"
+      }
+    }
+  ],
+  "time": 100
+}

@@ -1,0 +1,28 @@
+{
+  "type": "groundburst:canning",
+  "energy_per_tick": 20,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": {
+        "tag": "forge:deuterium"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "groundburst:empty_gas_canister"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:deuterium_canister"
+      }
+    }
+  ],
+  "time": 40
+}

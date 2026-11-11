@@ -10,7 +10,7 @@ import dev.groundburst.port.recipe.Displays;
 import dev.groundburst.port.recipe.RecipeDisplay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import dev.groundburst.legacy.recipe.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 
@@ -30,7 +30,7 @@ public final class ClientRecipes {
 
     public static List<RecipeHolder<ProcessingRecipe>> get(ProcessingKind kind) {
         RecipeManager recipes = recipes();
-        return recipes == null ? List.of() : List.copyOf(recipes.getAllRecipesFor(GBRecipes.type(kind)));
+        return recipes == null ? List.of() : List.copyOf(dev.groundburst.legacy.recipe.Recipes.all(recipes, GBRecipes.type(kind)));
     }
 
     /**
@@ -45,14 +45,14 @@ public final class ClientRecipes {
         }
         List<RecipeHolder<?>> holders = new ArrayList<>();
         if (smelting) {
-            holders.addAll(recipes.getAllRecipesFor(RecipeType.SMELTING));
-            holders.addAll(recipes.getAllRecipesFor(RecipeType.BLASTING));
+            holders.addAll(dev.groundburst.legacy.recipe.Recipes.all(recipes, RecipeType.SMELTING));
+            holders.addAll(dev.groundburst.legacy.recipe.Recipes.all(recipes, RecipeType.BLASTING));
         } else {
-            holders.addAll(recipes.getAllRecipesFor(RecipeType.CRAFTING));
+            holders.addAll(dev.groundburst.legacy.recipe.Recipes.all(recipes, RecipeType.CRAFTING));
         }
         List<RecipeDisplay> out = new ArrayList<>();
         for (RecipeHolder<?> holder : holders) {
-            if (holder.value().getResultItem(level.registryAccess()).is(item)) {
+            if (holder.value().getResultItem(dev.groundburst.legacy.Regs.access()).is(item)) {
                 Displays.of(holder.value(), level.registryAccess()).ifPresent(out::add);
             }
         }

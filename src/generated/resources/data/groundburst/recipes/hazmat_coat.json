@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": {
+      "item": "groundburst:plastic_sheet"
+    },
+    "Y": {
+      "tag": "forge:dyes/yellow"
+    }
+  },
+  "pattern": [
+    "P P",
+    "PYP",
+    "PPP"
+  ],
+  "result": {
+    "item": "groundburst:hazmat_coat"
+  }
+}

@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -340,7 +340,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     @Override
     public List<Component> readout(MachineMenu menu) {
         int total = menu.extra(DATA_TOTAL);
-        var problem = StrategicAssembly.Problem.values()[Math.clamp(menu.extra(DATA_PROBLEM), 0, StrategicAssembly.Problem.values().length - 1)];
+        var problem = StrategicAssembly.Problem.values()[dev.groundburst.legacy.J21.clamp(menu.extra(DATA_PROBLEM), 0, StrategicAssembly.Problem.values().length - 1)];
         ItemStack primary = slot(SLOT_PRIMARY), out = slot(SLOT_OUTPUT);
         boolean parts = !primary.isEmpty() || !slot(SLOT_SECONDARY).isEmpty() || !slot(SLOT_BOOSTER).isEmpty();
         Component first = parts || total > 0 ? Component.translatable(T_MAKES,
@@ -355,7 +355,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
             second = menu.status() == MachineStatus.NO_POWER ? Component.translatable(T_NO_POWER, workEnergy(ENERGY_PER_TICK)).withStyle(ChatFormatting.RED)
                     : Component.translatable(T_WORKING, menu.extra(DATA_PROGRESS) * 100 / total);
         } else if (problem == StrategicAssembly.Problem.NONE) {
-            MissileParts.Guidance g = slot(SLOT_GUIDANCE).getItem() instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
+            MissileParts.Guidance g = ((Object) slot(SLOT_GUIDANCE).getItem()) instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
             second = Component.translatable(T_READY, MissileParts.Motor.ICBM.range, Component.translatable(MissileParts.guidanceName(g)));
         } else if (problem == StrategicAssembly.Problem.NO_PRIMARY && !parts && !out.isEmpty()) {
             second = Component.translatable(T_APART);
@@ -426,8 +426,8 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
 
     // --- model ------------------------------------------------------------------------------------------------------------
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -480,8 +480,8 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("progress", this.progress);
         output.putInt("total", this.total);
         output.putInt("laid", this.laid);
@@ -490,8 +490,8 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.progress = input.getIntOr("progress", 0);
         this.total = input.getIntOr("total", 0);
         this.laid = input.getIntOr("laid", 0);

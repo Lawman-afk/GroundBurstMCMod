@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "#forge:nuggets/enriched_uranium",
+      "required": false
+    },
+    {
+      "id": "#forge:nuggets/plutonium",
+      "required": false
+    }
+  ]
+}

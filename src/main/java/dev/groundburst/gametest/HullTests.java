@@ -69,7 +69,7 @@ final class HullTests {
             this.level = helper.getLevel();
             this.offset = offset;
             BlockPos kept = C.offset((int) offset.x, (int) offset.y, (int) offset.z);
-            this.bounds = AABB.encapsulatingFullBlocks(helper.absolutePos(kept.offset(-half, -half, -half)), helper.absolutePos(kept.offset(half, half, half)));
+            this.bounds = dev.groundburst.legacy.Game.encapsulatingFullBlocks(helper.absolutePos(kept.offset(-half, -half, -half)), helper.absolutePos(kept.offset(half, half, half)));
             this.middle = helper.absoluteVec(Vec3.atCenterOf(C));
         }
 

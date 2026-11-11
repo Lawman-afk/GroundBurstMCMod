@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -54,7 +54,7 @@ public class BatteryChargerBlockEntity extends MachineBlockEntity implements Ani
     }
 
     private static @Nullable EnergyHandler energyOf(ItemAccess access) {
-        return access.getCapability(Capabilities.Energy.ITEM);
+        return dev.groundburst.legacy.Caps.get(access, Capabilities.Energy.ITEM);
     }
 
     @Override
@@ -115,8 +115,8 @@ public class BatteryChargerBlockEntity extends MachineBlockEntity implements Ani
     }
 
     @Override
-    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public net.minecraft.nbt.CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override

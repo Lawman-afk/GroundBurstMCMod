@@ -1,10 +1,10 @@
 package dev.groundburst.network;
 
 import dev.groundburst.GroundBurst;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import dev.groundburst.legacy.net.CustomPacketPayload;
+import net.minecraftforge.eventbus.api.IEventBus;
+import dev.groundburst.legacy.net.RegisterPayloadHandlersEvent;
+import dev.groundburst.legacy.net.PayloadRegistrar;
 
 /**
  * Payload registration. Server-bound payloads register their handler here; client-bound payloads register

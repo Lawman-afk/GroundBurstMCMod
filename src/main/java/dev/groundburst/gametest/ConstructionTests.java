@@ -92,7 +92,7 @@ final class ConstructionTests {
         level.destroyBlock(abs, true);
         helper.runAfterDelay(4, () -> {
             long items = level.getEntitiesOfClass(ItemEntity.class, new AABB(abs).inflate(3)).stream()
-                    .filter(e -> e.getItem().is(GBConstruction.OIL_DRUM.item())).mapToInt(e -> e.getItem().getCount()).sum();
+                    .filter(e -> e.getItem().is(GBConstruction.OIL_DRUM.item().get())).mapToInt(e -> e.getItem().getCount()).sum();
             helper.assertTrue(items == 4, "all four back: " + items);
             helper.succeed();
         });
@@ -103,7 +103,7 @@ final class ConstructionTests {
         BlockPos at = new BlockPos(8, 1, 8);
         helper.setBlock(at, GBConstruction.AMMO_CRATES.block().get().defaultBlockState());
         BlockPos abs = helper.absolutePos(at);
-        var crates = level.getBlockEntity(abs) instanceof dev.groundburst.content.construction.AmmoCratesBlockEntity c ? c : null;
+        var crates = ((Object) level.getBlockEntity(abs)) instanceof dev.groundburst.content.construction.AmmoCratesBlockEntity c ? c : null;
         helper.assertTrue(crates != null && crates.getContainerSize() == 27, "27 slots");
         crates.setItem(0, new ItemStack(net.minecraft.world.item.Items.ARROW, 64));
         helper.assertTrue(level.getBlockState(abs).getAnalogOutputSignal(level, abs) > 0, "a comparator reads them");
@@ -359,7 +359,7 @@ final class ConstructionTests {
         BlockState upper = level.getBlockState(abs.above());
         helper.assertTrue(upper.is(block) && upper.getValue(dev.groundburst.content.construction.SteelLockerBlock.HALF) == DoubleBlockHalf.UPPER,
                 "its upper half laid over it");
-        var locker = level.getBlockEntity(abs) instanceof dev.groundburst.content.construction.SteelLockerBlockEntity l ? l : null;
+        var locker = ((Object) level.getBlockEntity(abs)) instanceof dev.groundburst.content.construction.SteelLockerBlockEntity l ? l : null;
         helper.assertTrue(locker != null && locker.getContainerSize() == 27, "27 slots in its lower half");
         locker.setItem(3, new ItemStack(net.minecraft.world.item.Items.IRON_HELMET));
         level.setBlockAndUpdate(abs, level.getBlockState(abs).setValue(dev.groundburst.content.construction.SteelLockerBlock.OPEN, true));
@@ -369,7 +369,7 @@ final class ConstructionTests {
         helper.runAfterDelay(4, () -> {
             helper.assertTrue(level.getBlockState(abs).isAir(), "the lower half goes with the upper");
             var items = level.getEntitiesOfClass(ItemEntity.class, new AABB(abs).inflate(3));
-            helper.assertTrue(items.stream().filter(e -> e.getItem().is(GBConstruction.STEEL_LOCKER.item())).count() == 1, "one locker back");
+            helper.assertTrue(items.stream().filter(e -> e.getItem().is(GBConstruction.STEEL_LOCKER.item().get())).count() == 1, "one locker back");
             helper.assertTrue(items.stream().anyMatch(e -> e.getItem().is(net.minecraft.world.item.Items.IRON_HELMET)), "and what it held");
             helper.succeed();
         });
@@ -387,8 +387,8 @@ final class ConstructionTests {
         for (BlockPos p : List.of(head, foot.above(), head.above())) {
             helper.assertTrue(level.getBlockState(p).is(bunk), "four blocks laid: " + p);
         }
-        var low = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
-        var high = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var low = helper.makeMockPlayer();
+        var high = helper.makeMockPlayer();
         low.startSleeping(head);
         high.startSleeping(head.above());
         helper.assertTrue(low.isSleeping() && high.isSleeping(), "a bed in each bunk");
@@ -403,7 +403,7 @@ final class ConstructionTests {
                 helper.assertTrue(level.getBlockState(p).isAir(), "all gone: " + p);
             }
             long items = level.getEntitiesOfClass(ItemEntity.class, new AABB(foot).inflate(4)).stream()
-                    .filter(e -> e.getItem().is(GBConstruction.BUNK_BED.item())).mapToInt(e -> e.getItem().getCount()).sum();
+                    .filter(e -> e.getItem().is(GBConstruction.BUNK_BED.item().get())).mapToInt(e -> e.getItem().getCount()).sum();
             helper.assertTrue(items == 1, "one bunk back: " + items);
             helper.succeed();
         });
@@ -415,7 +415,7 @@ final class ConstructionTests {
         BlockPos at = new BlockPos(8, 1, 8);
         helper.setBlock(at, GBConstruction.FILING_CABINET.block().get().defaultBlockState());
         BlockPos abs = helper.absolutePos(at);
-        var cabinet = level.getBlockEntity(abs) instanceof dev.groundburst.content.construction.FilingCabinetBlockEntity c ? c : null;
+        var cabinet = ((Object) level.getBlockEntity(abs)) instanceof dev.groundburst.content.construction.FilingCabinetBlockEntity c ? c : null;
         helper.assertTrue(cabinet != null && cabinet.getContainerSize() == 27, "27 slots");
         cabinet.setItem(5, new ItemStack(net.minecraft.world.item.Items.PAPER, 64));
         helper.assertTrue(cabinet.getItem(5).getCount() == 64, "it keeps what is put in it");
@@ -462,7 +462,7 @@ final class ConstructionTests {
                 }
             }
             long items = level.getEntitiesOfClass(ItemEntity.class, new AABB(base).inflate(4)).stream()
-                    .filter(e -> e.getItem().is(GBConstruction.SITUATION_MAP_TABLE.item())).mapToInt(e -> e.getItem().getCount()).sum();
+                    .filter(e -> e.getItem().is(GBConstruction.SITUATION_MAP_TABLE.item().get())).mapToInt(e -> e.getItem().getCount()).sum();
             helper.assertTrue(items == 1, "one table back: " + items);
             helper.succeed();
         });
@@ -636,7 +636,7 @@ final class ConstructionTests {
                 }
             }
             long items = level.getEntitiesOfClass(ItemEntity.class, new AABB(base).inflate(4)).stream()
-                    .filter(e -> e.getItem().is(GBConstruction.BLAST_DOOR.item())).mapToInt(e -> e.getItem().getCount()).sum();
+                    .filter(e -> e.getItem().is(GBConstruction.BLAST_DOOR.item().get())).mapToInt(e -> e.getItem().getCount()).sum();
             helper.assertTrue(items == 1, "one door back: " + items);
             helper.succeed();
         });

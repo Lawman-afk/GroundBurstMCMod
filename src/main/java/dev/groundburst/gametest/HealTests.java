@@ -90,7 +90,7 @@ final class HealTests {
 
     /** The plot and a little round it: damage there is remembered with the test's own settings. */
     private static AABB area(GameTestHelper helper) {
-        return helper.getBounds().inflate(2);
+        return ((dev.groundburst.legacy.mixin.GameTestHelperAccess) helper).groundburst$bounds().inflate(2);
     }
 
     private static BoundingBox box(GameTestHelper helper) {
@@ -101,7 +101,7 @@ final class HealTests {
     /** Every block in the plot as it is now (absolute positions). */
     private static Map<BlockPos, BlockState> snapshot(GameTestHelper helper) {
         Map<BlockPos, BlockState> out = new HashMap<>();
-        AABB b = helper.getBounds();
+        AABB b = ((dev.groundburst.legacy.mixin.GameTestHelperAccess) helper).groundburst$bounds();
         for (BlockPos p : BlockPos.betweenClosed(BlockPos.containing(b.minX, b.minY, b.minZ), BlockPos.containing(b.maxX - 1, b.maxY - 1, b.maxZ - 1))) {
             out.put(p.immutable(), helper.getLevel().getBlockState(p));
         }
@@ -302,7 +302,7 @@ final class HealTests {
         Healer.of(level).healNow(box(helper), s);
         HealSettings.endTestArea(level, area(helper));
         List<ItemFrame> frames = level.getEntitiesOfClass(ItemFrame.class, area(helper));
-        helper.assertTrue(frames.size() == 1 && frames.getFirst().getItem().is(Items.DIAMOND), "it hangs again with its diamond: " + frames);
+        helper.assertTrue(frames.size() == 1 && dev.groundburst.legacy.J21.first(frames).getItem().is(Items.DIAMOND), "it hangs again with its diamond: " + frames);
         helper.succeed();
     }
 
@@ -484,7 +484,7 @@ final class HealTests {
         ItemStack held = ((Container) ((BlockEntity) helper.getBlockEntity(chest))).getItem(4);
         helper.assertTrue(held.is(Items.DIAMOND) && held.getCount() == 37, "the chest has its diamonds again: " + held);
         List<ItemFrame> frames = level.getEntitiesOfClass(ItemFrame.class, area(helper));
-        helper.assertTrue(frames.size() == 1 && frames.getFirst().getItem().is(Items.EMERALD), "the frame hangs again with its emerald: " + frames);
+        helper.assertTrue(frames.size() == 1 && dev.groundburst.legacy.J21.first(frames).getItem().is(Items.EMERALD), "the frame hangs again with its emerald: " + frames);
         helper.succeed();
     }
 
@@ -498,7 +498,7 @@ final class HealTests {
         HealSettings.testArea(level, area(helper), s);
         Vec3 at = helper.absoluteVec(Vec3.atCenterOf(C));
         PrimedTnt primed = new PrimedTnt(level, at.x, at.y, at.z, null);
-        level.explode(primed, Explosion.getDefaultDamageSource(level, primed), null, at.x, at.y, at.z, 4.0F, false, Level.ExplosionInteraction.TNT);
+        level.explode(primed, at.x, at.y, at.z, 4.0F, Level.ExplosionInteraction.TNT);
         List<PrimedTnt> lit = level.getEntitiesOfClass(PrimedTnt.class, area(helper));
         lit.forEach(Entity::discard);                      // (before it goes off in its turn)
         helper.assertTrue(lit.size() == 1, "the TNT beside it was lit (" + lit.size() + ")");
@@ -530,7 +530,7 @@ final class HealTests {
         kinds.put("minecraft:player", Kind.OTHER_MOD);
         kinds.put("somemod:rocket", Kind.OTHER_MOD);
         for (Map.Entry<String, Kind> e : kinds.entrySet()) {
-            Kind k = Explosions.kind(ResourceLocation.parse(e.getKey()));
+            Kind k = Explosions.kind(new ResourceLocation(e.getKey()));
             helper.assertTrue(k == e.getValue(), e.getKey() + " heals as " + e.getValue() + ", not " + k);
         }
         HealSettings all = HealSettings.forTests(HealPlayerBlocks.KEEP, 0);
@@ -571,10 +571,8 @@ final class HealTests {
         HealSettings mods = HealSettings.forTests(HealPlayerBlocks.KEEP, 0).withKinds(EnumSet.of(Kind.OTHER_MOD));
         HealSettings.testArea(level, area(helper), mods);
         Vec3 at = helper.absoluteVec(Vec3.atCenterOf(C));
-        Explosion theirs = new Explosion(level, null, null, null, at.x, at.y, at.z, 3.0F, false, Explosion.BlockInteraction.DESTROY,
-                net.minecraft.core.particles.ParticleTypes.EXPLOSION, net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER,
-                net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE) {};
-        helper.assertTrue(Explosions.source(theirs).equals(ResourceLocation.withDefaultNamespace("explosion")), "known by its damage: " + Explosions.source(theirs));
+        Explosion theirs = new Explosion(level, null, null, null, at.x, at.y, at.z, 3.0F, false, Explosion.BlockInteraction.DESTROY) {};
+        helper.assertTrue(Explosions.source(theirs).equals(new ResourceLocation("explosion")), "known by its damage: " + Explosions.source(theirs));
         theirs.explode();
         theirs.finalizeExplosion(false);
         helper.assertTrue(level.getBlockState(helper.absolutePos(barrel)).isAir() && remembered(helper, barrel), "the barrel went: remembered");

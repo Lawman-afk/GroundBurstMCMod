@@ -56,7 +56,7 @@ public class StructureSpawnerItem extends Item {
         if (player == null) {
             return InteractionResult.PASS;
         }
-        if (!player.hasInfiniteMaterials()) {
+        if (!player.getAbilities().instabuild) {
             if (!level.isClientSide()) {
                 player.displayClientMessage(Component.translatable(CREATIVE_ONLY).withStyle(ChatFormatting.RED), true);
             }
@@ -109,7 +109,7 @@ public class StructureSpawnerItem extends Item {
             }
             level.setBlock(cell.pos(), state, Block.UPDATE_ALL);
         }
-        if (level.getBlockEntity(controller) instanceof MultiblockController c) {
+        if (((Object) level.getBlockEntity(controller)) instanceof MultiblockController c) {
             c.revalidate();
         }
         return true;
@@ -124,7 +124,7 @@ public class StructureSpawnerItem extends Item {
         java.util.List<MultiblockDefinition.Cell> first = new java.util.ArrayList<>(), last = new java.util.ArrayList<>();
         for (MultiblockDefinition.Cell cell : def.cells(controller, facing)) {
             boolean edge = cell.key() != '.' && cell.key() != MultiblockDefinition.CONTROLLER
-                    && def.legend().get(cell.key()).preview().get() instanceof BlockState s && s.getBlock() instanceof SpreadPartBlock
+                    && ((Object) def.legend().get(cell.key()).preview().get()) instanceof BlockState s && s.getBlock() instanceof SpreadPartBlock
                     && s.getValue(SpreadPartBlock.PART) == SpreadPartBlock.Part.EDGE;
             (edge ? last : first).add(cell);
         }
@@ -133,7 +133,7 @@ public class StructureSpawnerItem extends Item {
     }
 
     @Override
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         tooltip.accept(Component.translatable(TOOLTIP).withStyle(ChatFormatting.GRAY));
     }
 }

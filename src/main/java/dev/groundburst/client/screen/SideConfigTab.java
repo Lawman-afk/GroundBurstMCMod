@@ -234,7 +234,7 @@ final class SideConfigTab {
             };
             g.setTooltipForNextFrame(font, List.of(
                     Component.translatable(MachineText.FACE_MODE, faceName(hovered), value),
-                    Component.translatable(channel == Channel.ITEMS ? MachineText.HINT_CYCLE : MachineText.HINT_TOGGLE).withColor(TEXT_DIM)),
+                    Component.translatable(channel == Channel.ITEMS ? MachineText.HINT_CYCLE : MachineText.HINT_TOGGLE).withStyle(s_ -> s_.withColor(TEXT_DIM))),
                     Optional.empty(), mouseX, mouseY);
         } else if (eject && inside(mouseX, mouseY, x + 6, y + ejectY() - 2, 90, 14)) {
             g.setTooltipForNextFrame(Component.translatable(MachineText.AUTO_EJECT_TIP), mouseX, mouseY);

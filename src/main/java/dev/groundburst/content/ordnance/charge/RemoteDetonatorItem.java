@@ -40,7 +40,7 @@ public class RemoteDetonatorItem extends Item {
     }
 
     public static int frequency(ItemStack stack) {
-        return stack.getOrDefault(GBDataComponents.FREQUENCY.get(), 0);
+        return dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.FREQUENCY.get(), 0);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class RemoteDetonatorItem extends Item {
             return InteractionResult.PASS;
         }
         if (!context.getLevel().isClientSide()) {
-            context.getItemInHand().set(GBDataComponents.FREQUENCY.get(), be.frequency());
+            dev.groundburst.legacy.component.Comps.set(context.getItemInHand(), GBDataComponents.FREQUENCY.get(), be.frequency());
             player.displayClientMessage(Component.translatable(LINKED, be.frequency()), true);
         }
         return InteractionResult.SUCCESS;
@@ -66,7 +66,7 @@ public class RemoteDetonatorItem extends Item {
             }
             return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
         }
-        if (level instanceof ServerLevel server) {
+        if (((Object) level) instanceof ServerLevel server) {
             int f = frequency(stack);
             level.playSound(null, player.getX(), player.getY(), player.getZ(), GBOrdnance.DETONATOR_CLICK.get(), SoundSource.PLAYERS, 0.8f, 1f);
             int n = Charges.remote(server, player.getEyePosition(), f, player);
@@ -78,7 +78,7 @@ public class RemoteDetonatorItem extends Item {
     }
 
     @Override
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         tooltip.accept(Component.translatable(TIP_FREQ, frequency(stack)).withStyle(ChatFormatting.GOLD));
         tooltip.accept(Component.translatable(TIP_USE).withStyle(ChatFormatting.GRAY));
     }

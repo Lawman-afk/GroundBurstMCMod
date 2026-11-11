@@ -77,13 +77,13 @@ public class SiteStructure extends Structure {
     public record Variant(int weight, List<Part> parts) {
         public static final Codec<Variant> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.intRange(1, 1000).fieldOf("weight").forGetter(Variant::weight),
-                Part.CODEC.listOf(1, 16).fieldOf("parts").forGetter(Variant::parts)
+                Part.CODEC.listOf().fieldOf("parts").forGetter(Variant::parts)
         ).apply(i, Variant::new));
     }
 
     public static final MapCodec<SiteStructure> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             settingsCodec(i),
-            Variant.CODEC.listOf(1, 16).fieldOf("variants").forGetter(s -> s.variants),
+            Variant.CODEC.listOf().fieldOf("variants").forGetter(s -> s.variants),
             Placement.CODEC.fieldOf("placement").forGetter(s -> s.placement),
             Codec.intRange(0, 64).optionalFieldOf("max_slope", 6).forGetter(s -> s.maxSlope),
             Codec.intRange(0, 128).optionalFieldOf("depth", 0).forGetter(s -> s.depth),
@@ -180,7 +180,7 @@ public class SiteStructure extends Structure {
         int reach = this.keepClear;
         for (ResourceKey<StructureSet> key : this.keepClearOf) {
             StructureSet set = context.registryAccess().registryOrThrow(Registries.STRUCTURE_SET).get(key);
-            if (set == null || !(set.placement() instanceof RandomSpreadStructurePlacement spread)) {
+            if (set == null || !(((Object) set.placement()) instanceof RandomSpreadStructurePlacement spread)) {
                 continue;
             }
             int spacing = spread.spacing();
@@ -248,9 +248,9 @@ public class SiteStructure extends Structure {
      */
     private static int[] footprint(StructureTemplateManager templates, Variant variant, Rotation rotation, boolean land) {
         int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
-        boolean any = variant.parts().stream().anyMatch(p -> p.terrain() != TerrainAdjustment.ENCAPSULATE);
+        boolean any = variant.parts().stream().anyMatch(p -> p.terrain() != TerrainAdjustment.BEARD_BOX);
         for (Part part : variant.parts()) {
-            if (land && any && part.terrain() == TerrainAdjustment.ENCAPSULATE) {
+            if (land && any && part.terrain() == TerrainAdjustment.BEARD_BOX) {
                 continue;
             }
             Vec3i size = templates.getOrCreate(part.template()).getSize(rotation);
@@ -303,7 +303,7 @@ public class SiteStructure extends Structure {
                 return v;
             }
         }
-        return this.variants.getFirst();
+        return dev.groundburst.legacy.J21.first(this.variants);
     }
 
     /** The variants (for previews). */

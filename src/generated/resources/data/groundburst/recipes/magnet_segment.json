@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "item": "groundburst:superconducting_coil"
+    },
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "W": {
+      "tag": "forge:wires/copper"
+    }
+  },
+  "pattern": [
+    "DCD",
+    " W ",
+    "DCD"
+  ],
+  "result": {
+    "item": "groundburst:magnet_segment",
+    "count": 4
+  }
+}

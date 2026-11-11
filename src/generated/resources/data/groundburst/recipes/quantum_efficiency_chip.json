@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "groundburst:quantum_circuit"
+    },
+    {
+      "item": "groundburst:capacitor"
+    },
+    {
+      "tag": "forge:wires/copper"
+    },
+    {
+      "tag": "forge:wires/copper"
+    }
+  ],
+  "result": {
+    "item": "groundburst:quantum_efficiency_chip"
+  }
+}

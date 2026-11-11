@@ -4,13 +4,13 @@ import java.util.function.Consumer;
 
 import dev.groundburst.network.GBNetwork;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import dev.groundburst.legacy.net.IPayloadContext;
 
 /**
  * A gun's crew and the gun (DESIGN.md §20.1): the crewman's aim, shots and shell picks to the server; the gun as it is
@@ -32,7 +32,7 @@ public final class ArtilleryPayloads {
      */
     public record TerrainRequest(BlockPos gun, int ox, int oz) implements CustomPacketPayload {
         public static final Type<TerrainRequest> TYPE = GBNetwork.type("artillery_terrain_request");
-        public static final StreamCodec<RegistryFriendlyByteBuf, TerrainRequest> CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC,
+        public static final StreamCodec<FriendlyByteBuf, TerrainRequest> CODEC = StreamCodec.composite(dev.groundburst.legacy.net.Codecs.BLOCK_POS,
                 TerrainRequest::gun, ByteBufCodecs.VAR_INT, TerrainRequest::ox, ByteBufCodecs.VAR_INT, TerrainRequest::oz, TerrainRequest::new);
 
         @Override
@@ -54,14 +54,14 @@ public final class ArtilleryPayloads {
      */
     public record Terrain(int ox, int oz, short[] heights, int[] colours) implements CustomPacketPayload {
         public static final Type<Terrain> TYPE = GBNetwork.type("artillery_terrain");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Terrain> CODEC = StreamCodec.of((buf, t) -> t.write(buf), Terrain::read);
+        public static final StreamCodec<FriendlyByteBuf, Terrain> CODEC = StreamCodec.of((buf, t) -> t.write(buf), Terrain::read);
 
         @Override
         public Type<Terrain> type() {
             return TYPE;
         }
 
-        private void write(RegistryFriendlyByteBuf buf) {
+        private void write(FriendlyByteBuf buf) {
             buf.writeVarInt(this.ox);
             buf.writeVarInt(this.oz);
             for (int i = 0; i < SAMPLES * SAMPLES; i++) {
@@ -70,7 +70,7 @@ public final class ArtilleryPayloads {
             }
         }
 
-        private static Terrain read(RegistryFriendlyByteBuf buf) {
+        private static Terrain read(FriendlyByteBuf buf) {
             int ox = buf.readVarInt(), oz = buf.readVarInt();
             short[] h = new short[SAMPLES * SAMPLES];
             int[] c = new int[SAMPLES * SAMPLES];
@@ -85,14 +85,14 @@ public final class ArtilleryPayloads {
     private ArtilleryPayloads() {}
 
     private static GunBlockEntity mortarAt(IPayloadContext context, BlockPos pos) {
-        return context.player() instanceof ServerPlayer player && player.level().isLoaded(pos)
-                && player.level().getBlockEntity(pos) instanceof GunBlockEntity m ? m : null;
+        return ((Object) context.player()) instanceof ServerPlayer player && player.level().isLoaded(pos)
+                && ((Object) player.level().getBlockEntity(pos)) instanceof GunBlockEntity m ? m : null;
     }
 
     /** Where the crewman wants the gun laid: a point on the ground. */
     public record Aim(BlockPos gun, double x, double y, double z) implements CustomPacketPayload {
         public static final Type<Aim> TYPE = GBNetwork.type("artillery_aim");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Aim> CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, Aim::gun,
+        public static final StreamCodec<FriendlyByteBuf, Aim> CODEC = StreamCodec.composite(dev.groundburst.legacy.net.Codecs.BLOCK_POS, Aim::gun,
                 ByteBufCodecs.DOUBLE, Aim::x, ByteBufCodecs.DOUBLE, Aim::y, ByteBufCodecs.DOUBLE, Aim::z, Aim::new);
 
         public Aim(BlockPos gun, Vec3 at) {
@@ -115,7 +115,7 @@ public final class ArtilleryPayloads {
     /** The crewman fires. */
     public record Fire(BlockPos gun) implements CustomPacketPayload {
         public static final Type<Fire> TYPE = GBNetwork.type("artillery_fire");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Fire> CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, Fire::gun, Fire::new);
+        public static final StreamCodec<FriendlyByteBuf, Fire> CODEC = StreamCodec.composite(dev.groundburst.legacy.net.Codecs.BLOCK_POS, Fire::gun, Fire::new);
 
         @Override
         public Type<Fire> type() {
@@ -133,7 +133,7 @@ public final class ArtilleryPayloads {
     /** The crewman picks the shell to fire next (its place in the gun's rack). */
     public record Select(BlockPos gun, int shell) implements CustomPacketPayload {
         public static final Type<Select> TYPE = GBNetwork.type("artillery_select");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Select> CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, Select::gun,
+        public static final StreamCodec<FriendlyByteBuf, Select> CODEC = StreamCodec.composite(dev.groundburst.legacy.net.Codecs.BLOCK_POS, Select::gun,
                 ByteBufCodecs.VAR_INT, Select::shell, Select::new);
 
         @Override
@@ -159,14 +159,14 @@ public final class ArtilleryPayloads {
     public record State(BlockPos gun, float yaw, float elevation, int charge, float dispersion, int reload, int selected, boolean reachable,
                         int shots, int crew, int[] counts, boolean laid, double x, double y, double z) implements CustomPacketPayload {
         public static final Type<State> TYPE = GBNetwork.type("artillery_state");
-        public static final StreamCodec<RegistryFriendlyByteBuf, State> CODEC = StreamCodec.of((buf, s) -> s.write(buf), State::read);
+        public static final StreamCodec<FriendlyByteBuf, State> CODEC = StreamCodec.of((buf, s) -> s.write(buf), State::read);
 
         @Override
         public Type<State> type() {
             return TYPE;
         }
 
-        private void write(RegistryFriendlyByteBuf buf) {
+        private void write(FriendlyByteBuf buf) {
             buf.writeBlockPos(this.gun);
             buf.writeFloat(this.yaw);
             buf.writeFloat(this.elevation);
@@ -187,7 +187,7 @@ public final class ArtilleryPayloads {
             buf.writeDouble(this.z);
         }
 
-        private static State read(RegistryFriendlyByteBuf buf) {
+        private static State read(FriendlyByteBuf buf) {
             BlockPos gun = buf.readBlockPos();
             float yaw = buf.readFloat(), elevation = buf.readFloat();
             int charge = buf.readVarInt();

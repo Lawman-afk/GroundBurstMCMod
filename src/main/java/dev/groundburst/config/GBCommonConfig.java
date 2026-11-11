@@ -4,15 +4,15 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import dev.groundburst.registry.GBLang;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
  * Local (per-installation) settings. Worldgen toggles live here because features are placed while chunks
  * generate, before any world-synced config is available. Read by {@code ConfigToggleFilter}.
  */
 public final class GBCommonConfig {
-    private static final ModConfigSpec.Builder B = new ModConfigSpec.Builder();
-    private static final Map<String, ModConfigSpec.BooleanValue> TOGGLES = new LinkedHashMap<>();
+    private static final ForgeConfigSpec.Builder B = new ForgeConfigSpec.Builder();
+    private static final Map<String, ForgeConfigSpec.BooleanValue> TOGGLES = new LinkedHashMap<>();
 
     static {
         B.translation(GBLang.config("worldgen", "World generation"))
@@ -30,7 +30,7 @@ public final class GBCommonConfig {
         B.pop();
     }
 
-    public static final ModConfigSpec SPEC = B.build();
+    public static final ForgeConfigSpec SPEC = B.build();
 
     private GBCommonConfig() {}
 
@@ -42,7 +42,7 @@ public final class GBCommonConfig {
 
     /** Whether the named resource generates. Unknown keys are treated as enabled. */
     public static boolean isEnabled(String key) {
-        ModConfigSpec.BooleanValue value = TOGGLES.get(key);
-        return value == null || !SPEC.isLoaded() || value.getAsBoolean();
+        ForgeConfigSpec.BooleanValue value = TOGGLES.get(key);
+        return value == null || !SPEC.isLoaded() || value.get();
     }
 }

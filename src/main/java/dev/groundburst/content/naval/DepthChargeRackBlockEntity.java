@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -252,7 +252,7 @@ public class DepthChargeRackBlockEntity extends MachineBlockEntity implements An
         }
         ItemStack charge = this.inventory.getItem(0).copyWithCount(1);
         if (this.depth >= 0) {
-            charge.set(GBDataComponents.NAVAL_DEPTH.get(), DepthCharge.DEPTHS[this.depth]);
+            dev.groundburst.legacy.component.Comps.set(charge, GBDataComponents.NAVAL_DEPTH.get(), DepthCharge.DEPTHS[this.depth]);
         }
         this.inventory.setItem(0, ItemStack.EMPTY);
         Vec3 local = releasePoint();
@@ -423,8 +423,8 @@ public class DepthChargeRackBlockEntity extends MachineBlockEntity implements An
 
     // --- model --------------------------------------------------------------------------------------------------------------
     @Override
-    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public net.minecraft.nbt.CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -535,8 +535,8 @@ public class DepthChargeRackBlockEntity extends MachineBlockEntity implements An
 
     // --- saving -------------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("depth", this.depth);
         output.putInt("interval", this.interval);
         output.putInt("pattern_left", this.patternLeft);
@@ -548,8 +548,8 @@ public class DepthChargeRackBlockEntity extends MachineBlockEntity implements An
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.depth = Mth.clamp(input.getIntOr("depth", -1), -1, DepthCharge.DEPTHS.length - 1);
         int iv = input.getIntOr("interval", INTERVALS[0]);
         this.interval = java.util.Arrays.stream(INTERVALS).anyMatch(v -> v == iv) ? iv : INTERVALS[0];

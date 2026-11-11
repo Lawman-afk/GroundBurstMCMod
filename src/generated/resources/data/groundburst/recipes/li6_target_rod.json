@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "tag": "forge:dusts/lithium_6"
+    },
+    {
+      "tag": "forge:dusts/lithium_6"
+    },
+    {
+      "tag": "forge:dusts/lithium_6"
+    },
+    {
+      "tag": "forge:rods/steel"
+    },
+    {
+      "tag": "forge:rods/steel"
+    }
+  ],
+  "result": {
+    "item": "groundburst:li6_target_rod"
+  }
+}

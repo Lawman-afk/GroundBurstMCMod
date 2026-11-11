@@ -29,7 +29,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import dev.groundburst.port.transfer.fluid.FluidResource;
 import dev.groundburst.port.transfer.transaction.Transaction;
 
@@ -190,7 +190,7 @@ public final class CircuitLine {
         puller.tank(0).fillInternal(new FluidStack(GBFluids.ARGON.source().get(), 1_000));
         press.inventory().setItem(0, new ItemStack(GBParts.SILICON_BOULE.get()));
         press.inventory().setItem(1, new ItemStack(GBParts.DIAMOND_WIRE_SAW.get()));         // its catalyst slot
-        if (level.getBlockEntity(o.offset(CLEAN_ROOM)) instanceof MachineBlockEntity room) {
+        if (((Object) level.getBlockEntity(o.offset(CLEAN_ROOM))) instanceof MachineBlockEntity room) {
             room.inventory().setItem(0, new ItemStack(GBParts.SILICON_WAFER.get(), 4));
         }
         advanced.inventory().setItem(0, new ItemStack(GBParts.BASIC_CIRCUIT.get(), 2));
@@ -200,7 +200,7 @@ public final class CircuitLine {
     /** How many of an item a chest of the line holds. */
     public static int count(ServerLevel level, BlockPos chest, net.minecraft.world.item.Item item) {
         int n = 0;
-        if (level.getBlockEntity(chest) instanceof Container c) {
+        if (((Object) level.getBlockEntity(chest)) instanceof Container c) {
             for (int i = 0; i < c.getContainerSize(); i++) {
                 n += c.getItem(i).is(item) ? c.getItem(i).getCount() : 0;
             }
@@ -240,7 +240,7 @@ public final class CircuitLine {
 
     private static void chest(ServerLevel level, BlockPos pos, ItemStack... contents) {
         level.setBlockAndUpdate(pos, Blocks.CHEST.defaultBlockState());
-        if (level.getBlockEntity(pos) instanceof Container c) {
+        if (((Object) level.getBlockEntity(pos)) instanceof Container c) {
             for (int i = 0; i < contents.length; i++) {
                 c.setItem(i, contents[i]);
             }
@@ -254,7 +254,7 @@ public final class CircuitLine {
     private static void tank(ServerLevel level, BlockPos pos, int height, ChemFluid fluid) {
         for (int i = 0; i < height; i++) {
             level.setBlockAndUpdate(pos.above(i), GBFluids.FLUID_TANK.block().get().defaultBlockState());
-            if (level.getBlockEntity(pos.above(i)) instanceof FluidTankBlockEntity tank) {
+            if (((Object) level.getBlockEntity(pos.above(i))) instanceof FluidTankBlockEntity tank) {
                 try (Transaction tx = Transaction.openRoot()) {
                     tank.handler().insert(FluidResource.of(fluid.source().get()), FluidTankBlockEntity.CAPACITY_PER_BLOCK, tx);
                     tx.commit();

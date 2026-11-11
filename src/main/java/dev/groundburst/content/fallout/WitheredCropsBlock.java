@@ -18,10 +18,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * ({@link #CRUMBLE_CHANCE} a random tick).
  */
 public class WitheredCropsBlock extends BushBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends WitheredCropsBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final float CRUMBLE_CHANCE = 1f / 30;
     private static final VoxelShape SHAPE = dev.groundburst.port.Shapes2.column(16, 0, 10);
@@ -36,12 +33,12 @@ public class WitheredCropsBlock extends BushBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (random.nextFloat() < CRUMBLE_CHANCE) {
             level.removeBlock(pos, false);
         }

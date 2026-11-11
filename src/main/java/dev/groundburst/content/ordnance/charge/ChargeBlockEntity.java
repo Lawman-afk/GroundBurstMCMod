@@ -8,7 +8,7 @@ import dev.groundburst.content.assembly.FuzeSettings;
 import dev.groundburst.content.ordnance.GBOrdnance;
 import dev.groundburst.registry.GBDataComponents;
 
-import net.minecraft.core.component.DataComponentMap;
+import dev.groundburst.legacy.component.DataComponentMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -30,7 +30,7 @@ import dev.groundburst.port.ValueOutput;
  * bomb's wires. Armed and made safe from its screen ({@link ChargePayloads.Settings}). Synced
  * to clients for the settings and defuse screens and the timed bomb's clock face.
  */
-public class ChargeBlockEntity extends BlockEntity {
+public class ChargeBlockEntity extends BlockEntity implements dev.groundburst.legacy.component.ImplicitComponents {
     /** What a trigger does: set it off at once (REMOTE), or start its countdown (TIMER). */
     public enum Mode { REMOTE, TIMER }
 
@@ -59,7 +59,7 @@ public class ChargeBlockEntity extends BlockEntity {
     }
 
     public ChargeKind kind() {
-        return getBlockState().getBlock() instanceof ChargeBlock b ? b.kind : ChargeKind.C4;
+        return ((Object) getBlockState().getBlock()) instanceof ChargeBlock b ? b.kind : ChargeKind.C4;
     }
 
     public Mode mode() {
@@ -120,14 +120,14 @@ public class ChargeBlockEntity extends BlockEntity {
             return;
         }
         this.mode = kind().fuzeChoice() ? mode : kind().defaultMode();
-        this.frequency = Math.clamp(frequency, 0, ChargeKind.MAX_FREQUENCY);
-        this.timer = Math.clamp(timer, 1, ChargeKind.MAX_TIMER);
+        this.frequency = dev.groundburst.legacy.J21.clamp(frequency, 0, ChargeKind.MAX_FREQUENCY);
+        this.timer = dev.groundburst.legacy.J21.clamp(timer, 1, ChargeKind.MAX_TIMER);
         sync();
     }
 
     /** For GameTests and the detonator: sets the frequency regardless. */
     public void setFrequency(int frequency) {
-        this.frequency = Math.clamp(frequency, 0, ChargeKind.MAX_FREQUENCY);
+        this.frequency = dev.groundburst.legacy.J21.clamp(frequency, 0, ChargeKind.MAX_FREQUENCY);
         sync();
     }
 
@@ -275,7 +275,7 @@ public class ChargeBlockEntity extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             Charges.track(server, this.worldPosition);
         }
     }
@@ -283,7 +283,7 @@ public class ChargeBlockEntity extends BlockEntity {
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             Charges.untrack(server, this.worldPosition);
         }
     }
@@ -297,8 +297,8 @@ public class ChargeBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putString("mode", this.mode.name());
         output.putInt("frequency", this.frequency);
         output.putInt("timer", this.timer);
@@ -316,8 +316,8 @@ public class ChargeBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.mode = input.getString("mode").map(s -> s.equals("TIMER") ? Mode.TIMER : Mode.REMOTE).orElse(this.mode);
         this.frequency = input.getIntOr("frequency", 0);
         this.timer = input.getIntOr("timer", this.timer);
@@ -331,25 +331,21 @@ public class ChargeBlockEntity extends BlockEntity {
     }
 
     // --- keeping the fuze in the item ------------------------------------------------------------------------------------
-    @Override
-    protected void collectImplicitComponents(DataComponentMap.Builder components) {
-        super.collectImplicitComponents(components);
+    public void collectImplicitComponents(DataComponentMap.Builder components) {
         if (kind().bomb) {
-            components.set(GBDataComponents.FUZE.get(), this.fuze);
+            dev.groundburst.legacy.component.Comps.set(components, GBDataComponents.FUZE.get(), this.fuze);
+        }
+    }
+
+    public void applyImplicitComponents(dev.groundburst.legacy.component.DataComponentInput components) {
+        if (kind().bomb) {
+            setFuze(dev.groundburst.legacy.component.Comps.getOrDefault(components, GBDataComponents.FUZE.get(), FuzeSettings.IMPACT));
         }
     }
 
     @Override
-    protected void applyImplicitComponents(net.minecraft.world.level.block.entity.BlockEntity.DataComponentInput components) {
-        super.applyImplicitComponents(components);
-        if (kind().bomb) {
-            setFuze(components.getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT));
-        }
-    }
-
-    @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override

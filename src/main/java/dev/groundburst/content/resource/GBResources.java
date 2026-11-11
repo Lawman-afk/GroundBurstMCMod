@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.neoforged.neoforge.registries.DeferredItem;
+import dev.groundburst.legacy.DeferredItem;
 
 /**
  * Raw resources (DESIGN.md §5): ores in every host rock, raw materials, ingots, powders, storage blocks, and the
@@ -124,7 +124,7 @@ public final class GBResources {
         };
         boolean powder = max > 1;
         WithItem<Block> block = GBBlocks.register(name, english, GBTab.RESOURCES,
-                powder ? props -> new DropExperienceBlock(UniformInt.of(0, 2), props) : Block::new,
+                powder ? props -> new net.minecraft.world.level.block.DropExperienceBlock(props, UniformInt.of(0, 2)) : Block::new,
                 p -> hostProperties(p, host));
         ORES.add(new Ore(family, host, block, drop, min, max, tier));
         return block;
@@ -152,7 +152,7 @@ public final class GBResources {
     }
 
     private static WithItem<AmethystClusterBlock> crystal(String name, String english, float height, float width, int light, SoundType sound) {
-        return GBBlocks.register(name, english, GBTab.RESOURCES, props -> new AmethystClusterBlock(height, (16 - (width)) / 2, props),
+        return GBBlocks.register(name, english, GBTab.RESOURCES, props -> new net.minecraft.world.level.block.AmethystClusterBlock((int) (height), (int) ((16 - (width)) / 2), props),
                 p -> p.mapColor(MapColor.COLOR_PURPLE).forceSolidOn().noOcclusion().sound(sound).strength(1.5f)
                         .lightLevel(s -> light).pushReaction(PushReaction.DESTROY));
     }

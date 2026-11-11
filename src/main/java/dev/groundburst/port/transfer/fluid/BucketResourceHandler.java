@@ -17,7 +17,7 @@ public class BucketResourceHandler extends ItemAccessResourceHandler<FluidResour
 
     @Override
     protected FluidResource getResourceFrom(ItemResource accessResource, int index) {
-        return accessResource.getItem() instanceof BucketItem b && b.content != Fluids.EMPTY ? FluidResource.of(b.content) : FluidResource.EMPTY;
+        return ((Object) accessResource.getItem()) instanceof BucketItem b && b.getFluid() != Fluids.EMPTY ? FluidResource.of(b.getFluid()) : FluidResource.EMPTY;
     }
 
     @Override

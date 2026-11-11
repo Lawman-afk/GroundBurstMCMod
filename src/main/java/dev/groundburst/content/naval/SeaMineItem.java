@@ -49,7 +49,7 @@ public class SeaMineItem extends Item {
     }
 
     public static int depthOf(ItemStack stack) {
-        return stack.getOrDefault(GBDataComponents.NAVAL_DEPTH.get(), 0);
+        return dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.NAVAL_DEPTH.get(), 0);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class SeaMineItem extends Item {
                     next = depths[(i + 1) % depths.length];
                 }
             }
-            stack.set(GBDataComponents.NAVAL_DEPTH.get(), next);
+            dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.NAVAL_DEPTH.get(), next);
             if (!level.isClientSide()) {
                 player.displayClientMessage(next == 0 ? Component.translatable(T_AWASH_SET) : Component.translatable(T_DEPTH_SET, next), true);
             }
@@ -76,12 +76,12 @@ public class SeaMineItem extends Item {
             }
             return dev.groundburst.port.Results.holder(InteractionResult.FAIL, player, hand);
         }
-        if (level instanceof ServerLevel server) {
+        if (((Object) level) instanceof ServerLevel server) {
             SeaMine.lay(server, at, this.moored, depthOf(stack), player);
             server.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_SPLASH, SoundSource.PLAYERS, 0.9f, 0.8f);
         }
         player.getCooldowns().addCooldown(stack.getItem(), 10);
-        stack.consume(1, player);
+        dev.groundburst.legacy.Items2.consume(stack, 1, player);
         return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
     }
 
@@ -99,7 +99,7 @@ public class SeaMineItem extends Item {
     }
 
     @Override
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         if (this.moored) {
             int depth = depthOf(stack);
             tooltip.accept((depth == 0 ? Component.translatable(T_AWASH) : Component.translatable(T_DEPTH, depth)).withStyle(ChatFormatting.GRAY));

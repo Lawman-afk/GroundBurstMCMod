@@ -132,7 +132,7 @@ public final class Interceptors {
     }
 
     private static void report(ServerLevel level, Shot shot, InterceptorLauncher.Outcome outcome) {
-        if (level.getBlockEntity(shot.battery) instanceof InterceptorLauncher launcher) {
+        if (((Object) level.getBlockEntity(shot.battery)) instanceof InterceptorLauncher launcher) {
             launcher.reported(outcome);
         }
     }

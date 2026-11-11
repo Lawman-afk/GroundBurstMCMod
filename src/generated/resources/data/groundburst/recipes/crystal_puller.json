@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": {
+      "tag": "groundburst:basic_circuits"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "G": {
+      "tag": "forge:glass/colorless"
+    },
+    "H": {
+      "item": "groundburst:heating_element"
+    },
+    "M": {
+      "item": "groundburst:electric_motor"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    },
+    "V": {
+      "item": "groundburst:pressure_vessel"
+    }
+  },
+  "pattern": [
+    "PMP",
+    "GVG",
+    "HFB"
+  ],
+  "result": {
+    "item": "groundburst:crystal_puller"
+  }
+}

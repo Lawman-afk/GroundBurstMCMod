@@ -44,8 +44,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.common.Tags;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * One deep freeze (DESIGN.md §16.16): the cryogenic warhead's heat sink let go where its Cryo ICBM struck.
@@ -320,7 +320,7 @@ final class FreezeJob {
                 } else if (s.getBlock() instanceof BaseFireBlock || s.is(dev.groundburst.content.ordnance.GBOrdnance.NAPALM_FIRE.get())) {
                     this.scars.set(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
                     air = true;
-                } else if (s.is(Tags.Blocks.GLASS_BLOCKS) || s.is(Tags.Blocks.GLASS_PANES)) {
+                } else if (s.is(Tags.Blocks.GLASS) || s.is(Tags.Blocks.GLASS_PANES)) {
                     shatterGlass(p, s);
                     air = true;
                 } else if (Frost.plant(s) || s.is(BlockTags.CROPS)) {
@@ -411,7 +411,7 @@ final class FreezeJob {
 
     // --- creatures ----------------------------------------------------------------------------------------------------------
     private static boolean spared(Entity e) {
-        return e instanceof Player p && (p.isCreative() || p.isSpectator()) || e instanceof dev.groundburst.content.launch.MissileEntity;
+        return ((Object) e) instanceof Player p && (p.isCreative() || p.isSpectator()) || e instanceof dev.groundburst.content.launch.MissileEntity;
     }
 
     private double across(Vec3 p) {
@@ -443,7 +443,7 @@ final class FreezeJob {
             boolean boss = e.getType().is(Tags.EntityTypes.BOSSES);
             e.invulnerableTime = 0;
             if (e.position().distanceTo(this.center) <= this.core) {
-                DamageSource frozen = this.level.damageSources().source(Freezes.FLASH_FROZEN, null, source);
+                DamageSource frozen = dev.groundburst.legacy.Game.source(this.level, Freezes.FLASH_FROZEN, null, source);
                 if (boss) {
                     e.hurt(frozen, 40);
                 } else {
@@ -455,7 +455,7 @@ final class FreezeJob {
             double k = 1 - (d - this.core) / Math.max(1, this.radius - this.core);      // 1 at the heart's edge, 0 at the rim
             float shelter = this.level.canSeeSky(e.blockPosition()) ? 1 : 0.5f;
             if (!boss) {
-                e.addEffect(new MobEffectInstance(EffectSystems.FROZEN, (int) ((FROZEN_OUTER + (FROZEN_INNER - FROZEN_OUTER) * k) * shelter), 0, false, true, true));
+                e.addEffect(new MobEffectInstance(EffectSystems.FROZEN.get(), (int) ((FROZEN_OUTER + (FROZEN_INNER - FROZEN_OUTER) * k) * shelter), 0, false, true, true));
                 e.setTicksFrozen(e.getTicksRequiredToFreeze() + FrozenEffect.MARK);
             }
             e.hurt(this.level.damageSources().freeze(), (float) (HURT_OUTER + (HURT_INNER - HURT_OUTER) * k * k) * shelter);
@@ -538,7 +538,7 @@ final class FreezeJob {
         RandomSource r = this.random;
         this.spires.add(new Spire(this.cx, this.cz, (26 + 8 * r.nextDouble()) * s + 2, (3.6 + r.nextDouble()) * root + 0.6, 0, 0,
                 r.nextDouble() * Math.PI, 0, 2));
-        int n = Math.clamp(Math.round(12 * s), 2, 14);
+        int n = dev.groundburst.legacy.J21.clamp(Math.round(12 * s), 2, 14);
         for (int i = 0; i < n; i++) {
             double a = 2 * Math.PI * (i + 0.6 * r.nextDouble()) / n;
             double d = this.core * (0.18 + 0.55 * Math.pow(r.nextDouble(), 0.8));

@@ -85,7 +85,7 @@ public final class LaunchNetwork extends SavedData {
                 Codec.INT.fieldOf("readiness").forGetter(Report::readiness), Codec.INT.fieldOf("countdown").forGetter(Report::countdown),
                 Codec.BOOL.fieldOf("armed").forGetter(Report::armed), BlockPos.CODEC.optionalFieldOf("target").forGetter(Report::target),
                 Codec.INT.fieldOf("range").forGetter(Report::range), STRIKE_CODEC.fieldOf("strike").forGetter(Report::strike),
-                ItemStack.OPTIONAL_CODEC.fieldOf("shown").forGetter(Report::shown), TIMING_CODEC.fieldOf("timing").forGetter(Report::timing),
+                dev.groundburst.legacy.net.Codecs.OPTIONAL_ITEM_STACK_CODEC.fieldOf("shown").forGetter(Report::shown), TIMING_CODEC.fieldOf("timing").forGetter(Report::timing),
                 Codec.LONG.fieldOf("seen").forGetter(Report::seen), Codec.BOOL.optionalFieldOf("working", false).forGetter(Report::working))
                 .apply(i, Report::new));
     }
@@ -431,7 +431,7 @@ public final class LaunchNetwork extends SavedData {
         }
         Member m = new Member(pos, role, BuiltInRegistries.BLOCK.getKey(be.getBlockState().getBlock()).toString());
         m.at = worldPos(be);
-        if (be instanceof MultiblockController c) {
+        if (((Object) be) instanceof MultiblockController c) {
             box(m, c);
         }
         n.members.put(pos.asLong(), m);
@@ -444,7 +444,7 @@ public final class LaunchNetwork extends SavedData {
 
     /** Where a member's block entity is in the world (DESIGN.md §17.16). */
     private static BlockPos worldPos(BlockEntity be) {
-        return be instanceof dev.groundburst.content.machine.MachineBlockEntity mb ? mb.worldBlockPos().immutable() : be.getBlockPos().immutable();
+        return ((Object) be) instanceof dev.groundburst.content.machine.MachineBlockEntity mb ? mb.worldBlockPos().immutable() : be.getBlockPos().immutable();
     }
 
     /**
@@ -460,7 +460,7 @@ public final class LaunchNetwork extends SavedData {
         if (old == null || networkOf(to) != null) {
             return;                                        // not a member, or something already holds the new place
         }
-        if (level.isLoaded(from) && level.getBlockEntity(from) instanceof BlockEntity there
+        if (level.isLoaded(from) && ((Object) level.getBlockEntity(from)) instanceof BlockEntity there
                 && (old.role == Role.LAUNCHER ? there instanceof LaunchSite : there instanceof RadarArrayBlockEntity)) {
             return;                                        // still standing there: this is a copy, not the member
         }
@@ -477,7 +477,7 @@ public final class LaunchNetwork extends SavedData {
         BlockEntity be = level.getBlockEntity(to);
         if (be != null) {
             m.at = worldPos(be);
-            if (be instanceof MultiblockController c) {
+            if (((Object) be) instanceof MultiblockController c) {
                 box(m, c);
             }
         }
@@ -552,7 +552,7 @@ public final class LaunchNetwork extends SavedData {
     /** A launcher's tick (from {@link Launches#track(ServerLevel, LaunchSite)}): it takes its orders and reports. */
     void tickSite(ServerLevel level, LaunchSite site) {
         Member m = memberAt(site.getBlockPos());
-        if (m == null || !(site instanceof BlockEntity be)) {
+        if (m == null || !(((Object) site) instanceof BlockEntity be)) {
             return;
         }
         if (m.orders.any()) {
@@ -572,11 +572,11 @@ public final class LaunchNetwork extends SavedData {
 
     private void report(ServerLevel level, Member m, BlockEntity be) {
         Report r;
-        if (be instanceof LaunchSite s) {
+        if (((Object) be) instanceof LaunchSite s) {
             BlockPos t = s.target();
             r = new Report(s.readiness().ordinal(), s.countdown(), s.armed(), Optional.ofNullable(t == null ? null : t.immutable()), s.range(),
                     s.strike(level), s.shownStack(), s.timing(), level.getGameTime(), true);
-        } else if (be instanceof RadarArrayBlockEntity radar) {
+        } else if (((Object) be) instanceof RadarArrayBlockEntity radar) {
             r = new Report(radar.isFormed() ? LaunchSiloBlockEntity.Readiness.READY.ordinal() : LaunchSiloBlockEntity.Readiness.NOT_FORMED.ordinal(),
                     -1, false, Optional.empty(), RadarArrayBlockEntity.RANGE, LaunchSite.Strike.NONE, ItemStack.EMPTY,
                     Report.NONE.timing(), level.getGameTime(), radar.working());
@@ -595,7 +595,7 @@ public final class LaunchNetwork extends SavedData {
 
     private static boolean sameState(Report a, Report b) {
         return a.readiness == b.readiness && a.countdown == b.countdown && a.armed == b.armed && a.target.equals(b.target) && a.range == b.range
-                && a.working == b.working && ItemStack.isSameItemSameComponents(a.shown, b.shown) && a.shown.getCount() == b.shown.getCount();
+                && a.working == b.working && ItemStack.isSameItemSameTags(a.shown, b.shown) && a.shown.getCount() == b.shown.getCount();
     }
 
     /** A member's missile left (from the launchers, as each one lights): the station follows it to the ground. */
@@ -827,7 +827,7 @@ public final class LaunchNetwork extends SavedData {
                 }
             }
         }
-        return choice.getFirst();
+        return dev.groundburst.legacy.J21.first(choice);
     }
 
     /** The launcher {@code step} on from a designator's (round the choice). */
@@ -904,7 +904,7 @@ public final class LaunchNetwork extends SavedData {
 
     /** Whether a member's launcher is there and ticking (its chunk loaded and running). */
     private static @Nullable BlockEntity present(ServerLevel level, Member m) {
-        if (dev.groundburst.content.machine.Carried.at(level, m.pos) instanceof BlockEntity carried) {
+        if (((Object) dev.groundburst.content.machine.Carried.at(level, m.pos)) instanceof BlockEntity carried) {
             return carried;                                // carried by a contraption (DESIGN.md §17.16)
         }
         if (!level.isLoaded(m.pos) || !level.shouldTickBlocksAt(ChunkPos.asLong(m.pos.getX() >> 4, m.pos.getZ() >> 4))) {
@@ -915,7 +915,7 @@ public final class LaunchNetwork extends SavedData {
 
     /** An order to a member: done at once if it is there, otherwise it waits (a launch wakes it). */
     private void orderNow(ServerLevel level, Member m) {
-        if (present(level, m) instanceof LaunchSite site) {
+        if (((Object) present(level, m)) instanceof LaunchSite site) {
             apply(level, m, site);
         } else {
             wakeIfDue(level, m);
@@ -954,7 +954,7 @@ public final class LaunchNetwork extends SavedData {
             m.keepUntil = level.getGameTime() + GRACE;
         }
         m.orders = new Orders(aim, arm, launchAt, launchAt >= 0 ? o.by : Optional.empty());
-        if (site instanceof BlockEntity be) {
+        if (((Object) site) instanceof BlockEntity be) {
             report(level, m, be);
         }
         setDirty();
@@ -1005,7 +1005,7 @@ public final class LaunchNetwork extends SavedData {
             for (Member m : List.copyOf(n.members.values())) {
                 BlockEntity be = present(level, m);
                 if (m.orders.any()) {
-                    if (be instanceof LaunchSite site) {
+                    if (((Object) be) instanceof LaunchSite site) {
                         apply(level, m, site);
                     } else if (m.awake && be == null && now - m.wokeAt > NO_ANSWER && m.orders.launchAt >= 0 && now > m.orders.launchAt) {
                         // Woken and never there: it does not answer (its orders fail, it is let go).
@@ -1076,14 +1076,14 @@ public final class LaunchNetwork extends SavedData {
         }
         n.log.addLast(new Event(level.getGameTime(), kind, member.immutable(), memberKind, x, z, detail));
         while (n.log.size() > LOG) {
-            n.log.removeFirst();
+            dev.groundburst.legacy.J21.removeFirst(n.log);
         }
         heard(level, n, kind);
         setDirty();
     }
 
     /** The world is loading: chunk tickets from before are dropped (orders still waiting wake their members again). */
-    static void dropTickets(net.neoforged.neoforge.common.world.chunk.TicketHelper tickets) {
+    static void dropTickets(net.minecraftforge.common.world.ForgeChunkManager.TicketHelper tickets) {
         for (BlockPos owner : List.copyOf(tickets.getBlockTickets().keySet())) {
             tickets.removeAllTickets(owner);
         }
@@ -1095,7 +1095,7 @@ public final class LaunchNetwork extends SavedData {
                 || kind == EventKind.FAILED) {
             for (long s : n.stations) {
                 BlockPos p = BlockPos.of(s);
-                if (level.isLoaded(p) && level.getBlockEntity(p) instanceof LaunchStationBlockEntity station) {
+                if (level.isLoaded(p) && ((Object) level.getBlockEntity(p)) instanceof LaunchStationBlockEntity station) {
                     station.heard(level, kind);
                 }
             }
@@ -1103,7 +1103,7 @@ public final class LaunchNetwork extends SavedData {
     }
 
     @Override
-    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access();
         return TYPE.save(this, tag_, registries_);
     }
 }

@@ -16,9 +16,9 @@ import dev.groundburst.content.power.CombustionGeneratorBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import dev.groundburst.port.transfer.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import dev.groundburst.legacy.RegisterCapabilitiesEvent;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredRegister;
 
 /** Block entity types, plus the capabilities they expose. */
 public final class GBBlockEntities {
@@ -186,11 +186,11 @@ public final class GBBlockEntities {
      */
     private static void tallMachine(RegisterCapabilitiesEvent event, dev.groundburst.content.machine.MachineBlock block) {
         event.registerBlock(Capabilities.Energy.BLOCK, (level, pos, state, be, side) ->
-                level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m.energyFor(side, sideHalf(state)) : null, block);
+                ((Object) level.getBlockEntity(TallMachineBlock.base(pos, state))) instanceof MachineBlockEntity m ? m.energyFor(side, sideHalf(state)) : null, block);
         event.registerBlock(Capabilities.Item.BLOCK, (level, pos, state, be, side) ->
-                level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m.itemsFor(side, sideHalf(state)) : null, block);
+                ((Object) level.getBlockEntity(TallMachineBlock.base(pos, state))) instanceof MachineBlockEntity m ? m.itemsFor(side, sideHalf(state)) : null, block);
         event.registerBlock(Capabilities.Fluid.BLOCK, (level, pos, state, be, side) ->
-                level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m.fluidsFor(side, sideHalf(state)) : null, block);
+                ((Object) level.getBlockEntity(TallMachineBlock.base(pos, state))) instanceof MachineBlockEntity m ? m.fluidsFor(side, sideHalf(state)) : null, block);
     }
 
     /** Whether this is a two-block machine's second half (a wide one's side half, a tall one's upper half). */

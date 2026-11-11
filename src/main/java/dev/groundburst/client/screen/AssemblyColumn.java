@@ -88,7 +88,7 @@ final class AssemblyColumn {
 
     /** The subject's model bounds (measured again only when the subject changes). */
     private net.minecraft.world.phys.AABB bounds(ItemStack subject) {
-        if (!ItemStack.isSameItemSameComponents(subject, this.measured)) {
+        if (!ItemStack.isSameItemSameTags(subject, this.measured)) {
             var mc = net.minecraft.client.Minecraft.getInstance();
             dev.groundburst.port.render.ItemModelResolver.INSTANCE.updateForTopItem(this.measure, subject, net.minecraft.world.item.ItemDisplayContext.NONE, mc.level, null, 0);
             this.bounds = this.measure.getModelBoundingBox();

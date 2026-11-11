@@ -25,7 +25,7 @@ abstract class FlowingFluidMixin {
     @WrapMethod(method = "spreadTo")
     private void groundburst$spreading(LevelAccessor level, BlockPos pos, BlockState state, Direction direction, FluidState target,
             Operation<Void> original) {
-        if (level instanceof ServerLevel server && dev.groundburst.heal.Scars.watching(server, pos)) {
+        if (((Object) level) instanceof ServerLevel server && dev.groundburst.heal.Scars.watching(server, pos)) {
             dev.groundburst.heal.Scars.aftermathCourse(server, pos, false, () -> original.call(level, pos, state, direction, target));
         } else {
             original.call(level, pos, state, direction, target);
@@ -35,7 +35,7 @@ abstract class FlowingFluidMixin {
     @WrapOperation(method = "spreadTo", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/level/material/FlowingFluid;beforeDestroyingBlock(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V"))
     private void groundburst$washedAway(FlowingFluid fluid, LevelAccessor level, BlockPos pos, BlockState state, Operation<Void> original) {
-        if (level instanceof ServerLevel server && dev.groundburst.heal.Scars.remembered(server, pos)
+        if (((Object) level) instanceof ServerLevel server && dev.groundburst.heal.Scars.remembered(server, pos)
                 && !dev.groundburst.heal.Scars.healingDrops(server, pos)) {
             return;                                        // it comes back when the ground heals: nothing washed out meanwhile
         }

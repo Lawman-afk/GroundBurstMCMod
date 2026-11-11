@@ -24,8 +24,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 
 /**
  * Development aid: the {@code playBench} Gradle run ({@code -Dgroundburst.playBench=true}) measures what the mod costs
@@ -64,8 +64,8 @@ public final class PlayBench {
         if (!ENABLED) {
             return;
         }
-        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre e) -> tickStart = System.nanoTime());
-        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> tick(e.getServer(), System.nanoTime() - tickStart));
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ServerTickEvent e) -> { if (e.phase != net.minecraftforge.event.TickEvent.Phase.START) return; tickStart = System.nanoTime(); });
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ServerTickEvent e) -> { if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return; tick(e.getServer(), System.nanoTime() - tickStart); });
     }
 
     public static boolean enabled() {
@@ -78,7 +78,7 @@ public final class PlayBench {
 
     private static void tick(MinecraftServer server, long nanos) {
         ServerLevel level = server.overworld();
-        ServerPlayer player = server.getPlayerList().getPlayers().isEmpty() ? null : server.getPlayerList().getPlayers().getFirst();
+        ServerPlayer player = server.getPlayerList().getPlayers().isEmpty() ? null : dev.groundburst.legacy.J21.first(server.getPlayerList().getPlayers());
         if (phase != Phase.WAITING && phase != Phase.FINISHED) {
             TICKS.computeIfAbsent(phase, k -> new LongArrayList()).add(nanos);
             int[] peaks = PEAKS.computeIfAbsent(phase, k -> new int[2]);
@@ -236,7 +236,7 @@ public final class PlayBench {
     private static void finish(ServerLevel level) {
         phase = Phase.FINISHED;
         String stamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        Path dir = level.getServer().getServerDirectory().resolve("bench");
+        Path dir = level.getServer().getServerDirectory().toPath().resolve("bench");
         Path file = dir.resolve("play_" + (HEAL ? "heal_" : "noheal_") + stamp + ".txt");
         try {
             Files.createDirectories(dir);

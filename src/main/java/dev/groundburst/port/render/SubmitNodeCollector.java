@@ -49,8 +49,8 @@ public final class SubmitNodeCollector {
             dx /= len;
             dy /= len;
             dz /= len;
-            buffer.addVertex(pose, (float) x0, (float) y0, (float) z0).setColor(color).setNormal(pose, dx, dy, dz);
-            buffer.addVertex(pose, (float) x1, (float) y1, (float) z1).setColor(color).setNormal(pose, dx, dy, dz);
+            buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), (float) x0, (float) y0, (float) z0).color(color).normal(dev.groundburst.legacy.Verts.normal(pose), dx, dy, dz).endVertex();
+            buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), (float) x1, (float) y1, (float) z1).color(color).normal(dev.groundburst.legacy.Verts.normal(pose), dx, dy, dz).endVertex();
         });
     }
 

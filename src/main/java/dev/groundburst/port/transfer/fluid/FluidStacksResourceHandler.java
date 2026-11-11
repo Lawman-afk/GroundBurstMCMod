@@ -2,19 +2,19 @@ package dev.groundburst.port.transfer.fluid;
 
 import dev.groundburst.port.transfer.StacksResourceHandler;
 import net.minecraft.core.NonNullList;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 /** Fluid stacks in tanks of one capacity each. */
 public class FluidStacksResourceHandler extends StacksResourceHandler<FluidStack, FluidResource> {
     protected int capacity;
 
     public FluidStacksResourceHandler(int size, int capacity) {
-        super(size, FluidStack.EMPTY, FluidStack.OPTIONAL_CODEC);
+        super(size, FluidStack.EMPTY, dev.groundburst.legacy.net.Codecs.OPTIONAL_FLUID_STACK_CODEC);
         this.capacity = capacity;
     }
 
     public FluidStacksResourceHandler(NonNullList<FluidStack> stacks, int capacity) {
-        super(stacks, FluidStack.EMPTY, FluidStack.OPTIONAL_CODEC);
+        super(stacks, FluidStack.EMPTY, dev.groundburst.legacy.net.Codecs.OPTIONAL_FLUID_STACK_CODEC);
         this.capacity = capacity;
     }
 

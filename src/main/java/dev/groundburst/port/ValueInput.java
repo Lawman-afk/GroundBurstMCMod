@@ -36,11 +36,11 @@ public final class ValueInput {
 
     public <T> Optional<T> read(String name, Codec<T> codec) {
         Tag t = this.tag.get(name);
-        return t == null ? Optional.empty() : codec.parse(this.registries.createSerializationContext(NbtOps.INSTANCE), t).result();
+        return t == null ? Optional.empty() : codec.parse(net.minecraft.resources.RegistryOps.create(NbtOps.INSTANCE, this.registries), t).result();
     }
 
     public <T> Optional<T> read(MapCodec<T> codec) {
-        return codec.codec().parse(this.registries.createSerializationContext(NbtOps.INSTANCE), this.tag).result();
+        return codec.codec().parse(net.minecraft.resources.RegistryOps.create(NbtOps.INSTANCE, this.registries), this.tag).result();
     }
 
     public Optional<ValueInput> child(String name) {
@@ -66,7 +66,7 @@ public final class ValueInput {
 
     public <T> TypedInputList<T> listOrEmpty(String name, Codec<T> codec) {
         Tag t = this.tag.get(name);
-        ListTag list = t instanceof ListTag l ? l : new ListTag();
+        ListTag list = ((Object) t) instanceof ListTag l ? l : new ListTag();
         return new TypedInputList<>(list, codec, this.registries);
     }
 
@@ -154,7 +154,7 @@ public final class ValueInput {
         }
 
         public Stream<T> stream() {
-            var ops = this.registries.createSerializationContext(NbtOps.INSTANCE);
+            var ops = net.minecraft.resources.RegistryOps.create(NbtOps.INSTANCE, this.registries);
             return this.list.stream().map(t -> this.codec.parse(ops, t).result()).flatMap(Optional::stream);
         }
 

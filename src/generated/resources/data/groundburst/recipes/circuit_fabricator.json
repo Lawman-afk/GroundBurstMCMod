@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "G": {
+      "tag": "forge:glass/colorless"
+    },
+    "H": {
+      "item": "groundburst:handmade_circuit_board"
+    },
+    "S": {
+      "item": "groundburst:servo"
+    }
+  },
+  "pattern": [
+    " G ",
+    "SFS",
+    " H "
+  ],
+  "result": {
+    "item": "groundburst:circuit_fabricator"
+  }
+}

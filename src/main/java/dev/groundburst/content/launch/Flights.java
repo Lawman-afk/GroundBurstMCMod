@@ -55,7 +55,7 @@ public final class Flights extends SavedData {
             Codec.INT.fieldOf("flight").forGetter(f -> f.flightTicks),
             Codec.INT.fieldOf("age").forGetter(f -> f.age),
             Codec.BOOL.optionalFieldOf("dud", false).forGetter(f -> f.dud),
-            ItemStack.OPTIONAL_CODEC.fieldOf("warhead").forGetter(f -> f.warhead),
+            dev.groundburst.legacy.net.Codecs.OPTIONAL_ITEM_STACK_CODEC.fieldOf("warhead").forGetter(f -> f.warhead),
             UUIDUtil.CODEC.optionalFieldOf("owner").forGetter(f -> Optional.ofNullable(f.owner)),
             Codec.BOOL.optionalFieldOf("hardened", false).forGetter(f -> f.hardened),
             Codec.STRING.optionalFieldOf("body", "M").forGetter(f -> f.body.name()),
@@ -357,7 +357,7 @@ public final class Flights extends SavedData {
             if (this.alt == null || this.alt.length == 0) {
                 return this.start.y + BOOST;
             }
-            double i = Math.clamp(d / STEP, 0, this.alt.length - 1);
+            double i = dev.groundburst.legacy.J21.clamp(d / STEP, 0, this.alt.length - 1);
             int a = (int) Math.floor(i), b = Math.min(this.alt.length - 1, a + 1);
             return Mth.lerp(i - a, this.alt[a], this.alt[b]);
         }
@@ -557,7 +557,7 @@ public final class Flights extends SavedData {
 
         /** Its warhead's fuze (an impact fuze if it carries none). */
         FuzeSettings fuze() {
-            return this.warhead.getOrDefault(dev.groundburst.registry.GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
+            return dev.groundburst.legacy.component.Comps.getOrDefault(this.warhead, dev.groundburst.registry.GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
         }
 
         /**
@@ -565,7 +565,7 @@ public final class Flights extends SavedData {
          * burst (the flight is then over).
          */
         boolean burst(ServerLevel level, Vec3 at) {
-            if (this.dud || !(this.warhead.getItem() instanceof BlockItem b) || !(b.getBlock() instanceof BombBlock bomb)) {
+            if (this.dud || !(((Object) this.warhead.getItem()) instanceof BlockItem b) || !(((Object) b.getBlock()) instanceof BombBlock bomb)) {
                 return false;
             }
             Entity by = this.owner == null ? null : level.getEntity(this.owner);
@@ -622,7 +622,7 @@ public final class Flights extends SavedData {
             if (s < 0.55f || s >= 1) {
                 return 0;
             }
-            float height = (float) Math.clamp((this.apex - 60) / 160, 0.25, 1);
+            float height = (float) dev.groundburst.legacy.J21.clamp((this.apex - 60) / 160, 0.25, 1);
             float t = Math.min(1, (s - 0.55f) / 0.25f);
             return height * t * t * (3 - 2 * t);
         }
@@ -767,7 +767,7 @@ public final class Flights extends SavedData {
                 if (clear && !climbingOut && level.hasChunkAt(BlockPos.containing(from)) && level.hasChunkAt(BlockPos.containing(to))) {
                     Vec3 end = to.add(v.normalize().scale(0.5));
                     BlockHitResult hit = level.clip(new ClipContext(from, end, ClipContext.Block.COLLIDER,
-                            ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
+                            ClipContext.Fluid.NONE, (net.minecraft.world.entity.Entity) null));
                     // (a ship's block, where another mod lets the world's clip see it, is hit in its plot: where it is seen)
                     Vec3 struck = hit.getType() != HitResult.Type.MISS ? dev.groundburst.content.machine.Frames.toWorld(level, hit.getLocation()) : null;
                     Vec3 hull = dev.groundburst.blast.Hulls.clip(level, from, end);   // a ship or a moving contraption in its way
@@ -786,7 +786,7 @@ public final class Flights extends SavedData {
                 this.pos = to;
                 // A barometric fuze bursts the warhead at its set height over the target on the way down; a cluster-type
                 // warhead on an impact fuze still opens 30 blocks over its target. Otherwise it goes off where it hits.
-                if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
+                if (((Object) this.warhead.getItem()) instanceof BlockItem b && ((Object) b.getBlock()) instanceof BombBlock bomb) {
                     FuzeSettings fuze = fuze();
                     // (a cruise missile sinks over falling ground too: only its dive counts)
                     boolean falling = this.plan != null ? this.plan.diving(this.plan.along(this.age - ignition())) : s > 0.5 && v.y < 0;
@@ -825,7 +825,7 @@ public final class Flights extends SavedData {
             }
             BlockPos at = BlockPos.containing(this.pos);
             boolean loaded = level.hasChunkAt(at);
-            if (e instanceof MissileEntity m && !m.isRemoved()) {
+            if (((Object) e) instanceof MissileEntity m && !m.isRemoved()) {
                 if (!loaded) {
                     m.discard();                               // on into unloaded ground: put back when it is loaded
                     this.shown = null;
@@ -883,7 +883,7 @@ public final class Flights extends SavedData {
                 // A dead fuze: it just slams into the ground.
                 level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, at.x, at.y + 0.5, at.z, 20, 0.6, 0.4, 0.6, 0.05);
                 level.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 2f, 0.5f);
-            } else if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
+            } else if (((Object) this.warhead.getItem()) instanceof BlockItem b && ((Object) b.getBlock()) instanceof BombBlock bomb) {
                 Charges.scaled(this.scale, () -> Charges.impact(level, bomb.kind, BlockPos.containing(at.add(0, 0.5, 0)), by));
             }
             finish(level);
@@ -891,7 +891,7 @@ public final class Flights extends SavedData {
 
         /** Done: the missile players see goes, and so do its chunk tickets. */
         private void finish(ServerLevel level) {
-            if (level.getEntity(this.id) instanceof MissileEntity m) {
+            if (((Object) level.getEntity(this.id)) instanceof MissileEntity m) {
                 m.discard();
             }
             if (this.shown != null) {
@@ -907,7 +907,7 @@ public final class Flights extends SavedData {
 
 
     @Override
-    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access();
         return TYPE.save(this, tag_, registries_);
     }
 }

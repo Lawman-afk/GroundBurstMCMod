@@ -7,11 +7,11 @@ import net.minecraft.world.item.ItemStack;
 /** Item stacks in slots, as an inventory holds them. */
 public class ItemStacksResourceHandler extends StacksResourceHandler<ItemStack, ItemResource> {
     public ItemStacksResourceHandler(int size) {
-        super(size, ItemStack.EMPTY, ItemStack.OPTIONAL_CODEC);
+        super(size, ItemStack.EMPTY, dev.groundburst.legacy.net.Codecs.OPTIONAL_ITEM_STACK_CODEC);
     }
 
     public ItemStacksResourceHandler(NonNullList<ItemStack> stacks) {
-        super(stacks, ItemStack.EMPTY, ItemStack.OPTIONAL_CODEC);
+        super(stacks, ItemStack.EMPTY, dev.groundburst.legacy.net.Codecs.OPTIONAL_ITEM_STACK_CODEC);
     }
 
     @Override

@@ -2,7 +2,7 @@ package dev.groundburst.content.machine;
 
 import java.util.List;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.recipe.ProcessingKind;
@@ -66,7 +66,7 @@ public class GasCentrifugeBlockEntity extends ProcessingBlockEntity implements A
             Direction d = Direction.fromAxisAndDirection(flanges, sign);
             BlockPos p = this.worldPosition.relative(d);
             // Lower halves only (the upper half has no block entity), and only with flanges on the same axis.
-            while (n < MAX_CASCADE * 2 && Carried.blockEntity(level, p, GasCentrifugeBlockEntity.class) instanceof GasCentrifugeBlockEntity other
+            while (n < MAX_CASCADE * 2 && ((Object) Carried.blockEntity(level, p, GasCentrifugeBlockEntity.class)) instanceof GasCentrifugeBlockEntity other
                     && facing(other.getBlockState()) == facing) {
                 n++;
                 p = p.relative(d);

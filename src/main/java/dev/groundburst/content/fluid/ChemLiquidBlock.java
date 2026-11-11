@@ -36,9 +36,9 @@ public class ChemLiquidBlock extends LiquidBlock {
     }
 
     @Override
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         super.entityInside(state, level, pos, entity);
-        if (!(level instanceof ServerLevel server) || !(entity instanceof LivingEntity living)) {
+        if (!(((Object) level) instanceof ServerLevel server) || !(((Object) entity) instanceof LivingEntity living)) {
             return;
         }
         switch (this.hazard) {
@@ -47,7 +47,7 @@ public class ChemLiquidBlock extends LiquidBlock {
                     living.hurt(new DamageSource(server.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(ACID)), 2f);
                 }
             }
-            case FIRE -> living.igniteForSeconds(8f);
+            case FIRE -> living.setSecondsOnFire((int) (8f));
             case CRYO -> {
                 living.setTicksFrozen(Math.min(living.getTicksRequiredToFreeze() + 40, living.getTicksFrozen() + 4));
                 if (living.tickCount % 20 == 0) {

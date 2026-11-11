@@ -15,8 +15,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 
 /**
  * What a reactor meltdown leaves behind (DESIGN.md §7.1): a pool of molten Corium on the crater floor under the core,
@@ -37,8 +37,8 @@ public final class Meltdown {
     private Meltdown() {}
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
-            if (event.getLevel() instanceof ServerLevel level && level.getGameTime() % 5 == 0) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent event) -> {if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) event.level) instanceof ServerLevel level && level.getGameTime() % 5 == 0) {
                 List<Pending> due = PENDING.get(level);
                 if (due != null) {
                     due.removeIf(p -> {

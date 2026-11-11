@@ -32,7 +32,7 @@ public final class PowerUtil {
             if (!allowed.test(side)) {
                 continue;
             }
-            EnergyHandler target = level.getCapability(Capabilities.Energy.BLOCK, pos.relative(side), side.getOpposite());
+            EnergyHandler target = dev.groundburst.legacy.Caps.get(level, Capabilities.Energy.BLOCK, pos.relative(side), side.getOpposite());
             if (target == null) {
                 continue;
             }

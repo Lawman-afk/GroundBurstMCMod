@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": {
+      "item": "groundburst:steel_grating"
+    }
+  },
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "item": "groundburst:steel_grating_slab",
+    "count": 6
+  }
+}

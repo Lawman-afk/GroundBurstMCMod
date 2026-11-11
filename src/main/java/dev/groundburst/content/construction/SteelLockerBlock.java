@@ -44,10 +44,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * it holds).
  */
 public class SteelLockerBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends SteelLockerBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
@@ -85,7 +82,7 @@ public class SteelLockerBlock extends HorizontalDirectionalBlock implements Enti
 
     /** A half whose other half is gone goes too; the upper's door stands as the lower's does. */
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         DoubleBlockHalf half = state.getValue(HALF);
         if (direction.getAxis() == Direction.Axis.Y && (half == DoubleBlockHalf.LOWER) == (direction == Direction.UP)) {
             if (!neighbor.is(this) || neighbor.getValue(HALF) == half) {
@@ -98,54 +95,53 @@ public class SteelLockerBlock extends HorizontalDirectionalBlock implements Enti
 
     /** A player breaking the upper half breaks the lower, which drops the item and what it holds (none in creative). */
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && state.getValue(HALF) == DoubleBlockHalf.UPPER) {
             BlockPos below = pos.below();
             if (level.getBlockState(below).is(this)) {
                 level.destroyBlock(below, !player.getAbilities().instabuild, player);
             }
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player); return;
     }
 
     private static BlockPos lower(BlockState state, BlockPos pos) {
         return state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
     }
 
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level instanceof ServerLevel && level.getBlockEntity(lower(state, pos)) instanceof SteelLockerBlockEntity locker) {
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (level instanceof ServerLevel && ((Object) level.getBlockEntity(lower(state, pos))) instanceof SteelLockerBlockEntity locker) {
             player.openMenu(locker);
         }
         return InteractionResult.SUCCESS;
     }
 
     @Override
-    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { if (!state.is(newState_.getBlock())) { Containers.dropContentsOnDestroy(state, newState_, level_l, pos); } super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+    public void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { if (!state.is(newState_.getBlock())) { dev.groundburst.legacy.Game.dropContentsOnDestroy(state, newState_, level_l, pos); } super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(((Object) level_l) instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
     }
 
     /** A redstone signal reaching it holds it open (its block entity looks again). */
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
-        if (level instanceof ServerLevel && level.getBlockEntity(lower(state, pos)) instanceof FilingCabinetBlockEntity cabinet) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
+        if (level instanceof ServerLevel && ((Object) level.getBlockEntity(lower(state, pos))) instanceof FilingCabinetBlockEntity cabinet) {
             cabinet.lookAtPower();
         }
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (level.getBlockEntity(pos) instanceof SteelLockerBlockEntity locker) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (((Object) level.getBlockEntity(pos)) instanceof SteelLockerBlockEntity locker) {
             locker.recheckOpen();
         }
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return (state.getValue(HALF) == DoubleBlockHalf.LOWER ? LOWER : UPPER)[state.getValue(FACING).get2DDataValue()];
     }
 
     @Override
-    protected boolean isPathfindable(BlockState state, PathComputationType type) {
+    public boolean isPathfindable(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_, net.minecraft.world.level.pathfinder.PathComputationType type) {
         return false;
     }
 
@@ -155,12 +151,18 @@ public class SteelLockerBlock extends HorizontalDirectionalBlock implements Enti
     }
 
     @Override
-    protected boolean hasAnalogOutputSignal(BlockState state) {
+    public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
-    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) { Direction direction = Direction.NORTH;
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) { Direction direction = Direction.NORTH;
         return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(level.getBlockEntity(lower(state, pos)));
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

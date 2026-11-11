@@ -20,7 +20,7 @@ public class CryoSnowBlock extends SnowLayerBlock {
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         super.randomTick(state, level, pos, random);              // a lamp melts it as it does vanilla's
         if (!level.getBlockState(pos).is(this) || random.nextFloat() >= THAW_CHANCE || FrostedBlock.cold(level, pos)) {
             return;

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": {
+      "item": "minecraft:iron_bars"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    }
+  },
+  "pattern": [
+    "PBP",
+    "B B",
+    "PBP"
+  ],
+  "result": {
+    "item": "groundburst:missile_canister",
+    "count": 4
+  }
+}

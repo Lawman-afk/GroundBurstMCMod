@@ -1,0 +1,40 @@
+{
+  "values": [
+    {
+      "id": "minecraft:obsidian",
+      "required": false
+    },
+    {
+      "id": "minecraft:crying_obsidian",
+      "required": false
+    },
+    {
+      "id": "minecraft:reinforced_deepslate",
+      "required": false
+    },
+    {
+      "id": "minecraft:iron_block",
+      "required": false
+    },
+    {
+      "id": "minecraft:gold_block",
+      "required": false
+    },
+    {
+      "id": "minecraft:netherite_block",
+      "required": false
+    },
+    {
+      "id": "minecraft:ancient_debris",
+      "required": false
+    },
+    "groundburst:tungsten_block",
+    "groundburst:uranium_block",
+    "groundburst:reinforced_concrete",
+    "groundburst:hazard_concrete",
+    {
+      "id": "#groundburst:concretes",
+      "required": false
+    }
+  ]
+}

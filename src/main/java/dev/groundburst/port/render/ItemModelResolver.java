@@ -24,6 +24,6 @@ public final class ItemModelResolver {
 
     public void updateForTopItem(ItemStackRenderState state, ItemStack stack, ItemDisplayContext context, @Nullable Level level,
             @Nullable Object owner, int seed) {
-        state.set(stack, context, level, owner instanceof LivingEntity l ? l : null, seed);
+        state.set(stack, context, level, ((Object) owner) instanceof LivingEntity l ? l : null, seed);
     }
 }

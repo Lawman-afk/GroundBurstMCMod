@@ -92,7 +92,7 @@ public class WideMachineBlock extends MachineBlock {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         Part part = state.getValue(PART);
         Direction toPartner = part == Part.MAIN ? sideward(state.getValue(FACING)) : sideward(state.getValue(FACING)).getOpposite();
         if (direction == toPartner) {
@@ -109,7 +109,7 @@ public class WideMachineBlock extends MachineBlock {
     }
 
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         // Breaking the side half in creative or with the wrong tool: remove the main half (which holds the loot table)
         // without drops. Otherwise the main half breaks through updateShape and drops normally.
         if (!level.isClientSide() && (player.getAbilities().instabuild || !player.hasCorrectToolForDrops(state)) && state.getValue(PART) == Part.SIDE) {
@@ -120,7 +120,7 @@ public class WideMachineBlock extends MachineBlock {
                 level.levelEvent(player, 2001, main, Block.getId(mainState));
             }
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player); return;
     }
 
     @Override
@@ -128,14 +128,23 @@ public class WideMachineBlock extends MachineBlock {
         return state.getValue(PART) == Part.MAIN ? super.newBlockEntity(pos, state) : null;
     }
 
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         BlockPos base = base(pos, state);
         return super.useWithoutItem(level.getBlockState(base), level, base, player, hit);
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return state.getValue(PART) == Part.SIDE ? this.sideShapes.get(state.getValue(FACING)) : super.getShape(state, level, pos, context);
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        dev.groundburst.legacy.ItemInteractionResult item_ = this.useItemOn(player_.getItemInHand(hand_), state_, level_, pos_, player_, hand_, hit_);
+        if (item_ != dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+            return item_.result();
+        }
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

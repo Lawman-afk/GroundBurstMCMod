@@ -24,10 +24,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * on the bearing, the reflector torn off and fallen back behind it. It never turns.
  */
 public class SearchRadarWreckBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends SearchRadarWreckBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     private final Supplier<? extends BlockEntityType<?>> type;
 
@@ -48,12 +45,12 @@ public class SearchRadarWreckBlock extends HorizontalDirectionalBlock implements
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SearchRadarBlock.SHAPE;
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
     }
 

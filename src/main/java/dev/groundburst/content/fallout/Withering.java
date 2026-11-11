@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 
 /**
  * Plants dying in strong radiation (DESIGN.md §21.2, §21.8 slice 12b). Once a second, columns at random where a source
@@ -32,8 +32,8 @@ public final class Withering {
     private Withering() {}
 
     static void register() {
-        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
-            if (event.getLevel() instanceof ServerLevel level && level.getGameTime() % 20 == 5) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent event) -> {if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) event.level) instanceof ServerLevel level && level.getGameTime() % 20 == 5) {
                 tick(level);
             }
         });
@@ -99,7 +99,7 @@ public final class Withering {
                 scars.set(at, GBFallout.WITHERED_CROPS.block().get().defaultBlockState(), flags);
                 continue;
             }
-            if (s.is(Blocks.VINE) || s.is(Blocks.SHORT_GRASS) || s.is(Blocks.TALL_GRASS) || s.is(Blocks.FERN) || s.is(Blocks.LARGE_FERN)
+            if (s.is(Blocks.VINE) || s.is(Blocks.GRASS) || s.is(Blocks.TALL_GRASS) || s.is(Blocks.FERN) || s.is(Blocks.LARGE_FERN)
                     || s.is(Blocks.SWEET_BERRY_BUSH) || s.is(BlockTags.SMALL_FLOWERS) || s.is(BlockTags.FLOWERS) || s.is(Blocks.MOSS_CARPET)) {
                 scars.set(at, Blocks.AIR.defaultBlockState(), flags);
                 continue;

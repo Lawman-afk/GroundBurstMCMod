@@ -74,18 +74,18 @@ public class GasCloudBlock extends Block implements BucketPickup {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES[state.getValue(VOLUME)];
     }
 
     @Override
-    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return Shapes.empty();
     }
 
     /** Faces between touching clouds of the same gas are hidden, so a pooled cloud reads as one volume. */
     @Override
-    protected boolean skipRendering(BlockState state, BlockState neighbour, Direction direction) {
+    public boolean skipRendering(BlockState state, BlockState neighbour, Direction direction) {
         if (!neighbour.is(this)) {
             return false;
         }
@@ -98,17 +98,17 @@ public class GasCloudBlock extends Block implements BucketPickup {
     }
 
     @Override
-    protected boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
+    public boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return true;
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         level.scheduleTick(pos, this, TICK_DELAY);
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         ticks.scheduleTick(pos, this, TICK_DELAY);
         return state;
     }
@@ -118,7 +118,7 @@ public class GasCloudBlock extends Block implements BucketPickup {
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         int volume = state.getValue(VOLUME);
         BlockPos up = pos.above();
         BlockState above = level.getBlockState(up);
@@ -180,8 +180,8 @@ public class GasCloudBlock extends Block implements BucketPickup {
     }
 
     @Override
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (this.hazard == ChemFluid.Hazard.TOXIC && level instanceof ServerLevel server && entity instanceof LivingEntity living
+    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+        if (this.hazard == ChemFluid.Hazard.TOXIC && ((Object) level) instanceof ServerLevel server && ((Object) entity) instanceof LivingEntity living
                 && living.tickCount % 10 == 0) {
             dev.groundburst.content.ordnance.Toxins.expose(server, living, 0, 60, dev.groundburst.content.ordnance.Toxins.GAS);
         }
@@ -189,7 +189,7 @@ public class GasCloudBlock extends Block implements BucketPickup {
 
     // --- buckets ----------------------------------------------------------------------------------------------------------
     @Override
-    public ItemStack pickupBlock(net.minecraft.world.entity.player.Player user, LevelAccessor level, BlockPos pos, BlockState state) {
+    public ItemStack pickupBlock(LevelAccessor level, BlockPos pos, BlockState state) { net.minecraft.world.entity.player.Player user = null;
         ChemFluid gas = fluid();
         if (state.getValue(VOLUME) < MAX || gas == null) {
             return ItemStack.EMPTY;

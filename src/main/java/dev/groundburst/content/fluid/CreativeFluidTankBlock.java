@@ -45,39 +45,38 @@ public class CreativeFluidTankBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected boolean skipRendering(BlockState state, BlockState neighbour, Direction direction) {
+    public boolean skipRendering(BlockState state, BlockState neighbour, Direction direction) {
         return false;
     }
 
     @Override
-    protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+    public float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
         return 1.0f;
     }
 
     @Override
-    protected boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
+    public boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return true;
     }
 
-    @Override
-    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (ItemAccess.forPlayerInteraction(player, hand).getCapability(Capabilities.Fluid.ITEM) == null) {
-            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    protected dev.groundburst.legacy.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (dev.groundburst.legacy.Caps.get(ItemAccess.forPlayerInteraction(player, hand), Capabilities.Fluid.ITEM) == null) {
+            return dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         if (level.isClientSide()) {
-            return net.minecraft.world.ItemInteractionResult.SUCCESS;
+            return dev.groundburst.legacy.ItemInteractionResult.SUCCESS;
         }
-        if (!(level.getBlockEntity(pos) instanceof CreativeFluidTankBlockEntity be)) {
-            return net.minecraft.world.ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+        if (!(((Object) level.getBlockEntity(pos)) instanceof CreativeFluidTankBlockEntity be)) {
+            return dev.groundburst.legacy.ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         }
-        ResourceHandler<FluidResource> item = ItemAccess.forPlayerInteraction(player, hand).oneByOne().getCapability(Capabilities.Fluid.ITEM);
+        ResourceHandler<FluidResource> item = dev.groundburst.legacy.Caps.get(ItemAccess.forPlayerInteraction(player, hand).oneByOne(), Capabilities.Fluid.ITEM);
         CreativeFluidTankBlockEntity.Tank tank = be.tank();
         boolean drawOut = player.isSecondaryUseActive();
         if (!drawOut) {
             // Pouring in a different fluid swaps the tank over to it; the same fluid has nowhere to go (it is full).
             FluidResource held = item.size() > 0 ? item.getResource(0) : FluidResource.EMPTY;
             if (held.isEmpty() || held.equals(tank.getResource(0))) {
-                return net.minecraft.world.ItemInteractionResult.CONSUME;
+                return dev.groundburst.legacy.ItemInteractionResult.CONSUME;
             }
             tank.clear();
         }
@@ -85,25 +84,34 @@ public class CreativeFluidTankBlock extends Block implements EntityBlock {
             int moved = drawOut ? ResourceHandlerUtil.move(tank, item, r -> true, Integer.MAX_VALUE, tx)
                     : ResourceHandlerUtil.move(item, tank, r -> true, Integer.MAX_VALUE, tx);
             if (moved <= 0) {
-                return net.minecraft.world.ItemInteractionResult.CONSUME;
+                return dev.groundburst.legacy.ItemInteractionResult.CONSUME;
             }
             tx.commit();
         }
         level.playSound(null, pos, drawOut ? SoundEvents.BUCKET_FILL : SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1f, 1f);
-        return net.minecraft.world.ItemInteractionResult.SUCCESS;
+        return dev.groundburst.legacy.ItemInteractionResult.SUCCESS;
     }
 
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof CreativeFluidTankBlockEntity be) {
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!level.isClientSide() && ((Object) level.getBlockEntity(pos)) instanceof CreativeFluidTankBlockEntity be) {
             if (player.isSecondaryUseActive()) {
                 be.tank().clear();
                 player.displayClientMessage(Component.translatable(CLEARED), true);
             } else {
                 var f = be.tank().fluid();
-                player.displayClientMessage(Component.translatable(STATUS, f.isEmpty() ? Component.translatable(FluidTankBlock.EMPTY) : f.getHoverName()), true);
+                player.displayClientMessage(Component.translatable(STATUS, f.isEmpty() ? Component.translatable(FluidTankBlock.EMPTY) : f.getDisplayName()), true);
             }
         }
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        dev.groundburst.legacy.ItemInteractionResult item_ = this.useItemOn(player_.getItemInHand(hand_), state_, level_, pos_, player_, hand_, hit_);
+        if (item_ != dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+            return item_.result();
+        }
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

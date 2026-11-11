@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import dev.groundburst.port.render.SubmitCustomGeometryEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * The far ground's map (DESIGN.md §20.1): where a gun reaches further than its crewman's game draws, its strategic view
@@ -165,7 +165,7 @@ final class ArtilleryTerrain {
             return false;
         }
         int y = surfaceY == Integer.MIN_VALUE ? level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z) : surfaceY;
-        return mc.levelRenderer.isSectionCompiled(new BlockPos(x, Math.max(level.getMinBuildHeight(), y - 1), z));
+        return mc.levelRenderer.isChunkCompiled(new BlockPos(x, Math.max(level.getMinBuildHeight(), y - 1), z));
     }
 
     /** Whether the game draws all of a tile's ground (each chunk's middle), so it needs no map. */
@@ -290,7 +290,7 @@ final class ArtilleryTerrain {
     }
 
     private static void v(VertexConsumer b, PoseStack.Pose pose, double x, double y, double z, Vec3 camera, int col, float nx, float ny, float nz) {
-        b.addVertex(pose, (float) (x - camera.x), (float) (y - camera.y), (float) (z - camera.z)).setColor(col).setUv(0.5f, 0.5f)
-                .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, nx, ny, nz);
+        b.vertex(dev.groundburst.legacy.Verts.matrix(pose), (float) (x - camera.x), (float) (y - camera.y), (float) (z - camera.z)).color(col).uv(0.5f, 0.5f)
+                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
     }
 }

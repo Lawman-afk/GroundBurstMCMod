@@ -12,13 +12,13 @@ import dev.groundburst.port.transfer.item.ItemResource;
 import dev.groundburst.port.transfer.transaction.SnapshotJournal;
 import dev.groundburst.port.transfer.transaction.Transaction;
 import dev.groundburst.port.transfer.transaction.TransactionContext;
-import net.minecraft.core.component.DataComponentPatch;
+import dev.groundburst.legacy.component.DataComponentPatch;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandlerItem;
+import net.minecraftforge.items.IItemHandler;
 
 /**
  * The two ways between the mod's handlers (transactions) and 1.21.1's (a simulate flag). One way, each call is a
@@ -209,7 +209,7 @@ public final class Adapters {
     /** One of the mod's items holding fluid (a canister), as 1.21.1's fluid item handler: changed on a copy, read back with getContainer. */
     static @Nullable IFluidHandlerItem fluidItem(ItemStack stack) {
         ItemAccess.StackAccess access = (ItemAccess.StackAccess) ItemAccess.forStack(stack);
-        ResourceHandler<FluidResource> h = access.getCapability(Capabilities.Fluid.ITEM);
+        ResourceHandler<FluidResource> h = dev.groundburst.legacy.Caps.get(access, Capabilities.Fluid.ITEM);
         if (h == null) {
             return null;
         }
@@ -233,14 +233,12 @@ public final class Adapters {
     /** One of the mod's items holding energy, as 1.21.1's energy handler: changed in place, as 1.21.1 expects. */
     static @Nullable IEnergyStorage energyItem(ItemStack stack) {
         ItemAccess here = new InPlaceAccess(stack);
-        return energyStorage(here.getCapability(Capabilities.Energy.ITEM));
+        return energyStorage(dev.groundburst.legacy.Caps.get(here, Capabilities.Energy.ITEM));
     }
 
     /** Sets a stack's components to exactly {@code patch} over its item's own (1.21.1 keeps the map's restore inside). */
     private static void restore(ItemStack stack, DataComponentPatch patch) {
-        if (stack.getComponents() instanceof net.minecraft.core.component.PatchedDataComponentMap map) {
-            map.restorePatch(patch);
-        }
+        stack.setTag(patch.tag());
     }
 
     /** A stack whose item stays the same, changed in place: its components swapped, its count kept. */
@@ -249,7 +247,7 @@ public final class Adapters {
         private final SnapshotJournal<DataComponentPatch> journal = new SnapshotJournal<>() {
             @Override
             protected DataComponentPatch createSnapshot() {
-                return InPlaceAccess.this.stack.getComponentsPatch();
+                return dev.groundburst.legacy.component.DataComponentPatch.of(InPlaceAccess.this.stack);
             }
 
             @Override
@@ -289,7 +287,7 @@ public final class Adapters {
             }
             try (Transaction t = Transaction.open(transaction)) {
                 this.journal.updateSnapshots(t);
-                restore(this.stack, newResource.getComponentsPatch());
+                restore(this.stack, dev.groundburst.legacy.component.DataComponentPatch.of(newResource));
                 t.commit();
             }
             return amount;
@@ -479,13 +477,13 @@ public final class Adapters {
 
     /** Another item holding fluid (a bucket), changed on a copy and swapped in where it is through its access. */
     static @Nullable ResourceHandler<FluidResource> foreignFluidItem(ItemStack stack, ItemAccess access) {
-        if (stack.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.ITEM) == null) {
+        if (dev.groundburst.legacy.Caps.get(stack, dev.groundburst.legacy.Capabilities.FluidHandler.ITEM) == null) {
             return null;
         }
         return new ResourceHandler<>() {
             private @Nullable IFluidHandlerItem copy() {
                 ItemResource r = access.getResource();
-                return r.isEmpty() ? null : r.toStack(1).getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.ITEM);
+                return r.isEmpty() ? null : dev.groundburst.legacy.Caps.get(r.toStack(1), dev.groundburst.legacy.Capabilities.FluidHandler.ITEM);
             }
 
             @Override
@@ -542,7 +540,7 @@ public final class Adapters {
 
     /** Another item holding energy, changed on a copy and swapped in where it is through its access. */
     static @Nullable EnergyHandler foreignEnergyItem(ItemStack stack, ItemAccess access) {
-        if (stack.getCapability(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ITEM) == null) {
+        if (dev.groundburst.legacy.Caps.get(stack, dev.groundburst.legacy.Capabilities.EnergyStorage.ITEM) == null) {
             return null;
         }
         return new EnergyHandler() {
@@ -552,7 +550,7 @@ public final class Adapters {
             }
 
             private @Nullable IEnergyStorage of(@Nullable ItemStack s) {
-                return s == null ? null : s.getCapability(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ITEM);
+                return s == null ? null : dev.groundburst.legacy.Caps.get(s, dev.groundburst.legacy.Capabilities.EnergyStorage.ITEM);
             }
 
             @Override

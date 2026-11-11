@@ -31,7 +31,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.CommonListenerCookie;
+
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
@@ -81,7 +81,7 @@ final class DesignatorTests {
         ServerPlayer p = (ServerPlayer) dev.groundburst.port.Tests.mockServerPlayer(helper, GameType.SURVIVAL);
         Connection connection = new Connection(PacketFlow.SERVERBOUND);
         new EmbeddedChannel(connection);
-        new ServerGamePacketListenerImpl(helper.getLevel().getServer(), connection, p, CommonListenerCookie.createInitial(p.getGameProfile(), false));
+        new net.minecraft.server.network.ServerGamePacketListenerImpl(helper.getLevel().getServer(), connection, p);
         stand(helper, p);
         return p;
     }
@@ -114,7 +114,7 @@ final class DesignatorTests {
         s = Designators.spotOf(level, p.getUUID());
         helper.assertTrue(s != null && s.onEntity() && s.pos().distanceTo(villager.getBoundingBox().getCenter()) < 0.01,
                 "the villager in the way takes the spot (its middle): " + (s == null ? null : helper.relativeVec(s.pos())));
-        d.set(GBDataComponents.ENERGY.get(), 0);
+        dev.groundburst.legacy.component.Comps.set(d, GBDataComponents.ENERGY.get(), 0);
         helper.assertTrue(!LaserDesignatorItem.works(d, level), "flat, it does not work");
         villager.discard();
         helper.succeed();
@@ -201,7 +201,7 @@ final class DesignatorTests {
         }
         long net = st.network(level).id;
         ItemStack d = new ItemStack(GBLaunch.LASER_DESIGNATOR.get());
-        d.set(GBDataComponents.LAUNCH_CODES.get(), LaunchCodesItem.code(card));
+        dev.groundburst.legacy.component.Comps.set(d, GBDataComponents.LAUNCH_CODES.get(), LaunchCodesItem.code(card));
         LaserDesignatorItem item = (LaserDesignatorItem) d.getItem();
         ServerPlayer[] holder = new ServerPlayer[1];
         BlockPos spot = BlockPos.containing(helper.absoluteVec(new Vec3(STAND.x, 2.62, WALL_Z)));
@@ -218,12 +218,12 @@ final class DesignatorTests {
             Vec3 clicked = helper.absoluteVec(new Vec3(STAND.x, 2.62, WALL_Z));
             helper.assertTrue(mark != null && mark.face() == Direction.NORTH && mark.at().distanceTo(clicked) < 0.05,
                     "it keeps the point clicked, on the wall's face toward the holder (its sphere goes there): " + mark);
-            LaunchNetwork.Event last = st.network(level).log().getLast();
+            LaunchNetwork.Event last = dev.groundburst.legacy.J21.last(st.network(level).log());
             helper.assertTrue(last.kind() == LaunchNetwork.EventKind.DESIGNATED && last.member().equals(a.getBlockPos()), "the log has it: " + last);
             LaserDesignatorItem.scroll(p, 1);                             // the wheel: the next one
-            helper.assertTrue(b.getBlockPos().equals(d.get(GBDataComponents.DESIGNATOR_PICK.get())), "the pick moved to b, kept on the designator");
+            helper.assertTrue(b.getBlockPos().equals(dev.groundburst.legacy.component.Comps.get(d, GBDataComponents.DESIGNATOR_PICK.get())), "the pick moved to b, kept on the designator");
             LaserDesignatorItem.scroll(p, 1);                             // round: past the GPS one, back to a
-            helper.assertTrue(a.getBlockPos().equals(d.get(GBDataComponents.DESIGNATOR_PICK.get())), "round past the GPS one to a");
+            helper.assertTrue(a.getBlockPos().equals(dev.groundburst.legacy.component.Comps.get(d, GBDataComponents.DESIGNATOR_PICK.get())), "round past the GPS one to a");
             LaserDesignatorItem.scroll(p, -1);
             holder[0] = p;
         });
@@ -241,9 +241,9 @@ final class DesignatorTests {
             helper.assertTrue(b.countdown() >= 0, "fire called: b counts down");
             helper.assertTrue(a.countdown() < 0 && a.armed(), "a does not: it stays armed");
             helper.assertTrue(gps.countdown() < 0, "nor the GPS one");
-            LaunchNetwork.Event last = st.network(level).log().getLast();
+            LaunchNetwork.Event last = dev.groundburst.legacy.J21.last(st.network(level).log());
             helper.assertTrue(last.kind() == LaunchNetwork.EventKind.FIRE_CALLED && last.member().equals(b.getBlockPos()), "the log has it: " + last);
-            LaunchNetwork.Member next = LaunchNetwork.of(level).laserSelection(net, d.get(GBDataComponents.DESIGNATOR_PICK.get()));
+            LaunchNetwork.Member next = LaunchNetwork.of(level).laserSelection(net, dev.groundburst.legacy.component.Comps.get(d, GBDataComponents.DESIGNATOR_PICK.get()));
             helper.assertTrue(next != null && next.pos.equals(a.getBlockPos()), "the pick moves on from b, firing, round to a");
         });
         helper.runAfterDelay(21, () -> {
@@ -274,7 +274,7 @@ final class DesignatorTests {
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_WARHEAD, new ItemStack(GBOrdnance.HE_WARHEAD.item().get()));
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_BODY, new ItemStack(GBAssembly.BODIES.get(size.ordinal()).get()));
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_MOTOR,
-                new ItemStack(GBAssembly.MOTORS.get(MissileAssembly.rocketsFor(size).getLast().ordinal()).get()));
+                new ItemStack(GBAssembly.MOTORS.get(dev.groundburst.legacy.J21.last(MissileAssembly.rocketsFor(size)).ordinal()).get()));
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_GUIDANCE, new ItemStack(GBAssembly.LASER_GUIDANCE.get()));
         helper.runAfterDelay(3, () -> {
             Player p = dev.groundburst.port.Tests.mockServerPlayer(helper, GameType.SURVIVAL);
@@ -284,7 +284,7 @@ final class DesignatorTests {
                     "the readout names laser guidance: " + lines);
             ItemStack missile = MissileAssembly.missile(new MissileSpec(new ItemStack(GBOrdnance.HE_WARHEAD.item().get()), size,
                     MissileParts.Motor.SRM_I, MissileParts.Guidance.LASER, false));
-            helper.assertTrue(!missile.getTooltipLines(Item.TooltipContext.of(level), null, TooltipFlag.NORMAL).isEmpty(), "its tooltip");
+            helper.assertTrue(!missile.getTooltipLines(null, TooltipFlag.NORMAL).isEmpty(), "its tooltip");
             helper.assertTrue(!AssemblyStats.missile(missile, level.registryAccess()).isEmpty(), "its stats");
             helper.assertTrue(MissileAssembly.takeApart(missile).stream().anyMatch(s -> s.is(GBAssembly.LASER_GUIDANCE.get())),
                     "taken apart, the laser unit comes back");

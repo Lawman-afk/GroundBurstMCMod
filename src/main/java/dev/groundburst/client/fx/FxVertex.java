@@ -28,7 +28,7 @@ final class FxVertex {
         this.buffer = buffer;
         this.matrix = pose.pose();
         this.identity = (this.matrix.properties() & Matrix4fc.PROPERTY_IDENTITY) != 0;
-        Vector3f n = pose.transformNormal(0, 1, 0, new Vector3f());
+        Vector3f n = dev.groundburst.legacy.Game.transformNormal(pose, 0, 1, 0, new Vector3f());
         this.nx = n.x;
         this.ny = n.y;
         this.nz = n.z;
@@ -41,12 +41,12 @@ final class FxVertex {
     static void put(VertexConsumer buffer, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
         Matrix4f m = pose.pose();
         if ((m.properties() & Matrix4fc.PROPERTY_IDENTITY) != 0) {
-            buffer.addVertex(x, y, z, color, u, v, OverlayTexture.NO_OVERLAY, LightTexture.FULL_BRIGHT, 0, 1, 0);
+            dev.groundburst.legacy.Verts.full(buffer, x, y, z, color, u, v, OverlayTexture.NO_OVERLAY, LightTexture.FULL_BRIGHT, 0, 1, 0);
             return;
         }
         Vector3f at = m.transformPosition(x, y, z, new Vector3f());
-        Vector3f n = pose.transformNormal(0, 1, 0, new Vector3f());
-        buffer.addVertex(at.x, at.y, at.z, color, u, v, OverlayTexture.NO_OVERLAY, LightTexture.FULL_BRIGHT, n.x, n.y, n.z);
+        Vector3f n = dev.groundburst.legacy.Game.transformNormal(pose, 0, 1, 0, new Vector3f());
+        dev.groundburst.legacy.Verts.full(buffer, at.x, at.y, at.z, color, u, v, OverlayTexture.NO_OVERLAY, LightTexture.FULL_BRIGHT, n.x, n.y, n.z);
     }
 
     void put(float x, float y, float z, float u, float v, int color) {
@@ -56,6 +56,6 @@ final class FxVertex {
             y = this.at.y;
             z = this.at.z;
         }
-        this.buffer.addVertex(x, y, z, color, u, v, OverlayTexture.NO_OVERLAY, LightTexture.FULL_BRIGHT, this.nx, this.ny, this.nz);
+        dev.groundburst.legacy.Verts.full(this.buffer, x, y, z, color, u, v, OverlayTexture.NO_OVERLAY, LightTexture.FULL_BRIGHT, this.nx, this.ny, this.nz);
     }
 }

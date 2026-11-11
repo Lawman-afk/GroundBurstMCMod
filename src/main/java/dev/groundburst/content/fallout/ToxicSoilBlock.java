@@ -57,7 +57,7 @@ public class ToxicSoilBlock extends Block {
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         BlockPos above = pos.above();
         kill(level, above);
         if (GasGrid.passable(level, above)) {

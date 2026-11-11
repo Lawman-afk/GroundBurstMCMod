@@ -20,10 +20,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * Ventilation Duct behind it joins it.
  */
 public class VentGrilleBlock extends DirectionalBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends VentGrilleBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     private static final Map<Direction, VoxelShape> SHAPES = Fittings.pointing(new double[] {1, 0, 1, 15, 1.7, 15});
 
@@ -43,17 +40,17 @@ public class VentGrilleBlock extends DirectionalBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES.get(state.getValue(FACING));
     }
 
     @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 }

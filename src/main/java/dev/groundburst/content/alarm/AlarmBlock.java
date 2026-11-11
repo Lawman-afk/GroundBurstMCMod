@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 import dev.groundburst.content.machine.MachineBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
+import dev.groundburst.legacy.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -83,32 +83,32 @@ public class AlarmBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return this.device.shape(facing(state));
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return this.device == AlarmDevice.SIREN || this.device == AlarmDevice.BEACON ? RenderShape.INVISIBLE : RenderShape.MODEL;
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        if (level.getBlockEntity(pos) instanceof AlarmBlockEntity be) {
+        if (((Object) level.getBlockEntity(pos)) instanceof AlarmBlockEntity be) {
             be.setPowered(level.hasNeighborSignal(pos));
         }
     }
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
-        if (level instanceof ServerLevel && level.getBlockEntity(pos) instanceof AlarmBlockEntity be) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
+        if (level instanceof ServerLevel && ((Object) level.getBlockEntity(pos)) instanceof AlarmBlockEntity be) {
             be.setPowered(level.hasNeighborSignal(pos));
         }
     }
 
     @Override
-    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+    public void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(((Object) level_l) instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
         
         if (this.device.givesRedstone()) {
             level.updateNeighborsAt(pos, this);
@@ -116,17 +116,16 @@ public class AlarmBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected boolean isSignalSource(BlockState state) {
+    public boolean isSignalSource(BlockState state) {
         return this.device.givesRedstone();
     }
 
     @Override
-    protected int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
-        return level.getBlockEntity(pos) instanceof AlarmBlockEntity be ? be.output() : 0;
+    public int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        return ((Object) level.getBlockEntity(pos)) instanceof AlarmBlockEntity be ? be.output() : 0;
     }
 
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide()) {
             screenHook.accept(pos);
         }
@@ -134,8 +133,7 @@ public class AlarmBlock extends Block implements EntityBlock {
     }
 
     /** A Warning Beacon takes a dye: red, orange or yellow (amber), blue, green or white sets its colour. */
-    @Override
-    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+    protected dev.groundburst.legacy.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         DyeColor dye = dev.groundburst.port.Stacks.dye(stack);
         int colour = dye == null || this.device != AlarmDevice.BEACON ? -1 : switch (dye) {
@@ -147,13 +145,13 @@ public class AlarmBlock extends Block implements EntityBlock {
             default -> -1;
         };
         if (colour < 0) {
-            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof AlarmBlockEntity be) {
+        if (!level.isClientSide() && ((Object) level.getBlockEntity(pos)) instanceof AlarmBlockEntity be) {
             be.setOption(this.device.option("colour"), colour);
             level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1f, 1f);
         }
-        return net.minecraft.world.ItemInteractionResult.SUCCESS;
+        return dev.groundburst.legacy.ItemInteractionResult.SUCCESS;
     }
 
     @Override
@@ -227,5 +225,15 @@ public class AlarmBlock extends Block implements EntityBlock {
         protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
             builder.add(FACING, ACTIVE, LAMP);
         }
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        dev.groundburst.legacy.ItemInteractionResult item_ = this.useItemOn(player_.getItemInHand(hand_), state_, level_, pos_, player_, hand_, hit_);
+        if (item_ != dev.groundburst.legacy.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+            return item_.result();
+        }
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

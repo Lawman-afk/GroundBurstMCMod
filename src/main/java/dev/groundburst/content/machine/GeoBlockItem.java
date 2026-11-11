@@ -19,18 +19,17 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.Block;
 import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.animatable.client.GeoRenderProvider;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * Item form of a GeckoLib-rendered block: draws the block's geo model in hand, in the GUI and in item frames. The 1.21.1
- * backport's, for GeckoLib 4 (its item renderer is a block entity-less renderer, drawn for items whose model is
- * {@code builtin/entity}).
+ * Item form of a GeckoLib-rendered block: draws the block's geo model in hand, in the GUI and in item frames. The 1.20.1
+ * backport's, for GeckoLib 4 on Forge (its item renderer is a block entity-less renderer handed to Forge as the item's
+ * client extension, drawn for items whose model is {@code builtin/entity}).
  */
 public class GeoBlockItem extends BlockItem implements GeoItem {
     /** Bones that only show in a running or loaded machine: items draw the machine idle and empty. */
@@ -64,23 +63,28 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
         return this;
     }
 
+    /**
+     * Its renderer (Forge 1.20.1 asks the item for it; GeckoLib 4 on 1.20.1 has no render provider of its own). Forge asks
+     * from inside Item's own constructor, before this item's fields are set (and its pose comes later still), so they are
+     * read as the renderer is first made and drawn, not here.
+     */
     @Override
-    public void createGeoRenderer(Consumer<GeoRenderProvider> consumer) {
-        ResourceLocation id = this.modelId;
-        float shift = this.centreX;
-        Map<String, float[]> turned = this.pose;
-        consumer.accept(new GeoRenderProvider() {
+    public void initializeClient(Consumer<net.minecraftforge.client.extensions.common.IClientItemExtensions> consumer) {
+        GeoBlockItem item = this;
+        consumer.accept(new net.minecraftforge.client.extensions.common.IClientItemExtensions() {
             private @Nullable GeoItemRenderer<GeoBlockItem> renderer;
 
             @Override
-            public BlockEntityWithoutLevelRenderer getGeoItemRenderer() {
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 if (this.renderer == null) {
-                    this.renderer = new GeoItemRenderer<>(new dev.groundburst.client.render.PolyGeoModel<>(id)) {
+                    float shift = item.centreX;
+                    this.renderer = new GeoItemRenderer<>(new dev.groundburst.client.render.PolyGeoModel<>(item.modelId)) {
                         // GeckoLib lifts item models by half a block (it expects them centred on their origin); block
                         // models sit on their origin like a placed block, so only centre them horizontally.
                         @Override
                         public void preRender(PoseStack poseStack, GeoBlockItem animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource,
-                                @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+                                @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red,
+                                float green, float blue, float alpha) {
                             this.itemRenderTranslations = new org.joml.Matrix4f(poseStack.last().pose());
                             scaleModelForRender(this.scaleWidth, this.scaleHeight, poseStack, animatable, model, isReRender, partialTick, packedLight,
                                     packedOverlay);
@@ -93,17 +97,19 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
                         @Override
                         public void renderRecursively(PoseStack poseStack, GeoBlockItem animatable, GeoBone bone, RenderType renderType,
                                 MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight,
-                                int packedOverlay, int colour) {
+                                int packedOverlay, float red, float green, float blue, float alpha) {
                             if (OPTIONAL_BONES.contains(bone.getName())) {
                                 return;
                             }
-                            float[] r = turned.get(bone.getName());
+                            float[] r = item.pose.get(bone.getName());
                             if (r != null) {
                                 var bind = bone.getInitialSnapshot();
-                                bone.updateRotation(bind.getRotX() + r[0], bind.getRotY() + r[1], bind.getRotZ() + r[2]);
+                                bone.setRotX(bind.getRotX() + r[0]);
+                                bone.setRotY(bind.getRotY() + r[1]);
+                                bone.setRotZ(bind.getRotZ() + r[2]);
                             }
                             super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick,
-                                    packedLight, packedOverlay, colour);
+                                    packedLight, packedOverlay, red, green, blue, alpha);
                         }
                     };
                 }
@@ -114,9 +120,9 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
 
     /** Blocks picked up with stored energy (capacitor banks) show it. */
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        Integer stored = stack.get(dev.groundburst.registry.GBDataComponents.ENERGY.get());
-        if (stored != null && getBlock() instanceof dev.groundburst.content.power.CapacitorBankBlock bank) {
+    public void appendHoverText(ItemStack stack, net.minecraft.world.level.Level context_level, List<Component> tooltip, TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level);
+        Integer stored = dev.groundburst.legacy.component.Comps.get(stack, dev.groundburst.registry.GBDataComponents.ENERGY.get());
+        if (stored != null && ((Object) getBlock()) instanceof dev.groundburst.content.power.CapacitorBankBlock bank) {
             tooltip.add(dev.groundburst.content.power.BatteryItem.chargeLine(stored, bank.tier().capacity()));
         }
     }

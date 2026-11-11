@@ -1,0 +1,26 @@
+{
+  "values": [
+    "groundburst:raw_uranium",
+    "groundburst:uranium_ingot",
+    "groundburst:uranium_dust",
+    "groundburst:enriched_uranium_nugget",
+    "groundburst:enriched_uranium_ingot",
+    "groundburst:depleted_uranium_dust",
+    "groundburst:depleted_uranium_ingot",
+    "groundburst:uranium_fuel_rod",
+    "groundburst:spent_fuel_rod",
+    "groundburst:irradiated_du_target_rod",
+    "groundburst:irradiated_li6_target_rod",
+    "groundburst:plutonium_nugget",
+    "groundburst:plutonium_ingot",
+    "groundburst:nuclear_waste",
+    "groundburst:corium",
+    "groundburst:cooled_corium",
+    "groundburst:uranium_ore",
+    "groundburst:deepslate_uranium_ore",
+    "groundburst:uranium_block",
+    "groundburst:raw_uranium_block",
+    "groundburst:corium",
+    "groundburst:cooled_corium"
+  ]
+}

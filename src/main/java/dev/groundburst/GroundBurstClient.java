@@ -9,27 +9,25 @@ import dev.groundburst.config.GBClientConfig;
 import dev.groundburst.content.machine.MachineClientHooks;
 import dev.groundburst.registry.GBBlockEntities;
 import dev.groundburst.registry.GBMenus;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import dev.groundburst.legacy.client.RegisterMenuScreensEvent;
+
+
 
 // Client-only entry point; never loaded on a dedicated server.
-@Mod(value = GroundBurst.MODID, dist = Dist.CLIENT)
 public class GroundBurstClient {
     public GroundBurstClient(IEventBus modBus, ModContainer container) {
-        container.registerConfig(ModConfig.Type.CLIENT, GBClientConfig.SPEC);
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, GBClientConfig.SPEC);
         dev.groundburst.port.render.RenderBridge.register();   // 26.x's render events, posted from 1.21.1's
         dev.groundburst.port.net.RegisterClientPayloadHandlersEvent.post(modBus);   // and its payload handlers'
         dev.groundburst.port.render.ItemModels.register(modBus);   // what 1.21.1's item models need from code
         dev.groundburst.port.render.FreeRotationModels.register(modBus);   // models turned by any angle
         dev.groundburst.port.PortCheck.register();   // gradlew runPortCheck
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 
         MachineClientHooks.clientTick = MachineSounds::tick;
         ClientRecipes.register();
@@ -39,7 +37,7 @@ public class GroundBurstClient {
         modBus.addListener(GroundBurstClient::registerRenderers);
         modBus.addListener(dev.groundburst.client.render.FissionSections::register);
         // Each missile's shape (its stages, engines and sections), read with its models (tools/assets/missiles.py).
-        modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent e) -> e.registerReloadListener(new dev.groundburst.client.render.MissileShapes.Loader()));
+        modBus.addListener((net.minecraftforge.client.event.RegisterClientReloadListenersEvent e) -> e.registerReloadListener(new dev.groundburst.client.render.MissileShapes.Loader()));
         dev.groundburst.client.render.IceShellRenderer.register(modBus);
         modBus.addListener(dev.groundburst.client.render.GBFluidModels::register);
         modBus.addListener(dev.groundburst.client.render.GBFluidModels::registerTints);

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": {
+      "tag": "forge:wires/copper"
+    },
+    "F": {
+      "item": "groundburst:tungsten_filament"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    }
+  },
+  "pattern": [
+    "FFF",
+    "PCP"
+  ],
+  "result": {
+    "item": "groundburst:heating_element"
+  }
+}

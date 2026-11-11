@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "G": {
+      "tag": "forge:glass/colorless"
+    },
+    "P": {
+      "tag": "forge:plates/copper"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "GGG",
+    "PPP"
+  ],
+  "result": {
+    "item": "groundburst:copper_fluid_pipe",
+    "count": 6
+  }
+}

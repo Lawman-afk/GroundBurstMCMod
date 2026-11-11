@@ -146,7 +146,7 @@ final class NavalTests {
     private static void takenUp(GameTestHelper helper) {
         basin(helper);
         SeaMine m = lay(helper, new Vec3(8, 13.5, 8), false, 0);
-        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        var player = helper.makeMockPlayer();
         m.interact(player, InteractionHand.MAIN_HAND);
         helper.assertTrue(!m.armed(), "made safe");
         m.hurt(helper.getLevel().damageSources().playerAttack(player), 1);
@@ -172,7 +172,7 @@ final class NavalTests {
 
     private static DepthCharge charge(GameTestHelper helper, Vec3 at, int depth) {
         ItemStack stack = new ItemStack(GBNaval.DEPTH_CHARGE.get());
-        stack.set(GBDataComponents.NAVAL_DEPTH.get(), depth);
+        dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.NAVAL_DEPTH.get(), depth);
         return DepthCharge.release(helper.getLevel(), helper.absoluteVec(at), Vec3.ZERO, stack, null);
     }
 
@@ -221,7 +221,7 @@ final class NavalTests {
 
     private static void dispense(GameTestHelper helper, BlockPos at, Direction facing, ItemStack stack) {
         helper.setBlock(at, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, facing));
-        if (helper.getLevel().getBlockEntity(helper.absolutePos(at)) instanceof DispenserBlockEntity dispenser) {
+        if (((Object) helper.getLevel().getBlockEntity(helper.absolutePos(at))) instanceof DispenserBlockEntity dispenser) {
             dispenser.setItem(0, stack);
         }
         helper.setBlock(at.above(), Blocks.REDSTONE_BLOCK);
@@ -277,7 +277,7 @@ final class NavalTests {
         DepthChargeRackBlockEntity rack = sternRack(helper, 0);
         BlockPos hopper = new BlockPos(8, 15, 8);
         helper.setBlock(hopper, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
-        if (helper.getLevel().getBlockEntity(helper.absolutePos(hopper)) instanceof HopperBlockEntity h) {
+        if (((Object) helper.getLevel().getBlockEntity(helper.absolutePos(hopper))) instanceof HopperBlockEntity h) {
             h.setItem(0, new ItemStack(GBNaval.DEPTH_CHARGE.get(), 4));
         }
         helper.succeedWhen(() -> {
@@ -302,7 +302,7 @@ final class NavalTests {
         BlockState pulling = state.setValue(PipeBlock.SIDES.get(Direction.UP), PipeBlock.Mode.PULL);
         helper.getLevel().setBlock(at, pulling, Block.UPDATE_ALL);
         PipeBlock.changed(helper.getLevel(), at, pulling);
-        if (((BlockEntity) helper.getBlockEntity(chest)) instanceof Container c) {
+        if (((Object) ((BlockEntity) helper.getBlockEntity(chest))) instanceof Container c) {
             c.setItem(0, new ItemStack(GBNaval.DEPTH_CHARGE.get(), 5));
         }
         helper.succeedWhen(() -> {
@@ -321,7 +321,7 @@ final class NavalTests {
         helper.runAfterDelay(24, () -> {
             List<Entity> charges = around(helper, DepthCharge.class);
             helper.assertTrue(charges.size() == 1, "one charge rolled off (" + charges.size() + ")");
-            helper.assertTrue(charges.getFirst().getZ() < front, "it went off the front, toward the sea");
+            helper.assertTrue(dev.groundburst.legacy.J21.first(charges).getZ() < front, "it went off the front, toward the sea");
             helper.assertTrue(rack.loaded() == 2, "two left on the rack (" + rack.loaded() + ")");
             helper.assertTrue(!rack.inventory().getItem(0).isEmpty() && !rack.inventory().getItem(1).isEmpty(), "they rolled down to the trap");
             charges.forEach(Entity::discard);
@@ -362,7 +362,7 @@ final class NavalTests {
         helper.succeedWhen(() -> {
             List<Entity> charges = around(helper, DepthCharge.class);
             helper.assertTrue(charges.size() == 1, "one charge rolled off (" + charges.size() + ")");
-            int depth = ((DepthCharge) charges.getFirst()).depth();
+            int depth = ((DepthCharge) dev.groundburst.legacy.J21.first(charges)).depth();
             helper.assertTrue(depth == 3, "its pistol set to 3 blocks (" + depth + ")");
             charges.forEach(Entity::discard);
         });

@@ -58,8 +58,8 @@ public class MissileRenderer extends dev.groundburst.port.render.StateEntityRend
                 : dev.groundburst.content.assembly.MissileParts.flight(entity.look(), entity.dropped());
         ItemStack look = this.looks.computeIfAbsent(id, key -> {
             ItemStack s = new ItemStack(dev.groundburst.content.assembly.GBAssembly.MISSILE.get());
-            s.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,
-                    new net.minecraft.world.item.component.CustomModelData(dev.groundburst.port.Looks.id(key)));
+            dev.groundburst.legacy.component.Comps.set(s, dev.groundburst.legacy.component.DataComponents.CUSTOM_MODEL_DATA,
+                    new dev.groundburst.legacy.component.CustomModelData(dev.groundburst.port.Looks.id(key)));
             return s;
         });
         var shape = dev.groundburst.client.render.MissileShapes.get(entity.look());

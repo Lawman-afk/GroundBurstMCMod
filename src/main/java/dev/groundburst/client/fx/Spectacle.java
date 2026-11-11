@@ -24,14 +24,14 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.event.TickEvent;
 import dev.groundburst.port.render.ExtractLevelRenderStateEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import dev.groundburst.legacy.client.RegisterGuiLayersEvent;
 import dev.groundburst.port.render.SubmitCustomGeometryEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.client.event.ViewportEvent;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * The Spectacle (DESIGN.md §12): everything a blast looks like on the client. The server only says where and how big
@@ -92,12 +92,12 @@ public final class Spectacle {
                 graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), ARGB.color((int) (flash * 255), 0xFFF6E6));
             }
         }));
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> tick());
-        NeoForge.EVENT_BUS.addListener(Spectacle::submit);
-        NeoForge.EVENT_BUS.addListener(Spectacle::extract);
-        NeoForge.EVENT_BUS.addListener(Spectacle::shake);
-        NeoForge.EVENT_BUS.addListener(Spectacle::fogColor);
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent event) -> { if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return; tick(); });
+        MinecraftForge.EVENT_BUS.addListener(Spectacle::submit);
+        MinecraftForge.EVENT_BUS.addListener(Spectacle::extract);
+        MinecraftForge.EVENT_BUS.addListener(Spectacle::shake);
+        MinecraftForge.EVENT_BUS.addListener(Spectacle::fogColor);
+        MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
             clear();
             FalloutFx.clear();                             // not on a level change: the new level's zones may come first
         });
@@ -136,7 +136,7 @@ public final class Spectacle {
 
     static double now() {
         Minecraft mc = Minecraft.getInstance();
-        return ticks + (mc.isPaused() ? 0 : mc.getTimer().getGameTimeDeltaPartialTick(false));
+        return ticks + (mc.isPaused() ? 0 : mc.getFrameTime());
     }
 
     static void addTrauma(float amount) {
@@ -1063,7 +1063,7 @@ public final class Spectacle {
         StormFx.submit(collector, poseStack, camera.pos, camera.orientation, now);
         FreezeFx.submit(collector, poseStack, camera.pos, camera.orientation, now);
         ParticleBeamFx.submit(collector, poseStack, camera.pos, camera.orientation, now);
-        float partial = mc.isPaused() ? 0 : mc.getTimer().getGameTimeDeltaPartialTick(false);
+        float partial = mc.isPaused() ? 0 : mc.getFrameTime();
         FalloutFx.submit(collector, poseStack, level, camera.pos, camera.orientation, partial);   // high and far: drawn first
         for (BlastFx fx : BLASTS.values()) {
             if (fx.mushroom != null) {

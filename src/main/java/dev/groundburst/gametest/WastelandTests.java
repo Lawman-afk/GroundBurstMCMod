@@ -108,7 +108,7 @@ final class WastelandTests {
             }
         }
         for (int z = 6; z <= 10; z++) {
-            helper.setBlock(new BlockPos(10, 1, z), Blocks.SHORT_GRASS);
+            helper.setBlock(new BlockPos(10, 1, z), Blocks.GRASS);
         }
         helper.setBlock(new BlockPos(11, 1, 8), Blocks.POPPY);
         Frost.freeze(helper.getLevel(), helper.absoluteVec(new Vec3(8, 1, 8)), 5, 100, null);

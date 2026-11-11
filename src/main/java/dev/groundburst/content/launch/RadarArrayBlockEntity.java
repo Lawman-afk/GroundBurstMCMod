@@ -25,8 +25,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import dev.groundburst.legacy.net.PacketDistributor;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
@@ -155,7 +155,7 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
                 level.updateNeighbourForOutputSignal(this.worldPosition, getBlockState().getBlock());
             }
             for (UUID id : List.copyOf(this.viewers)) {
-                if (level.getPlayerByUUID(id) instanceof ServerPlayer p && p.position().distanceTo(inWorld(Vec3.atCenterOf(this.worldPosition))) < 16) {
+                if (((Object) level.getPlayerByUUID(id)) instanceof ServerPlayer p && p.position().distanceTo(inWorld(Vec3.atCenterOf(this.worldPosition))) < 16) {
                     send(level, p, tracks);
                 } else {
                     this.viewers.remove(id);
@@ -172,7 +172,7 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
         dev.groundburst.content.defence.Interception.radarStopped(level, this.worldPosition);
         if (level.getGameTime() % SCAN_INTERVAL == 0) {
             for (UUID id : List.copyOf(this.viewers)) {
-                if (level.getPlayerByUUID(id) instanceof ServerPlayer p) {
+                if (((Object) level.getPlayerByUUID(id)) instanceof ServerPlayer p) {
                     send(level, p, List.of());
                 }
             }

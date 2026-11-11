@@ -85,7 +85,7 @@ public class FieldManualScreen extends Screen {
         this.search = new EditBox(this.font, this.left + LEFT_X + 14, this.top + PAGE_Y + 118, ManualPages.W - 16, 12, Component.translatable(ManualStrings.SEARCH));
         this.search.setBordered(false);
         this.search.setTextColor(ManualText.INK);
-        this.search.setHint(Component.translatable(ManualStrings.SEARCH).withColor(ManualPages.FADED));
+        this.search.setHint(Component.translatable(ManualStrings.SEARCH).withStyle(s_ -> s_.withColor(ManualPages.FADED)));
         this.search.setMaxLength(40);
         this.search.setValue(this.query);
         this.search.setResponder(text -> {
@@ -224,9 +224,8 @@ public class FieldManualScreen extends Screen {
     }
 
     // --- drawing -------------------------------------------------------------------------------------------------------
-    @Override
     public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
-        super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
+        super.renderBackground(g.unwrap());
         g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.left, this.top, 0, 0, BOOK_W, BOOK_H, TEX_W, TEX_H);
     }
 
@@ -236,6 +235,7 @@ public class FieldManualScreen extends Screen {
             rebuild();
         }
         this.hovered = null;
+        this.renderBackground(g.unwrap(), mouseX, mouseY, partial);   // (1.20.1's Screen.render draws no background)
         super.render(g.unwrap(), mouseX, mouseY, partial);
         ManualPages.Ctx c = ctx(g, mouseX, mouseY);
         int s = this.view.spread();
@@ -270,7 +270,7 @@ public class FieldManualScreen extends Screen {
             List<Component> lines = new ArrayList<>(Screen.getTooltipFromItem(this.minecraft, this.hovered));
             Manual.Entry e = Manual.entryFor(this.hovered.getItem());
             if (e != null && !(this.view.kind() == Kind.ENTRY && e.id().equals(this.view.id()))) {
-                lines.add(Component.translatable(ManualStrings.OPEN_ENTRY, e.title()).withColor(0xFF7FA6E0));
+                lines.add(Component.translatable(ManualStrings.OPEN_ENTRY, e.title()).withStyle(s_ -> s_.withColor(0xFF7FA6E0)));
                 g.requestCursor(CursorTypes.POINTING_HAND);
             }
             g.setTooltipForNextFrame(this.font, lines, this.hovered.getTooltipImage(), mouseX, mouseY);
@@ -307,7 +307,7 @@ public class FieldManualScreen extends Screen {
             if (hover) {
                 g.requestCursor(CursorTypes.POINTING_HAND);
                 g.setTooltipForNextFrame(this.font, List.of(Component.literal(e.title()),
-                        Component.translatable(ManualStrings.REMOVE_BOOKMARK).withColor(ManualPages.FADED)), java.util.Optional.empty(), mx, my);
+                        Component.translatable(ManualStrings.REMOVE_BOOKMARK).withStyle(s_ -> s_.withColor(ManualPages.FADED))), java.util.Optional.empty(), mx, my);
             }
             y += TAB_STEP;
         }
@@ -409,7 +409,7 @@ public class FieldManualScreen extends Screen {
     @Override
     public boolean mouseReleased(double mouseX_, double mouseY_, int button_) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_);
         for (ManualPages.Page p : this.pages) {
-            if (p instanceof ManualPages.FlowPage fp) {
+            if (((Object) p) instanceof ManualPages.FlowPage fp) {
                 fp.release();
             }
         }
@@ -417,12 +417,12 @@ public class FieldManualScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double x, double y, double scrollY) { double scrollX = 0;
         if (scrollY != 0) {
             turn(scrollY > 0 ? -1 : 1);
             return true;
         }
-        return super.mouseScrolled(x, y, scrollX, scrollY);
+        return super.mouseScrolled(x, y, scrollY);
     }
 
     @Override

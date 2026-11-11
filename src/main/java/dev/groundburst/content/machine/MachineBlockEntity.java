@@ -194,7 +194,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     /** Most items slot {@code slot} holds, whatever the item (the reactor's fuel channels: one rod each). */
     protected int slotLimit(int slot) {
-        return net.minecraft.world.item.Item.ABSOLUTE_MAX_STACK_SIZE;
+        return 64;
     }
 
     /** Whether input tank {@code tank} may take this fluid (beyond its spec's filter), e.g. "a recipe uses it". */
@@ -243,8 +243,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return tankRenders().isEmpty() ? super.getUpdateTag(registries) : saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return tankRenders().isEmpty() ? super.getUpdateTag() : saveWithoutMetadata();
     }
 
     @Override
@@ -291,7 +291,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         java.util.List<UpgradeChipItem> chips = new java.util.ArrayList<>(UPGRADE_SLOTS);
         if (acceptsUpgrades()) {
             for (int i = 0; i < this.upgrade.getContainerSize(); i++) {
-                if (this.upgrade.getItem(i).getItem() instanceof UpgradeChipItem chip) {
+                if (((Object) this.upgrade.getItem(i).getItem()) instanceof UpgradeChipItem chip) {
                     chips.add(chip);
                 }
             }
@@ -371,7 +371,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     /** Taken out of the world by something that moves it ({@code frame}: where it is now), or back (null). */
     public void carry(@Nullable Frame frame) {
-        if (frame == null && this.carrier != null && this.level instanceof ServerLevel server) {
+        if (frame == null && this.carrier != null && ((Object) this.level) instanceof ServerLevel server) {
             Carried.gone(server, this.worldPosition);
         }
         this.carrier = frame;
@@ -491,7 +491,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
      * took it aboard or let it go). A structure's controller points its parts at itself again, then checks them.
      */
     protected void onMoved(ServerLevel level, BlockPos from) {
-        if (this instanceof dev.groundburst.content.multiblock.MultiblockController c && c.isFormed()) {
+        if (((Object) this) instanceof dev.groundburst.content.multiblock.MultiblockController c && c.isFormed()) {
             dev.groundburst.content.multiblock.MultiblockController.setPartsFormed(level, c, true);
             c.revalidate();
         }
@@ -635,7 +635,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
             }
             Direction dir = face.toDirection(facing);
             BlockPos target = from.relative(dir);
-            ResourceHandler<FluidResource> handler = level.getCapability(Capabilities.Fluid.BLOCK, target, dir.getOpposite());
+            ResourceHandler<FluidResource> handler = dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, target, dir.getOpposite());
             if (handler == null) {
                 continue;
             }
@@ -791,14 +791,14 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         change.accept(sides(half));
         setChanged();
         if (this.level != null && twoBlock()) {
-            this.level.invalidateCapabilities(sideHalfPos());
+            dev.groundburst.legacy.Caps.invalidate(this.level, sideHalfPos());
             this.level.updateNeighborsAt(sideHalfPos(), getBlockState().getBlock());
         }
         if (this.level != null) {
-            this.level.invalidateCapabilities(this.worldPosition);
+            dev.groundburst.legacy.Caps.invalidate(this.level, this.worldPosition);
             this.level.updateNeighborsAt(this.worldPosition, getBlockState().getBlock());
             if (getBlockState().getBlock() instanceof TallMachineBlock) {
-                this.level.invalidateCapabilities(this.worldPosition.above());
+                dev.groundburst.legacy.Caps.invalidate(this.level, this.worldPosition.above());
                 this.level.updateNeighborsAt(this.worldPosition.above(), getBlockState().getBlock());
             }
         }
@@ -822,7 +822,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
             }
             Direction dir = face.toDirection(facing);
             BlockPos target = from.relative(dir);
-            ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, target, dir.getOpposite());
+            ResourceHandler<ItemResource> handler = dev.groundburst.legacy.Caps.get(level, Capabilities.Item.BLOCK, target, dir.getOpposite());
             if (handler != null) {
                 ResourceHandlerUtil.moveStacking(out, handler, r -> true, EJECT_BATCH, null);
             }
@@ -859,8 +859,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     // --- persistence -------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         this.energy.serialize(output.child("energy"));
         this.inventory.serialize(output.child("items"));
         if (acceptsUpgrades()) {
@@ -878,8 +878,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.energy.deserialize(input.childOrEmpty("energy"));
         this.inventory.deserialize(input.childOrEmpty("items"));
         this.upgrade.deserialize(input.childOrEmpty("upgrade"));

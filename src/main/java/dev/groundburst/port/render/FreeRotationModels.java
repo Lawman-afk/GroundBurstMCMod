@@ -33,34 +33,35 @@ import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.model.ExtraFaceData;
-import net.neoforged.neoforge.client.model.IModelBuilder;
-import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
-import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
-import net.neoforged.neoforge.client.model.geometry.SimpleUnbakedGeometry;
-import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
-import net.neoforged.neoforge.client.model.geometry.UnbakedGeometryHelper;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.model.ForgeFaceData;
+import net.minecraftforge.client.model.IModelBuilder;
+import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
+import net.minecraftforge.client.model.geometry.IGeometryLoader;
+import net.minecraftforge.client.model.geometry.SimpleUnbakedGeometry;
+import net.minecraftforge.client.model.pipeline.QuadBakingVertexConsumer;
+import net.minecraftforge.client.model.geometry.UnbakedGeometryHelper;
 
 /**
- * Block models whose parts turn by any angle, as Minecraft 26.x's do (round prisms, noses, slopes): 1.21.1 reads a
+ * Block models whose parts turn by any angle, as Minecraft 26.x's do (round prisms, noses, slopes): 1.20.1 reads a
  * part's turn only at a multiple of 22.5 degrees up to 45, though its baker turns one by any angle; and 26.x turns a part
- * about all three axes at once ({@code "x"}, {@code "y"}, {@code "z"}: about x, then y, then z), which 1.21.1's baker
- * cannot. tools/backport/port.py moves such a model's parts to {@code groundburst:elements} and names this loader: a part
- * turned about one axis is baked as 1.21.1 bakes any; one turned about three is baked unturned and its faces' corners
+ * about all three axes at once ({@code "x"}, {@code "y"}, {@code "z"}: about x, then y, then z), which 1.20.1's baker
+ * cannot. The 1.21.1 build's port tool moves such a model's parts to {@code groundburst:elements} and names this loader: a part
+ * turned about one axis is baked as 1.20.1 bakes any; one turned about three is baked unturned and its faces' corners
  * then turned (about its origin, then by the block state's turn), their facing and normals worked out again. Main's
  * polygons ({@code "groundburst:polygons"}, which main's own loader, client/render/PolygonModels, draws there: a round
  * part's caps) are baked here too, as main bakes them: quads fanned from each one's first point.
  */
 public final class FreeRotationModels {
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("groundburst", "free_rotation");
+    public static final ResourceLocation ID = new ResourceLocation("groundburst", "free_rotation");
 
     private FreeRotationModels() {}
 
     public static void register(IEventBus modBus) {
-        modBus.addListener((ModelEvent.RegisterGeometryLoaders event) -> event.register(ID, Loader.INSTANCE));
+        // (Forge names a loader by the mod registering it: groundburst:free_rotation.)
+        modBus.addListener((ModelEvent.RegisterGeometryLoaders event) -> event.register(ID.getPath(), Loader.INSTANCE));
     }
 
     /** A part turned about all three axes: its turn (block units, about its origin). */
@@ -122,7 +123,7 @@ public final class FreeRotationModels {
 
         @Override
         protected void addQuads(IGeometryBakingContext context, IModelBuilder<?> builder, ModelBaker baker,
-                Function<Material, TextureAtlasSprite> sprites, ModelState state) {
+                Function<Material, TextureAtlasSprite> sprites, ModelState state, ResourceLocation modelLocation) {
             var root = context.getRootTransform();
             if (!root.isIdentity()) {
                 state = UnbakedGeometryHelper.composeRootTransformIntoModelState(state, root);
@@ -132,13 +133,14 @@ public final class FreeRotationModels {
                 Turn turn = this.turns.get(element);
                 for (Direction direction : element.faces.keySet()) {
                     BlockElementFace face = element.faces.get(direction);
-                    TextureAtlasSprite sprite = sprites.apply(context.getMaterial(face.texture()));
-                    BakedQuad quad = turn == null ? BlockModel.bakeFace(element, face, sprite, direction, state)
-                            : turned(BlockModel.bakeFace(element, face, sprite, direction, BlockModelRotation.X0_Y0), turn, blockTurn);
-                    if (face.cullForDirection() == null) {
+                    TextureAtlasSprite sprite = sprites.apply(context.getMaterial(face.texture));
+                    BakedQuad quad = turn == null ? BlockModel.bakeFace(element, face, sprite, direction, state, modelLocation)
+                            : turned(BlockModel.bakeFace(element, face, sprite, direction, BlockModelRotation.X0_Y0, modelLocation), turn,
+                                    blockTurn);
+                    if (face.cullForDirection == null) {
                         builder.addUnculledFace(quad);
                     } else {
-                        builder.addCulledFace(state.getRotation().rotateTransform(face.cullForDirection()), quad);
+                        builder.addCulledFace(state.getRotation().rotateTransform(face.cullForDirection), quad);
                     }
                 }
             }
@@ -173,20 +175,18 @@ public final class FreeRotationModels {
         int light = p.light() > 0 ? LightTexture.pack(p.light(), p.light()) : 0;
         for (int k = 1; k + 1 < n; k += 2) {
             int[] corners = k + 2 < n ? new int[] {0, k, k + 1, k + 2} : new int[] {0, k, k + 1, k + 1};
-            QuadBakingVertexConsumer quad = new QuadBakingVertexConsumer();
+            // Forge 1.20.1's baker hands a quad on at its fourth vertex; a sprite's UV is in pixels (0..16) there.
+            QuadBakingVertexConsumer.Buffered quad = new QuadBakingVertexConsumer.Buffered();
             quad.setSprite(sprite);
             quad.setTintIndex(p.tint());
             quad.setShade(p.shade());
             quad.setHasAmbientOcclusion(p.ao());
             quad.setDirection(facing);
             for (int i : corners) {
-                quad.addVertex(at[i].x, at[i].y, at[i].z);
-                quad.setColor(255, 255, 255, 255);
-                quad.setUv(sprite.getU(p.uvs()[i][0] / 16f), sprite.getV(p.uvs()[i][1] / 16f));
-                quad.setLight(light);
-                quad.setNormal(normal.x, normal.y, normal.z);
+                quad.vertex(at[i].x, at[i].y, at[i].z).color(255, 255, 255, 255).uv(sprite.getU(p.uvs()[i][0]), sprite.getV(p.uvs()[i][1]))
+                        .uv2(light).normal(normal.x, normal.y, normal.z).endVertex();
             }
-            BakedQuad baked = quad.bakeQuad();
+            BakedQuad baked = quad.getQuad();
             if (cull == null) {
                 builder.addUnculledFace(baked);
             } else {
@@ -210,7 +210,7 @@ public final class FreeRotationModels {
             v[at + 2] = Float.floatToRawIntBits(q.z + 0.5f);
         }
         Direction facing = FaceBakery.calculateFacing(v);
-        ClientHooks.fillNormal(v, facing);
+        ForgeHooksClient.fillNormal(v, facing);
         return new BakedQuad(v, quad.getTintIndex(), facing, quad.getSprite(), quad.isShade(), quad.hasAmbientOcclusion());
     }
 
@@ -242,7 +242,7 @@ public final class FreeRotationModels {
             faces.put(side, context.deserialize(face.getValue(), BlockElementFace.class));
         }
         boolean shade = GsonHelper.getAsBoolean(json, "shade", true);
-        ExtraFaceData data = ExtraFaceData.read(json.get("neoforge_data"), ExtraFaceData.DEFAULT);
+        ForgeFaceData data = ForgeFaceData.read(json.get("forge_data"), ForgeFaceData.DEFAULT);
         BlockElement element = new BlockElement(from, to, faces, rotation, shade, data);
         out.add(element);
         if (turn != null) {

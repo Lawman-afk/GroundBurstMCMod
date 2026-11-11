@@ -1,0 +1,20 @@
+{
+  "values": [
+    "groundburst:lithium_ore",
+    "groundburst:deepslate_lithium_ore",
+    "groundburst:sulfur_ore",
+    "groundburst:deepslate_sulfur_ore",
+    "groundburst:nether_sulfur_ore",
+    "groundburst:saltpeter_ore",
+    "groundburst:deepslate_saltpeter_ore",
+    "groundburst:sandstone_saltpeter_ore",
+    "groundburst:lead_ore",
+    "groundburst:deepslate_lead_ore",
+    "groundburst:fluorite_ore",
+    "groundburst:deepslate_fluorite_ore",
+    "groundburst:lead_block",
+    "groundburst:raw_lithium_block",
+    "groundburst:raw_lead_block",
+    "groundburst:waste_drum"
+  ]
+}

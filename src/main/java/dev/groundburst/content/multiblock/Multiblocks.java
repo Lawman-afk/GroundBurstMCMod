@@ -28,7 +28,7 @@ public final class Multiblocks {
                     continue;
                 }
                 for (BlockEntity be : level.getChunk(center.x + cx, center.z + cz).getBlockEntities().values()) {
-                    if (be instanceof MultiblockController controller && !be.isRemoved() && controller.covers(pos)) {
+                    if (((Object) be) instanceof MultiblockController controller && !be.isRemoved() && controller.covers(pos)) {
                         out.add(controller);
                     }
                 }

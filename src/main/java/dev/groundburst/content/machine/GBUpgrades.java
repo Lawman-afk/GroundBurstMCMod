@@ -5,7 +5,7 @@ import java.util.List;
 
 import dev.groundburst.registry.GBItems;
 import dev.groundburst.registry.GBTab;
-import net.neoforged.neoforge.registries.DeferredItem;
+import dev.groundburst.legacy.DeferredItem;
 
 /**
  * The upgrade chips (DESIGN.md §7.3): a speed, an efficiency and a balanced chip on each circuit tier, basic to

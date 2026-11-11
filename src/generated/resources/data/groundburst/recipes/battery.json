@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": {
+      "tag": "forge:plates/copper"
+    },
+    "L": {
+      "tag": "forge:dusts/lithium"
+    },
+    "P": {
+      "item": "groundburst:plastic_sheet"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    }
+  },
+  "pattern": [
+    " C ",
+    "LRL",
+    " P "
+  ],
+  "result": {
+    "item": "groundburst:battery"
+  }
+}

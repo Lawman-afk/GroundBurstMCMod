@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:stonecutting",
-  "ingredient": {
-    "item": "groundburst:rusted_corrugated_steel"
-  },
-  "result": {
-    "id": "groundburst:rusted_corrugated_steel_stairs"
-  }
-}

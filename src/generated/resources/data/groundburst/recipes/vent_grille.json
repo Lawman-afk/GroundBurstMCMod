@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "B": {
+      "item": "minecraft:iron_bars"
+    },
+    "P": {
+      "item": "groundburst:steel_plate"
+    }
+  },
+  "pattern": [
+    "PBP"
+  ],
+  "result": {
+    "item": "groundburst:vent_grille",
+    "count": 4
+  }
+}

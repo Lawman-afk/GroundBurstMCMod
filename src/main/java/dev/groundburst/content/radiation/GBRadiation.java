@@ -10,19 +10,19 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
-import net.neoforged.neoforge.registries.datamaps.DataMapType;
-import net.neoforged.neoforge.registries.datamaps.RegisterDataMapTypesEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import dev.groundburst.legacy.AttachmentType;
+import dev.groundburst.legacy.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import dev.groundburst.legacy.DataMapType;
+import dev.groundburst.legacy.RegisterDataMapTypesEvent;
 
 /**
  * The radiation system's registrations (DESIGN.md §21.8): the dose a living thing has taken (a data attachment, synced
  * to its player), what is radioactive (data maps on blocks and items), and the shielding tags.
  */
 public final class GBRadiation {
-    public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES,
+    public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS = DeferredRegister.create(dev.groundburst.legacy.Attachments.REGISTRY_KEY,
             GroundBurst.MODID);
 
     /** The dose and dose rate of a living thing ({@link RadiationState}); a player's goes to them alone. */

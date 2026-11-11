@@ -18,11 +18,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import dev.groundburst.legacy.recipe.RecipeHolder;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import dev.groundburst.legacy.SizedIngredient;
 import dev.groundburst.port.FluidStackTemplate;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
+import dev.groundburst.legacy.SizedFluidIngredient;
 
 /**
  * JEI category for one processing machine: item and fluid inputs (with amounts) and an optional die on the left, an
@@ -33,7 +33,7 @@ final class ProcessingCategory extends AbstractRecipeCategory<RecipeHolder<Proce
     private static final int WIDTH = 150, HEIGHT = 66;
     private static final NumberFormat NUM = NumberFormat.getIntegerInstance(Locale.ROOT);
 
-    ProcessingCategory(RecipeType<net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe>> type, ItemLike machine, IGuiHelper gui) {
+    ProcessingCategory(RecipeType<dev.groundburst.legacy.recipe.RecipeHolder<ProcessingRecipe>> type, ItemLike machine, IGuiHelper gui) {
         super(type, machine.asItem().getDefaultInstance().getHoverName(), gui.createDrawableItemLike(machine), WIDTH, HEIGHT);
     }
 

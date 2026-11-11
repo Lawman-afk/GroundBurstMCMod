@@ -68,7 +68,7 @@ final class MissileCategory extends AbstractRecipeCategory<MissileCategory.Recip
 
     /** The missile a recipe makes (its longest-range motor, GPS guidance): also listed in JEI, one per warhead and kind. */
     static ItemStack output(Recipe recipe) {
-        return MissileAssembly.missile(new MissileSpec(recipe.warhead(), recipe.assembler().size, motors(recipe).getLast(),
+        return MissileAssembly.missile(new MissileSpec(recipe.warhead(), recipe.assembler().size, dev.groundburst.legacy.J21.last(motors(recipe)),
                 MissileParts.Guidance.GPS, false));
     }
 
@@ -96,7 +96,7 @@ final class MissileCategory extends AbstractRecipeCategory<MissileCategory.Recip
         builder.addAnimatedRecipeArrowWidget(a.ticks).setPosition(114, 5);
         List<MissileParts.Motor> motors = motors(recipe);
         Component info = recipe.cruise() ? Component.translatable(WarheadAssembly.JEI_CRUISE_INFO, a.size.name(), MissileParts.Motor.CRUISE.range)
-                : Component.translatable(WarheadAssembly.JEI_MISSILE_INFO, a.size.name(), motors.getFirst().range, motors.getLast().range);
+                : Component.translatable(WarheadAssembly.JEI_MISSILE_INFO, a.size.name(), dev.groundburst.legacy.J21.first(motors).range, dev.groundburst.legacy.J21.last(motors).range);
         builder.addText(info, WIDTH, 10).setPosition(0, HEIGHT - 20).setColor(0xFF606060);
         builder.addText(Component.translatable(WarheadAssembly.JEI_MISSILE_POWER, a.energyPerTick, a.ticks / 20), WIDTH, 10)
                 .setPosition(0, HEIGHT - 10).setColor(0xFF606060);

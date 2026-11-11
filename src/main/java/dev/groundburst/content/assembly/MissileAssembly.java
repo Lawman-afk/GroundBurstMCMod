@@ -6,9 +6,9 @@ import java.util.List;
 import dev.groundburst.GroundBurst;
 import dev.groundburst.registry.GBDataComponents;
 import dev.groundburst.registry.GBLang;
-import net.minecraft.core.component.DataComponents;
+import dev.groundburst.legacy.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomModelData;
+import dev.groundburst.legacy.component.CustomModelData;
 
 /**
  * The missile line of the Assembly Bench (DESIGN.md §10): a warhead, a body that takes its class, a motor that fits
@@ -49,10 +49,10 @@ public final class MissileAssembly {
         if (!WarheadAssembly.isWarhead(warhead)) {
             return Problem.NO_WARHEAD;
         }
-        if (!(body.getItem() instanceof MissileParts.Body b)) {
+        if (!(((Object) body.getItem()) instanceof MissileParts.Body b)) {
             return Problem.NO_BODY;
         }
-        if (!(motor.getItem() instanceof MissileParts.MotorItem m)) {
+        if (!(((Object) motor.getItem()) instanceof MissileParts.MotorItem m)) {
             return Problem.NO_MOTOR;
         }
         Problem fit = fit(warhead, b.sizeClass);
@@ -78,8 +78,8 @@ public final class MissileAssembly {
         if (strategic != (body == SizeClass.XL)) {
             return strategic ? Problem.NUCLEAR_NEEDS_STRATEGIC : Problem.STRATEGIC_NUCLEAR_ONLY;
         }
-        SizeClass size = warhead.getItem() instanceof net.minecraft.world.item.BlockItem bi
-                && bi.getBlock() instanceof dev.groundburst.content.ordnance.charge.ChargeBlock c ? WarheadAssembly.sizeOf(c) : null;
+        SizeClass size = ((Object) warhead.getItem()) instanceof net.minecraft.world.item.BlockItem bi
+                && ((Object) bi.getBlock()) instanceof dev.groundburst.content.ordnance.charge.ChargeBlock c ? WarheadAssembly.sizeOf(c) : null;
         return !strategic && size != null && size.ordinal() > body.ordinal() ? Problem.WARHEAD_TOO_BIG : Problem.NONE;
     }
 
@@ -94,10 +94,10 @@ public final class MissileAssembly {
         if (classOf(warhead) != size) {
             return Problem.WRONG_CLASS;
         }
-        if (!(body.getItem() instanceof MissileParts.Body b) || b.sizeClass != size) {
+        if (!(((Object) body.getItem()) instanceof MissileParts.Body b) || b.sizeClass != size) {
             return Problem.NEEDS_BODY;
         }
-        if (!(motor.getItem() instanceof MissileParts.MotorItem m)) {
+        if (!(((Object) motor.getItem()) instanceof MissileParts.MotorItem m)) {
             return Problem.NO_MOTOR;
         }
         if (!m.motor.fits(size)) {
@@ -112,7 +112,7 @@ public final class MissileAssembly {
 
     /** A warhead's size class (null: not an assembled warhead). */
     public static @org.jspecify.annotations.Nullable SizeClass classOf(ItemStack warhead) {
-        return warhead.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof dev.groundburst.content.ordnance.charge.ChargeBlock c
+        return ((Object) warhead.getItem()) instanceof net.minecraft.world.item.BlockItem bi && ((Object) bi.getBlock()) instanceof dev.groundburst.content.ordnance.charge.ChargeBlock c
                 ? WarheadAssembly.sizeOf(c) : null;
     }
 
@@ -129,17 +129,17 @@ public final class MissileAssembly {
 
     /** The missile these parts make (guidance and module may be empty). */
     public static ItemStack assemble(ItemStack warhead, MissileParts.Body body, MissileParts.MotorItem motor, ItemStack guidance, ItemStack module) {
-        MissileParts.Guidance g = guidance.getItem() instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
+        MissileParts.Guidance g = ((Object) guidance.getItem()) instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
         return missile(new MissileSpec(warhead.copyWithCount(1), body.sizeClass, motor.motor, g, module.getItem() instanceof MissileParts.HardenedModule));
     }
 
     /** A missile item for {@code spec}. */
     public static ItemStack missile(MissileSpec spec) {
         ItemStack out = new ItemStack(GBAssembly.MISSILE.get());
-        out.set(GBDataComponents.MISSILE.get(), spec);
+        dev.groundburst.legacy.component.Comps.set(out, GBDataComponents.MISSILE.get(), spec);
         // The item picks its model (its warhead's own missile, or that warhead's cruise missile) by this, like the missile
         // in flight and on its launcher.
-        out.set(DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(dev.groundburst.port.Looks.id(MissileParts.look(spec.look()))));
+        dev.groundburst.legacy.component.Comps.set(out, DataComponents.CUSTOM_MODEL_DATA, new dev.groundburst.legacy.component.CustomModelData(dev.groundburst.port.Looks.id(MissileParts.look(spec.look()))));
         return out;
     }
 

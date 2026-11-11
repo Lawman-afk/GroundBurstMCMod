@@ -53,22 +53,21 @@ public class GeigerCounterItem extends Item {
     public enum Carried { NONE, HOTBAR, HELD }
 
     public GeigerCounterItem(Properties properties) {
-        super(properties.stacksTo(1).component(GBDataComponents.ENERGY.get(), CAPACITY)
-                .component(GBDataComponents.GEIGER_ALARM.get(), DEFAULT_ALARM));
+        super(dev.groundburst.legacy.component.Comps.withDefault(dev.groundburst.legacy.component.Comps.withDefault(properties.stacksTo(1), GBDataComponents.ENERGY.get(), CAPACITY), GBDataComponents.GEIGER_ALARM.get(), DEFAULT_ALARM));
     }
 
     public static int stored(ItemStack stack) {
-        return stack.getOrDefault(GBDataComponents.ENERGY.get(), 0);
+        return dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.ENERGY.get(), 0);
     }
 
     /** Whether it reads nothing: flat, or knocked out by an EMP. */
     public static boolean dead(ItemStack stack, Level level) {
-        return stored(stack) <= 0 || level.getGameTime() < stack.getOrDefault(GBDataComponents.EMP_UNTIL.get(), 0L);
+        return stored(stack) <= 0 || level.getGameTime() < dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.EMP_UNTIL.get(), 0L);
     }
 
     /** Its alarm threshold, RAD/h (0: off). */
     public static float alarm(ItemStack stack) {
-        int i = stack.getOrDefault(GBDataComponents.GEIGER_ALARM.get(), DEFAULT_ALARM);
+        int i = dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.GEIGER_ALARM.get(), DEFAULT_ALARM);
         return ALARMS[Mth.clamp(i, 0, ALARMS.length - 1)];
     }
 
@@ -113,17 +112,17 @@ public class GeigerCounterItem extends Item {
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, net.minecraft.world.level.Level level_l, net.minecraft.world.entity.Entity owner, int slotId_, boolean selected_) { if (!(level_l instanceof net.minecraft.server.level.ServerLevel level)) return; net.minecraft.world.entity.EquipmentSlot slot = selected_ ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : null;
-        if (!(owner instanceof Player player) || level.getGameTime() % 20 != 0 || !on(player, stack)) {
+    public void inventoryTick(ItemStack stack, net.minecraft.world.level.Level level_l, net.minecraft.world.entity.Entity owner, int slotId_, boolean selected_) { if (!(((Object) level_l) instanceof net.minecraft.server.level.ServerLevel level)) return; net.minecraft.world.entity.EquipmentSlot slot = selected_ ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : null;
+        if (!(((Object) owner) instanceof Player player) || level.getGameTime() % 20 != 0 || !on(player, stack)) {
             return;
         }
         if (EmpFields.inField(level, player.position())) {
-            stack.set(GBDataComponents.EMP_UNTIL.get(), level.getGameTime() + EMP_TICKS);
+            dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.EMP_UNTIL.get(), level.getGameTime() + EMP_TICKS);
             return;
         }
         int energy = stored(stack);
         if (energy > 0 && !player.isCreative()) {
-            stack.set(GBDataComponents.ENERGY.get(), Math.max(0, energy - PER_SECOND));
+            dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.ENERGY.get(), Math.max(0, energy - PER_SECOND));
         }
     }
 
@@ -133,8 +132,8 @@ public class GeigerCounterItem extends Item {
             return dev.groundburst.port.Results.holder(InteractionResult.PASS, player, hand);
         }
         ItemStack stack = player.getItemInHand(hand);
-        int next = (stack.getOrDefault(GBDataComponents.GEIGER_ALARM.get(), DEFAULT_ALARM) + 1) % ALARMS.length;
-        stack.set(GBDataComponents.GEIGER_ALARM.get(), next);
+        int next = (dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.GEIGER_ALARM.get(), DEFAULT_ALARM) + 1) % ALARMS.length;
+        dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.GEIGER_ALARM.get(), next);
         if (!level.isClientSide()) {
             player.displayClientMessage(Component.translatable(ALARM_SET, alarmText(ALARMS[next])), true);
         }
@@ -164,12 +163,12 @@ public class GeigerCounterItem extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
         builder.accept(BatteryItem.chargeLine(stored(stack), CAPACITY));
         if (stored(stack) <= 0) {
-            builder.accept(Component.translatable(DEAD).withColor(0xFFE0A040));
+            builder.accept(Component.translatable(DEAD).withStyle(s_ -> s_.withColor(0xFFE0A040)));
         }
-        builder.accept(Component.translatable(ALARM, alarmText(alarm(stack))).withColor(0xFF9AA0A8));
-        builder.accept(Component.translatable(HINT).withColor(0xFF7A8088));
+        builder.accept(Component.translatable(ALARM, alarmText(alarm(stack))).withStyle(s_ -> s_.withColor(0xFF9AA0A8)));
+        builder.accept(Component.translatable(HINT).withStyle(s_ -> s_.withColor(0xFF7A8088)));
     }
 }

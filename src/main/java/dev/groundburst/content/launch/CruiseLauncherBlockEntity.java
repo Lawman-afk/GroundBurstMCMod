@@ -6,10 +6,10 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -507,7 +507,7 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     @Override
     public void onLoad() {
         super.onLoad();
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             Launches.track(server, this.worldPosition);
         }
     }
@@ -521,7 +521,7 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             Launches.untrack(server, this.worldPosition);
         }
     }
@@ -582,8 +582,8 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     }
 
     @Override
-    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public net.minecraft.nbt.CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -638,8 +638,8 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putString("phase", this.phase.name());
         output.putInt("phase_ticks", this.phaseTicks);
         output.putBoolean("armed", this.armed);
@@ -656,8 +656,8 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         try {
             this.phase = Phase.valueOf(input.getStringOr("phase", Phase.IDLE.name()));
         } catch (IllegalArgumentException e) {

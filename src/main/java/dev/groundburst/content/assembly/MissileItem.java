@@ -37,7 +37,7 @@ public class MissileItem extends Item {
     }
 
     public static @Nullable MissileSpec spec(ItemStack stack) {
-        return stack.get(GBDataComponents.MISSILE.get());
+        return dev.groundburst.legacy.component.Comps.get(stack, GBDataComponents.MISSILE.get());
     }
 
     /**
@@ -113,14 +113,14 @@ public class MissileItem extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         MissileSpec s = spec(stack);
         if (s == null) {
             tooltip.accept(Component.translatable(T_EMPTY).withStyle(ChatFormatting.DARK_GRAY));
             return;
         }
         tooltip.accept(Component.translatable(T_WARHEAD, s.warhead().getHoverName()).withStyle(ChatFormatting.GRAY));
-        FuzeSettings fuze = s.warhead().getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
+        FuzeSettings fuze = dev.groundburst.legacy.component.Comps.getOrDefault(s.warhead(), GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
         tooltip.accept(Component.literal("  ").append(WarheadItem.fuzeLine(fuze)).withStyle(ChatFormatting.DARK_GRAY));
         tooltip.accept(Component.translatable(T_RANGE, s.range()).withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable(T_GUIDANCE, Component.translatable(MissileParts.guidanceName(s.guidance()))).withStyle(ChatFormatting.GRAY));

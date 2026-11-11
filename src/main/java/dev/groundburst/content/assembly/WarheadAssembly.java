@@ -79,15 +79,15 @@ public final class WarheadAssembly {
 
     /** Whether a stack is a warhead the bench can take apart. */
     public static boolean isWarhead(ItemStack stack) {
-        return stack.getItem() instanceof BlockItem b && b.getBlock() instanceof ChargeBlock c && coreOf(c) != null;
+        return ((Object) stack.getItem()) instanceof BlockItem b && ((Object) b.getBlock()) instanceof ChargeBlock c && coreOf(c) != null;
     }
 
     /** What stops these parts from being put together, if anything. */
     public static Problem check(ItemStack core, ItemStack casing, ItemStack fuze, ItemStack output) {
-        if (!(core.getItem() instanceof ComponentItems.PayloadCore c)) {
+        if (!(((Object) core.getItem()) instanceof ComponentItems.PayloadCore c)) {
             return Problem.NO_CORE;
         }
-        if (!(casing.getItem() instanceof ComponentItems.Casing k)) {
+        if (!(((Object) casing.getItem()) instanceof ComponentItems.Casing k)) {
             return Problem.NO_CASING;
         }
         if (!(fuze.getItem() instanceof ComponentItems.FuzeItem)) {
@@ -102,20 +102,20 @@ public final class WarheadAssembly {
     /** The warhead a core and a fuze make, the fuze given {@code setting}. */
     public static ItemStack assemble(ComponentItems.PayloadCore core, ComponentItems.FuzeItem fuze, int setting) {
         ItemStack out = new ItemStack(core.warhead());
-        out.set(GBDataComponents.FUZE.get(), FuzeSettings.of(fuze.fuze, setting));
+        dev.groundburst.legacy.component.Comps.set(out, GBDataComponents.FUZE.get(), FuzeSettings.of(fuze.fuze, setting));
         return out;
     }
 
     /** A warhead's parts: its core, a casing of its class and its fuze (empty if it is not an assembled warhead). */
     public static List<ItemStack> takeApart(ItemStack warhead) {
-        if (!(warhead.getItem() instanceof BlockItem b) || !(b.getBlock() instanceof ChargeBlock block)) {
+        if (!(((Object) warhead.getItem()) instanceof BlockItem b) || !(((Object) b.getBlock()) instanceof ChargeBlock block)) {
             return List.of();
         }
         ComponentItems.PayloadCore core = coreOf(block);
         if (core == null) {
             return List.of();
         }
-        Fuze fuze = warhead.getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT).fuze();
+        Fuze fuze = dev.groundburst.legacy.component.Comps.getOrDefault(warhead, GBDataComponents.FUZE.get(), FuzeSettings.IMPACT).fuze();
         return List.of(new ItemStack(core), new ItemStack(casing(core.sizeClass)), new ItemStack(fuzeItem(fuze)));
     }
 

@@ -8,9 +8,9 @@ import org.jspecify.annotations.Nullable;
 
 import dev.groundburst.port.transfer.Resource;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.component.DataComponentType;
+import dev.groundburst.legacy.component.DataComponentMap;
+import dev.groundburst.legacy.component.DataComponentPatch;
+import dev.groundburst.legacy.component.DataComponentType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +30,7 @@ public final class ItemResource implements Resource {
     }
 
     public static ItemResource of(ItemStack stack) {
-        return stack.isEmpty() ? EMPTY : new ItemResource(stack.getItemHolder(), stack.getComponentsPatch());
+        return stack.isEmpty() ? EMPTY : new ItemResource(stack.getItemHolder(), dev.groundburst.legacy.component.DataComponentPatch.of(stack));
     }
 
     public static ItemResource of(ItemLike item) {
@@ -69,7 +69,7 @@ public final class ItemResource implements Resource {
     }
 
     public boolean matches(ItemStack stack) {
-        return isEmpty() ? stack.isEmpty() : !stack.isEmpty() && stack.getItem() == getItem() && stack.getComponentsPatch().equals(this.patch);
+        return isEmpty() ? stack.isEmpty() : !stack.isEmpty() && stack.getItem() == getItem() && dev.groundburst.legacy.component.DataComponentPatch.of(stack).equals(this.patch);
     }
 
     public boolean is(ItemLike item) {
@@ -86,7 +86,7 @@ public final class ItemResource implements Resource {
 
     public <D> ItemResource with(DataComponentType<D> type, @Nullable D data) {
         ItemStack s = toStack(1);
-        s.set(type, data);
+        dev.groundburst.legacy.component.Comps.set(s, type, data);
         return of(s);
     }
 
@@ -96,12 +96,12 @@ public final class ItemResource implements Resource {
 
     public ItemResource without(DataComponentType<?> type) {
         ItemStack s = toStack(1);
-        s.remove(type);
+        dev.groundburst.legacy.component.Comps.remove(s, type);
         return of(s);
     }
 
     public DataComponentMap getComponents() {
-        return toStack(1).getComponents();
+        return dev.groundburst.legacy.component.DataComponentMap.of(toStack(1));
     }
 
     public DataComponentPatch getComponentsPatch() {
@@ -109,7 +109,7 @@ public final class ItemResource implements Resource {
     }
 
     public ItemStack toStack(int count) {
-        return isEmpty() || count <= 0 ? ItemStack.EMPTY : new ItemStack(this.item, count, this.patch);
+        return isEmpty() || count <= 0 ? ItemStack.EMPTY : dev.groundburst.legacy.component.DataComponentPatch.stack(this.item, count, this.patch);
     }
 
     public ItemStack toStack() {
@@ -126,7 +126,7 @@ public final class ItemResource implements Resource {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        return obj instanceof ItemResource r && r.getItem() == getItem() && r.patch.equals(this.patch);
+        return ((Object) obj) instanceof ItemResource r && r.getItem() == getItem() && r.patch.equals(this.patch);
     }
 
     @Override
@@ -136,6 +136,6 @@ public final class ItemResource implements Resource {
 
     @Override
     public String toString() {
-        return "ItemResource[" + this.item.getRegisteredName() + (this.patch.isEmpty() ? "" : " " + this.patch) + "]";
+        return "ItemResource[" + dev.groundburst.legacy.Game.registeredName(this.item) + (this.patch.isEmpty() ? "" : " " + this.patch) + "]";
     }
 }

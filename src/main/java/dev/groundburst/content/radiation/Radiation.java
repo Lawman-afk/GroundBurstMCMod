@@ -19,10 +19,9 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.LivingHealEvent;
+import net.minecraftforge.event.TickEvent;
 
 /**
  * The dose living things take (DESIGN.md §21.2, §21.8). Once a second each player's dose rate is measured where their
@@ -44,19 +43,19 @@ public final class Radiation {
     private Radiation() {}
 
     static void register() {
-        NeoForge.EVENT_BUS.addListener((PlayerTickEvent.Post event) -> {
-            if (event.getEntity() instanceof ServerPlayer p && (p.tickCount + p.getId()) % 20 == 0) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.PlayerTickEvent event) -> {if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) event.player) instanceof ServerPlayer p && (p.tickCount + p.getId()) % 20 == 0) {
                 update(p);
             }
         });
-        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
-            if (event.getLevel() instanceof ServerLevel level && level.getGameTime() % 20 == 10) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent event) -> {if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) event.level) instanceof ServerLevel level && level.getGameTime() % 20 == 10) {
                 mobs(level);
             }
         });
         // Sickness III and worse: no natural regeneration (its small heals), as the marrow fails.
-        NeoForge.EVENT_BUS.addListener((LivingHealEvent event) -> {
-            MobEffectInstance sick = event.getEntity().getEffect(GBEffects.RADIATION_SICKNESS);
+        MinecraftForge.EVENT_BUS.addListener((LivingHealEvent event) -> {
+            MobEffectInstance sick = event.getEntity().getEffect(GBEffects.RADIATION_SICKNESS.get());
             if (sick != null && sick.getAmplifier() >= 2 && event.getAmount() <= 1.0f) {
                 event.setCanceled(true);
             }
@@ -69,11 +68,11 @@ public final class Radiation {
 
     /** Whether radiation does nothing to {@code body}: the undead, armour stands, players in creative or spectator. */
     public static boolean immune(LivingEntity body) {
-        return body.getType().is(EntityTypeTags.UNDEAD) || body instanceof ArmorStand || body instanceof Player p && (p.isCreative() || p.isSpectator());
+        return dev.groundburst.legacy.Game.undead(body) || body instanceof ArmorStand || ((Object) body) instanceof Player p && (p.isCreative() || p.isSpectator());
     }
 
     public static RadiationState state(LivingEntity body) {
-        return body.hasData(GBRadiation.STATE) ? body.getData(GBRadiation.STATE) : RadiationState.NONE;
+        return dev.groundburst.legacy.Attachments.has(body, GBRadiation.STATE) ? dev.groundburst.legacy.Attachments.get(body, GBRadiation.STATE) : RadiationState.NONE;
     }
 
     public static float dose(LivingEntity body) {
@@ -87,14 +86,14 @@ public final class Radiation {
         }
         RadiationState s = state(body);
         float dose = Math.max(0, s.dose() + rad);
-        body.setData(GBRadiation.STATE, new RadiationState(dose, s.rate()));
+        dev.groundburst.legacy.Attachments.set(body, GBRadiation.STATE, new RadiationState(dose, s.rate()));
         sicken(body, dose);
     }
 
     /** Sets the dose {@code body} has taken (GameTests, commands). */
     public static void setDose(LivingEntity body, float rad) {
         RadiationState s = state(body);
-        body.setData(GBRadiation.STATE, new RadiationState(Math.max(0, rad), s.rate()));
+        dev.groundburst.legacy.Attachments.set(body, GBRadiation.STATE, new RadiationState(Math.max(0, rad), s.rate()));
     }
 
     /**
@@ -114,14 +113,14 @@ public final class Radiation {
     }
 
     private static float uptake(LivingEntity body) {
-        return body.hasEffect(GBEffects.POTASSIUM_IODIDE) ? IODINE_UPTAKE : 1;
+        return body.hasEffect(GBEffects.POTASSIUM_IODIDE.get()) ? IODINE_UPTAKE : 1;
     }
 
     private static void update(ServerPlayer player) {
-        RadiationState s = player.getData(GBRadiation.STATE);
+        RadiationState s = dev.groundburst.legacy.Attachments.get(player, GBRadiation.STATE);
         if (!enabled() || immune(player) || !player.isAlive()) {
             if (s.rate() != 0) {
-                player.setData(GBRadiation.STATE, new RadiationState(s.dose(), 0));
+                dev.groundburst.legacy.Attachments.set(player, GBRadiation.STATE, new RadiationState(s.dose(), 0));
             }
             return;
         }
@@ -134,12 +133,12 @@ public final class Radiation {
         if (rate < RadiationSource.SAFE) {
             dose -= RECOVERY;
         }
-        if (body.hasEffect(GBEffects.RAD_AWAY)) {
+        if (body.hasEffect(GBEffects.RAD_AWAY.get())) {
             dose -= RAD_AWAY_PER_SECOND;
         }
         dose = Math.max(0, dose);
         if (dose != s.dose() || rate != s.rate()) {
-            body.setData(GBRadiation.STATE, new RadiationState(dose, rate));
+            dev.groundburst.legacy.Attachments.set(body, GBRadiation.STATE, new RadiationState(dose, rate));
         }
         sicken(body, dose);
     }
@@ -161,7 +160,7 @@ public final class Radiation {
                     continue;
                 }
                 float rate = rateAt(level, e, false);
-                if (rate > 0 || e.hasData(GBRadiation.STATE)) {
+                if (rate > 0 || dev.groundburst.legacy.Attachments.has(e, GBRadiation.STATE)) {
                     step(e, state(e), rate);
                 }
             }
@@ -175,11 +174,11 @@ public final class Radiation {
      */
     static void sicken(LivingEntity body, float dose) {
         int stage = RadiationState.stage(dose);
-        if (stage <= 0 || !(body.level() instanceof ServerLevel level)) {
+        if (stage <= 0 || !(((Object) body.level()) instanceof ServerLevel level)) {
             return;
         }
         RandomSource random = body.getRandom();
-        body.addEffect(new MobEffectInstance(GBEffects.RADIATION_SICKNESS, 60, Math.min(3, stage - 1), false, true, true));
+        body.addEffect(new MobEffectInstance(GBEffects.RADIATION_SICKNESS.get(), 60, Math.min(3, stage - 1), false, true, true));
         if (random.nextInt(40) == 0) {
             body.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 140, 0, false, false, true));
         }
@@ -194,7 +193,7 @@ public final class Radiation {
             body.addEffect(new MobEffectInstance(MobEffects.WITHER, 60, 0, false, false, true));
         }
         if (stage >= 5) {
-            body.hurt(level.damageSources().source(GBEffects.RADIATION_DAMAGE),
+            body.hurt(dev.groundburst.legacy.Game.source(level, GBEffects.RADIATION_DAMAGE),
                     2 + (dose - RadiationState.STAGES[4]) / 250);
         }
     }

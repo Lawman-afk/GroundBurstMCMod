@@ -23,26 +23,26 @@ public class FuelRodItem extends Item {
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return stack.has(GBDataComponents.FUEL_BURNUP.get());
+        return dev.groundburst.legacy.component.Comps.has(stack, GBDataComponents.FUEL_BURNUP.get());
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        FuelBurnup burnup = stack.get(GBDataComponents.FUEL_BURNUP.get());
+        FuelBurnup burnup = dev.groundburst.legacy.component.Comps.get(stack, GBDataComponents.FUEL_BURNUP.get());
         return burnup == null ? MAX_BAR_WIDTH : Math.round(MAX_BAR_WIDTH * (1 - burnup.fraction()));
     }
 
     /** Green while fresh, through yellow, to red near the end (as a tool's wear). */
     @Override
     public int getBarColor(ItemStack stack) {
-        FuelBurnup burnup = stack.get(GBDataComponents.FUEL_BURNUP.get());
+        FuelBurnup burnup = dev.groundburst.legacy.component.Comps.get(stack, GBDataComponents.FUEL_BURNUP.get());
         float left = burnup == null ? 1 : 1 - burnup.fraction();
         return Mth.hsvToRgb(left / 3f, 1f, 1f);
     }
 
     @Override
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
-        FuelBurnup burnup = stack.get(GBDataComponents.FUEL_BURNUP.get());
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+        FuelBurnup burnup = dev.groundburst.legacy.component.Comps.get(stack, GBDataComponents.FUEL_BURNUP.get());
         if (burnup != null) {
             tooltip.accept(Component.translatable(BURNUP, (int) Math.floor(burnup.fraction() * 100)).withStyle(ChatFormatting.GRAY));
         }

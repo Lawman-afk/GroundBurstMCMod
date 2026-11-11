@@ -4,9 +4,9 @@ import dev.groundburst.GroundBurst;
 import dev.groundburst.content.fluid.ChemFluid;
 import dev.groundburst.content.fluid.GBFluids;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import dev.groundburst.legacy.client.RegisterClientExtensionsEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 
 /**
  * Fluid looks: each chemical uses its look's shared animated still/flowing textures, tinted with its colour (1.21.1

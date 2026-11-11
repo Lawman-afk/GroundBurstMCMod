@@ -8,20 +8,20 @@ import java.util.function.Consumer;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.network.GBNetwork;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.saveddata.SavedData;
 import dev.groundburst.port.SavedDataType;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.level.LevelEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.TickEvent;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * Every {@link RadiationSource} in a level (DESIGN.md §21.8), as the level's saved data ({@code radiation_sources.dat}).
@@ -48,23 +48,23 @@ public final class RadiationSources extends SavedData {
     }
 
     static void register() {
-        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
-            if (event.getLevel() instanceof ServerLevel level && level.getGameTime() % 20 == 0) {
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.LevelTickEvent event) -> {if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (((Object) event.level) instanceof ServerLevel level && level.getGameTime() % 20 == 0) {
                 of(level).tick(level);
             }
         });
-        NeoForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
-            if (event.getLevel() instanceof ServerLevel level) {
+        MinecraftForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
+            if (((Object) event.getLevel()) instanceof ServerLevel level) {
                 BY_LEVEL.remove(level);
             }
         });
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> tell(event.getEntity()));
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent event) -> tell(event.getEntity()));
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerRespawnEvent event) -> tell(event.getEntity()));
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> tell(event.getEntity()));
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent event) -> tell(event.getEntity()));
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerRespawnEvent event) -> tell(event.getEntity()));
     }
 
     private static void tell(Player player) {
-        if (player instanceof ServerPlayer p) {
+        if (((Object) player) instanceof ServerPlayer p) {
             PacketDistributor.sendToPlayer(p, new Sync(of((ServerLevel) p.level()).sources()));
         }
     }
@@ -132,8 +132,8 @@ public final class RadiationSources extends SavedData {
     /** Every source in the receiving player's level (empty: none). */
     public record Sync(List<RadiationSource> sources) implements CustomPacketPayload {
         public static final Type<Sync> TYPE = GBNetwork.type("radiation_sources");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Sync> CODEC = RadiationSource.STREAM_CODEC
-                .apply(net.minecraft.network.codec.ByteBufCodecs.list()).map(Sync::new, Sync::sources).cast();
+        public static final StreamCodec<FriendlyByteBuf, Sync> CODEC = RadiationSource.STREAM_CODEC
+                .apply(dev.groundburst.legacy.net.ByteBufCodecs.list()).map(Sync::new, Sync::sources).cast();
         /** Client hook (set by the client). */
         public static Consumer<Sync> hook = s -> {};
 
@@ -144,7 +144,7 @@ public final class RadiationSources extends SavedData {
     }
 
     @Override
-    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access();
         return TYPE.save(this, tag_, registries_);
     }
 }

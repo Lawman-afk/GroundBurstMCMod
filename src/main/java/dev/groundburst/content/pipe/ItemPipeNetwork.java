@@ -83,7 +83,7 @@ public final class ItemPipeNetwork {
         Set<BlockPos> targets = new HashSet<>();
         for (BlockPos p : seen) {
             BlockState state = level.getBlockState(p);
-            if (!(state.getBlock() instanceof ItemPipeBlock pipeBlock)) {
+            if (!(((Object) state.getBlock()) instanceof ItemPipeBlock pipeBlock)) {
                 continue;
             }
             batch = Math.min(batch, pipeBlock.tier().batch());

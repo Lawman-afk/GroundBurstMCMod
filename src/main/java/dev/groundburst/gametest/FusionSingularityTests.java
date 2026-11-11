@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import dev.groundburst.port.transfer.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import dev.groundburst.port.transfer.transaction.Transaction;
 
 /** Phase 4 slice 8: the Fusion Reactor (ignition, fuel, nitrogen) and the Singularity Reactor (cage, matter, collapse). */
@@ -69,7 +69,7 @@ final class FusionSingularityTests {
     /** Charges the ignition through the Energy Port, as a capacitor bank would: it takes power only while unlit. */
     private static void charge(GameTestHelper helper, FusionReactorBlockEntity r) {
         BlockPos port = cellOf(r.definition(), r.controllerPos(), 'E');
-        var handler = helper.getLevel().getCapability(Capabilities.Energy.BLOCK, port, Direction.SOUTH);
+        var handler = dev.groundburst.legacy.Caps.get(helper.getLevel(), Capabilities.Energy.BLOCK, port, Direction.SOUTH);
         helper.assertTrue(handler != null, "the Energy Port exposes the reactor");
         int total = 0;
         while (total < FusionReactorBlockEntity.IGNITION_ENERGY) {
@@ -92,7 +92,7 @@ final class FusionSingularityTests {
             helper.assertTrue(Multiblocks.formedControllerOf(level, part) == r, "the part at " + part + " leads to the controller");
         }
         for (Direction d : Direction.values()) {
-            helper.assertTrue(level.getCapability(Capabilities.Energy.BLOCK, r.controllerPos(), d) == null, "the controller exposes nothing on " + d);
+            helper.assertTrue(dev.groundburst.legacy.Caps.get(level, Capabilities.Energy.BLOCK, r.controllerPos(), d) == null, "the controller exposes nothing on " + d);
         }
         level.destroyBlock(cellOf(r.definition(), r.controllerPos(), 'S'), false);
         helper.assertTrue(!r.isFormed(), "taking out the central solenoid un-forms it");
@@ -115,7 +115,7 @@ final class FusionSingularityTests {
             helper.assertTrue(r.status() == MachineStatus.RUNNING, "running, status " + r.status());
             // Lit, the port takes no more charge.
             BlockPos port = cellOf(r.definition(), r.controllerPos(), 'E');
-            var handler = helper.getLevel().getCapability(Capabilities.Energy.BLOCK, port, Direction.SOUTH);
+            var handler = dev.groundburst.legacy.Caps.get(helper.getLevel(), Capabilities.Energy.BLOCK, port, Direction.SOUTH);
             try (Transaction tx = Transaction.openRoot()) {
                 helper.assertTrue(handler.insert(1_000, tx) == 0, "a lit reactor takes no power in");
             }
@@ -190,7 +190,7 @@ final class FusionSingularityTests {
                         "20 items a second at 10 000 FE each is the 10 000 FE/t ceiling");
                 // The port only gives power above the reserve.
                 BlockPos port = cellOf(s.definition(), s.controllerPos(), 'E');
-                var handler = helper.getLevel().getCapability(Capabilities.Energy.BLOCK, port, Direction.EAST);
+                var handler = dev.groundburst.legacy.Caps.get(helper.getLevel(), Capabilities.Energy.BLOCK, port, Direction.EAST);
                 try (Transaction tx = Transaction.openRoot()) {
                     int out = handler.extract(Integer.MAX_VALUE, tx);
                     helper.assertTrue(out <= s.energy().stored() - SingularityReactorBlockEntity.RESERVE, "the reserve stays, took " + out);
@@ -264,7 +264,7 @@ final class FusionSingularityTests {
         }
         SingularityReactorBlockEntity s = ((SingularityReactorBlockEntity) helper.getBlockEntity(rel));
         helper.assertTrue(s.isFormed(), "an Item Port in the floor still forms the cage");
-        var items = helper.getLevel().getCapability(Capabilities.Item.BLOCK, extra, Direction.NORTH);
+        var items = dev.groundburst.legacy.Caps.get(helper.getLevel(), Capabilities.Item.BLOCK, extra, Direction.NORTH);
         helper.assertTrue(items != null, "the extra port is connected");
         try (Transaction tx = Transaction.openRoot()) {
             int in = items.insert(dev.groundburst.port.transfer.item.ItemResource.of(Items.OAK_LOG), 16, tx);

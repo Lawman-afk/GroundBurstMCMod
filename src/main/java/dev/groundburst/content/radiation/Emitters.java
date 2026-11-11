@@ -18,8 +18,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.registries.datamaps.DataMapsUpdatedEvent;
+import net.minecraftforge.common.MinecraftForge;
+import dev.groundburst.legacy.DataMapsUpdatedEvent;
 
 /**
  * Radioactive blocks and items (DESIGN.md §21.8): their strength is the {@code groundburst:radioactivity} data map (a
@@ -38,7 +38,7 @@ public final class Emitters {
     private Emitters() {}
 
     static void register() {
-        NeoForge.EVENT_BUS.addListener((DataMapsUpdatedEvent event) -> {
+        MinecraftForge.EVENT_BUS.addListener((DataMapsUpdatedEvent event) -> {
             synchronized (BLOCKS) {
                 BLOCKS.clear();
             }
@@ -54,7 +54,7 @@ public final class Emitters {
         synchronized (BLOCKS) {
             Float value = BLOCKS.get(block);
             if (value == null) {
-                GBRadiation.Radioactivity r = block.builtInRegistryHolder().getData(GBRadiation.BLOCK_RADIOACTIVITY);
+                GBRadiation.Radioactivity r = GBRadiation.BLOCK_RADIOACTIVITY.get(block.builtInRegistryHolder());
                 value = r == null ? 0f : r.rate();
                 BLOCKS.put(block, value);
             }
@@ -67,7 +67,7 @@ public final class Emitters {
         synchronized (ITEMS) {
             Float value = ITEMS.get(item);
             if (value == null) {
-                GBRadiation.Radioactivity r = item.builtInRegistryHolder().getData(GBRadiation.ITEM_RADIOACTIVITY);
+                GBRadiation.Radioactivity r = GBRadiation.ITEM_RADIOACTIVITY.get(item.builtInRegistryHolder());
                 value = r == null ? 0f : r.rate();
                 ITEMS.put(item, value);
             }
@@ -87,13 +87,13 @@ public final class Emitters {
         if (stack.getItem() instanceof LeadContainerItem) {
             return sum;
         }
-        var bundle = stack.get(net.minecraft.core.component.DataComponents.BUNDLE_CONTENTS);
+        var bundle = dev.groundburst.legacy.component.Comps.get(stack, dev.groundburst.legacy.component.DataComponents.BUNDLE_CONTENTS);
         if (bundle != null) {
             for (ItemStackTemplate inside : ItemStackTemplate.of(bundle.items())) {
                 sum += radioactivity(inside.item().value()) * inside.count();
             }
         }
-        var container = stack.get(net.minecraft.core.component.DataComponents.CONTAINER);
+        var container = dev.groundburst.legacy.component.Comps.get(stack, dev.groundburst.legacy.component.DataComponents.CONTAINER);
         if (container != null) {
             for (ItemStackTemplate inside : ItemStackTemplate.of(container.nonEmptyItems())) {
                 sum += radioactivity(inside.item().value()) * inside.count();
@@ -105,7 +105,7 @@ public final class Emitters {
     /** Everything {@code body} carries, armour and both hands included, RAD/h. */
     public static float carried(LivingEntity body) {
         float sum = 0;
-        if (body instanceof Player player) {
+        if (((Object) body) instanceof Player player) {
             Inventory inventory = player.getInventory();
             for (int i = 0; i < inventory.getContainerSize(); i++) {
                 sum += carried(inventory.getItem(i));

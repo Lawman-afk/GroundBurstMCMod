@@ -52,12 +52,12 @@ public final class Launches {
 
     /** The launch site a carrier (a contraption) is carrying with its key at {@code pos}, if it ticked it just now. */
     public static @Nullable LaunchSite carried(ServerLevel level, BlockPos pos) {
-        return dev.groundburst.content.machine.Carried.at(level, pos) instanceof LaunchSite site ? site : null;
+        return ((Object) dev.groundburst.content.machine.Carried.at(level, pos)) instanceof LaunchSite site ? site : null;
     }
 
     /** The launch site with its key at {@code pos}: the one standing there, or one carried from there. */
     public static @Nullable LaunchSite site(ServerLevel level, BlockPos pos) {
-        if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof LaunchSite site) {
+        if (level.isLoaded(pos) && ((Object) level.getBlockEntity(pos)) instanceof LaunchSite site) {
             return site;
         }
         return carried(level, pos);
@@ -113,7 +113,7 @@ public final class Launches {
         }
         for (long l : set.toLongArray()) {
             BlockPos p = BlockPos.of(l);
-            LaunchSite silo = level.isLoaded(p) && level.getBlockEntity(p) instanceof LaunchSite s ? s : carried(level, p);
+            LaunchSite silo = level.isLoaded(p) && ((Object) level.getBlockEntity(p)) instanceof LaunchSite s ? s : carried(level, p);
             if (silo != null && silo.worldBlockPos().distSqr(from) <= (double) LINK_RANGE * LINK_RANGE) {
                 out.add(silo);
             }

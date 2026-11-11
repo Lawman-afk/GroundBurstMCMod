@@ -2,7 +2,7 @@ package dev.groundburst.content.machine;
 
 import java.util.List;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.registry.GBBlockEntities;
@@ -33,7 +33,7 @@ public class DecontaminationShowerBlockEntity extends MachineBlockEntity impleme
     public static final int ENERGY_PER_TICK = 20;
     public static final int WATER_PER_TICK = 10;
     /** Effects the shower washes off. */
-    public static final List<Holder<MobEffect>> WASHED = List.of(MobEffects.POISON, MobEffects.WITHER, MobEffects.CONFUSION);
+    public static final List<MobEffect> WASHED = List.of(MobEffects.POISON, MobEffects.WITHER, MobEffects.CONFUSION);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -80,7 +80,7 @@ public class DecontaminationShowerBlockEntity extends MachineBlockEntity impleme
     /** What a pass under the shower washes off. */
     public static void clean(LivingEntity entity) {
         entity.clearFire();
-        for (Holder<MobEffect> effect : WASHED) {
+        for (MobEffect effect : WASHED) {
             entity.removeEffect(effect);
         }
     }

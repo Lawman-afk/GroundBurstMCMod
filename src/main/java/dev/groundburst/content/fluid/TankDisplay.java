@@ -1,6 +1,6 @@
 package dev.groundburst.content.fluid;
 
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 /** What a tank's renderer draws: its fluid as one box filling a {@code width x width x height} tank up to the fill level. */
 public interface TankDisplay {

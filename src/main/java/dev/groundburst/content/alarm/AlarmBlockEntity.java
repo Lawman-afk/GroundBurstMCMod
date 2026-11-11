@@ -7,8 +7,8 @@ import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -84,7 +84,7 @@ public class AlarmBlockEntity extends BlockEntity {
     }
 
     private static AlarmDevice deviceOf(BlockState state) {
-        return state.getBlock() instanceof AlarmBlock b ? b.device() : AlarmDevice.RELAY;
+        return ((Object) state.getBlock()) instanceof AlarmBlock b ? b.device() : AlarmDevice.RELAY;
     }
 
     public AlarmDevice device() {
@@ -157,13 +157,13 @@ public class AlarmBlockEntity extends BlockEntity {
 
     /** Sets its channel and choices (from its screen). */
     public void applySettings(int channel, int[] options) {
-        if (this.level instanceof ServerLevel level && channel != this.channel && device().role == AlarmDevice.Role.SENDER) {
+        if (((Object) this.level) instanceof ServerLevel level && channel != this.channel && device().role == AlarmDevice.Role.SENDER) {
             Alarms.lower(level, this.channel, this.worldPosition);       // off its old channel at once
         }
-        this.channel = Math.clamp(channel, 0, Alarms.MAX_CHANNEL);
+        this.channel = dev.groundburst.legacy.J21.clamp(channel, 0, Alarms.MAX_CHANNEL);
         AlarmDevice d = device();
         for (int i = 0; i < Math.min(options.length, this.options.length); i++) {
-            this.options[i] = Math.clamp(options[i], 0, d.options.get(i).values().size() - 1);
+            this.options[i] = dev.groundburst.legacy.J21.clamp(options[i], 0, d.options.get(i).values().size() - 1);
         }
         sync();
     }
@@ -177,7 +177,7 @@ public class AlarmBlockEntity extends BlockEntity {
 
     /** An Alarm Panel's buttons: sound (switch on), stop, silence the channel's sounders, test the channel. */
     public void panel(int action) {
-        if (!(this.level instanceof ServerLevel level) || device() != AlarmDevice.PANEL) {
+        if (!(((Object) this.level) instanceof ServerLevel level) || device() != AlarmDevice.PANEL) {
             return;
         }
         switch (action) {
@@ -236,7 +236,7 @@ public class AlarmBlockEntity extends BlockEntity {
             Alarms.lower(level, this.channel, this.worldPosition);
         }
         int mode = option("output");
-        int out = n == 0 ? 0 : mode == 0 ? 15 : mode == 1 ? Math.min(15, n) : (int) Math.clamp(15 - (first - now) / 40, 1, 15);
+        int out = n == 0 ? 0 : mode == 0 ? 15 : mode == 1 ? Math.min(15, n) : (int) dev.groundburst.legacy.J21.clamp(15 - (first - now) / 40, 1, 15);
         show(n > 0 ? Alarms.Kind.ATTACK.ordinal() : -1, n, n > 0 ? first : -1, 0, 0);
         setOutput(out);
         setActive(n > 0);
@@ -370,7 +370,7 @@ public class AlarmBlockEntity extends BlockEntity {
 
     @Override
     public void setRemoved() {
-        if (this.level instanceof ServerLevel level && device().role == AlarmDevice.Role.SENDER) {
+        if (((Object) this.level) instanceof ServerLevel level && device().role == AlarmDevice.Role.SENDER) {
             Alarms.lower(level, this.channel, this.worldPosition);
         }
         super.setRemoved();
@@ -385,8 +385,8 @@ public class AlarmBlockEntity extends BlockEntity {
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -395,8 +395,8 @@ public class AlarmBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("channel", this.channel);
         output.putIntArray("options", this.options.clone());
         output.putBoolean("powered", this.powered);
@@ -411,8 +411,8 @@ public class AlarmBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.channel = input.getIntOr("channel", 0);
         input.getIntArray("options").ifPresent(a -> System.arraycopy(a, 0, this.options, 0, Math.min(a.length, this.options.length)));
         this.powered = input.getBooleanOr("powered", false);
@@ -464,7 +464,7 @@ public class AlarmBlockEntity extends BlockEntity {
             super.clientTick();
             if (device() == AlarmDevice.SIREN) {
                 float want = active() ? SPIN : 0;
-                this.spin += Math.clamp(want - this.spin, -SPIN_UP, SPIN_UP);
+                this.spin += dev.groundburst.legacy.J21.clamp(want - this.spin, -SPIN_UP, SPIN_UP);
                 this.headYaw = (this.headYaw + this.spin) % 360;
             }
         }
@@ -509,7 +509,7 @@ public class AlarmBlockEntity extends BlockEntity {
         @Override
         public @Nullable ResourceLocation textureVariant() {
             return device() == AlarmDevice.BEACON
-                    ? GroundBurst.id("textures/block/warning_beacon_" + COLOURS[Math.clamp(option("colour"), 0, COLOURS.length - 1)] + ".png") : null;
+                    ? GroundBurst.id("textures/block/warning_beacon_" + COLOURS[dev.groundburst.legacy.J21.clamp(option("colour"), 0, COLOURS.length - 1)] + ".png") : null;
         }
 
         /** No animations: the head and the lens are turned by {@link #boneRotations}. */

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:tactical_missile_body"
+    },
+    {
+      "item": "groundburst:solid_rocket_motor_i"
+    },
+    {
+      "item": "groundburst:inertial_guidance_unit"
+    },
+    {
+      "item": "groundburst:sensor_array"
+    },
+    {
+      "item": "groundburst:he_charge"
+    }
+  ],
+  "result": {
+    "item": "groundburst:interceptor_missile",
+    "count": 2
+  }
+}

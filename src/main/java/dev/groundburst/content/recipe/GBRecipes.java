@@ -7,13 +7,13 @@ import com.mojang.serialization.MapCodec;
 
 import dev.groundburst.GroundBurst;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.StreamCodec;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredRegister;
 
 /**
  * Recipe types and serializers: one {@link ProcessingKind} each, all sharing {@link ProcessingRecipe}. (1.21.1 sends
@@ -42,18 +42,8 @@ public final class GBRecipes {
     }
 
     private static RecipeSerializer<ProcessingRecipe> serializer(MapCodec<ProcessingRecipe> codec,
-            StreamCodec<RegistryFriendlyByteBuf, ProcessingRecipe> streamCodec) {
-        return new RecipeSerializer<>() {
-            @Override
-            public MapCodec<ProcessingRecipe> codec() {
-                return codec;
-            }
-
-            @Override
-            public StreamCodec<RegistryFriendlyByteBuf, ProcessingRecipe> streamCodec() {
-                return streamCodec;
-            }
-        };
+            StreamCodec<FriendlyByteBuf, ProcessingRecipe> streamCodec) {
+        return dev.groundburst.legacy.recipe.Recipes.serializer(codec, streamCodec);
     }
 
     public static RecipeType<ProcessingRecipe> type(ProcessingKind kind) {

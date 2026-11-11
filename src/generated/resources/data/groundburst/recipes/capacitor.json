@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "P": {
+      "tag": "forge:plates/copper"
+    },
+    "S": {
+      "item": "groundburst:plastic_sheet"
+    },
+    "W": {
+      "tag": "forge:wires/gold"
+    }
+  },
+  "pattern": [
+    "PSP",
+    " W "
+  ],
+  "result": {
+    "item": "groundburst:capacitor"
+  }
+}

@@ -58,7 +58,7 @@ public class LaunchCodesItem extends Item {
 
     /** The code a card carries (empty: blank). */
     public static String code(ItemStack stack) {
-        return stack.getOrDefault(GBDataComponents.LAUNCH_CODES.get(), "");
+        return dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.LAUNCH_CODES.get(), "");
     }
 
     /** What a click on {@code pos} reaches: the controller's block entity (of a formed part's structure too), or the block's own. */
@@ -86,7 +86,7 @@ public class LaunchCodesItem extends Item {
         if (be == null || player == null) {
             return InteractionResult.PASS;
         }
-        if (level instanceof ServerLevel server) {
+        if (((Object) level) instanceof ServerLevel server) {
             Component message = use(server, stack, be, player.isSecondaryUseActive());
             player.displayClientMessage(message, true);
             server.playSound(null, context.getClickedPos(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.4f, 1.6f);
@@ -99,13 +99,13 @@ public class LaunchCodesItem extends Item {
         LaunchNetwork nets = LaunchNetwork.of(level);
         String code = code(stack);
         LaunchNetwork.Network card = nets.byCode(code);
-        if (be instanceof LaunchStationBlockEntity station) {
+        if (((Object) be) instanceof LaunchStationBlockEntity station) {
             LaunchNetwork.Network own = station.network(level);
             if (code.isEmpty() || (card == null && sneaking)) {
                 if (own == null) {
                     return Component.translatable(VOID).withStyle(ChatFormatting.RED);
                 }
-                stack.set(GBDataComponents.LAUNCH_CODES.get(), own.code());
+                dev.groundburst.legacy.component.Comps.set(stack, GBDataComponents.LAUNCH_CODES.get(), own.code());
                 return Component.translatable(TAKEN, own.code()).withStyle(ChatFormatting.GOLD);
             }
             if (card == null) {
@@ -152,7 +152,7 @@ public class LaunchCodesItem extends Item {
     }
 
     @Override
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         String code = code(stack);
         if (code.isEmpty()) {
             tooltip.accept(Component.translatable(TIP_BLANK).withStyle(ChatFormatting.GRAY));

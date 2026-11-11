@@ -15,7 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import dev.groundburst.port.render.SubmitCustomGeometryEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * The Searchlights' beams (DESIGN.md §22.6): from each lit light's lens out along where it points, a cone of light drawn
@@ -32,7 +32,7 @@ public final class SearchlightFx {
     private SearchlightFx() {}
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(SearchlightFx::submit);
+        MinecraftForge.EVENT_BUS.addListener(SearchlightFx::submit);
     }
 
     private record Beam(Vec3 from, Vec3 dir) {}
@@ -42,7 +42,7 @@ public final class SearchlightFx {
         if (mc.level == null || SearchlightBlockEntity.CLIENT.isEmpty()) {
             return;
         }
-        float partial = mc.isPaused() ? 1 : mc.getTimer().getGameTimeDeltaPartialTick(false);
+        float partial = mc.isPaused() ? 1 : mc.getFrameTime();
         var camera = event.getLevelRenderState().cameraRenderState;
         Vec3 eye = camera.pos;
         double reach = mc.options.getEffectiveRenderDistance() * 16.0 + LENGTH;
@@ -65,7 +65,7 @@ public final class SearchlightFx {
         Vector3f up = orientation.transform(new Vector3f(0, 1, 0));
         PoseStack poseStack = event.getPoseStack();
         // By day the beam all but goes (the sky as bright as it), by night it shows whole: by how dark the sky is.
-        float night = 0.22f + 0.78f * Math.clamp(mc.level.getSkyDarken() / 11f, 0f, 1f);
+        float night = 0.22f + 0.78f * dev.groundburst.legacy.J21.clamp(mc.level.getSkyDarken() / 11f, 0f, 1f);
         FxRenderTypes.submit(event.getSubmitNodeCollector(), poseStack, FxRenderTypes.glow(BEAM), (pose, buffer) -> {
             for (Beam b : beams) {
                 cone(buffer, pose, b, eye, R0, R1, 0.2f * night);
@@ -86,14 +86,14 @@ public final class SearchlightFx {
         double t = 0;
         for (int i = 0; i < 64 && t < LENGTH; i++) {
             double near = beam.from().add(beam.dir().scale(t)).distanceTo(camera);
-            double t1 = Math.min(LENGTH, t + Math.clamp(near * 0.4, 0.5, 6.0));
+            double t1 = Math.min(LENGTH, t + dev.groundburst.legacy.J21.clamp(near * 0.4, 0.5, 6.0));
             Vec3 p0 = beam.from().add(beam.dir().scale(t)), p1 = beam.from().add(beam.dir().scale(t1));
             double w0 = r0 + (r1 - r0) * t / LENGTH, w1 = r0 + (r1 - r0) * t1 / LENGTH;
             // Seen end on (looking down the beam, or up it into the lens) a ribbon facing the eye would fill the view:
             // its light goes as it turns end on, the lens's glare taking over.
             Vec3 view = p0.add(p1).scale(0.5).subtract(camera).normalize();
             double across = view.cross(beam.dir()).length();
-            float side = (float) Math.clamp((across - 0.12) / 0.45, 0.0, 1.0);
+            float side = (float) dev.groundburst.legacy.J21.clamp((across - 0.12) / 0.45, 0.0, 1.0);
             float a0 = alpha * fade(t) * side, a1 = alpha * fade(t1) * side;
             ribbon(b, pose, p0, p1, camera, w0, w1, a0, a1);
             t = t1;

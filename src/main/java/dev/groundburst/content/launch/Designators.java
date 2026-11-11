@@ -158,7 +158,7 @@ public final class Designators {
      */
     public static int range(ServerPlayer player) {
         int server = Math.max(2, player.level().getServer().getPlayerList().getViewDistance());   // (a test server says 0)
-        int chunks = Math.clamp(player.requestedViewDistance(), 2, server);
+        int chunks = dev.groundburst.legacy.J21.clamp(dev.groundburst.legacy.Game.viewDistance(player), 2, server);
         return Math.min(MAX_RANGE, chunks * 16 + 8);
     }
 
@@ -194,14 +194,14 @@ public final class Designators {
         Vec3 blockHit = frame.toWorld(block.getLocation());
         Direction face = block.getDirection();
         if (!frame.isWorld()) {
-            face = Direction.getNearest(frame.directionToWorld(new Vec3(face.getStepX(), face.getStepY(), face.getStepZ())));
+            face = dev.groundburst.legacy.Dirs.nearest(frame.directionToWorld(new Vec3(face.getStepX(), face.getStepY(), face.getStepZ())));
         }
         double blockAt = struck ? Math.min(length, eye.distanceTo(blockHit)) : length;
         EntityHitResult creature = firstCreature(holder, eye, look, blockAt);
         Hit hit;
         if (creature != null) {
             Entity e = creature.getEntity();
-            hit = new Hit(e.getBoundingBox().getCenter(), creature.getLocation(), Direction.getNearest(eye.subtract(creature.getLocation())), e);
+            hit = new Hit(e.getBoundingBox().getCenter(), creature.getLocation(), dev.groundburst.legacy.Dirs.nearest(eye.subtract(creature.getLocation())), e);
         } else if (struck) {
             hit = new Hit(blockHit, blockHit, face, null);
         } else {

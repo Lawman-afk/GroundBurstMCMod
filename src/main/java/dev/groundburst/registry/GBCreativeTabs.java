@@ -13,9 +13,9 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredItem;
+import dev.groundburst.legacy.DeferredRegister;
 
 /**
  * One creative tab per {@link GBTab}, chained after vanilla's Combat tab. A tab's icon is the first item
@@ -46,7 +46,7 @@ public final class GBCreativeTabs {
     private static ItemStack iconFor(GBTab tab) {
         List<DeferredItem<? extends Item>> contents = GBItems.contents(tab);
         // Empty tabs are never shown, so the fallback is never visible.
-        return contents.isEmpty() ? new ItemStack(Items.BARRIER) : contents.getFirst().get().getDefaultInstance();
+        return contents.isEmpty() ? new ItemStack(Items.BARRIER) : dev.groundburst.legacy.J21.first(contents).get().getDefaultInstance();
     }
 
     public static DeferredHolder<CreativeModeTab, CreativeModeTab> get(GBTab tab) {

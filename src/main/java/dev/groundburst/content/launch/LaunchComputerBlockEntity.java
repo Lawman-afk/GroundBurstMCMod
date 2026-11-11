@@ -28,8 +28,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import dev.groundburst.legacy.net.PacketDistributor;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
@@ -191,7 +191,7 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
         }
         if (!this.viewers.isEmpty() && level.getGameTime() % SCOPE_INTERVAL == 0) {
             for (UUID id : List.copyOf(this.viewers)) {
-                if (level.getPlayerByUUID(id) instanceof ServerPlayer p && p.position().distanceTo(inWorld(Vec3.atCenterOf(this.worldPosition))) < 16) {
+                if (((Object) level.getPlayerByUUID(id)) instanceof ServerPlayer p && p.position().distanceTo(inWorld(Vec3.atCenterOf(this.worldPosition))) < 16) {
                     sendScope(level, p);
                 } else {
                     this.viewers.remove(id);
@@ -207,7 +207,7 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
         this.powered = false;
         if (level.getGameTime() % SCOPE_INTERVAL == 0) {
             for (UUID id : List.copyOf(this.viewers)) {
-                if (level.getPlayerByUUID(id) instanceof ServerPlayer p) {
+                if (((Object) level.getPlayerByUUID(id)) instanceof ServerPlayer p) {
                     sendScope(level, p);
                 }
             }
@@ -241,7 +241,7 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             Launches.untrackMapper(server, this.worldPosition);
         }
     }

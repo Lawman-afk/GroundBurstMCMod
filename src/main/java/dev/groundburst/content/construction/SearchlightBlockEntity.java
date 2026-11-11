@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.joml.Vector3f;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.machine.AnimatedMachine;
@@ -80,7 +80,7 @@ public class SearchlightBlockEntity extends BlockEntity implements AnimatedMachi
             this.wasOn = on;
             this.switchedAt = t;
         }
-        double k = Math.clamp((t - this.switchedAt) / 30.0, 0.0, 1.0);
+        double k = dev.groundburst.legacy.J21.clamp((t - this.switchedAt) / 30.0, 0.0, 1.0);
         k = k * k * (3 - 2 * k);
         double blend = on ? k : 1 - k;
         double phase = (getBlockPos().asLong() * 0x9E3779B97F4A7C15L >>> 40) / (double) (1L << 24) * Math.PI * 2;

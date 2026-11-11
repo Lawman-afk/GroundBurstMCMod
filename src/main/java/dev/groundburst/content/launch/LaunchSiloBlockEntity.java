@@ -35,7 +35,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
@@ -125,7 +125,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
 
     /** Whether a stack can be a warhead: any bomb. */
     public static boolean isWarhead(ItemStack stack) {
-        return stack.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock;
+        return ((Object) stack.getItem()) instanceof BlockItem b && b.getBlock() instanceof BombBlock;
     }
 
     @Override
@@ -426,7 +426,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     @Override
     public void onLoad() {
         super.onLoad();
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             Launches.track(server, this.worldPosition);
         }
     }
@@ -440,7 +440,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             Launches.untrack(server, this.worldPosition);
         }
     }
@@ -470,7 +470,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
 
     @Override
     public List<Component> readout(MachineMenu menu) {
-        Readiness r = Readiness.values()[Math.clamp(menu.extra(DATA_READINESS), 0, Readiness.values().length - 1)];
+        Readiness r = Readiness.values()[dev.groundburst.legacy.J21.clamp(menu.extra(DATA_READINESS), 0, Readiness.values().length - 1)];
         Component state = r == Readiness.COUNTING ? Component.translatable(T_STATE[r.ordinal()], (menu.extra(DATA_COUNTDOWN) + 19) / 20)
                 : r == Readiness.NO_POWER ? Component.translatable(T_STATE[r.ordinal()], launchCost() / 1000)
                 : r == Readiness.READY && menu.extra(DATA_ARMED) != 0 ? Component.translatable(T_ARMED)
@@ -506,8 +506,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     }
 
     @Override
-    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public net.minecraft.nbt.CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -542,8 +542,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("countdown", this.countdown);
         output.putBoolean("armed", this.armed);
         if (this.target != null) {
@@ -556,8 +556,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.countdown = input.getIntOr("countdown", -1);
         this.armed = input.getBooleanOr("armed", false);
         this.target = input.getLong("target").map(BlockPos::of).orElse(null);

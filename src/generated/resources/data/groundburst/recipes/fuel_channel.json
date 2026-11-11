@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "tag": "forge:plates/steel"
+    },
+    "R": {
+      "item": "groundburst:steel_rod"
+    }
+  },
+  "pattern": [
+    "RPR",
+    "R R",
+    "RPR"
+  ],
+  "result": {
+    "item": "groundburst:fuel_channel",
+    "count": 2
+  }
+}

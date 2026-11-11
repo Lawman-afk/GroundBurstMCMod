@@ -80,7 +80,7 @@ public interface MultiblockController {
                     level.setBlock(pos, target, net.minecraft.world.level.block.Block.UPDATE_ALL);
                 }
             }
-            if (level.getBlockEntity(pos) instanceof PortBlockEntity port) {
+            if (((Object) level.getBlockEntity(pos)) instanceof PortBlockEntity port) {
                 port.setController(formed ? controller.controllerPos() : null);
             }
         }

@@ -1,31 +1,8 @@
-# Files edited by hand on this branch (paths here): port.py keeps them; a sync merges main's changes into them.
-src/main/java/dev/groundburst/client/fx/FxRenderTypes.java
-src/main/java/dev/groundburst/client/render/MachineGeoRenderer.java
-src/main/java/dev/groundburst/client/render/VariantGeoModel.java
-src/main/java/dev/groundburst/content/machine/GeoBlockItem.java
-src/main/java/dev/groundburst/client/render/LaunchStationRenderer.java
-src/main/java/dev/groundburst/content/gear/GBArmor.java
-src/main/java/dev/groundburst/content/recipe/ProcessingRecipe.java
-src/main/java/dev/groundburst/content/recipe/GBRecipes.java
-src/main/java/dev/groundburst/client/recipe/ClientRecipes.java
-src/main/java/dev/groundburst/world/GBWorldgen.java
-src/main/java/dev/groundburst/world/ConfigToggleFilter.java
-src/main/java/dev/groundburst/client/manual/StructureView.java
-src/main/java/dev/groundburst/client/screen/ItemPreview.java
-src/main/java/dev/groundburst/client/fallout/AshFlakeParticle.java
-src/main/java/dev/groundburst/client/render/GBFluidModels.java
-src/main/java/dev/groundburst/client/render/FluidVisuals.java
-src/main/java/dev/groundburst/client/render/IceShellRenderer.java
-src/main/java/dev/groundburst/heal/Snapshots.java
-src/main/java/dev/groundburst/mixin/FireBlockMixin.java
-src/main/java/dev/groundburst/mixin/SpreadingSnowyBlockMixin.java
-src/main/java/dev/groundburst/mixin/FarmlandBlockMixin.java
-src/main/java/dev/groundburst/client/fx/PlayBenchClient.java
+# Files of the 1.21.1 build edited by hand here (port.py keeps them; --sync merges the 1.21.1 build's changes into them).
+src/main/java/dev/groundburst/port/SavedDataType.java
 src/main/java/dev/groundburst/client/fx/IrisFx.java
+src/main/java/dev/groundburst/content/gear/GBArmor.java
+src/main/java/dev/groundburst/content/machine/GeoBlockItem.java
+src/main/java/dev/groundburst/client/render/MachineGeoRenderer.java
 src/main/java/dev/groundburst/client/fx/DrawnLast.java
-src/main/java/dev/groundburst/mixin/BlockStateBaseMixin.java
-src/main/java/dev/groundburst/mixin/ServerExplosionMixin.java
-src/main/java/dev/groundburst/gametest/GameTestRegistration.java
-src/main/java/dev/groundburst/client/fx/FxSort.java
-src/main/java/dev/groundburst/content/construction/FilingCabinetBlockEntity.java
-src/main/java/dev/groundburst/client/render/PolyGeoModel.java
+src/main/java/dev/groundburst/port/render/FreeRotationModels.java

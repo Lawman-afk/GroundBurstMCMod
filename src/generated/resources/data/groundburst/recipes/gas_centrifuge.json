@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "A": {
+      "tag": "forge:circuits/advanced"
+    },
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "M": {
+      "item": "groundburst:electric_motor"
+    },
+    "R": {
+      "tag": "forge:rods/tungsten"
+    }
+  },
+  "pattern": [
+    "DRD",
+    "MFM",
+    " A "
+  ],
+  "result": {
+    "item": "groundburst:gas_centrifuge"
+  }
+}

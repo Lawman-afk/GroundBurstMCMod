@@ -86,7 +86,7 @@ public final class FluidPipeNetwork {
             Set<BlockPos> targets = new HashSet<>();
             for (BlockPos p : seen) {
                 BlockState state = level.getBlockState(p);
-                if (!(state.getBlock() instanceof FluidPipeBlock pipeBlock)) {
+                if (!(((Object) state.getBlock()) instanceof FluidPipeBlock pipeBlock)) {
                     continue;
                 }
                 rate = Math.min(rate, pipeBlock.tier().rate());

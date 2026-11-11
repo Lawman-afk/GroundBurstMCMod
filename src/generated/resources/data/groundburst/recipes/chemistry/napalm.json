@@ -1,0 +1,33 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:napalm"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": {
+        "tag": "forge:synthetic_fuel"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "groundburst:plastic_sheet"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:slimeballs"
+      }
+    }
+  ],
+  "time": 200
+}

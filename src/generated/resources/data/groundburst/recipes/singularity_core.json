@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:singularity_seed"
+    },
+    {
+      "item": "groundburst:containment_cell"
+    },
+    {
+      "item": "groundburst:containment_cell"
+    },
+    {
+      "item": "groundburst:containment_cell"
+    },
+    {
+      "item": "groundburst:containment_cell"
+    },
+    {
+      "item": "groundburst:quantum_circuit"
+    }
+  ],
+  "result": {
+    "item": "groundburst:singularity_core"
+  }
+}

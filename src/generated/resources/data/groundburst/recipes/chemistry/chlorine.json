@@ -1,0 +1,27 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:chlorine"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": {
+        "tag": "minecraft:water"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": {
+        "item": "groundburst:salt"
+      }
+    }
+  ],
+  "time": 300
+}

@@ -14,9 +14,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 
 /**
  * What this branch's item models need from code (tools/backport/port.py writes the models from main's item model
@@ -39,15 +39,15 @@ public final class ItemModels {
     }
 
     public static void register(IEventBus modBus) {
-        property(ResourceLocation.fromNamespaceAndPath("groundburst", "using_item"),
+        property(new ResourceLocation("groundburst", "using_item"),
                 (stack, level, owner, seed) -> owner != null && owner.isUsingItem() && owner.getUseItem() == stack ? 1 : 0);
         modBus.addListener((FMLClientSetupEvent event) -> event.enqueueWork(ItemModels::registerProperties));
         modBus.addListener((RegisterColorHandlersEvent.Item event) -> {
             ItemModelTable.TINTS.forEach((id, colours) ->
                     event.register((stack, tintIndex) -> tintIndex >= 0 && tintIndex < colours.length ? colours[tintIndex] : -1, item(id)));
             // A bucket's fluid layer (NeoForge's fluid container model draws it in tint 1) in its fluid's colour.
-            event.register((stack, tintIndex) -> tintIndex == 1 && stack.getItem() instanceof net.minecraft.world.item.BucketItem bucket
-                    ? net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(bucket.content).getTintColor() : -1,
+            event.register((stack, tintIndex) -> tintIndex == 1 && ((Object) stack.getItem()) instanceof net.minecraft.world.item.BucketItem bucket
+                    ? net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions.of(bucket.getFluid()).getTintColor() : -1,
                     ItemModelTable.FLUID_CONTAINERS.stream().map(ItemModels::item).toArray(Item[]::new));
         });
     }
@@ -71,12 +71,12 @@ public final class ItemModels {
                 }
             };
             for (String id : e.getValue()) {
-                ItemProperties.register(item(id), ResourceLocation.parse(e.getKey()), function);
+                ItemProperties.register(item(id), new ResourceLocation(e.getKey()), function);
             }
         }
     }
 
     private static Item item(String id) {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.parse(id));
+        return BuiltInRegistries.ITEM.get(new ResourceLocation(id));
     }
 }

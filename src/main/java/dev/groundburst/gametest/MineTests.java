@@ -91,7 +91,7 @@ final class MineTests {
             helper.runAfterDelay(4, () -> {
                 var cans = helper.getLevel().getEntitiesOfClass(ThrownExplosive.class, area);
                 helper.assertTrue(!is(helper, at, GBOrdnance.BOUNCING_MINE.block().get()) && cans.size() == 1, "the canister popped out");
-                helper.assertTrue(cans.getFirst().getY() > ground + 0.3, "and is rising (" + (cans.getFirst().getY() - ground) + ")");
+                helper.assertTrue(dev.groundburst.legacy.J21.first(cans).getY() > ground + 0.3, "and is rising (" + (dev.groundburst.legacy.J21.first(cans).getY() - ground) + ")");
                 helper.succeedWhen(() -> helper.assertTrue(helper.getLevel().getEntitiesOfClass(Shrapnel.class, area).size() >= 20,
                         "it burst into fragments"));
             });

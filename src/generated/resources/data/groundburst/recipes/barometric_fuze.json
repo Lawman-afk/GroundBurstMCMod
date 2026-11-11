@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    },
+    {
+      "item": "groundburst:copper_plate"
+    }
+  ],
+  "result": {
+    "item": "groundburst:barometric_fuze",
+    "count": 2
+  }
+}

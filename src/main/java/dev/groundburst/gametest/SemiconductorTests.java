@@ -28,9 +28,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import dev.groundburst.legacy.recipe.RecipeHolder;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 /** The semiconductor chain (DESIGN.md §8.1): its materials, gases and the recipes that pick them. */
 final class SemiconductorTests {

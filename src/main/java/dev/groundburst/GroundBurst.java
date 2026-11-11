@@ -23,17 +23,20 @@ import dev.groundburst.registry.GBLang;
 import dev.groundburst.registry.GBSounds;
 import dev.groundburst.world.GBWorldgen;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 
 @Mod(GroundBurst.MODID)
 public class GroundBurst {
     public static final String MODID = "groundburst";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public GroundBurst(IEventBus modBus, ModContainer modContainer) {
+    public GroundBurst() {
+        IEventBus modBus = net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext.get().getModEventBus();
+        ModContainer modContainer = net.minecraftforge.fml.ModLoadingContext.get().getActiveContainer();
+        dev.groundburst.legacy.Lifecycle.install(modBus, modContainer);
         GBResources.init();
         GBMachines.init();
         GBParts.init();
@@ -94,14 +97,16 @@ public class GroundBurst {
         dev.groundburst.heal.GBHeal.register(modBus);
         GBGameTests.register(modBus);
 
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(dev.groundburst.content.machine.MachineFluidInteraction::onRightClickBlock);
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(dev.groundburst.content.machine.MachineFluidInteraction::onRightClickBlock);
 
         GBLang.add(MODID + ".configuration.title", "Ground Burst Settings");
-        modContainer.registerConfig(ModConfig.Type.SERVER, GBServerConfig.SPEC);
-        modContainer.registerConfig(ModConfig.Type.COMMON, GBCommonConfig.SPEC);
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, GBServerConfig.SPEC);
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, GBCommonConfig.SPEC);
+        net.minecraftforge.fml.DistExecutor.unsafeRunWhenOn(net.minecraftforge.api.distmarker.Dist.CLIENT,
+                () -> () -> new GroundBurstClient(modBus, modContainer));
     }
 
     public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MODID, path);
+        return new ResourceLocation(MODID, path);
     }
 }

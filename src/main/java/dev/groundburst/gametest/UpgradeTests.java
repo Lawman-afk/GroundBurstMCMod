@@ -84,7 +84,7 @@ final class UpgradeTests {
         helper.assertTrue(crusher.upgrades().getContainerSize() == 3, "in three slots: " + crusher.upgrades().getContainerSize());
         helper.assertTrue(crusher.upgrades().canPlaceItem(2, chip), "the slots take a chip");
         helper.assertTrue(!crusher.upgrades().canPlaceItem(0, new ItemStack(Items.RAW_IRON)), "and nothing else");
-        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        var player = helper.makeMockPlayer();
         player.getInventory().setItem(0, chip.copy());
         MachineMenu menu = (MachineMenu) crusher.createMenu(1, player.getInventory(), player);
         helper.assertTrue(menu != null && menu.upgradeSlot() >= 0, "its menu has the upgrade slots");

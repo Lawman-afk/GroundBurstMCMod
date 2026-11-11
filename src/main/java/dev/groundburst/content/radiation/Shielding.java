@@ -11,7 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.common.Tags;
 
 /**
  * How blocks stop radiation (DESIGN.md §21.8). Each block has a half-value layer, the thickness of it that stops half
@@ -42,7 +42,7 @@ public final class Shielding {
         if (s.getBlock() instanceof LiquidBlock) {
             return LIQUID;
         }
-        if (s.is(Tags.Blocks.GLASS_BLOCKS)) {
+        if (s.is(Tags.Blocks.GLASS)) {
             return GLASS;
         }
         if (s.is(BlockTags.LOGS) || s.is(BlockTags.PLANKS)) {

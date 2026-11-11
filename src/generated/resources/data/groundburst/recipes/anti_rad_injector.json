@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "groundburst:rad_away"
+    },
+    {
+      "item": "groundburst:potassium_iodide"
+    },
+    {
+      "item": "groundburst:potassium_iodide"
+    },
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "minecraft:iron_nugget"
+    }
+  ],
+  "result": {
+    "item": "groundburst:anti_rad_injector"
+  }
+}

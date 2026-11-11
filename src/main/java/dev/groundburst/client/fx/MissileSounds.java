@@ -75,7 +75,7 @@ final class MissileSounds {
             double d = ear.distanceTo(this.missile.position());
             if (this.lastDistance >= 0) {
                 double closing = this.lastDistance - d;
-                this.pitch = (float) Math.clamp(1 / (1 - Math.clamp(closing / SOUND, -0.45, 0.45)), 0.65, 1.6) * (this.reentry ? 0.9f : 1);
+                this.pitch = (float) dev.groundburst.legacy.J21.clamp(1 / (1 - dev.groundburst.legacy.J21.clamp(closing / SOUND, -0.45, 0.45)), 0.65, 1.6) * (this.reentry ? 0.9f : 1);
             }
             this.lastDistance = d;
         }

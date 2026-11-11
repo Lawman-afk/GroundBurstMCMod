@@ -39,7 +39,7 @@ import net.minecraft.world.level.ItemLike;
  */
 @JeiPlugin
 public final class GBJeiPlugin implements IModPlugin {
-    private static final Map<ProcessingKind, RecipeType<net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe>>> TYPES = new EnumMap<>(ProcessingKind.class);
+    private static final Map<ProcessingKind, RecipeType<dev.groundburst.legacy.recipe.RecipeHolder<ProcessingRecipe>>> TYPES = new EnumMap<>(ProcessingKind.class);
 
     /** The machine that runs each kind of recipe (kinds without a machine yet are left out). */
     private static Map<ProcessingKind, ItemLike> machines() {
@@ -61,8 +61,8 @@ public final class GBJeiPlugin implements IModPlugin {
         return m;
     }
 
-    private static RecipeType<net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe>> type(ProcessingKind kind) {
-        return TYPES.computeIfAbsent(kind, k -> RecipeType.createFromVanilla(GBRecipes.type(k)));
+    private static RecipeType<dev.groundburst.legacy.recipe.RecipeHolder<ProcessingRecipe>> type(ProcessingKind kind) {
+        return TYPES.computeIfAbsent(kind, k -> dev.groundburst.legacy.jei.JeiTypes.fromVanilla(GBRecipes.type(k)));
     }
 
     @Override
@@ -302,6 +302,6 @@ public final class GBJeiPlugin implements IModPlugin {
     }
 
     private static ProcessingKind kindOf(MachineBlockEntity machine) {
-        return machine instanceof dev.groundburst.content.machine.ProcessingBlockEntity processing ? processing.kind() : null;
+        return ((Object) machine) instanceof dev.groundburst.content.machine.ProcessingBlockEntity processing ? processing.kind() : null;
     }
 }

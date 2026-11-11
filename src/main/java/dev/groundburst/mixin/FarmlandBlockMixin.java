@@ -43,7 +43,7 @@ abstract class FarmlandBlockMixin {
     /** However it comes to it (dried out, rubble landed on it, trodden), farmland turning back to earth is remembered first. */
     @WrapMethod(method = "turnToDirt")
     private static void groundburst$toEarth(@Nullable Entity by, BlockState state, Level level, BlockPos pos, Operation<Void> original) {
-        if (level instanceof ServerLevel server && dev.groundburst.heal.Scars.watching(server, pos)) {
+        if (((Object) level) instanceof ServerLevel server && dev.groundburst.heal.Scars.watching(server, pos)) {
             dev.groundburst.heal.Scars.aftermathCourse(server, pos, false, () -> original.call(by, state, level, pos));
         } else {
             original.call(by, state, level, pos);

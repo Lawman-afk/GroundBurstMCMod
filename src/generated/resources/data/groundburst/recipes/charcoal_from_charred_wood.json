@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:smelting",
+  "cookingtime": 200,
+  "experience": 0.15,
+  "ingredient": {
+    "item": "groundburst:charred_wood"
+  },
+  "result": {
+    "item": "minecraft:charcoal"
+  }
+}

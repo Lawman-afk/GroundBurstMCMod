@@ -20,10 +20,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * Command Desk): its shape the boxes it is given as it stands facing north (block pixels), turned to its facing.
  */
 public class DecorBlock extends HorizontalDirectionalBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends DecorBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     private final VoxelShape[] shapes = new VoxelShape[4];
 
@@ -51,12 +48,12 @@ public class DecorBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return this.shapes[state.getValue(FACING).get2DDataValue()];
     }
 
     @Override
-    protected boolean isPathfindable(BlockState state, PathComputationType type) {
+    public boolean isPathfindable(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_, net.minecraft.world.level.pathfinder.PathComputationType type) {
         return false;
     }
 }

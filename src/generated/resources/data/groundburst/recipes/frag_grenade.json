@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": {
+      "item": "minecraft:gunpowder"
+    },
+    "N": {
+      "item": "minecraft:iron_nugget"
+    },
+    "P": {
+      "item": "groundburst:steel_plate"
+    }
+  },
+  "pattern": [
+    "NPN",
+    "NGN",
+    "NNN"
+  ],
+  "result": {
+    "item": "groundburst:frag_grenade",
+    "count": 2
+  }
+}

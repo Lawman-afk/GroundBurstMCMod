@@ -87,10 +87,10 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(ITEM, ItemStack.EMPTY);
-        builder.define(SMOKING, false);
-        builder.define(STUCK, false);
+    protected void defineSynchedData() {
+        this.entityData.define(ITEM, ItemStack.EMPTY);
+        this.entityData.define(SMOKING, false);
+        this.entityData.define(STUCK, false);
     }
 
     public void setItem(ItemStack stack) {
@@ -103,7 +103,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     }
 
     public GrenadeType type() {
-        if (getItem().getItem() instanceof GrenadeItem g) {
+        if (((Object) getItem().getItem()) instanceof GrenadeItem g) {
             return g.type();
         }
         return getItem().is(GBOrdnance.BOUNCING_MINE.item().get()) ? GrenadeType.BOUNCING_MINE : GrenadeType.FRAG;
@@ -181,7 +181,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         if (smoking()) {
             this.smokeTicks++;
             setDeltaMovement(Vec3.ZERO);
-            if (level() instanceof ServerLevel server) {
+            if (((Object) level()) instanceof ServerLevel server) {
                 if (this.smokeTicks % 10 == 0) {
                     blindMobs(server);
                 }
@@ -224,10 +224,10 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         Vec3 v = getDeltaMovement().add(0, -GRAVITY, 0).scale(isInWater() ? 0.8 : 0.985);
         setDeltaMovement(v);
         HitResult hit = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-        if (hit.getType() != HitResult.Type.MISS && !net.neoforged.neoforge.event.EventHooks.onProjectileImpact(this, hit)) {
-            if (hit instanceof BlockHitResult block) {
+        if (hit.getType() != HitResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hit)) {
+            if (((Object) hit) instanceof BlockHitResult block) {
                 hitBlock(block, v);
-            } else if (hit instanceof EntityHitResult entity) {
+            } else if (((Object) hit) instanceof EntityHitResult entity) {
                 hitEntity(entity, v);
             }
         } else {
@@ -244,7 +244,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         switch (type().behaviour) {
             case IMPACT -> {
                 setPos(hit.getLocation().add(n.scale(0.1)));
-                if (level() instanceof ServerLevel server) {
+                if (((Object) level()) instanceof ServerLevel server) {
                     goOff(server);
                 }
             }
@@ -272,7 +272,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         switch (type().behaviour) {
             case IMPACT -> {
                 setPos(hit.getLocation());
-                if (level() instanceof ServerLevel server) {
+                if (((Object) level()) instanceof ServerLevel server) {
                     goOff(server);
                 }
             }
@@ -284,7 +284,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
                 playSound(GBOrdnance.STICKY_STICK.get(), 0.8f, 1f);
             }
             case BOUNCE -> {
-                if (level() instanceof ServerLevel server) {
+                if (((Object) level()) instanceof ServerLevel server) {
                     target.hurt(damageSources().thrown(this, getOwner()), 1f);   // a thrown can on the head
                 }
                 setDeltaMovement(v.scale(-0.25));
@@ -389,7 +389,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         }
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(radius))) {
             if (e.position().distanceTo(at) <= radius && !e.fireImmune()) {
-                e.igniteForSeconds(8);
+                e.setSecondsOnFire((int) (8));
             }
         }
     }
@@ -505,7 +505,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
 
     // --- saving --------------------------------------------------------------------------------------------------------
     @Override
-    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, this.registryAccess());
+    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, dev.groundburst.legacy.Regs.access());
         super.addAdditionalSaveData(output.tag());
         output.store("item", ItemStack.CODEC, getItem());
         output.putInt("fuse", this.fuse);
@@ -515,7 +515,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     }
 
     @Override
-    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, this.registryAccess());
+    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, dev.groundburst.legacy.Regs.access());
         super.readAdditionalSaveData(input.tag());
         input.read("item", ItemStack.CODEC).ifPresent(this::setItem);
         this.fuse = input.getIntOr("fuse", type().fuse);
@@ -525,7 +525,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float damage) { if (!(this.level() instanceof ServerLevel level)) return false;
+    public boolean hurt(DamageSource source, float damage) { if (!(((Object) this.level()) instanceof ServerLevel level)) return false;
         return false;
     }
 }

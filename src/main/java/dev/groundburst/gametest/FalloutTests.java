@@ -146,7 +146,7 @@ final class FalloutTests {
         floor(helper);
         var level = helper.getLevel();
         helper.setBlock(new BlockPos(3, 0, 3), Blocks.GRASS_BLOCK);
-        helper.setBlock(new BlockPos(3, 1, 3), Blocks.SHORT_GRASS);
+        helper.setBlock(new BlockPos(3, 1, 3), Blocks.GRASS);
         helper.setBlock(new BlockPos(6, 1, 6), Blocks.OAK_LOG);
         helper.setBlock(new BlockPos(6, 2, 6), Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true));
         helper.setBlock(new BlockPos(9, 0, 9), Blocks.FARMLAND);

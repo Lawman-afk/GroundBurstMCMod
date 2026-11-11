@@ -11,7 +11,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.common.Tags;
 
 /**
  * What the shock does to blocks past the crater (DESIGN.md §11.1 terrain table): in the structural band pressure rays
@@ -62,7 +62,7 @@ public enum TerrainTable {
 
     /** Whether the shock blows this block out of the way (glass, leaves, plants, doors, torches, snow layers). */
     public boolean blowsOut(BlockState state) {
-        return state.is(Tags.Blocks.GLASS_BLOCKS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(BlockTags.LEAVES)
+        return state.is(Tags.Blocks.GLASS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(BlockTags.LEAVES)
                 || state.is(BlockTags.DOORS) || state.is(BlockTags.TRAPDOORS) || state.is(BlockTags.FLOWERS)
                 || state.is(Blocks.SNOW) || state.is(Blocks.TORCH) || state.is(Blocks.WALL_TORCH) || state.is(Blocks.LANTERN)
                 || (state.canBeReplaced() && state.getFluidState().isEmpty() && !state.isAir());
@@ -144,12 +144,12 @@ public enum TerrainTable {
 
     /** Rock: the overworld's stone (stone, granite, diorite, andesite, tuff, deepslate) and cobblestone. */
     static boolean rock(BlockState state) {
-        return state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.Blocks.COBBLESTONES);
+        return state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.Blocks.COBBLESTONE);
     }
 
     /** Sand and sandstone (a desert's ground is sandstone a few blocks down, and flat worlds' is on top). */
     static boolean sand(BlockState state) {
-        return state.is(BlockTags.SAND) || state.is(Tags.Blocks.SANDSTONE_BLOCKS);
+        return state.is(BlockTags.SAND) || state.is(Tags.Blocks.SANDSTONE);
     }
 
     /** Earth: dirt, grass blocks (grass, podzol, mycelium, and dead grass), moss, farmland. */

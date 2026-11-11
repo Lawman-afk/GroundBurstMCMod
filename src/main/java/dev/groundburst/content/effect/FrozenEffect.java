@@ -29,26 +29,26 @@ public class FrozenEffect extends MobEffect {
 
     public FrozenEffect() {
         super(MobEffectCategory.HARMFUL, 0x9FE8FF);
-        addAttributeModifier(Attributes.MOVEMENT_SPEED, GroundBurst.id("frozen_still"), -1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-        addAttributeModifier(Attributes.JUMP_STRENGTH, GroundBurst.id("frozen_no_jump"), -1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+        addAttributeModifier(Attributes.MOVEMENT_SPEED, dev.groundburst.legacy.Attrs.uuid(GroundBurst.id("frozen_still")), -1, AttributeModifier.Operation.MULTIPLY_TOTAL);
+        addAttributeModifier(Attributes.JUMP_STRENGTH, dev.groundburst.legacy.Attrs.uuid(GroundBurst.id("frozen_no_jump")), -1, AttributeModifier.Operation.MULTIPLY_TOTAL);
     }
 
     @Override
-    public boolean shouldApplyEffectTickThisTick(int tickCount, int amplification) {
+    public boolean isDurationEffectTick(int tickCount, int amplification) {
         return true;
     }
 
     @Override
-    public boolean applyEffectTick(net.minecraft.world.entity.LivingEntity mob, int amplification) { if (!(mob.level() instanceof net.minecraft.server.level.ServerLevel level)) return true;
+    public void applyEffectTick(net.minecraft.world.entity.LivingEntity mob, int amplification) { if (!(((Object) mob.level()) instanceof net.minecraft.server.level.ServerLevel level)) return;
         mob.setTicksFrozen(mob.getTicksRequiredToFreeze() + MARK);
         mob.setDeltaMovement(0, Math.min(0, mob.getDeltaMovement().y), 0);
-        if (mob instanceof Mob m) {
+        if (((Object) mob) instanceof Mob m) {
             m.getNavigation().stop();
         }
         if (mob.tickCount % 8 == 0) {
             level.sendParticles(ParticleTypes.SNOWFLAKE, mob.getX(), mob.getY() + mob.getBbHeight() * 0.6, mob.getZ(), 3,
                     mob.getBbWidth() * 0.4, mob.getBbHeight() * 0.3, mob.getBbWidth() * 0.4, 0.01);
         }
-        return true;
+        return;
     }
 }

@@ -17,10 +17,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * ({@link #MELT_CHANCE} a random tick): the cold killed it.
  */
 public class FrozenPlantBlock extends BushBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends FrozenPlantBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final float MELT_CHANCE = 1f / 8;
     private static final VoxelShape SHAPE = dev.groundburst.port.Shapes2.column(12, 0, 13);
@@ -35,12 +32,12 @@ public class FrozenPlantBlock extends BushBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (random.nextFloat() < MELT_CHANCE && !FrostedBlock.cold(level, pos)) {
             level.removeBlock(pos, false);
         }

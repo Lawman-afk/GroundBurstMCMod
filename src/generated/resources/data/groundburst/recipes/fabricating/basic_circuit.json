@@ -1,0 +1,33 @@
+{
+  "type": "groundburst:fabricating",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": {
+        "tag": "forge:wires/copper"
+      }
+    },
+    {
+      "count": 2,
+      "ingredient": {
+        "tag": "forge:dusts/redstone"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "groundburst:plastic_sheet"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:basic_circuit"
+      }
+    }
+  ],
+  "time": 200
+}

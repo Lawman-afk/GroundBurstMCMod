@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "S": {
+      "item": "groundburst:steel_rod"
+    }
+  },
+  "pattern": [
+    "S S",
+    " S ",
+    "S S"
+  ],
+  "result": {
+    "item": "groundburst:czech_hedgehog"
+  }
+}

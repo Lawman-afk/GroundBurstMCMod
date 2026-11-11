@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    },
+    {
+      "item": "groundburst:electric_motor"
+    },
+    {
+      "item": "groundburst:electric_motor"
+    },
+    {
+      "item": "groundburst:servo"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "item": "groundburst:adobe_wall"
+    }
+  ],
+  "result": {
+    "item": "groundburst:arms_dealer"
+  }
+}

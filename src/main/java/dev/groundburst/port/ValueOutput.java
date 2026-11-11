@@ -36,7 +36,7 @@ public final class ValueOutput {
     }
 
     public <T> void store(String name, Codec<T> codec, T value) {
-        codec.encodeStart(this.registries.createSerializationContext(NbtOps.INSTANCE), value).result().ifPresent(t -> this.tag.put(name, t));
+        codec.encodeStart(net.minecraft.resources.RegistryOps.create(NbtOps.INSTANCE, this.registries), value).result().ifPresent(t -> this.tag.put(name, t));
     }
 
     public <T> void storeNullable(String name, Codec<T> codec, @Nullable T value) {
@@ -46,9 +46,9 @@ public final class ValueOutput {
     }
 
     public <T> void store(MapCodec<T> codec, T value) {
-        codec.codec().encodeStart(this.registries.createSerializationContext(NbtOps.INSTANCE), value).result()
+        codec.codec().encodeStart(net.minecraft.resources.RegistryOps.create(NbtOps.INSTANCE, this.registries), value).result()
                 .ifPresent(t -> {
-                    if (t instanceof CompoundTag c) {
+                    if (((Object) t) instanceof CompoundTag c) {
                         this.tag.merge(c);
                     }
                 });
@@ -156,7 +156,7 @@ public final class ValueOutput {
         }
 
         public void add(T value) {
-            this.codec.encodeStart(this.registries.createSerializationContext(NbtOps.INSTANCE), value).result().ifPresent(this.list::add);
+            this.codec.encodeStart(net.minecraft.resources.RegistryOps.create(NbtOps.INSTANCE, this.registries), value).result().ifPresent(this.list::add);
         }
 
         public boolean isEmpty() {

@@ -21,12 +21,12 @@ final class Snapshots {
 
     /** A block entity as it is now, everything it holds (its contents, its words, its custom name). */
     static CompoundTag save(BlockEntity be, ServerLevel level) {
-        return be.saveWithFullMetadata(level.registryAccess());
+        return be.saveWithFullMetadata();
     }
 
     /** Puts a saved block entity's contents back into the one standing there now. */
     static void load(BlockEntity be, CompoundTag tag, ServerLevel level) {
-        be.loadWithComponents(tag, level.registryAccess());
+        be.load(tag);
     }
 
     /**
@@ -45,10 +45,10 @@ final class Snapshots {
      * 26.x's resource handler.)
      */
     static void empty(BlockEntity be, ServerLevel level) {
-        if (be instanceof net.minecraft.world.Clearable clearable) {
+        if (((Object) be) instanceof net.minecraft.world.Clearable clearable) {
             clearable.clearContent();
         } else {
-            net.neoforged.neoforge.items.IItemHandler items = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
+            net.minecraftforge.items.IItemHandler items = dev.groundburst.legacy.Caps.get(level, dev.groundburst.legacy.Capabilities.ItemHandler.BLOCK,
                     be.getBlockPos(), be.getBlockState(), be, null);
             if (items != null) {
                 for (int i = 0; i < items.getSlots(); i++) {
@@ -89,7 +89,7 @@ final class Snapshots {
      * {@code mixin/ServerExplosionMixin}, {@link dev.groundburst.port.ExplosionDamage}), else null.
      */
     static net.minecraft.resources.@Nullable ResourceLocation damageType(net.minecraft.world.level.Explosion explosion) {
-        return explosion instanceof dev.groundburst.port.ExplosionDamage d
+        return ((Object) explosion) instanceof dev.groundburst.port.ExplosionDamage d
                 ? d.groundburst$damageSource().typeHolder().unwrapKey().map(net.minecraft.resources.ResourceKey::location).orElse(null) : null;
     }
 

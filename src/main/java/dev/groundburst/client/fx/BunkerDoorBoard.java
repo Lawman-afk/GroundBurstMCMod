@@ -52,7 +52,7 @@ final class BunkerDoorBoard {
             }
             level.setBlock(at, state, 3);
             block.setPlacedBy(level, at, state, null, ItemStack.EMPTY);
-            if (d.open() && level.getBlockEntity(at) instanceof BlastDoorBlockEntity door) {
+            if (d.open() && ((Object) level.getBlockEntity(at)) instanceof BlastDoorBlockEntity door) {
                 door.toggle(level, null);
             }
         }

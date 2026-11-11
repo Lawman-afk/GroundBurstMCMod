@@ -13,13 +13,13 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import dev.groundburst.port.input.KeyEvent;
 import net.minecraft.world.inventory.Slot;
-import net.neoforged.bus.api.IEventBus;
+import net.minecraftforge.eventbus.api.IEventBus;
 
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 
-import net.neoforged.neoforge.client.event.ScreenEvent;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.client.settings.KeyConflictContext;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * Client wiring for the Field Manual: content loading, the 3D structure view, opening the book from its item, and
@@ -36,8 +36,8 @@ public final class ManualHotkey {
         modBus.addListener((RegisterKeyMappingsEvent e) -> {
             e.register(KEY);
         });
-        modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent e) -> e.registerReloadListener(new Manual.Loader()));
-        NeoForge.EVENT_BUS.addListener(ManualHotkey::keyInScreen);
+        modBus.addListener((net.minecraftforge.client.event.RegisterClientReloadListenersEvent e) -> e.registerReloadListener(new Manual.Loader()));
+        MinecraftForge.EVENT_BUS.addListener(ManualHotkey::keyInScreen);
         GBManual.open = ManualHotkey::open;
     }
 
@@ -53,7 +53,7 @@ public final class ManualHotkey {
     }
 
     private static void keyInScreen(ScreenEvent.KeyPressed.Pre event) {
-        if (!(event.getScreen() instanceof AbstractContainerScreen<?> screen) || !matches(new dev.groundburst.port.input.KeyEvent(event.getKeyCode(), event.getScanCode(), event.getModifiers()))
+        if (!(((Object) event.getScreen()) instanceof AbstractContainerScreen<?> screen) || !matches(new dev.groundburst.port.input.KeyEvent(event.getKeyCode(), event.getScanCode(), event.getModifiers()))
                 || screen.getFocused() instanceof net.minecraft.client.gui.components.EditBox) {
             return;
         }

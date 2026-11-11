@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -204,7 +204,7 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
         Vec3 from = inWorld(launcher());
         Vec3 d = frame().directionToLocal(s.at().subtract(from));  // its turret turns in its own frame
         this.aimYaw = (float) Math.toDegrees(Math.atan2(d.x, d.z));
-        this.aimPitch = (float) Math.clamp(Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z))), MIN_PITCH, MAX_PITCH);
+        this.aimPitch = (float) dev.groundburst.legacy.J21.clamp(Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z))), MIN_PITCH, MAX_PITCH);
         this.aimUntil = level.getGameTime() + Math.max(HOLD_AIM, s.ticks() + 20);      // while its interceptor flies, and a moment
         this.ready--;
         this.energy.consume(LAUNCH_ENERGY);
@@ -263,8 +263,8 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
 
     // --- model ------------------------------------------------------------------------------------------------------------
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -310,9 +310,9 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
             this.shownYaw = wantYaw;
             this.shownPitch = wantPitch;
         } else {
-            float dt = (float) Math.clamp(now - this.shownAt, 0, 10);
-            this.shownYaw += Math.clamp(wrap(wantYaw - this.shownYaw), -SLEW * dt, SLEW * dt);
-            this.shownPitch += Math.clamp(wantPitch - this.shownPitch, -ELEVATE * dt, ELEVATE * dt);
+            float dt = (float) dev.groundburst.legacy.J21.clamp(now - this.shownAt, 0, 10);
+            this.shownYaw += dev.groundburst.legacy.J21.clamp(wrap(wantYaw - this.shownYaw), -SLEW * dt, SLEW * dt);
+            this.shownPitch += dev.groundburst.legacy.J21.clamp(wantPitch - this.shownPitch, -ELEVATE * dt, ELEVATE * dt);
         }
         this.shownAt = now;
         Map<String, float[]> out = new HashMap<>();
@@ -333,8 +333,8 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("ready", this.ready);
         output.putInt("reload", this.reload);
         output.putFloat("aim_yaw", this.aimYaw);
@@ -345,8 +345,8 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.ready = input.getIntOr("ready", 0);
         this.reload = input.getIntOr("reload", 0);
         this.aimYaw = input.getFloatOr("aim_yaw", 0);

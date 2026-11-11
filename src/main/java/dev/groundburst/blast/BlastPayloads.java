@@ -1,9 +1,9 @@
 package dev.groundburst.blast;
 
 import dev.groundburst.network.GBNetwork;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -32,7 +32,7 @@ public final class BlastPayloads {
     public record Start(int id, String soundSet, String visual, Vec3 center, float crater, float depth, float reach, float outer, float frontSpeed,
             long seed, long startTick) implements CustomPacketPayload {
         public static final Type<Start> TYPE = GBNetwork.type("blast_start");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeUtf(p.soundSet);
             buf.writeUtf(p.visual);
@@ -58,7 +58,7 @@ public final class BlastPayloads {
     /** The front of blast {@code id} has reached {@code radius}. */
     public record Front(int id, float radius) implements CustomPacketPayload {
         public static final Type<Front> TYPE = GBNetwork.type("blast_front");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Front> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Front> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeFloat(p.radius);
         }, buf -> new Front(buf.readVarInt(), buf.readFloat()));
@@ -72,7 +72,7 @@ public final class BlastPayloads {
     /** Blast {@code id} has finished. */
     public record End(int id) implements CustomPacketPayload {
         public static final Type<End> TYPE = GBNetwork.type("blast_end");
-        public static final StreamCodec<RegistryFriendlyByteBuf, End> CODEC = StreamCodec.of((buf, p) -> buf.writeVarInt(p.id),
+        public static final StreamCodec<FriendlyByteBuf, End> CODEC = StreamCodec.of((buf, p) -> buf.writeVarInt(p.id),
                 buf -> new End(buf.readVarInt()));
 
         @Override

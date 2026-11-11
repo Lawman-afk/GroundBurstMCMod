@@ -109,7 +109,7 @@ final class AssemblerTests {
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_WARHEAD, warhead);
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_BODY, new ItemStack(GBAssembly.BODIES.get(size.ordinal()).get()));
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_MOTOR,
-                new ItemStack(GBAssembly.MOTORS.get(MissileAssembly.rocketsFor(size).getLast().ordinal()).get()));
+                new ItemStack(GBAssembly.MOTORS.get(dev.groundburst.legacy.J21.last(MissileAssembly.rocketsFor(size)).ordinal()).get()));
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_GUIDANCE, guidance);
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_MODULE, module);
     }
@@ -119,7 +119,7 @@ final class AssemblerTests {
         MissileAssemblerBlockEntity a = assembler(helper, kind, true);
         a.energy().generate(kind.capacity);
         ItemStack warhead = warheadOf(kind);
-        warhead.set(GBDataComponents.FUZE.get(), FuzeSettings.of(Fuze.BAROMETRIC, 40));
+        dev.groundburst.legacy.component.Comps.set(warhead, GBDataComponents.FUZE.get(), FuzeSettings.of(Fuze.BAROMETRIC, 40));
         load(a, warhead, new ItemStack(GBAssembly.GPS_GUIDANCE.get()), new ItemStack(GBAssembly.HARDENED_ELECTRONICS.get()));
         helper.assertTrue(a.startAssembly(), "assembly starts: " + a.problem());
         a.skipToEndForTest();
@@ -127,9 +127,9 @@ final class AssemblerTests {
             MissileSpec s = MissileItem.spec(a.inventory().getItem(MissileAssemblerBlockEntity.SLOT_OUTPUT));
             helper.assertTrue(s != null, "a missile");
             helper.assertTrue(s.warhead().is(warheadOf(kind).getItem()) && s.body() == kind.size
-                    && s.motor() == MissileAssembly.rocketsFor(kind.size).getLast() && s.guidance() == MissileParts.Guidance.GPS && s.hardened(),
+                    && s.motor() == dev.groundburst.legacy.J21.last(MissileAssembly.rocketsFor(kind.size)) && s.guidance() == MissileParts.Guidance.GPS && s.hardened(),
                     "its parts: " + s);
-            helper.assertTrue(s.warhead().getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT).value() == 40, "the fuze kept its setting");
+            helper.assertTrue(dev.groundburst.legacy.component.Comps.getOrDefault(s.warhead(), GBDataComponents.FUZE.get(), FuzeSettings.IMPACT).value() == 40, "the fuze kept its setting");
             for (int i = MissileAssemblerBlockEntity.SLOT_WARHEAD; i <= MissileAssemblerBlockEntity.SLOT_MODULE; i++) {
                 helper.assertTrue(a.inventory().getItem(i).isEmpty(), "part slot " + i + " used");
             }
@@ -147,7 +147,7 @@ final class AssemblerTests {
     private static void portsFromAbove(GameTestHelper helper) {
         var level = helper.getLevel();
         var pipe = dev.groundburst.content.pipe.GBPipes.ITEM_PIPE.block().get().defaultBlockState();
-        var cable = dev.groundburst.content.machine.GBMachines.CABLES.getFirst().block().get().defaultBlockState();
+        var cable = dev.groundburst.legacy.J21.first(dev.groundburst.content.machine.GBMachines.CABLES).block().get().defaultBlockState();
         for (AssemblerClass kind : AssemblerClass.values()) {
             MissileAssemblerBlockEntity a = assembler(helper, kind, true);
             MultiblockDefinition def = GBAssemblers.definition(kind);
@@ -164,7 +164,7 @@ final class AssemblerTests {
             level.setBlockAndUpdate(energy.above(), cable);
             a.revalidate();
             helper.assertTrue(a.isFormed(), kind + " stays formed with a pipe and a cable on its ports: " + def.check(level, a.getBlockPos(), Direction.NORTH));
-            helper.assertTrue(level.getCapability(dev.groundburst.port.transfer.Capabilities.Item.BLOCK, item, Direction.UP) != null,
+            helper.assertTrue(dev.groundburst.legacy.Caps.get(level, dev.groundburst.port.transfer.Capabilities.Item.BLOCK, item, Direction.UP) != null,
                     kind + ": its Item Port gives its items to the pipe on it");
             // Clear the plot for the next class.
             for (MultiblockDefinition.Cell cell : def.cells(a.getBlockPos(), Direction.NORTH)) {
@@ -261,13 +261,13 @@ final class AssemblerTests {
     private static void takesApart(GameTestHelper helper) {
         MissileAssemblerBlockEntity a = assembler(helper, AssemblerClass.LIGHT, true);
         ItemStack w = warheadOf(AssemblerClass.LIGHT);
-        w.set(GBDataComponents.FUZE.get(), FuzeSettings.of(Fuze.BAROMETRIC, 25));
+        dev.groundburst.legacy.component.Comps.set(w, GBDataComponents.FUZE.get(), FuzeSettings.of(Fuze.BAROMETRIC, 25));
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_OUTPUT, MissileAssembly.missile(new MissileSpec(w, SizeClass.S,
                 MissileParts.Motor.SRM_I, MissileParts.Guidance.INERTIAL, false)));
         helper.assertTrue(a.laid() == MissileAssemblerBlockEntity.SECTIONS, "a finished missile lies on the cradles");
         helper.assertTrue(a.takeApart(), "taken apart");
         var inv = a.inventory();
-        helper.assertTrue(inv.getItem(MissileAssemblerBlockEntity.SLOT_WARHEAD).getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT).value() == 25,
+        helper.assertTrue(dev.groundburst.legacy.component.Comps.getOrDefault(inv.getItem(MissileAssemblerBlockEntity.SLOT_WARHEAD), GBDataComponents.FUZE.get(), FuzeSettings.IMPACT).value() == 25,
                 "the warhead, its fuze set as it was");
         helper.assertTrue(inv.getItem(MissileAssemblerBlockEntity.SLOT_BODY).is(GBAssembly.TACTICAL_BODY.get()), "the body");
         helper.assertTrue(inv.getItem(MissileAssemblerBlockEntity.SLOT_MOTOR).is(GBAssembly.SRM_I.get()), "the motor");

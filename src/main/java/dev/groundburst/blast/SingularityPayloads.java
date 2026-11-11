@@ -3,9 +3,9 @@ package dev.groundburst.blast;
 import java.util.function.Consumer;
 
 import dev.groundburst.network.GBNetwork;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -25,7 +25,7 @@ public final class SingularityPayloads {
     /** Singularity {@code id} opened {@code age} ticks ago at {@code center}, reaching {@code reach} now; it lives {@code life} ticks. */
     public record Start(int id, Vec3 center, float reach, int life, int age) implements CustomPacketPayload {
         public static final Type<Start> TYPE = GBNetwork.type("singularity_start");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeDouble(p.center.x);
             buf.writeDouble(p.center.y);
@@ -45,7 +45,7 @@ public final class SingularityPayloads {
     /** Singularity {@code id} has grown to reach {@code reach} (sent every few ticks while it grows). */
     public record Grow(int id, float reach) implements CustomPacketPayload {
         public static final Type<Grow> TYPE = GBNetwork.type("singularity_grow");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Grow> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Grow> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeFloat(p.reach);
         }, buf -> new Grow(buf.readVarInt(), buf.readFloat()));
@@ -59,7 +59,7 @@ public final class SingularityPayloads {
     /** Blocks singularity {@code id} tore loose this tick: their places (as longs) and block states (by id). */
     public record Torn(int id, long[] positions, int[] states) implements CustomPacketPayload {
         public static final Type<Torn> TYPE = GBNetwork.type("singularity_torn");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Torn> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Torn> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeVarInt(p.positions.length);
             for (int i = 0; i < p.positions.length; i++) {
@@ -87,7 +87,7 @@ public final class SingularityPayloads {
     /** Singularity {@code id} has begun to implode, reaching {@code reach} at the end of its life. */
     public record Collapse(int id, float reach) implements CustomPacketPayload {
         public static final Type<Collapse> TYPE = GBNetwork.type("singularity_collapse");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Collapse> CODEC = StreamCodec.of((buf, p) -> {
+        public static final StreamCodec<FriendlyByteBuf, Collapse> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeFloat(p.reach);
         }, buf -> new Collapse(buf.readVarInt(), buf.readFloat()));

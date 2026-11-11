@@ -131,7 +131,7 @@ final class SiloTests {
             Vec3 aim = Vec3.atBottomCenterOf(target);
             var ours = Flights.of(helper.getLevel()).all().stream().filter(f -> !before.contains(f) && f.target().distanceTo(aim) < 4).toList();
             helper.assertTrue(ours.size() == 1, "a missile in the air: " + ours.size());
-            Flights.Flight f = ours.getFirst();
+            Flights.Flight f = dev.groundburst.legacy.J21.first(ours);
             Vec3 mouth = f.siloMouth();
             Vec3 pad = Vec3.atBottomCenterOf(s.padCentre()).add(0, 3 / 16.0, 0);
             helper.assertTrue(mouth != null && Math.abs(mouth.y - (s.hatchCentre().getY() + 1)) < 1e-6, "from the silo, its mouth the ground: " + mouth);
@@ -157,7 +157,7 @@ final class SiloTests {
             helper.assertTrue(join > 1 && join + 2 < path.size(), "out of the mouth within its climb: " + join + " of " + path.size());
             double in = path.get(join - 1).distanceTo(path.get(join - 2)), out = path.get(join + 1).distanceTo(path.get(join));
             helper.assertTrue(out < in * 1.6 + 0.05 && out > in * 0.6 - 0.05, "no jolt where it turns: " + in + " then " + out);
-            helper.assertTrue(path.getLast().x > pad.x + 1e-3, "then it turns toward its target: " + path.getLast());
+            helper.assertTrue(dev.groundburst.legacy.J21.last(path).x > pad.x + 1e-3, "then it turns toward its target: " + dev.groundburst.legacy.J21.last(path));
             Flights.of(helper.getLevel()).cancelForTest(helper.getLevel(), f);
             helper.succeed();
         });
@@ -198,7 +198,7 @@ final class SiloTests {
                 helper.assertTrue(!level.getBlockState(p).is(block), "all of it gone");
             }
             var drops = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(c).inflate(3));
-            helper.assertTrue(drops.size() == 1 && drops.getFirst().getItem().is(GBLaunch.SILO_HATCH.item().get()), "one hatch dropped");
+            helper.assertTrue(drops.size() == 1 && dev.groundburst.legacy.J21.first(drops).getItem().is(GBLaunch.SILO_HATCH.item().get()), "one hatch dropped");
         });
     }
 }

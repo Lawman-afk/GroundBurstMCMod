@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
  * What the charges draw beyond their models (DESIGN.md §14): the timed bomb's clock face (the time left in glowing red
  * digits while it counts down, its set time in dim green otherwise), and an armed claymore's red laser tripwire.
  */
-public class ChargeRenderer extends dev.groundburst.port.render.StateBlockEntityRenderer<ChargeBlockEntity, ChargeRenderer.State> {
+public class ChargeRenderer extends dev.groundburst.port.render.StateBlockEntityRenderer<ChargeBlockEntity, ChargeRenderer.State> implements dev.groundburst.legacy.client.RenderBox<ChargeBlockEntity> {
     /** The display's face, 2.4 px in from the block's front, and its middle 4 px up (see tools/assets/charges.py). */
     private static final float FACE = 0.5f - 2.4f / 16f + 0.003f, MIDDLE_Y = 4f / 16f, SCALE = 0.016f;
     private static final int LIT = 15728880;
@@ -107,13 +107,12 @@ public class ChargeRenderer extends dev.groundburst.port.render.StateBlockEntity
                     {x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0}, {x1, y0, z0, x1, y1, z0, x1, y1, z1, x1, y0, z1}};
             for (float[] f : faces) {
                 for (int i = 0; i < 12; i += 3) {
-                    buffer.addVertex(pose, f[i], f[i + 1], f[i + 2]).setColor(LASER_R, LASER_G, LASER_B, LASER_A);
+                    buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), f[i], f[i + 1], f[i + 2]).color(LASER_R, LASER_G, LASER_B, LASER_A).endVertex();
                 }
             }
         });
     }
 
-    @Override
     public net.minecraft.world.phys.AABB getRenderBoundingBox(ChargeBlockEntity be) {
         return new net.minecraft.world.phys.AABB(be.getBlockPos()).inflate(dev.groundburst.content.ordnance.charge.Charges.LASER_RANGE);
     }

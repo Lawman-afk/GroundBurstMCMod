@@ -34,10 +34,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * hatch is not there and open, and breaking it breaks the hatch. No item of its own.
  */
 public class BunkerHatchLidBlock extends HorizontalDirectionalBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends BunkerHatchLidBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
     /** Shapes by facing (2D data value) and half (0 bottom, 1 top), worked out facing north: the lid at the south edge. */
@@ -97,15 +94,14 @@ public class BunkerHatchLidBlock extends HorizontalDirectionalBlock {
     }
 
     /** A click on the lid is a click on its hatch: it shuts. */
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         BlockPos hatch = hatchOf(level, pos, state);
-        return hatch == null ? InteractionResult.PASS : level.getBlockState(hatch).useWithoutItem(level, player, hit.withPosition(hatch));
+        return hatch == null ? InteractionResult.PASS : dev.groundburst.legacy.UseOnBlock.withoutItem(level.getBlockState(hatch), level, player, hit.withPosition(hatch));
     }
 
     /** Its hatch gone, shut or turned: it goes. */
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         Direction toHatch = state.getValue(HALF) == Half.TOP ? Direction.DOWN : Direction.UP;
         if (direction == toHatch && hatchOf(level, pos, state) == null) {
             return Blocks.AIR.defaultBlockState();
@@ -115,28 +111,34 @@ public class BunkerHatchLidBlock extends HorizontalDirectionalBlock {
 
     /** A player breaking the lid breaks its hatch (which drops the item, none in creative). */
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide()) {
             BlockPos hatch = hatchOf(level, pos, state);
             if (hatch != null) {
                 level.destroyBlock(hatch, !player.getAbilities().instabuild, player);
             }
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player); return;
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES[state.getValue(FACING).get2DDataValue()][state.getValue(HALF) == Half.TOP ? 1 : 0];
     }
 
     @Override
-    protected boolean isPathfindable(BlockState state, PathComputationType type) {
+    public boolean isPathfindable(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_, net.minecraft.world.level.pathfinder.PathComputationType type) {
         return false;
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;                            // the hatch's model draws the lid
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

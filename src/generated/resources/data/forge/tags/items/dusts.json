@@ -1,0 +1,64 @@
+{
+  "values": [
+    {
+      "id": "#forge:dusts/sulfur",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/saltpeter",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/uranium",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/lithium",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/tungsten",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/lead",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/rare_earth",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/cobalt",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/iron",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/gold",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/copper",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/cinnabar",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/fluorite",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/lithium_6",
+      "required": false
+    },
+    {
+      "id": "#forge:dusts/depleted_uranium",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:solid_propellant"
+    },
+    {
+      "item": "groundburst:solid_propellant"
+    },
+    {
+      "item": "groundburst:solid_propellant"
+    },
+    {
+      "item": "groundburst:solid_propellant"
+    },
+    {
+      "item": "groundburst:solid_propellant"
+    },
+    {
+      "item": "groundburst:solid_propellant"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "item": "groundburst:tungsten_plate"
+    }
+  ],
+  "result": {
+    "item": "groundburst:solid_rocket_motor_ii"
+  }
+}

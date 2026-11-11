@@ -26,15 +26,15 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.common.SoundActions;
-import net.neoforged.neoforge.fluids.BaseFlowingFluid;
-import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.common.SoundActions;
+import net.minecraftforge.fluids.ForgeFlowingFluid;
+import net.minecraftforge.fluids.FluidType;
+import dev.groundburst.legacy.DeferredBlock;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredItem;
+import dev.groundburst.legacy.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * The mod's chemical fluids (DESIGN.md §6.4). Liquids can be poured into the world with a bucket and carried in
@@ -42,7 +42,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * same fluids, so another mod's tank or pipe works with them too.
  */
 public final class GBFluids {
-    public static final DeferredRegister<FluidType> FLUID_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.FLUID_TYPES, GroundBurst.MODID);
+    public static final DeferredRegister<FluidType> FLUID_TYPES = DeferredRegister.create(ForgeRegistries.Keys.FLUID_TYPES, GroundBurst.MODID);
     public static final DeferredRegister<Fluid> FLUIDS = DeferredRegister.create(Registries.FLUID, GroundBurst.MODID);
 
     private static final List<ChemFluid> ALL = new ArrayList<>();
@@ -152,7 +152,7 @@ public final class GBFluids {
     public static void init() {}
 
     /** Empty and filled canisters fill and pour like buckets (see {@link CanisterFluidHandler}). */
-    public static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
+    public static void registerCapabilities(dev.groundburst.legacy.RegisterCapabilitiesEvent event) {
         List<Item> canisters = new ArrayList<>(List.of(GBParts.EMPTY_CANISTER.get(), GBChemicals.EMPTY_GAS_CANISTER.get()));
         for (ChemFluid f : ALL) {
             canisters.add(f.canister().get());
@@ -181,12 +181,12 @@ public final class GBFluids {
                 .sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL).sound(SoundActions.BUCKET_EMPTY, SoundEvents.BUCKET_EMPTY)));
         GBLang.add("fluid_type." + GroundBurst.MODID + "." + name, english);
         Holders h = new Holders();
-        BaseFlowingFluid.Properties props = new BaseFlowingFluid.Properties(type, () -> h.source.get(), () -> h.flowing.get())
+        ForgeFlowingFluid.Properties props = new ForgeFlowingFluid.Properties(type, () -> h.source.get(), () -> h.flowing.get())
                 .bucket(() -> h.bucket.get()).block(() -> h.block.get())
                 .slopeFindDistance(viscosityFactor > 4 ? 2 : 4).levelDecreasePerBlock(viscosityFactor > 4 ? 2 : 1)
                 .tickRate(5 * viscosityFactor).explosionResistance(100f);
-        h.source = FLUIDS.register(name, () -> new BaseFlowingFluid.Source(props));
-        h.flowing = FLUIDS.register("flowing_" + name, () -> new BaseFlowingFluid.Flowing(props));
+        h.source = FLUIDS.register(name, () -> new ForgeFlowingFluid.Source(props));
+        h.flowing = FLUIDS.register("flowing_" + name, () -> new ForgeFlowingFluid.Flowing(props));
         h.block = GBBlocks.blockOnly(name, english, p -> new ChemLiquidBlock(h.source.get(), hazard, p),
                 p -> p.mapColor(mapColor).replaceable().noCollission().strength(100f).pushReaction(PushReaction.DESTROY)
                         .noLootTable().liquid().sound(SoundType.EMPTY).lightLevel(s -> hazard == Hazard.FIRE ? 3 : 0));
@@ -204,10 +204,10 @@ public final class GBFluids {
                 .canConvertToSource(false).canHydrate(false)));
         GBLang.add("fluid_type." + GroundBurst.MODID + "." + name, english);
         Holders h = new Holders();
-        BaseFlowingFluid.Properties props = new BaseFlowingFluid.Properties(type, () -> h.source.get(), () -> h.flowing.get())
+        ForgeFlowingFluid.Properties props = new ForgeFlowingFluid.Properties(type, () -> h.source.get(), () -> h.flowing.get())
                 .bucket(() -> h.gasBucket.get());
-        h.source = FLUIDS.register(name, () -> new BaseFlowingFluid.Source(props));
-        h.flowing = FLUIDS.register("flowing_" + name, () -> new BaseFlowingFluid.Flowing(props));
+        h.source = FLUIDS.register(name, () -> new ForgeFlowingFluid.Source(props));
+        h.flowing = FLUIDS.register("flowing_" + name, () -> new ForgeFlowingFluid.Flowing(props));
         DeferredBlock<GasCloudBlock> cloud = GBBlocks.blockOnly(name, english, p -> new GasCloudBlock(p, hazard),
                 p -> p.mapColor(MapColor.NONE).replaceable().noCollission().noOcclusion().strength(0f).pushReaction(PushReaction.DESTROY)
                         .noLootTable().sound(SoundType.EMPTY).isViewBlocking((s, l, pos) -> false).isSuffocating((s, l, pos) -> false));
@@ -221,8 +221,8 @@ public final class GBFluids {
 
     /** Late-bound holders: the fluid properties, fluids, block and bucket all refer to each other. */
     private static final class Holders {
-        DeferredHolder<Fluid, BaseFlowingFluid.Source> source;
-        DeferredHolder<Fluid, BaseFlowingFluid.Flowing> flowing;
+        DeferredHolder<Fluid, ForgeFlowingFluid.Source> source;
+        DeferredHolder<Fluid, ForgeFlowingFluid.Flowing> flowing;
         DeferredBlock<ChemLiquidBlock> block;
         DeferredItem<BucketItem> bucket;
         DeferredItem<GasBucketItem> gasBucket;

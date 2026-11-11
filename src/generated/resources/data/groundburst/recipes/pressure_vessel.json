@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "R": {
+      "tag": "forge:rods/steel"
+    }
+  },
+  "pattern": [
+    " D ",
+    "DRD",
+    " D "
+  ],
+  "result": {
+    "item": "groundburst:pressure_vessel"
+  }
+}

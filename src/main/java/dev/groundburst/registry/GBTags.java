@@ -16,7 +16,7 @@ public final class GBTags {
     /** Anything that counts as a basic circuit in recipes: the Handmade Circuit Board and every c:circuits/basic. */
     public static final TagKey<Item> BASIC_CIRCUITS = TagKey.create(Registries.ITEM, GroundBurst.id("basic_circuits"));
     /** Advanced circuits (ours and any mod's c:circuits/advanced). */
-    public static final TagKey<Item> ADVANCED_CIRCUITS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "circuits/advanced"));
+    public static final TagKey<Item> ADVANCED_CIRCUITS = TagKey.create(Registries.ITEM, dev.groundburst.legacy.Tags2.common("circuits/advanced"));
     /** Industrial Press dies. */
     public static final TagKey<Item> PRESS_DIES = TagKey.create(Registries.ITEM, GroundBurst.id("press_dies"));
 
@@ -24,15 +24,15 @@ public final class GBTags {
 
     /** A convention tag pair like c:ores/uranium. */
     public static BlockItemTagId common(String path) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath("c", path);
+        ResourceLocation id = dev.groundburst.legacy.Tags2.common(path);
         return BlockItemTagId.create(id, id);
     }
 
     public static TagKey<Item> commonItem(String path) {
-        return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", path));
+        return TagKey.create(Registries.ITEM, dev.groundburst.legacy.Tags2.common(path));
     }
 
     public static TagKey<Block> commonBlock(String path) {
-        return TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("c", path));
+        return TagKey.create(Registries.BLOCK, dev.groundburst.legacy.Tags2.common(path));
     }
 }

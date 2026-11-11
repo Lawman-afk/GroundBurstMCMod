@@ -1,0 +1,20 @@
+{
+  "values": [
+    {
+      "id": "#forge:plates/steel",
+      "required": false
+    },
+    {
+      "id": "#forge:plates/copper",
+      "required": false
+    },
+    {
+      "id": "#forge:plates/lead",
+      "required": false
+    },
+    {
+      "id": "#forge:plates/tungsten",
+      "required": false
+    }
+  ]
+}

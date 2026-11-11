@@ -41,13 +41,13 @@ public class DosimeterItem extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
         RadiationState state = local.get();
         if (state != null) {
             int stage = state.stage();
-            builder.accept(Component.translatable(DOSE, Math.round(state.dose())).withColor(STAGE_COLOURS[stage])
+            builder.accept(Component.translatable(DOSE, Math.round(state.dose())).withStyle(s_ -> s_.withColor(STAGE_COLOURS[stage]))
                     .append(Component.literal(" - ").append(Component.translatable(STAGES[stage]))));
         }
-        builder.accept(Component.translatable(HINT).withColor(0xFF7A8088));
+        builder.accept(Component.translatable(HINT).withStyle(s_ -> s_.withColor(0xFF7A8088)));
     }
 }

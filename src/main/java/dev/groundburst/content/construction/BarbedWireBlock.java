@@ -24,17 +24,17 @@ public class BarbedWireBlock extends IronBarsBlock {
     }
 
     @Override
-    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return Shapes.empty();
     }
 
     @Override
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (!(entity instanceof LivingEntity)) {
             return;
         }
         entity.makeStuckInBlock(state, new Vec3(0.6, 0.7, 0.6));
-        if (level instanceof ServerLevel serverLevel) {
+        if (((Object) level) instanceof ServerLevel serverLevel) {
             Vec3 movement = new Vec3(entity.getX() - entity.xOld, entity.getY() - entity.yOld, entity.getZ() - entity.zOld);
             if (Math.abs(movement.x()) >= 0.003 || Math.abs(movement.z()) >= 0.003) {
                 entity.hurt(level.damageSources().sweetBerryBush(), 1.0F);

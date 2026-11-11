@@ -1,0 +1,6 @@
+{
+  "type": "forge:add_features",
+  "biomes": "#forge:is_mountain",
+  "features": "groundburst:ore_rare_earth_mountain",
+  "step": "underground_ores"
+}

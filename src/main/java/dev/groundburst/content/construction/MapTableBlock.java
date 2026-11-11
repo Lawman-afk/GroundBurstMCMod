@@ -30,10 +30,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * placer's block's loot).
  */
 public class MapTableBlock extends HorizontalDirectionalBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends MapTableBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final IntegerProperty U = IntegerProperty.create("u", 0, 1);
     public static final IntegerProperty W = IntegerProperty.create("w", 0, 1);
@@ -111,18 +108,18 @@ public class MapTableBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && !isBase(state)) {
             BlockPos base = baseOf(level, pos, state);
             if (base != null) {
                 level.destroyBlock(base, !player.getAbilities().instabuild, player);
             }
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player); return;
     }
 
     @Override
-    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+    public void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(((Object) level_l) instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
         
         BlockPos base = isBase(state) ? pos : baseOf(level, pos, state);
         if (base == null) {
@@ -140,7 +137,7 @@ public class MapTableBlock extends HorizontalDirectionalBlock {
 
     /** A block whose table has lost its placer's block goes; a table missing a block falls apart, one item back. */
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         BlockPos base = baseOf(level, pos, state);
         if (base == null) {
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
@@ -160,12 +157,12 @@ public class MapTableBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES[state.getValue(FACING).get2DDataValue()][state.getValue(U) + 2 * state.getValue(W)];
     }
 
     @Override
-    protected boolean isPathfindable(BlockState state, PathComputationType type) {
+    public boolean isPathfindable(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_, net.minecraft.world.level.pathfinder.PathComputationType type) {
         return false;
     }
 }

@@ -58,7 +58,6 @@ public class FissionReactorScreen extends MachineScreen {
         return layer() < coreHeight() && u >= 0 && u < w && v >= 0 && v < d;
     }
 
-    @Override
     public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
         super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
         int x0 = this.leftPos, y0 = this.topPos;

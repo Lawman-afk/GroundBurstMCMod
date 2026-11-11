@@ -3,7 +3,7 @@ package dev.groundburst.content.chem;
 import dev.groundburst.registry.GBItems;
 import dev.groundburst.registry.GBTab;
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.registries.DeferredItem;
+import dev.groundburst.legacy.DeferredItem;
 
 /**
  * Canisters and chemical intermediates (DESIGN.md §6). Fluids and gases travel as canister items so they stack,

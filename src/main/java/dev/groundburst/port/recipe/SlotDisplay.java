@@ -13,7 +13,7 @@ public interface SlotDisplay {
 
     default ItemStack resolveForFirstStack(ContextMap context) {
         List<ItemStack> stacks = resolveForStacks(context);
-        return stacks.isEmpty() ? ItemStack.EMPTY : stacks.getFirst();
+        return stacks.isEmpty() ? ItemStack.EMPTY : dev.groundburst.legacy.J21.first(stacks);
     }
 
     static SlotDisplay of(Ingredient ingredient) {

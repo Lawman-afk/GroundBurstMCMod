@@ -245,7 +245,7 @@ final class Debris {
         collector.submitCustomGeometry(poseStack, RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
             Quaternionf q = new Quaternionf();
             for (float[] d : drawn) {
-                PoseStack.Pose local = pose.copy();
+                PoseStack.Pose local = dev.groundburst.legacy.Game.copy(pose);
                 local.pose().translate(d[0], d[1], d[2]);
                 dev.groundburst.port.render.Poses.rotate(local, q.identity().rotateAxis(d[7], d[4], d[5], d[6]));
                 dev.groundburst.port.render.Poses.scale(local, d[3], d[3], d[3]);
@@ -268,9 +268,9 @@ final class Debris {
     private static void quad(VertexConsumer buffer, PoseStack.Pose pose, int light, int white, float nx, float ny, float nz,
             float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz, float dx, float dy, float dz,
             float u0, float v0, float u1, float v1) {
-        buffer.addVertex(pose, ax, ay, az).setColor(white).setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, bx, by, bz).setColor(white).setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, cx, cy, cz).setColor(white).setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, dx, dy, dz).setColor(white).setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), ax, ay, az).color(white).uv(u0, v0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), bx, by, bz).color(white).uv(u0, v1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), cx, cy, cz).color(white).uv(u1, v1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), dx, dy, dz).color(white).uv(u1, v0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
     }
 }

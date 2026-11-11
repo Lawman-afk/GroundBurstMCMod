@@ -13,7 +13,7 @@ import dev.groundburst.content.radiation.GeigerCounterItem;
 import dev.groundburst.content.radiation.RadiationItems;
 import dev.groundburst.content.radiation.RadiationState;
 import dev.groundburst.registry.GBSounds;
-import net.minecraft.client.DeltaTracker;
+import dev.groundburst.legacy.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import dev.groundburst.port.GuiGraphicsExtractor;
@@ -31,13 +31,13 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.event.TickEvent;
+import dev.groundburst.legacy.client.RegisterGuiLayersEvent;
+import dev.groundburst.legacy.client.RegisterMenuScreensEvent;
 
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.common.NeoForge;
+import dev.groundburst.legacy.client.VanillaGuiLayers;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * What the player sees and hears of radiation (DESIGN.md §21.3, §21.8): the Geiger Counter's clicks (a Poisson process at
@@ -83,11 +83,11 @@ public final class RadiationClient {
         });
         dev.groundburst.port.render.ItemModels.property(GroundBurst.id("dose"), Dose::get);
         modBus.addListener((RegisterMenuScreensEvent event) -> event.register(RadiationItems.LEAD_CONTAINER_MENU.get(), LeadContainerScreen::new));
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> tick(Minecraft.getInstance()));
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent event) -> { if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return; tick(Minecraft.getInstance()); });
     }
 
     static RadiationState state(Player player) {
-        return player.hasData(GBRadiation.STATE) ? player.getData(GBRadiation.STATE) : RadiationState.NONE;
+        return dev.groundburst.legacy.Attachments.has(player, GBRadiation.STATE) ? dev.groundburst.legacy.Attachments.get(player, GBRadiation.STATE) : RadiationState.NONE;
     }
 
     /** Clicks, and the alarm, once a tick. */
@@ -229,7 +229,7 @@ public final class RadiationClient {
         if (player == null) {
             return;
         }
-        MobEffectInstance sick = player.getEffect(GBEffects.RADIATION_SICKNESS);
+        MobEffectInstance sick = player.getEffect(GBEffects.RADIATION_SICKNESS.get());
         if (sick == null || sick.getAmplifier() < 3) {
             return;
         }

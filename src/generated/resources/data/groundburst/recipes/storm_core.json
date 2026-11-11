@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "groundburst:capacitor"
+    },
+    {
+      "item": "groundburst:capacitor"
+    },
+    {
+      "item": "groundburst:capacitor"
+    },
+    {
+      "item": "groundburst:capacitor"
+    },
+    {
+      "item": "groundburst:superconducting_coil"
+    },
+    {
+      "item": "groundburst:superconducting_coil"
+    },
+    {
+      "item": "groundburst:quantum_circuit"
+    },
+    {
+      "tag": "forge:plates/copper"
+    },
+    {
+      "tag": "forge:plates/copper"
+    }
+  ],
+  "result": {
+    "item": "groundburst:storm_core"
+  }
+}

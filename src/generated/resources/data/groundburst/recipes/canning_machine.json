@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": {
+      "tag": "groundburst:basic_circuits"
+    },
+    "E": {
+      "item": "groundburst:empty_canister"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    }
+  },
+  "pattern": [
+    "PEP",
+    "GFG",
+    " B "
+  ],
+  "result": {
+    "item": "groundburst:canning_machine"
+  }
+}

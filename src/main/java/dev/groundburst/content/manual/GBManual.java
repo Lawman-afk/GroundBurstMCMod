@@ -12,9 +12,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.registries.DeferredItem;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import dev.groundburst.legacy.DeferredItem;
 
 /** The Field Manual item (DESIGN.md §24.2), and handing one to each player on their first join. */
 public final class GBManual {
@@ -29,7 +29,7 @@ public final class GBManual {
 
     public static void init() {
         ManualStrings.init();
-        NeoForge.EVENT_BUS.addListener(GBManual::loggedIn);
+        MinecraftForge.EVENT_BUS.addListener(GBManual::loggedIn);
     }
 
     private static void loggedIn(PlayerEvent.PlayerLoggedInEvent event) {

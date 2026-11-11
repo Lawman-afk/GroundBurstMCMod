@@ -3,7 +3,7 @@ package dev.groundburst.port.transfer.energy;
 import dev.groundburst.port.transfer.access.ItemAccess;
 import dev.groundburst.port.transfer.item.ItemResource;
 import dev.groundburst.port.transfer.transaction.TransactionContext;
-import net.minecraft.core.component.DataComponentType;
+import dev.groundburst.legacy.component.DataComponentType;
 import net.minecraft.world.item.Item;
 
 /** The energy an item holds in a data component, through its {@link ItemAccess} (so a change swaps the item where it is). */
@@ -33,7 +33,7 @@ public class ItemAccessEnergyHandler implements EnergyHandler {
     }
 
     protected int getAmountFrom(ItemResource accessResource) {
-        Integer e = accessResource.toStack(1).get(this.energyComponent);
+        Integer e = dev.groundburst.legacy.component.Comps.get(accessResource.toStack(1), this.energyComponent);
         return e == null ? 0 : Math.max(0, Math.min(this.capacity, e));
     }
 

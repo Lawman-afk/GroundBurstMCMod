@@ -66,7 +66,7 @@ public class FireExtinguisherBlock extends DecorBlock {
 
     /** Hung, it needs the wall behind it whole on that face. */
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         if (!state.getValue(WALL)) {
             return true;
         }
@@ -76,7 +76,7 @@ public class FireExtinguisherBlock extends DecorBlock {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         if (state.getValue(WALL) && direction == state.getValue(FACING).getOpposite() && !canSurvive(state, level, pos)) {
             return Blocks.AIR.defaultBlockState();
         }
@@ -84,13 +84,12 @@ public class FireExtinguisherBlock extends DecorBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return state.getValue(WALL) ? HUNG[state.getValue(FACING).get2DDataValue()] : super.getShape(state, level, pos, context);
     }
 
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level instanceof ServerLevel server) {
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (((Object) level) instanceof ServerLevel server) {
             spray(server, pos, state.getValue(FACING));
             level.gameEvent(player, GameEvent.BLOCK_ACTIVATE, pos);
         }
@@ -116,5 +115,11 @@ public class FireExtinguisherBlock extends DecorBlock {
         for (Entity e : level.getEntities((Entity) null, new AABB(ahead).inflate(1.0), Entity::isOnFire)) {
             e.clearFire();
         }
+    }
+
+    @Override
+    public net.minecraft.world.InteractionResult use(net.minecraft.world.level.block.state.BlockState state_, net.minecraft.world.level.Level level_, net.minecraft.core.BlockPos pos_, net.minecraft.world.entity.player.Player player_, net.minecraft.world.InteractionHand hand_, net.minecraft.world.phys.BlockHitResult hit_) {
+        return hand_ == net.minecraft.world.InteractionHand.MAIN_HAND ? this.useWithoutItem(state_, level_, pos_, player_, hit_)
+                : net.minecraft.world.InteractionResult.PASS;
     }
 }

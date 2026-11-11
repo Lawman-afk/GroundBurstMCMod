@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "A": {
+      "tag": "forge:circuits/advanced"
+    },
+    "L": {
+      "tag": "forge:plates/lead"
+    },
+    "T": {
+      "tag": "forge:plates/tungsten"
+    },
+    "W": {
+      "tag": "forge:wires/copper"
+    }
+  },
+  "pattern": [
+    "LTL",
+    "WAW",
+    "LTL"
+  ],
+  "result": {
+    "item": "groundburst:rtg"
+  }
+}

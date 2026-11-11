@@ -17,9 +17,9 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredRegister;
 
 /**
  * The aftermath on the ground (DESIGN.md §21.7, §21.8 slice 12b): what a nuclear blast leaves of the land round it,
@@ -73,7 +73,7 @@ public final class GBFallout {
             DeadGrassBlock::new, p -> p.mapColor(MapColor.COLOR_BROWN).strength(0.6f).randomTicks().sound(SoundType.GRASS));
     public static final WithItem<DeadLeavesBlock> DEAD_LEAVES = GBBlocks.register("dead_leaves", "Dead Leaves", GBTab.AFTERMATH,
             DeadLeavesBlock::new, p -> p.mapColor(MapColor.COLOR_BROWN).strength(0.2f).randomTicks().sound(SoundType.GRASS).noOcclusion()
-                    .isValidSpawn(Blocks::ocelotOrParrot)
+                    .isValidSpawn((s_, l_, p_, e_) -> e_ == net.minecraft.world.entity.EntityType.OCELOT || e_ == net.minecraft.world.entity.EntityType.PARROT)
                     .isSuffocating((s, l, at) -> false).ignitedByLava()
                     .pushReaction(PushReaction.DESTROY).isRedstoneConductor((s, l, at) -> false));
     public static final WithItem<WitheredCropsBlock> WITHERED_CROPS = GBBlocks.register("withered_crops", "Withered Crops", GBTab.AFTERMATH,

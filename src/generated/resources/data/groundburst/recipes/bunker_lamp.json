@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "B": {
+      "item": "minecraft:iron_bars"
+    },
+    "L": {
+      "item": "minecraft:lantern"
+    },
+    "P": {
+      "item": "groundburst:steel_plate"
+    }
+  },
+  "pattern": [
+    " P ",
+    "BLB"
+  ],
+  "result": {
+    "item": "groundburst:bunker_lamp",
+    "count": 2
+  }
+}

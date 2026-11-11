@@ -35,8 +35,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.Shapes;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
+import dev.groundburst.legacy.DeferredHolder;
+import dev.groundburst.legacy.DeferredItem;
 
 /**
  * Missile defence (DESIGN.md §18.2, §18.4, §18.5; Phase 10): the Interceptor Battery, the Interceptor Complex and its
@@ -136,8 +136,8 @@ public final class GBDefence {
 
     /** Loads the registrations; forgets a level's interceptors and radars when it unloads. */
     public static void init() {
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.LevelEvent.Unload e) -> {
-            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.level.LevelEvent.Unload e) -> {
+            if (((Object) e.getLevel()) instanceof net.minecraft.server.level.ServerLevel level) {
                 Interceptors.forget(level);
                 Interception.forget(level);
             }
@@ -155,7 +155,7 @@ public final class GBDefence {
 
         @Override
         @SuppressWarnings("deprecation")
-        public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+        public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
             tooltip.accept(Component.translatable(T_TIP).withStyle(ChatFormatting.GRAY));
             tooltip.accept(Component.translatable(T_TIP2).withStyle(ChatFormatting.DARK_GRAY));
         }

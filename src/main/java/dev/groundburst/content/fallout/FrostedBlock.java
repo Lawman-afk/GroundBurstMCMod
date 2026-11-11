@@ -28,7 +28,7 @@ public class FrostedBlock extends Block {
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (random.nextFloat() < THAW_CHANCE && !cold(level, pos.above())) {
             level.setBlockAndUpdate(pos, this.thawsTo.get().defaultBlockState());
         }

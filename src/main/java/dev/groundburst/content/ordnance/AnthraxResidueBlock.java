@@ -28,13 +28,13 @@ public class AnthraxResidueBlock extends ToxicSludgeBlock {
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         level.scheduleTick(pos, this, STAGE_TICKS + level.getRandom().nextInt(600));
     }
 
     @Override
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (level instanceof ServerLevel server && entity instanceof LivingEntity living && living.tickCount % 10 == 0) {
+    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+        if (((Object) level) instanceof ServerLevel server && ((Object) entity) instanceof LivingEntity living && living.tickCount % 10 == 0) {
             Toxins.expose(server, living, 2.5f, 140, Toxins.TOXIN, Toxins.TOXIN_NAUSEA);
         }
     }

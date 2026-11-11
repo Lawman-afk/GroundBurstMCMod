@@ -4,8 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
 
 /** A warhead's fuze and its one setting (the {@code groundburst:fuze} item component, and kept by the placed warhead). */
 public record FuzeSettings(Fuze fuze, int value) {
@@ -15,7 +15,7 @@ public record FuzeSettings(Fuze fuze, int value) {
             Codec.STRING.xmap(Fuze::byId, f -> f.id).fieldOf("fuze").forGetter(FuzeSettings::fuze),
             Codec.INT.optionalFieldOf("value", 0).forGetter(FuzeSettings::value)).apply(i, FuzeSettings::of));
     public static final StreamCodec<ByteBuf, FuzeSettings> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.VAR_INT.map(n -> Fuze.values()[Math.clamp(n, 0, Fuze.values().length - 1)], Fuze::ordinal), FuzeSettings::fuze,
+            ByteBufCodecs.VAR_INT.map(n -> Fuze.values()[dev.groundburst.legacy.J21.clamp(n, 0, Fuze.values().length - 1)], Fuze::ordinal), FuzeSettings::fuze,
             ByteBufCodecs.VAR_INT, FuzeSettings::value, FuzeSettings::of);
 
     /** A fuze with its setting kept in range. */

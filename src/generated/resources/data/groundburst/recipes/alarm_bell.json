@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "minecraft:bell"
+    },
+    {
+      "item": "groundburst:basic_circuit"
+    },
+    {
+      "item": "groundburst:copper_wire"
+    }
+  ],
+  "result": {
+    "item": "groundburst:alarm_bell"
+  }
+}

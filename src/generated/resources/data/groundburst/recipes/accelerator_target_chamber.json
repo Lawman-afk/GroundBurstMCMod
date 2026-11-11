@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "groundburst:magnet_segment"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:reactor_glass"
+    }
+  ],
+  "result": {
+    "item": "groundburst:accelerator_target_chamber"
+  }
+}

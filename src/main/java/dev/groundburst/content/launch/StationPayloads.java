@@ -7,15 +7,15 @@ import org.jspecify.annotations.Nullable;
 
 import dev.groundburst.network.GBNetwork;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
+import dev.groundburst.legacy.net.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import dev.groundburst.legacy.net.IPayloadContext;
 
 /** The Launch Control Station's screen (DESIGN.md §17.12): its orders, and the scope it is sent while open. */
 public final class StationPayloads {
@@ -29,20 +29,20 @@ public final class StationPayloads {
     private StationPayloads() {}
 
     private static @Nullable LaunchStationBlockEntity station(IPayloadContext context, BlockPos pos) {
-        if (context.player() instanceof ServerPlayer player && dev.groundburst.content.machine.Carried.near(player, pos, REACH)
-                && dev.groundburst.content.machine.Carried.blockEntity(player.level(), pos, LaunchStationBlockEntity.class) instanceof LaunchStationBlockEntity s) {
+        if (((Object) context.player()) instanceof ServerPlayer player && dev.groundburst.content.machine.Carried.near(player, pos, REACH)
+                && ((Object) dev.groundburst.content.machine.Carried.blockEntity(player.level(), pos, LaunchStationBlockEntity.class)) instanceof LaunchStationBlockEntity s) {
             return s;
         }
         return null;
     }
 
-    private static final StreamCodec<io.netty.buffer.ByteBuf, List<BlockPos>> PICKED = BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list(MAX_PICKED));
+    private static final StreamCodec<io.netty.buffer.ByteBuf, List<BlockPos>> PICKED = dev.groundburst.legacy.net.Codecs.BLOCK_POS.apply(ByteBufCodecs.list(MAX_PICKED));
 
     /** Aim the picked members at x/z (several: in a pattern round it, {@code spacing} apart). */
     public record Aim(BlockPos pos, List<BlockPos> picked, int x, int z, int pattern, int spacing) implements CustomPacketPayload {
         public static final Type<Aim> TYPE = GBNetwork.type("station_aim");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Aim> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Aim::pos, PICKED, Aim::picked, ByteBufCodecs.VAR_INT, Aim::x, ByteBufCodecs.VAR_INT, Aim::z,
+        public static final StreamCodec<FriendlyByteBuf, Aim> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, Aim::pos, PICKED, Aim::picked, ByteBufCodecs.VAR_INT, Aim::x, ByteBufCodecs.VAR_INT, Aim::z,
                 ByteBufCodecs.VAR_INT, Aim::pattern, ByteBufCodecs.VAR_INT, Aim::spacing, Aim::new);
 
         @Override
@@ -52,9 +52,9 @@ public final class StationPayloads {
 
         public static void handle(Aim p, IPayloadContext context) {
             LaunchStationBlockEntity s = station(context, p.pos());
-            if (s != null && context.player().level() instanceof ServerLevel level) {
+            if (s != null && ((Object) context.player().level()) instanceof ServerLevel level) {
                 LaunchNetwork.Pattern[] patterns = LaunchNetwork.Pattern.values();
-                s.aim(level, p.picked(), p.x(), p.z(), patterns[Math.clamp(p.pattern(), 0, patterns.length - 1)], Math.clamp(p.spacing(), 0, 256));
+                s.aim(level, p.picked(), p.x(), p.z(), patterns[dev.groundburst.legacy.J21.clamp(p.pattern(), 0, patterns.length - 1)], dev.groundburst.legacy.J21.clamp(p.spacing(), 0, 256));
             }
         }
     }
@@ -62,8 +62,8 @@ public final class StationPayloads {
     /** Arm the picked members (true) or make them safe. */
     public record Arm(BlockPos pos, List<BlockPos> picked, boolean on) implements CustomPacketPayload {
         public static final Type<Arm> TYPE = GBNetwork.type("station_arm");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Arm> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Arm::pos, PICKED, Arm::picked, ByteBufCodecs.BOOL, Arm::on, Arm::new);
+        public static final StreamCodec<FriendlyByteBuf, Arm> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, Arm::pos, PICKED, Arm::picked, ByteBufCodecs.BOOL, Arm::on, Arm::new);
 
         @Override
         public Type<Arm> type() {
@@ -72,7 +72,7 @@ public final class StationPayloads {
 
         public static void handle(Arm p, IPayloadContext context) {
             LaunchStationBlockEntity s = station(context, p.pos());
-            if (s != null && context.player().level() instanceof ServerLevel level) {
+            if (s != null && ((Object) context.player().level()) instanceof ServerLevel level) {
                 s.arm(level, p.picked(), p.on());
             }
         }
@@ -81,8 +81,8 @@ public final class StationPayloads {
     /** LAUNCH: every armed member fires, at once or timed to arrive together. */
     public record Fire(BlockPos pos, boolean together) implements CustomPacketPayload {
         public static final Type<Fire> TYPE = GBNetwork.type("station_fire");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Fire> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Fire::pos, ByteBufCodecs.BOOL, Fire::together, Fire::new);
+        public static final StreamCodec<FriendlyByteBuf, Fire> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, Fire::pos, ByteBufCodecs.BOOL, Fire::together, Fire::new);
 
         @Override
         public Type<Fire> type() {
@@ -91,7 +91,7 @@ public final class StationPayloads {
 
         public static void handle(Fire p, IPayloadContext context) {
             LaunchStationBlockEntity s = station(context, p.pos());
-            if (s != null && context.player() instanceof ServerPlayer player && player.level() instanceof ServerLevel level) {
+            if (s != null && ((Object) context.player()) instanceof ServerPlayer player && ((Object) player.level()) instanceof ServerLevel level) {
                 s.launch(level, p.together(), player);
             }
         }
@@ -100,8 +100,8 @@ public final class StationPayloads {
     /** Take a member off the network. */
     public record Unlink(BlockPos pos, BlockPos member) implements CustomPacketPayload {
         public static final Type<Unlink> TYPE = GBNetwork.type("station_unlink");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Unlink> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Unlink::pos, BlockPos.STREAM_CODEC, Unlink::member, Unlink::new);
+        public static final StreamCodec<FriendlyByteBuf, Unlink> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, Unlink::pos, dev.groundburst.legacy.net.Codecs.BLOCK_POS, Unlink::member, Unlink::new);
 
         @Override
         public Type<Unlink> type() {
@@ -110,7 +110,7 @@ public final class StationPayloads {
 
         public static void handle(Unlink p, IPayloadContext context) {
             LaunchStationBlockEntity s = station(context, p.pos());
-            if (s != null && context.player().level() instanceof ServerLevel level) {
+            if (s != null && ((Object) context.player().level()) instanceof ServerLevel level) {
                 s.unlink(level, p.member());
             }
         }
@@ -119,8 +119,8 @@ public final class StationPayloads {
     /** NEW CODES: the network's cards made so far are void. */
     public record NewCodes(BlockPos pos) implements CustomPacketPayload {
         public static final Type<NewCodes> TYPE = GBNetwork.type("station_new_codes");
-        public static final StreamCodec<RegistryFriendlyByteBuf, NewCodes> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, NewCodes::pos, NewCodes::new);
+        public static final StreamCodec<FriendlyByteBuf, NewCodes> CODEC = StreamCodec.composite(
+                dev.groundburst.legacy.net.Codecs.BLOCK_POS, NewCodes::pos, NewCodes::new);
 
         @Override
         public Type<NewCodes> type() {
@@ -129,7 +129,7 @@ public final class StationPayloads {
 
         public static void handle(NewCodes p, IPayloadContext context) {
             LaunchStationBlockEntity s = station(context, p.pos());
-            if (s != null && context.player().level() instanceof ServerLevel level) {
+            if (s != null && ((Object) context.player().level()) instanceof ServerLevel level) {
                 s.newCodes(level);
             }
         }
@@ -163,7 +163,7 @@ public final class StationPayloads {
             return this.pendingArm >= 0 ? this.pendingArm == 1 : this.armed;
         }
 
-        static final StreamCodec<RegistryFriendlyByteBuf, MemberView> CODEC = StreamCodec.of((buf, m) -> {
+        static final StreamCodec<FriendlyByteBuf, MemberView> CODEC = StreamCodec.of((buf, m) -> {
             buf.writeBlockPos(m.pos());
             buf.writeBlockPos(m.at());
             buf.writeVarInt(m.role());
@@ -181,7 +181,7 @@ public final class StationPayloads {
             buf.writeFloat(m.strike().reach());
             buf.writeFloat(m.strike().along());
             buf.writeFloat(m.strike().across());
-            ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, m.shown());
+            dev.groundburst.legacy.net.Codecs.OPTIONAL_ITEM_STACK.encode(buf, m.shown());
             buf.writeVarInt(m.timing().delay());
             buf.writeBoolean(m.timing().cruise());
             buf.writeDouble(m.timing().x());
@@ -195,14 +195,14 @@ public final class StationPayloads {
             buf.writeVarInt(m.inFlight() + 1);
         }, buf -> new MemberView(buf.readBlockPos(), buf.readBlockPos(), buf.readVarInt(), buf.readUtf(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(),
                 buf.readVarInt() - 1, buf.readBoolean(), buf.readVarInt(), buf.readVarInt(), buf.readBoolean(), buf.readVarInt(),
-                new LaunchSite.Strike(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat()), ItemStack.OPTIONAL_STREAM_CODEC.decode(buf),
+                new LaunchSite.Strike(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat()), dev.groundburst.legacy.net.Codecs.OPTIONAL_ITEM_STACK.decode(buf),
                 new LaunchSite.Timing(buf.readVarInt(), buf.readBoolean(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readBoolean()),
                 buf.readBoolean(), buf.readBoolean(), buf.readVarLong() - 1, buf.readBoolean(), buf.readVarInt() - 1));
     }
 
     /** A missile in the air: its id, where, which way (radians, 0 = south), where it is coming down, when, and whether it is the network's. */
     public record ContactView(int id, int x, int y, int z, float heading, int targetX, int targetZ, int eta, boolean own) {
-        static final StreamCodec<RegistryFriendlyByteBuf, ContactView> CODEC = StreamCodec.of((buf, c) -> {
+        static final StreamCodec<FriendlyByteBuf, ContactView> CODEC = StreamCodec.of((buf, c) -> {
             buf.writeInt(c.id());
             buf.writeVarInt(c.x());
             buf.writeVarInt(c.y());
@@ -218,7 +218,7 @@ public final class StationPayloads {
 
     /** A laser spot one of the network's designators lases now (DESIGN.md §17.13): where, and who lases it. */
     public record SpotView(int x, int y, int z, String who) {
-        static final StreamCodec<RegistryFriendlyByteBuf, SpotView> CODEC = StreamCodec.of((buf, s) -> {
+        static final StreamCodec<FriendlyByteBuf, SpotView> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeVarInt(s.x());
             buf.writeVarInt(s.y());
             buf.writeVarInt(s.z());
@@ -226,7 +226,7 @@ public final class StationPayloads {
         }, buf -> new SpotView(buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readUtf()));
     }
 
-    private static final StreamCodec<RegistryFriendlyByteBuf, LaunchNetwork.Event> EVENT = StreamCodec.of((buf, e) -> {
+    private static final StreamCodec<FriendlyByteBuf, LaunchNetwork.Event> EVENT = StreamCodec.of((buf, e) -> {
         buf.writeVarLong(e.time());
         buf.writeVarInt(e.kind().ordinal());
         buf.writeBlockPos(e.member());
@@ -234,14 +234,14 @@ public final class StationPayloads {
         buf.writeVarInt(e.x());
         buf.writeVarInt(e.z());
         buf.writeVarInt(e.detail() + 1);
-    }, buf -> new LaunchNetwork.Event(buf.readVarLong(), LaunchNetwork.EventKind.values()[Math.clamp(buf.readVarInt(), 0,
+    }, buf -> new LaunchNetwork.Event(buf.readVarLong(), LaunchNetwork.EventKind.values()[dev.groundburst.legacy.J21.clamp(buf.readVarInt(), 0,
             LaunchNetwork.EventKind.values().length - 1)], buf.readBlockPos(), buf.readUtf(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt() - 1));
 
     /** The station's state for its screen, sent while it is open: its network's members, the missiles in the air, its log. */
     public record Scope(BlockPos pos, BlockPos at, boolean formed, boolean powered, int energy, String code, long now, List<MemberView> members,
             List<ContactView> contacts, List<LaunchNetwork.Event> log, List<SpotView> spots) implements CustomPacketPayload {
         public static final Type<Scope> TYPE = GBNetwork.type("station_scope");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Scope> CODEC = StreamCodec.of((buf, s) -> {
+        public static final StreamCodec<FriendlyByteBuf, Scope> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeBlockPos(s.pos());
             buf.writeBlockPos(s.at());
             buf.writeBoolean(s.formed());

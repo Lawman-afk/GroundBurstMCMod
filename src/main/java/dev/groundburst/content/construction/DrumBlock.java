@@ -18,10 +18,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * do (another put on it adds one; {@link #DRUMS}), set out as tools/assets/yard.py lays them, turned to their facing.
  */
 public class DrumBlock extends HorizontalDirectionalBlock {
-    @Override
-    protected com.mojang.serialization.MapCodec<? extends DrumBlock> codec() {
-        return com.mojang.serialization.MapCodec.unit(this);
-    }
+    
 
     public static final IntegerProperty DRUMS = IntegerProperty.create("drums", 1, 4);
     /** Where each drum stands (block pixels, facing north) for one to four: yard.py's DRUM_SPOTS. */
@@ -63,13 +60,13 @@ public class DrumBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
-    protected boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
+    public boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
         return !context.isSecondaryUseActive() && context.getItemInHand().is(this.asItem()) && state.getValue(DRUMS) < 4
                 || super.canBeReplaced(state, context);
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES[state.getValue(DRUMS) - 1][state.getValue(FACING).get2DDataValue()];
     }
 }

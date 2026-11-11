@@ -35,7 +35,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.common.Tags;
 
 /**
  * One running blast (DESIGN.md §11.2-11.4). The terrain front advances one shell (one block of radius) at a time, at
@@ -196,7 +196,7 @@ final class BlastJob implements Blast {
         float streaks = streaks(profile);
         int noiseSeed = this.streakSeed;
         this.grain = streaks > 0 ? (dx, dy, dz) -> StreakNoise.factor(dx, dy, dz, noiseSeed, streaks) : (dx, dy, dz) -> 1;
-        this.horizon = new float[Math.clamp((int) Math.ceil(2 * Math.PI * profile.groundRadius()), 720, 8192)];
+        this.horizon = new float[dev.groundburst.legacy.J21.clamp((int) Math.ceil(2 * Math.PI * profile.groundRadius()), 720, 8192)];
         java.util.Arrays.fill(this.horizon, Float.NEGATIVE_INFINITY);
         Lobes lobes = new Lobes(seed, profile.lobes());
         float stone = cost(6f);
@@ -213,7 +213,7 @@ final class BlastJob implements Blast {
      * ragged rim): from 1 at a 40-block crater to {@link #BIG_STREAKS} at 200 blocks and over.
      */
     static float streaks(BlastProfile p) {
-        float big = Math.clamp((p.crater() - 40) / 160, 0, 1);
+        float big = dev.groundburst.legacy.J21.clamp((p.crater() - 40) / 160, 0, 1);
         return p.streaks() * (1 - (1 - BIG_STREAKS) * big);
     }
 
@@ -616,7 +616,7 @@ final class BlastJob implements Blast {
         if (state.is(Blocks.DEEPSLATE) || state.is(BlockTags.DEEPSLATE_ORE_REPLACEABLES)) {
             return 1;
         }
-        if (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.Blocks.GRAVELS) || state.is(Tags.Blocks.COBBLESTONES)) {
+        if (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.Blocks.GRAVEL) || state.is(Tags.Blocks.COBBLESTONE)) {
             return 0;
         }
         if (state.is(BlockTags.DIRT) || state.is(BlockTags.DIRT)) {          // (26.3 took grass blocks out of the dirt tag)
@@ -1030,7 +1030,7 @@ final class BlastJob implements Blast {
         }
         for (Entity e : entities) {
             double d = e.position().distanceTo(this.center);
-            if (e instanceof ShockReceiver receiver) {
+            if (((Object) e) instanceof ShockReceiver receiver) {
                 // A sea mine or a sinking depth charge: the shock sets it off, or parts a mine's mooring (DESIGN.md §14.6).
                 this.hit.add(e.getId());
                 this.waiting.remove(e.getId());
@@ -1069,7 +1069,7 @@ final class BlastJob implements Blast {
                 continue;
             }
             // Creatures, and boats and minecarts (DESIGN.md §14.6: a sea mine breaks the boat that strikes it).
-            if (dmg > 0 && (e instanceof LivingEntity || e instanceof net.minecraft.world.entity.vehicle.VehicleEntity)) {
+            if (dmg > 0 && (e instanceof LivingEntity || dev.groundburst.legacy.Game.isVehicle(e))) {
                 e.hurt(Blasts.damageSource(this.level, this.source, this.center), dmg);
             }
             if (falloff > 0) {
@@ -1077,7 +1077,7 @@ final class BlastJob implements Blast {
                 e.push(push.x, push.y, push.z);           // marks the entity for a velocity sync
             }
             if (d <= p.fire()) {
-                e.igniteForSeconds(2 + 8 * (float) (1 - d / Math.max(1, p.fire())));
+                e.setSecondsOnFire((int) (2 + 8 * (float) (1 - d / Math.max(1, p.fire()))));
             }
         }
     }

@@ -35,7 +35,7 @@ public class ItemPipeBlock extends PipeBlock {
 
     @Override
     protected boolean hasHandler(Level level, BlockPos pos, Direction side) {
-        return level.getCapability(Capabilities.Item.BLOCK, pos, side) != null;
+        return dev.groundburst.legacy.Caps.get(level, Capabilities.Item.BLOCK, pos, side) != null;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class ItemPipeBlock extends PipeBlock {
 
     @Override
     protected void pull(ServerLevel level, BlockPos pos, Direction side) {
-        ResourceHandler<ItemResource> from = level.getCapability(Capabilities.Item.BLOCK, pos.relative(side), side.getOpposite());
+        ResourceHandler<ItemResource> from = dev.groundburst.legacy.Caps.get(level, Capabilities.Item.BLOCK, pos.relative(side), side.getOpposite());
         if (from != null) {
             ResourceHandlerUtil.moveStacking(from, ItemPipeNetwork.handler(level, pos, side), r -> true, this.tier.batch(), null);
         }

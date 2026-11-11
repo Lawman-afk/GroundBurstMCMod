@@ -5,11 +5,11 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentPatch;
+import dev.groundburst.legacy.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.FriendlyByteBuf;
+import dev.groundburst.legacy.net.ByteBufCodecs;
+import dev.groundburst.legacy.net.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,8 +26,8 @@ public record ItemStackTemplate(Holder<Item> item, int count, DataComponentPatch
             ExtraCodecs.intRange(1, 99).optionalFieldOf("count", 1).forGetter(ItemStackTemplate::count),
             DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStackTemplate::components)
     ).apply(i, ItemStackTemplate::new));
-    public static final Codec<ItemStackTemplate> CODEC = Codec.withAlternative(MAP_CODEC.codec(), ITEM_CODEC, ItemStackTemplate::new);
-    public static final StreamCodec<RegistryFriendlyByteBuf, ItemStackTemplate> STREAM_CODEC = StreamCodec.composite(
+    public static final Codec<ItemStackTemplate> CODEC = dev.groundburst.legacy.Codecs2.withAlternative(MAP_CODEC.codec(), ITEM_CODEC, ItemStackTemplate::new);
+    public static final StreamCodec<FriendlyByteBuf, ItemStackTemplate> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.holderRegistry(net.minecraft.core.registries.Registries.ITEM), ItemStackTemplate::item,
             ByteBufCodecs.VAR_INT, ItemStackTemplate::count,
             DataComponentPatch.STREAM_CODEC, ItemStackTemplate::components,
@@ -73,11 +73,11 @@ public record ItemStackTemplate(Holder<Item> item, int count, DataComponentPatch
     }
 
     public static ItemStackTemplate fromNonEmptyStack(ItemStack stack) {
-        return new ItemStackTemplate(stack.getItemHolder(), stack.getCount(), stack.getComponentsPatch());
+        return new ItemStackTemplate(stack.getItemHolder(), stack.getCount(), dev.groundburst.legacy.component.DataComponentPatch.of(stack));
     }
 
     public static ItemStackTemplate fromNonEmptyStack(ItemStack stack, int count) {
-        return new ItemStackTemplate(stack.getItemHolder(), count, stack.getComponentsPatch());
+        return new ItemStackTemplate(stack.getItemHolder(), count, dev.groundburst.legacy.component.DataComponentPatch.of(stack));
     }
 
     public ItemStackTemplate withCount(int count) {
@@ -85,12 +85,12 @@ public record ItemStackTemplate(Holder<Item> item, int count, DataComponentPatch
     }
 
     public ItemStack create() {
-        return new ItemStack(this.item, this.count, this.components);
+        return dev.groundburst.legacy.component.DataComponentPatch.stack(this.item, this.count, this.components);
     }
 
     public ItemStack apply(DataComponentPatch additionalPatch) {
         ItemStack stack = create();
-        stack.applyComponents(additionalPatch);
+        additionalPatch.applyTo(stack);
         return stack;
     }
 

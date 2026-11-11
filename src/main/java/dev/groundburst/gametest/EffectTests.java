@@ -163,7 +163,7 @@ final class EffectTests {
         helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(6, 1, 8))).is(Blocks.PACKED_ICE)
                 || helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(6, 1, 8))).is(Blocks.ICE), "water frozen");
         helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(10, 1, 8))).is(Blocks.OBSIDIAN), "lava frozen");
-        helper.assertTrue(pig.hasEffect(EffectSystems.FROZEN), "the pig is frozen");
+        helper.assertTrue(pig.hasEffect(EffectSystems.FROZEN.get()), "the pig is frozen");
         helper.assertTrue(pig.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED) <= 1e-6, "and cannot move");
         helper.succeed();
     }

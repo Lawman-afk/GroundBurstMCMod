@@ -2,7 +2,7 @@ package dev.groundburst.content.power;
 
 import java.util.Optional;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.machine.AnimatedMachine;
@@ -14,7 +14,7 @@ import dev.groundburst.registry.GBBlockEntities;
 import dev.groundburst.registry.GBMenus;
 import dev.groundburst.registry.GBSounds;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
+import dev.groundburst.legacy.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.Containers;
@@ -54,7 +54,7 @@ public class CombustionGeneratorBlockEntity extends MachineBlockEntity implement
 
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
-        return stack.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0;
+        return net.minecraftforge.common.ForgeHooks.getBurnTime(stack, net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0;
     }
 
     @Override
@@ -86,7 +86,7 @@ public class CombustionGeneratorBlockEntity extends MachineBlockEntity implement
         if (fuel.isEmpty()) {
             return;
         }
-        int duration = fuel.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING);
+        int duration = net.minecraftforge.common.ForgeHooks.getBurnTime(fuel, net.minecraft.world.item.crafting.RecipeType.SMELTING);
         if (duration <= 0) {
             return;
         }
@@ -138,15 +138,15 @@ public class CombustionGeneratorBlockEntity extends MachineBlockEntity implement
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("burn", this.burn);
         output.putInt("burn_total", this.burnTotal);
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.burn = input.getIntOr("burn", 0);
         this.burnTotal = input.getIntOr("burn_total", 0);
     }

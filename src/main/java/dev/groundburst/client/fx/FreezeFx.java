@@ -29,8 +29,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.client.event.ViewportEvent;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * A deep freeze as the client sees it (DESIGN.md §16.16; the server's side is {@link Freezes}):
@@ -48,7 +48,7 @@ import net.neoforged.neoforge.common.NeoForge;
  * (The frost on a player's own screen is vanilla's freezing overlay: the server freezes them.)
  */
 public final class FreezeFx {
-    static final ResourceLocation SNOW = ResourceLocation.withDefaultNamespace("textures/environment/snow.png");
+    static final ResourceLocation SNOW = new ResourceLocation("textures/environment/snow.png");
     private static final double SOUND_SPEED = 17.15, VIRTUAL_DISTANCE = 8;
     /** Ticks its cold takes to clear on the client once the server has ended it. */
     private static final int CLEAR = 60;
@@ -66,7 +66,7 @@ public final class FreezeFx {
         FreezePayloads.frontHook = FreezeFx::front;
         FreezePayloads.spireHook = FreezeFx::spire;
         FreezePayloads.endHook = FreezeFx::end;
-        NeoForge.EVENT_BUS.addListener(FreezeFx::fog);
+        MinecraftForge.EVENT_BUS.addListener(FreezeFx::fog);
     }
 
     /** One freeze: what the server said of it, how far its front has run, its white surge laid out so far. */

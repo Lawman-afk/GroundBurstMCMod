@@ -22,7 +22,7 @@ public class WarheadItem extends BlockItem {
     private static final String T_MISSILE = GBLang.add(GroundBurst.MODID + ".warhead.missile", "Its missile is built at a %s");
 
     public WarheadItem(ChargeBlock block, Properties properties) {
-        super(block, properties.component(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT));
+        super(block, dev.groundburst.legacy.component.Comps.withDefault(properties, GBDataComponents.FUZE.get(), FuzeSettings.IMPACT));
     }
 
     public static Component fuzeLine(FuzeSettings fuze) {
@@ -31,8 +31,8 @@ public class WarheadItem extends BlockItem {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
-        tooltip.accept(fuzeLine(stack.getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT)).copy().withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.Level context_level, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { dev.groundburst.legacy.TooltipContext context = dev.groundburst.legacy.TooltipContext.of(context_level); java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
+        tooltip.accept(fuzeLine(dev.groundburst.legacy.component.Comps.getOrDefault(stack, GBDataComponents.FUZE.get(), FuzeSettings.IMPACT)).copy().withStyle(ChatFormatting.GRAY));
         SizeClass size = WarheadAssembly.sizeOf((ChargeBlock) getBlock());
         if (size != null) {
             tooltip.accept(Component.translatable(size.label).withStyle(ChatFormatting.GRAY));

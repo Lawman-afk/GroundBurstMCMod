@@ -109,18 +109,18 @@ public abstract class SpreadPartBlock extends MultiblockPartBlock {
 
     /** Breaking a part breaks the whole: the middle drops the item (unless in creative), the rest go quietly. */
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && state.getValue(PART) == Part.EDGE) {
             BlockPos c = centerOf(level, pos);
             if (c != null) {
                 level.destroyBlock(c, !player.getAbilities().instabuild, player);
             }
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player); return;
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         // Only a piece of it going (not one being put in place, as a structure is laid out) breaks it up.
         boolean lost = direction.getAxis().isHorizontal() && !neighborState.is(this);
         if (lost && state.getValue(PART) == Part.EDGE) {
@@ -134,7 +134,7 @@ public abstract class SpreadPartBlock extends MultiblockPartBlock {
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (state.getValue(PART) == Part.CENTER && !complete(level, pos)) {
             level.destroyBlock(pos, true);
         }
@@ -142,7 +142,7 @@ public abstract class SpreadPartBlock extends MultiblockPartBlock {
 
     /** The middle draws the whole; the parts round it draw nothing of their own. */
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return state.getValue(PART) == Part.EDGE ? RenderShape.INVISIBLE : super.getRenderShape(state);
     }
 }

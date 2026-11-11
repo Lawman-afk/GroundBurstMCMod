@@ -18,7 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.ModelEvent;
 
 /**
  * The formed Fission Reactor's sections (DESIGN.md §7.2): the vessel FissionReactorRenderer draws over a reactor of any
@@ -47,7 +47,7 @@ public final class FissionSections {
         private final String id = "fission_" + name().toLowerCase(Locale.ROOT);
 
         public ResourceLocation model() {
-            return ResourceLocation.fromNamespaceAndPath(GroundBurst.MODID, "block/" + this.id);
+            return new ResourceLocation(GroundBurst.MODID, "block/" + this.id);
         }
 
         /** See-through panes, drawn with the coolant (sorted with it) rather than with the vessel. */
@@ -57,7 +57,7 @@ public final class FissionSections {
 
         public @Nullable BlockStateModelPart part() {
             var models = Minecraft.getInstance().getModelManager();
-            var baked = models.getModel(net.minecraft.client.resources.model.ModelResourceLocation.standalone(model()));
+            var baked = models.getModel((model()));
             return baked == models.getMissingModel() ? null : new BlockStateModelPart(baked, null, 0);
         }
     }
@@ -88,7 +88,7 @@ public final class FissionSections {
 
     public static void register(ModelEvent.RegisterAdditional event) {
         for (Section s : Section.values()) {
-            event.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(s.model()));
+            event.register((s.model()));
         }
     }
 
@@ -108,7 +108,7 @@ public final class FissionSections {
     private static void cell(FissionCore core, Level level, BlockPos origin, int c, int l, int r, List<Piece> out) {
         BlockPos pos = core.pos(c, l, r);
         List<Direction> outward = core.outward(c, l, r);
-        Direction vertical = outward.getFirst().getAxis() == Direction.Axis.Y ? outward.getFirst() : null;
+        Direction vertical = dev.groundburst.legacy.J21.first(outward).getAxis() == Direction.Axis.Y ? dev.groundburst.legacy.J21.first(outward) : null;
         List<Direction> sides = vertical != null ? outward.subList(1, outward.size()) : outward;
         BlockState state = level.getBlockState(pos);
         boolean glass = FissionCore.glass(state);
@@ -122,12 +122,12 @@ public final class FissionSections {
             Section corner = vertical == Direction.DOWN ? Section.CORNER_BOTTOM : vertical == Direction.UP ? Section.CORNER_TOP : Section.POST;
             out.add(new Piece(corner, x, y, z, cornerTurns(sides.get(0), sides.get(1)), false, light));
         } else if (sides.size() == 1) {
-            int turns = turns(sides.getFirst());
+            int turns = turns(dev.groundburst.legacy.J21.first(sides));
             if (vertical != null) {
                 out.add(new Piece(vertical == Direction.DOWN ? Section.EDGE_BOTTOM : Section.EDGE_TOP, x, y, z, turns, false, light));
             } else if (glass) {
                 out.add(new Piece(Section.WINDOW_GLASS, x, y, z, turns, false, light));
-                windowLips(level, pos, sides.getFirst(), x, y, z, turns, light, out);
+                windowLips(level, pos, dev.groundburst.legacy.J21.first(sides), x, y, z, turns, light, out);
             } else {
                 out.add(new Piece(Section.WALL, x, y, z, turns, false, light));
                 if (port >= 0) {

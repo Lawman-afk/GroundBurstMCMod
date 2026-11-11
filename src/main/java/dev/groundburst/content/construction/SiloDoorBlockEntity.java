@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.machine.AnimatedMachine;
@@ -54,7 +54,7 @@ public class SiloDoorBlockEntity extends BlockEntity implements AnimatedMachine 
 
     /** Looks again at the redstone round the door (any of its blocks). */
     public void checkPower() {
-        if (!(this.level instanceof ServerLevel level) || this.stuck) {
+        if (!(((Object) this.level) instanceof ServerLevel level) || this.stuck) {
             return;
         }
         boolean powered = SiloDoorBlock.powered(level, this.worldPosition, getBlockState().getValue(SiloDoorBlock.FACING));
@@ -152,8 +152,8 @@ public class SiloDoorBlockEntity extends BlockEntity implements AnimatedMachine 
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("door_pos", this.position);
         output.putBoolean("wanted", this.wanted);
         output.putBoolean("stuck", this.stuck);
@@ -162,8 +162,8 @@ public class SiloDoorBlockEntity extends BlockEntity implements AnimatedMachine 
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.position = Mth.clamp(input.getIntOr("door_pos", 0), 0, TRAVEL);
         this.wanted = input.getBooleanOr("wanted", false);
         this.stuck = input.getBooleanOr("stuck", false);
@@ -172,8 +172,8 @@ public class SiloDoorBlockEntity extends BlockEntity implements AnimatedMachine 
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override

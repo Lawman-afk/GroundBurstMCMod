@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
@@ -91,7 +91,7 @@ public class BlastDoorBlockEntity extends BlockEntity implements AnimatedMachine
     }
 
     private void setWanted(ServerLevel level, boolean open, @Nullable Player player) {
-        if (open == this.wanted || !(getBlockState().getBlock() instanceof BlastDoorBlock door)) {
+        if (open == this.wanted || !(((Object) getBlockState().getBlock()) instanceof BlastDoorBlock door)) {
             return;
         }
         if (open) {
@@ -120,7 +120,7 @@ public class BlastDoorBlockEntity extends BlockEntity implements AnimatedMachine
     void serverTick(ServerLevel level) {
         int before = this.position;
         this.position = Mth.clamp(this.position + (this.wanted ? 1 : -1), 0, TRAVEL);
-        if (this.position == before || !(getBlockState().getBlock() instanceof BlastDoorBlock door)) {
+        if (this.position == before || !(((Object) getBlockState().getBlock()) instanceof BlastDoorBlock door)) {
             return;
         }
         if (this.wanted && before < UNLOCK && this.position >= UNLOCK) {
@@ -210,8 +210,8 @@ public class BlastDoorBlockEntity extends BlockEntity implements AnimatedMachine
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putInt("door_pos", this.position);
         output.putBoolean("wanted", this.wanted);
         output.putBoolean("powered", this.powered);
@@ -220,8 +220,8 @@ public class BlastDoorBlockEntity extends BlockEntity implements AnimatedMachine
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.position = Mth.clamp(input.getIntOr("door_pos", 0), 0, TRAVEL);
         this.wanted = input.getBooleanOr("wanted", false);
         this.powered = input.getBooleanOr("powered", false);
@@ -230,8 +230,8 @@ public class BlastDoorBlockEntity extends BlockEntity implements AnimatedMachine
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override

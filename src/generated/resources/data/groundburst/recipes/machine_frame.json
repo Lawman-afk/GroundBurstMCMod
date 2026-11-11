@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": {
+      "tag": "groundburst:basic_circuits"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    },
+    "R": {
+      "tag": "forge:rods/steel"
+    }
+  },
+  "pattern": [
+    "RPR",
+    "PCP",
+    "RPR"
+  ],
+  "result": {
+    "item": "groundburst:machine_frame"
+  }
+}

@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.multiblock.GBMultiblocks;
@@ -127,7 +127,7 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
     /** Breaking the controller while the cage holds the seed collapses it (the seed is destroyed, not dropped). */
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        if (this.engaged && this.level instanceof ServerLevel server) {
+        if (this.engaged && ((Object) this.level) instanceof ServerLevel server) {
             collapse(server);
         }
         super.preRemoveSideEffects(pos, state);
@@ -351,8 +351,8 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -371,15 +371,15 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         output.putBoolean("engaged", this.engaged);
         output.putInt("mass", this.mass);
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.engaged = input.getBooleanOr("engaged", false);
         this.mass = input.getIntOr("mass", 0);
     }

@@ -111,7 +111,7 @@ public final class AlarmSounds {
                 // Winding up and down with the motor; louder as the horn swings round toward you.
                 this.pitch = 0.5f + 0.5f * this.level;
                 float swell = 1;
-                if (this.be instanceof AlarmBlockEntity.Animated a) {
+                if (((Object) this.be) instanceof AlarmBlockEntity.Animated a) {
                     Vec3 you = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
                     double toYou = Math.toDegrees(Math.atan2(you.x - this.x, you.z - this.z));
                     double off = Math.toRadians(a.hornYaw() - toYou);

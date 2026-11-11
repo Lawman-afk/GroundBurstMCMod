@@ -62,7 +62,7 @@ final class ExoticTests {
         helper.setBlock(new BlockPos(10, 5, 8), Blocks.BEDROCK);               // 2: unbreakable, stays
         BlockPos chest = new BlockPos(6, 5, 8);
         helper.setBlock(chest, Blocks.CHEST);
-        if (helper.getLevel().getBlockEntity(helper.absolutePos(chest)) instanceof ChestBlockEntity c) {
+        if (((Object) helper.getLevel().getBlockEntity(helper.absolutePos(chest))) instanceof ChestBlockEntity c) {
             c.setItem(0, new ItemStack(Items.DIAMOND, 16));
         }
         for (int y = 1; y <= 4; y++) {                                          // the shelter: two blocks of obsidian
@@ -129,7 +129,7 @@ final class ExoticTests {
         ItemStack liquid = new ItemStack(GBAssembly.LIQUID_FUEL_STAGE.get());
         ItemStack booster = new ItemStack(dev.groundburst.content.strategic.GBStrategic.INTERCONTINENTAL_BOOSTER.get());
         ItemStack casing = new ItemStack(dev.groundburst.content.assembly.WarheadAssembly.casing(SizeClass.XL));
-        ItemStack fuze = new ItemStack(GBAssembly.FUZES.getFirst().get());
+        ItemStack fuze = new ItemStack(dev.groundburst.legacy.J21.first(GBAssembly.FUZES).get());
         var cores = dev.groundburst.content.strategic.SpecialWeapons.cores();
         var warheads = java.util.List.of(GBOrdnance.ANTIMATTER_WARHEAD, GBOrdnance.SINGULARITY_WARHEAD, GBOrdnance.STORM_WARHEAD,
                 GBOrdnance.CRYOGENIC_WARHEAD);

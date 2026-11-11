@@ -59,9 +59,8 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         this.titleLabelY = this.layout.titleY();
     }
 
-    @Override
     public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
-        super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
+        super.renderBackground(g.unwrap());
         int x = this.leftPos;
         int y = this.topPos;
         g.blit(RenderPipelines.GUI_TEXTURED, pageLayout().texture(), x, y, 0, 0, this.imageWidth, this.imageHeight, pageLayout().textureWidth(), 256);
@@ -286,6 +285,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
     @Override
     public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        this.renderBackground(g.unwrap(), mouseX, mouseY, partial);   // (1.20.1's Screen.render draws no background)
         super.render(g.unwrap(), mouseX, mouseY, partial);
         if (this.sideTab != null) {
             this.sideTab.render(g, this.font, this.leftPos, this.topPos, this.imageWidth, mouseX, mouseY);
@@ -305,11 +305,11 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             lines.add(this.menu.tankAmount(i) <= 0 ? Component.translatable(MachineText.TANK_EMPTY, NUM.format(cap))
                     : Component.translatable(MachineText.TANK, this.menu.tankFluid(i).getFluidType().getDescription(),
                     NUM.format(this.menu.tankAmount(i)), NUM.format(cap)));
-            lines.add(Component.translatable(this.menu.machine().tankHint(i)).withColor(0xFF9AA0A8));
+            lines.add(Component.translatable(this.menu.machine().tankHint(i)).withStyle(s_ -> s_.withColor(0xFF9AA0A8)));
             g.setTooltipForNextFrame(this.font, lines, java.util.Optional.empty(), mouseX, mouseY);
         } else if (dumpAt(mx, my) >= 0) {
             g.setTooltipForNextFrame(this.font, List.of(Component.translatable(MachineText.DUMP),
-                    Component.translatable(MachineText.DUMP_HINT).withColor(0xFF9AA0A8)), java.util.Optional.empty(), mouseX, mouseY);
+                    Component.translatable(MachineText.DUMP_HINT).withStyle(s_ -> s_.withColor(0xFF9AA0A8))), java.util.Optional.empty(), mouseX, mouseY);
         } else if (controlAt(mx, my) != null) {
             MachineLayout.Control c = controlAt(mx, my);
             String key = c.tooltip();
@@ -320,7 +320,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
                 // A toggle: whether it is on, and what it does.
                 boolean on = this.menu.extra(c.data()) != 0;
                 g.setTooltipForNextFrame(this.font, List.of(Component.translatable(key, Component.translatable(on ? MachineText.ON : MachineText.OFF)),
-                        Component.translatable(key + "_hint").withColor(0xFF9AA0A8)), java.util.Optional.empty(), mouseX, mouseY);
+                        Component.translatable(key + "_hint").withStyle(s_ -> s_.withColor(0xFF9AA0A8))), java.util.Optional.empty(), mouseX, mouseY);
             } else {
                 g.setTooltipForNextFrame(c.isButton() ? Component.translatable(key)
                         : Component.translatable(key, this.menu.extra(c.data())), mouseX, mouseY);

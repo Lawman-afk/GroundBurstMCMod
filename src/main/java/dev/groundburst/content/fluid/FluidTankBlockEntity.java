@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import dev.groundburst.port.transfer.ResourceHandler;
 import dev.groundburst.port.transfer.fluid.FluidResource;
 import dev.groundburst.port.transfer.fluid.FluidStacksResourceHandler;
@@ -79,7 +79,7 @@ public class FluidTankBlockEntity extends BlockEntity implements TankDisplay {
 
     /** The controller's block entity (this one if it is the controller, or if the controller has gone missing). */
     public FluidTankBlockEntity controllerEntity() {
-        if (this.controller != null && this.level != null && this.level.getBlockEntity(this.controller) instanceof FluidTankBlockEntity c) {
+        if (this.controller != null && this.level != null && ((Object) this.level.getBlockEntity(this.controller)) instanceof FluidTankBlockEntity c) {
             return c;
         }
         return this;
@@ -160,8 +160,8 @@ public class FluidTankBlockEntity extends BlockEntity implements TankDisplay {
     }
 
     @Override
-    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
-        super.saveAdditional(output.tag(), output.lookup());
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag());
         if (this.controller != null) {
             output.putLong("controller", this.controller.asLong());
         }
@@ -171,8 +171,8 @@ public class FluidTankBlockEntity extends BlockEntity implements TankDisplay {
     }
 
     @Override
-    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
-        super.loadAdditional(input.tag(), input.lookup());
+    public void load(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access(); ValueInput input = new ValueInput(tag_, registries_);
+        super.load(input.tag());
         this.controller = input.getLong("controller").map(BlockPos::of).orElse(null);
         this.width = input.getIntOr("width", 1);
         this.height = input.getIntOr("height", 1);
@@ -181,8 +181,8 @@ public class FluidTankBlockEntity extends BlockEntity implements TankDisplay {
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    public CompoundTag getUpdateTag() { net.minecraft.core.HolderLookup.Provider registries = dev.groundburst.legacy.Regs.access();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -192,7 +192,7 @@ public class FluidTankBlockEntity extends BlockEntity implements TankDisplay {
 
     /** Breaking a block splits the tank: the rest re-forms (as a box if it still is one) and keeps its share of fluid. */
         public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        if (this.level instanceof ServerLevel server) {
+        if (((Object) this.level) instanceof ServerLevel server) {
             FluidTankStructure.detach(server, pos, this);
         }
     }

@@ -22,7 +22,7 @@ abstract class BlockMixin {
             + "Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;II)V", at = @At("HEAD"), cancellable = true)
     private static void groundburst$shapeChanged(BlockState old, BlockState updated, LevelAccessor level, BlockPos pos, int flags, int limit,
             CallbackInfo ci) {
-        if (updated != old && level instanceof ServerLevel server && dev.groundburst.heal.Scars.shapeChanged(server, pos) && updated.isAir()) {
+        if (updated != old && ((Object) level) instanceof ServerLevel server && dev.groundburst.heal.Scars.shapeChanged(server, pos) && updated.isAir()) {
             if (old.hasBlockEntity()) {
                 server.removeBlockEntity(pos);             // nothing spilt either
             }

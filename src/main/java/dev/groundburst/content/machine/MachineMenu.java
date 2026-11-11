@@ -1,7 +1,7 @@
 package dev.groundburst.content.machine;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -84,10 +84,10 @@ public class MachineMenu extends AbstractContainerMenu {
     }
 
     /** Client-side constructor: the block entity is found from the position sent by the server. */
-    public static MachineMenu client(MenuType<?> type, int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf, MachineLayout layout) {
+    public static MachineMenu client(MenuType<?> type, int containerId, Inventory playerInventory, FriendlyByteBuf buf, MachineLayout layout) {
         BlockPos pos = buf.readBlockPos();
         // Standing there, or carried from there by a contraption (DESIGN.md §17.16: the copy the client draws).
-        if (!(Carried.blockEntity(playerInventory.player.level(), pos, MachineBlockEntity.class) instanceof MachineBlockEntity machine)) {
+        if (!(((Object) Carried.blockEntity(playerInventory.player.level(), pos, MachineBlockEntity.class)) instanceof MachineBlockEntity machine)) {
             throw new IllegalStateException("No machine at " + pos);
         }
         return new MachineMenu(type, containerId, playerInventory, machine, layout, new SimpleContainerData(machine.data().getCount()));
@@ -223,7 +223,7 @@ public class MachineMenu extends AbstractContainerMenu {
         if (this.machine.carried()) {                          // on a contraption: in reach of where it is now
             return !this.machine.isRemoved()
                     && player.position().distanceTo(this.machine.inWorld(net.minecraft.world.phys.Vec3.atCenterOf(this.machine.getBlockPos())))
-                    <= player.blockInteractionRange() + 4;
+                    <= player.getBlockReach() + 4;
         }
         return Container.stillValidBlockEntity(this.machine, player);
     }
@@ -289,7 +289,7 @@ public class MachineMenu extends AbstractContainerMenu {
 
         @Override
         public int getMaxStackSize() {
-            return this.container instanceof MachineInventory inv ? Math.min(super.getMaxStackSize(), inv.slotLimit(getContainerSlot()))
+            return ((Object) this.container) instanceof MachineInventory inv ? Math.min(super.getMaxStackSize(), inv.slotLimit(getContainerSlot()))
                     : super.getMaxStackSize();
         }
     }

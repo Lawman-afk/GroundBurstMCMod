@@ -34,14 +34,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
-import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoBlockRenderer;
 import software.bernie.geckolib.renderer.GeoRenderer;
 import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
-import software.bernie.geckolib.util.RenderUtil;
+import software.bernie.geckolib.util.RenderUtils;
 
 /**
  * GeckoLib machine renderer whose culling box covers the whole model, including the upper half of tall machines. A
@@ -52,7 +52,7 @@ import software.bernie.geckolib.util.RenderUtil;
  * moved, scaled, turned and hidden as each is drawn ({@link #renderRecursively}), after GeckoLib has posed them from
  * the animation; the tanks are drawn after the model, already turned with the block.
  */
-public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends GeoBlockRenderer<T> {
+public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends GeoBlockRenderer<T> implements dev.groundburst.legacy.client.RenderBox<T> {
     private final int height;
     private final int reach;
     private final int depth;
@@ -122,16 +122,18 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     // --- this frame's bones --------------------------------------------------------------------------------------------
     @Override
     public void actuallyRender(PoseStack poseStack, T animatable, BakedGeoModel model, @Nullable RenderType renderType, MultiBufferSource bufferSource,
-            @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+            @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green,
+            float blue, float alpha) {
         if (!isReRender) {
             frame(animatable, partialTick);
         }
-        super.actuallyRender(poseStack, animatable, model, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+        super.actuallyRender(poseStack, animatable, model, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green,
+                blue, alpha);
     }
 
     private void frame(T animatable, float partialTick) {
         Map<String, float[]> offsets = Map.of();
-        if (animatable instanceof AnimatedMachine machine) {
+        if (((Object) animatable) instanceof AnimatedMachine machine) {
             this.hidden = machine.hiddenBones();
             this.scales = machine.boneScales();
             this.rotations = machine.boneRotations(partialTick);
@@ -142,7 +144,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             this.rotations = Map.of();
         }
         this.missiles = Map.of();
-        if (animatable instanceof MissileCarrier carrier && animatable.getLevel() != null) {
+        if (((Object) animatable) instanceof MissileCarrier carrier && animatable.getLevel() != null) {
             String held = carrier.gripsFor();
             if (held != null) {
                 offsets = withGrips(offsets, carrier.grips(), MissileShapes.get(held));
@@ -167,29 +169,31 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
     @Override
     public void renderRecursively(PoseStack poseStack, T animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource,
-            VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+            VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue,
+            float alpha) {
         String name = bone.getName();
         if (this.hidden.contains(name)) {
             return;
         }
         float[] s = this.scales.get(name);
         if (s != null) {
-            bone.updateScale(s[0], s[1], s[2]);
+            dev.groundburst.legacy.client.Geo.updateScale(bone, s[0], s[1], s[2]);
         }
         float[] o = this.offsets.get(name);
         if (o != null) {
-            bone.updatePosition(o[0], o[1], o[2]);
+            dev.groundburst.legacy.client.Geo.updatePosition(bone, o[0], o[1], o[2]);
         }
         float[] r = this.rotations.get(name);
         if (r != null) {                                   // over its bind pose, as GeckoLib 5's snapshots are set
             var bind = bone.getInitialSnapshot();
-            bone.updateRotation(bind.getRotX() + r[0], bind.getRotY() + r[1], bind.getRotZ() + r[2]);
+            dev.groundburst.legacy.client.Geo.updateRotation(bone, bind.getRotX() + r[0], bind.getRotY() + r[1], bind.getRotZ() + r[2]);
         }
         List<ShownMissile> here = this.missiles.get(name);
         if (here != null && !isReRender) {
             drawMissiles(poseStack, bone, here, bufferSource, packedLight, animatable);
         }
-        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red,
+                green, blue, alpha);
     }
 
     // --- missiles -----------------------------------------------------------------------------------------------------------
@@ -207,8 +211,8 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         for (String look : shown.looks()) {
             items.add(LOOKS.computeIfAbsent(look, key -> {
                 var s = new ItemStack(dev.groundburst.content.assembly.GBAssembly.MISSILE.get());
-                s.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,
-                        new net.minecraft.world.item.component.CustomModelData(dev.groundburst.port.Looks.id(key)));
+                dev.groundburst.legacy.component.Comps.set(s, dev.groundburst.legacy.component.DataComponents.CUSTOM_MODEL_DATA,
+                        new dev.groundburst.legacy.component.CustomModelData(dev.groundburst.port.Looks.id(key)));
                 return s;
             }));
         }
@@ -219,10 +223,10 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     /** Every missile at a bone, in the bone's frame as it is animated (a rack raised), from its pivot. */
     private static void drawMissiles(PoseStack pose, GeoBone bone, List<ShownMissile> shownHere, MultiBufferSource buffers, int light, BlockEntity be) {
         pose.pushPose();
-        RenderUtil.translateMatrixToBone(pose, bone);
-        RenderUtil.translateToPivotPoint(pose, bone);
-        RenderUtil.rotateMatrixAroundBone(pose, bone);
-        RenderUtil.scaleMatrixForBone(pose, bone);
+        RenderUtils.translateMatrixToBone(pose, bone);
+        RenderUtils.translateToPivotPoint(pose, bone);
+        RenderUtils.rotateMatrixAroundBone(pose, bone);
+        RenderUtils.scaleMatrixForBone(pose, bone);
         for (ShownMissile shown : shownHere) {
             pose.pushPose();
             pose.scale(4, 4, 4);                               // the item model is a quarter of the world's size
@@ -271,9 +275,10 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     /** Draws each tank's fluid (its own still texture, translucent) after the model, turned with the block. */
     @Override
     public void postRender(PoseStack poseStack, T animatable, BakedGeoModel model, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer,
-            boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
-        super.postRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
-        if (isReRender || !(animatable instanceof MachineBlockEntity machine) || !machine.showsTanks() || animatable.getLevel() == null) {
+            boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+        super.postRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue,
+                alpha);
+        if (isReRender || !(((Object) animatable) instanceof MachineBlockEntity machine) || !machine.showsTanks() || animatable.getLevel() == null) {
             return;
         }
         VertexConsumer out = null;
@@ -311,10 +316,10 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     private static void quad(VertexConsumer buffer, PoseStack.Pose pose, int color, int light, float nx, float ny, float nz,
             float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz, float dx, float dy, float dz,
             float u0, float v0, float u1, float v1) {
-        buffer.addVertex(pose, ax, ay, az).setColor(color).setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, bx, by, bz).setColor(color).setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, cx, cy, cz).setColor(color).setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
-        buffer.addVertex(pose, dx, dy, dz).setColor(color).setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), ax, ay, az).color(color).uv(u0, v0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), bx, by, bz).color(color).uv(u0, v1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), cx, cy, cz).color(color).uv(u1, v1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
+        buffer.vertex(dev.groundburst.legacy.Verts.matrix(pose), dx, dy, dz).color(color).uv(u1, v0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(dev.groundburst.legacy.Verts.normal(pose), nx, ny, nz).endVertex();
     }
 
     // --- the glowmask -------------------------------------------------------------------------------------------------------
@@ -339,7 +344,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             if (GLOWS.computeIfAbsent(texture, GlowLayer::glows)) {
                 RenderType glow = RenderType.entityTranslucentEmissive(software.bernie.geckolib.cache.texture.GeoAbstractTexture.appendToPath(texture, "_glowmask"));
                 getRenderer().reRender(bakedModel, poseStack, bufferSource, animatable, glow, bufferSource.getBuffer(glow), partialTick,
-                        net.minecraft.client.renderer.LightTexture.FULL_BRIGHT, packedOverlay, 0xFFFFFFFF);
+                        net.minecraft.client.renderer.LightTexture.FULL_BRIGHT, packedOverlay, 1f, 1f, 1f, 1f);
             }
         }
 
@@ -375,7 +380,6 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         return Math.min(192, 64 + 16 * this.reach);
     }
 
-    @Override
     public AABB getRenderBoundingBox(T blockEntity) {
         // Structures may also reach below the controller (the accelerator ring's plinth, a block; the silo's shaft).
         return new AABB(blockEntity.getBlockPos()).inflate(0.25 + this.reach, 0, 0.25 + this.reach).expandTowards(0, this.height - 1, 0)

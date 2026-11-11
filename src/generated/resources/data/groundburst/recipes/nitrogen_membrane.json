@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "minecraft:clay_ball"
+    },
+    "L": {
+      "item": "minecraft:quartz"
+    },
+    "R": {
+      "tag": "forge:rods/steel"
+    }
+  },
+  "pattern": [
+    "RCR",
+    "CLC",
+    "RCR"
+  ],
+  "result": {
+    "item": "groundburst:nitrogen_membrane"
+  }
+}

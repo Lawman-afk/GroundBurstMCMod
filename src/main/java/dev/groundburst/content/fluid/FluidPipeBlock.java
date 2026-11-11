@@ -37,7 +37,7 @@ public class FluidPipeBlock extends PipeBlock {
 
     @Override
     protected boolean hasHandler(Level level, BlockPos pos, Direction side) {
-        return level.getCapability(Capabilities.Fluid.BLOCK, pos, side) != null;
+        return dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, pos, side) != null;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class FluidPipeBlock extends PipeBlock {
 
     @Override
     protected void pull(ServerLevel level, BlockPos pos, Direction side) {
-        ResourceHandler<FluidResource> from = level.getCapability(Capabilities.Fluid.BLOCK, pos.relative(side), side.getOpposite());
+        ResourceHandler<FluidResource> from = dev.groundburst.legacy.Caps.get(level, Capabilities.Fluid.BLOCK, pos.relative(side), side.getOpposite());
         if (from != null) {
             ResourceHandlerUtil.move(from, FluidPipeNetwork.handler(level, pos, side), r -> true, this.tier.rate(), null);
         }

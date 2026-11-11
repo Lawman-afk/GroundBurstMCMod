@@ -17,7 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.saveddata.SavedData;
 import dev.groundburst.port.SavedDataType;
-import net.neoforged.neoforge.network.PacketDistributor;
+import dev.groundburst.legacy.net.PacketDistributor;
 
 /**
  * Runs a level's blasts (DESIGN.md §11.3, §11.5). Every server tick all blasts together get a time budget (default
@@ -129,7 +129,7 @@ public final class BlastManager extends SavedData {
 
     /** The blast set off last that is still running, or null (the blast bench, after a warhead's own path set one off). */
     @Nullable Blast newest() {
-        return this.running.isEmpty() ? null : this.running.getLast();
+        return this.running.isEmpty() ? null : dev.groundburst.legacy.J21.last(this.running);
     }
 
     void add(BlastJob job) {
@@ -183,8 +183,8 @@ public final class BlastManager extends SavedData {
      */
     public List<Blast> savedCopy() {
         Codec<BlastManager> c = codec(this.level);
-        net.minecraft.nbt.Tag tag = c.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, this).getOrThrow();
-        BlastManager copy = c.parse(net.minecraft.nbt.NbtOps.INSTANCE, tag).getOrThrow();
+        net.minecraft.nbt.Tag tag = c.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, this).getOrThrow(false, error_ -> {});
+        BlastManager copy = c.parse(net.minecraft.nbt.NbtOps.INSTANCE, tag).getOrThrow(false, error_ -> {});
         return List.copyOf(copy.queued);
     }
 
@@ -199,14 +199,14 @@ public final class BlastManager extends SavedData {
         }
     }
 
-    private void broadcast(net.minecraft.network.protocol.common.custom.CustomPacketPayload payload) {
+    private void broadcast(dev.groundburst.legacy.net.CustomPacketPayload payload) {
         if (this.level != null) {
             PacketDistributor.sendToPlayersInDimension(this.level, payload);
         }
     }
 
     @Override
-    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_) { net.minecraft.core.HolderLookup.Provider registries_ = dev.groundburst.legacy.Regs.access();
         return TYPE.save(this, tag_, registries_);
     }
 }
