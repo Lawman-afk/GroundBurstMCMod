@@ -3643,7 +3643,8 @@ beforehand at the station), or (**return fire**) at where the strike was launche
 every launcher that reaches it; each is armed and launched at once, far ones woken to take the order. Its log line:
 "Dead Hand fired: 4 launchers". Then it is spent until a new rocket is loaded and it is armed again. If a station
 answers at zero, it stands down ("Command answered"). A DRILL runs the alert and its alarms without firing. A comparator
-reads its state (0 safe, 5 watching, 10 in alert, 15 fired).
+reads its state (0 safe, 5 watching, 10 in alert, 15 fired). (After the user's look its launchers stand by in the alert
+and its rocket flies over them, each firing as its signal reaches it: §17.19.)
 
 **Testing** (§30, 2026-11-09): `gradlew runWarRoom` builds "Ground Burst War Room", a flat world deep enough for the
 craters, with a base at the spawn and an enemy launch site 900 blocks north. The base: a command bunker (the cosmetic
@@ -3703,7 +3704,7 @@ what the building settled.
   console with its keys under their guard and its lamps, the tube's lid on its hinge and the rocket's nose under it,
   the sensor mast). Sounds `launch/dead_hand_alert` (one buzz of a Western Electric key telephone's buzzer, each second
   of the countdown, higher in its last ten) and `launch/dead_hand_lid` (a hydraulic pump, the rams' whine, the hinges'
-  groan and the clank onto the stop).
+  groan and the clank onto the stop). (Its firing rebuilt after the user's look: §17.19.)
 - **Recordings** (`tools/sound/command.py`): four added to the ledger, all CC0: a pen plotter drawing (shimisuel), a
   plotter starting up (aerror), a pen on paper (khenshom), a telephone buzzer (tt_runscript).
 - **Recipes**: the Seismograph (a magnet and coil round a dense steel mass, an advanced circuit, the drum's motor and
@@ -3727,6 +3728,107 @@ what the building settled.
   `-PwarRoomDemo=true` plays the attack through in a throwaway world instead, each step waiting for the world (the
   silos' countdowns, the flights, the Dead Hand's thirty seconds), photographed (`war_room_demo_*.png`) and checked in
   the log ("War room check: ... OK/WRONG").
+
+### 17.19 After the user's look: the command rocket over the launchers, the War Room screen (2026-11-11)
+The user, on the Dead Hand: "The command rocket part of the dead hand is not needed, also please make it so that the
+other missiles begin actually launching as soon as the dead hand reaches 0, not start the next 15s countdown from each of
+their launchers"; then, before anything was changed, "I have decided I want the command rocket but Im just not sure how I
+should get it to work, because a real one doesn't actually launch to an enemy right? It just flew over russia sending
+launch signals", and of the two ways offered (a rocket flying a course over the launchers, each firing as its signal
+reaches it; or one broadcasting to all from the top of its climb), "Let's do the fly over launchers please". On the War
+Room Display: "the war room display is very cumbersome to watch the display, can you make it so the player can view and
+move the screen (zoom in or out) like they do with the launch control station?" As first built (§17.18), at zero the lid
+took two seconds, the rocket three more to transmit, and only then did each launcher start its own countdown (the
+range's Launch Complex fifteen seconds, the silos ten): its first missile left about 22 seconds after zero.
+
+**Research.**
+- *Perimeter's command rocket*, the 15A11 (15P011) of KB Yuzhnoye, built on the MR UR-100U (15A16) ICBM, carried in place
+  of a warhead the 15B99 command head (1,412 kg), made to keep working through nuclear bursts and jamming in its
+  unpowered flight; fired from its silo, it flew high over the missile fields and the other forces, whose receivers took
+  from it the order to open their silos and launch. Flight-tested from 1979 to 1986 (seven launches), in service from
+  January 1985.
+- *The American counterpart*, the Emergency Rocket Communications System (ERCS: three Blue Scout rockets from 1963, then
+  ten Minuteman II at Whiteman AFB from 1967 to 1991), put a 1 kW UHF transmitter on the missile and flew it on a lofted
+  path (an apogee of about 1,100 km) along one of two courses set beforehand, east or west, each passing over Strategic
+  Air Command's alert forces at the northern bases. Its recorded Emergency Action Message (up to 90 seconds) went out
+  for up to 30 minutes and was heard by anything in line of sight of it: the higher it flew, the farther it carried.
+- Neither was aimed at the enemy, neither carried anything that went off, and both flew courses chosen to pass over the
+  forces they had to reach.
+
+**The design.**
+- *Standing by.* A Dead Hand going into alert (not a drill) readies its network at once: every launcher that can fire is
+  aimed (the war plan, or back where the strike came from where it reaches), armed, and ordered to launch so that its
+  countdown is over by zero (it starts at zero less its countdown and its missile's ignition, its report's timing, or at
+  once if the alert is shorter), so the launchers' sirens, doors, umbilicals and deluge run in the alert's last seconds.
+  Then each holds at its countdown's last tick until the command rocket's signal reaches it (the station: "Awaiting
+  order"). Far launchers are woken in time, as for a time-on-target launch, and the Dead Hand keeps itself loaded through
+  its alert. HOLD, SAFE, a redstone signal into it, its command answering at zero, or its structure broken stand every
+  launcher it readied down: the countdown scrubbed, the missile kept, made safe. One still standing by five minutes after
+  zero stands down by itself.
+- *The rocket.* The tube's lid swings open in the countdown's last two seconds, and at zero the command rocket is fired as
+  the 15A11 was, ejected from its tube, its motor burning a moment there (8 ticks) before it climbs away. Its course runs
+  over the network's launchers: of the ways toward each launcher beyond its first reach and toward their middle, the one
+  along which its signal reaches the most (worked out by flying the course beforehand, a sample every few ticks), out
+  past the farthest of them by 160 blocks; at least 256 blocks (every launcher reached at lift-off: out over them, or
+  away behind the module with none), at most 4,096. Its transmitter is heard 256 blocks round it at lift-off and a block
+  farther for each block it climbs, to 480 at the top of a long arc (220 up); the network listens every half second, and
+  at once as it lifts off. A launcher it reaches fires: standing by, at once (the base's at zero); still counting down,
+  at its countdown's end; not readied but ready and aimed, armed and launched on its own countdown. It comes down at its
+  course's end with a puff of smoke and a thud and nothing more (radars track it; warning receivers and interceptors pass
+  it by). Launchers it never reached stand down when it is down ("out of the command rocket's reach" in the network's
+  log). The Dead Hand is FIRING while its rocket flies (its console: TRANSMITTING, and how many launchers have the
+  order; while armed, how many of the network's launchers its course would reach) and SPENT when it is down, until a new
+  rocket is loaded.
+- *What the screens show.* Launchers standing by in amber, "Awaiting order" on the station's list; the rocket an amber
+  contact with the ring of its signal's reach round it (the station's map, the War Room Display and its screen); the
+  log's lines for the rocket away (how many launchers stand by), the rocket down (how many it reached) and a launcher out
+  of its reach.
+- *The War Room screen.* A click on the display opens its screen: the board as big as the window allows, its map moved by
+  dragging (either button) and zoomed with the wheel about the cursor, 1:1 to 1:128, as the station's is; Fit (everything
+  in), Display (centred on it) and Show on the wall (the wall takes this view: a third kind of view, its middle and scale
+  set from the screen); across the top the network's code and counts, the alert condition lit in its colour, the soonest
+  impact and the time; at the side the members, each with its state as the station lists it, the log, and the wall's
+  settings (its view and its layers, which the screen's map follows too).
+
+**As built (2026-11-11).**
+- *Standing by* (`LaunchSite.launchHeld`, `release`, `scrub`, `standingBy`): the Launch Silo (and with it the Launch
+  Complex and the Missile Silo, whose doors open from T-15 as ever and stay open while it waits), the Cruise Missile
+  Launcher (its boxes up), the Vertical Launch Battery and the superweapons each hold at their countdown's last tick
+  while standing by, saved with the block; `scrub` is each one's own stand-down (an EMP's or a redstone halt's).
+- *The network* (`LaunchNetwork`): `Orders` carry a `hold` (STAND_BY with the launch, RELEASE, SCRUB); a member records
+  the Dead Hand it stands by for and when that one was to fire (saved). `standBy` (at the alert) aims, arms and orders
+  each launch at zero less its report's timing (its countdown and ignition) and ten ticks; `standDown` scrubs; the
+  member's tick follows a Dead Hand's flight as it follows every member's missiles (every half second), broadcasting
+  from where the rocket is with `CommandRocket.reach` (its height above its tube); `commandRocketAway` broadcasts at once
+  as it lifts off; when its flight is gone, `rocketDown` stands down whatever still stands by for it (a FAILED line,
+  detail -2) and logs DEAD_HAND_ROCKET_DOWN with how many it reached. A stand-by lapses five minutes after zero, or when
+  its Dead Hand leaves the network. In alert or firing the Dead Hand keeps its own chunks loaded (as a woken launcher).
+  The station's DISARM on a launcher standing by takes it out of the stand-by.
+- *The course* (`content/command/CommandRocket`): the candidates flown in advance through `Flights.preview` (a flight
+  as `launch` makes it, never flown), a sample every five ticks; the rocket fired with `Flights.launch`'s cell hold for
+  its moment in the tube (8 ticks: no silo vents), a puff of smoke out of the tube's mouth; a flight with no warhead
+  comes down with a dud's smoke and thud.
+- *The Dead Hand* (`DeadHandBlockEntity`): the lid's angle worked out from the countdown (opening over the last 40
+  ticks), open while firing and spent, swinging shut from where it was after a stand-down or a new rocket (`lidShutAt`,
+  synced); FIRING until its rocket's flight is gone, then SPENT; its console's scope carries how many stand by, how many
+  of the network's launchers the course would reach (worked out again every two seconds while the console is open) and
+  how many have the order; the command link's light blinks fast while the rocket is in the air; its little screen
+  SENDING.
+- *The screens*: `client/screen/NetworkMap` draws a network's picture through a view (the map's rectangle, its middle,
+  its scale) for both the station and the War Room Display's screen (`WarRoomScreen`, rewritten: the board's view, the
+  members, the log, the wall's settings and Show on the wall; its own `TerrainMap` sized to its map); the station lists
+  launchers standing by ("Standing by", "Standing by: T-n", "Awaiting order", amber, flashing while they wait) and a
+  Dead Hand firing as TRANSMITTING; `ContactView.reach` puts the rocket's signal round it on the station's map, the wall
+  and the screen; the board sends the whole log (the wall still shows its last three lines) and a view set from the
+  screen (`WarRoomDisplayBlockEntity.VIEW_SET`, its middle and scale). The protocol is 23.
+- *Tests*: `StandByTests` (6: the Launch Silo released and scrubbed, the Missile Silo with its doors open, the cruise
+  launcher, the battery, the SCUD Storm) and `CommandTests` (20: readied and stood down, fired at once and in return fire
+  as the signal reaches the silo, the whole countdown with the silo lit within three ticks of zero, out of reach and
+  stood down, the course planned); 470 GameTests.
+- *The test world*: the base's far Missile Silo 1200 blocks east (dug in, a heavy HE missile, on the war plan) for the
+  rocket to fly over; the Dead Hand's signs say what it now does; the demo checks the launchers standing by, the three by
+  the bunker lit at zero, the far silo waiting at T-1 and firing as the rocket comes within its reach, the rocket down
+  with all four reached, and photographs the War Room screen at the calm, with the rocket in the air, and after.
 
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
@@ -6003,6 +6105,8 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-11 | **The command rocket flies over the launchers** (§17.19; the user, after the first build: "make it so that the other missiles begin actually launching as soon as the dead hand reaches 0, not start the next 15s countdown from each of their launchers", then, keeping the rocket, "a real one doesn't actually launch to an enemy right? It just flew over russia sending launch signals", and of the two ways offered, "Let's do the fly over launchers please"): in the alert the network's launchers are aimed, armed and counted down to stand by at their last second; at zero the rocket leaves its tube and flies a course planned over them, its signal (256 blocks round it, farther as it climbs, to 480) firing each launcher it reaches at once; it comes down harmless; those it never reached stand down. As Perimeter's 15A11 and the American ERCS did: courses over their own forces, never at the enemy. |
+| 2026-11-11 | **The War Room Display's screen** (§17.19; the user: "can you make it so the player can view and move the screen (zoom in or out) like they do with the launch control station?"): a click on the display opens its board as a screen, dragged and zoomed as the station's map is, with the counts, the condition, the members and the log beside it, the wall's settings on a tab, and a button that puts the screen's view on the wall. |
 | 2026-11-09 | **The war room built** (§17.17, §17.18; the user: "Just build all 3 at once please so I can just come back after your done"): the Seismograph, the War Room Display and the Dead Hand on the launch network's records, the ground's blasts their shared source (`Seismic`), every blast hook covered; four CC0 recordings added for their sounds (a pen plotter, a plotter idling, a pen on paper, a key telephone's buzzer); the test world `runWarRoom`, its builder left out of the jar, and a played-through attack (`-PwarRoomDemo=true`, 19 checks) as its in-game check. |
 | 2026-11-09 | **Tests that hear every blast run alone** (§17.18): the ground carries every GameTest's blasts to every other test running beside it (the first run: six failures, each another test's strike), so a test any blast would disturb runs in a batch of its own (`GBGameTests.testAlone`: an environment of its own); the rest check their own strikes by their own figures. |
 | 2026-11-09 | **Testing the war room displays, seismographs and the Dead Hand** (the user, on a first design that tested them with a creative item calling a strike down: "Nooo to the strike simulator. When the summary said an easy way to test, it meant making a world for me already equipped with the neccasary multiblocks built and ready for me to test"): each comes with a test world built by a dev run, as the Showroom (§22.7) and the 1.21.1 build's Test Range are: everything built, formed, powered, linked and loaded, and where a feature has to be fired upon, an opposing launch site built and aimed at the base; the builder kept out of the released jar. The design itself to be drawn again on the mod's own systems (the Launch Control Station's network and map, the radar's tracks, the alarm channels, the multiblock framework) before anything is built. |

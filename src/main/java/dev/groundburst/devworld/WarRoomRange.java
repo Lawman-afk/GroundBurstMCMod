@@ -82,7 +82,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * room's fittings; the Air-Raid Siren outside its blast door;</li>
  * <li>round it, a Radar Array, two more Seismographs 100 blocks east and west, the Dead Hand (armed, its rocket loaded, set
  * to fire on any strike), and the base's launchers (two Launch Silos with HE missiles, a Launch Complex with a tactical
- * nuke) aimed at the enemy's launchers (the war plan);</li>
+ * nuke) aimed at the enemy's launchers (the war plan); 1200 blocks east, the base's far Missile Silo, beyond the command
+ * rocket's first reach, for it to fly over (DESIGN.md §17.19);</li>
  * <li>900 blocks north, the enemy's launch site: two Launch Silos (HE) aimed at a mock town 150 blocks north-east of the
  * base, a Launch Complex (a tactical nuke) aimed at a field 250 blocks north-west of it; their network is run from the
  * ENEMY COMMAND booth beside the bunker, a second Launch Control Station;</li>
@@ -101,6 +102,8 @@ public final class WarRoomRange {
     private static final BlockPos DISPLAY = new BlockPos(0, 1, -9), STATION = new BlockPos(-6, 1, -2), BOOTH = new BlockPos(-24, 1, 20),
             SEISMOGRAPH = new BlockPos(7, 1, 4), RADAR = new BlockPos(-26, 1, -4), DEAD_HAND = new BlockPos(20, 1, 14);
     private static final BlockPos SILO_1 = new BlockPos(30, 1, -12), SILO_2 = new BlockPos(38, 1, -12), COMPLEX = new BlockPos(48, 1, -14);
+    /** The base's far Missile Silo, its top ring flush with the ground: the command rocket flies over it (DESIGN.md §17.19). */
+    private static final BlockPos FAR_SILO = new BlockPos(1200, 0, -20);
     private static final BlockPos ENEMY_1 = new BlockPos(-8, 1, -900), ENEMY_2 = new BlockPos(0, 1, -900), ENEMY_3 = new BlockPos(12, 1, -898);
     private static final BlockPos TOWN = new BlockPos(110, 1, -110), FIELD = new BlockPos(-180, 1, -160);
     private static final int HUT = 100;
@@ -193,7 +196,8 @@ public final class WarRoomRange {
                 new View("dead_hand", new Vec3(13.5, y + 1.5, 19.5), -125, 6, 120),
                 new View("booth", new Vec3(BOOTH.getX() + 0.5, y + 1.5, BOOTH.getZ() + 7.5), 180, 8, 120),
                 new View("enemy_site", new Vec3(2.5, y + 22, -858.5), 180, 26, 300),
-                new View("town", new Vec3(TOWN.getX() + 0.5, y + 24, TOWN.getZ() + 40.5), 180, 30, 240));
+                new View("town", new Vec3(TOWN.getX() + 0.5, y + 24, TOWN.getZ() + 40.5), 180, 30, 240),
+                new View("far_silo", new Vec3(FAR_SILO.getX() + 14.5, y + 12, FAR_SILO.getZ() + 18.5), 140, 28, 240));
     }
 
     private static boolean photos(Minecraft mc, MinecraftServer server) {
@@ -254,6 +258,11 @@ public final class WarRoomRange {
                 level.getChunk(cx, cz);
             }
         }
+        for (int cx = (FAR_SILO.getX() - 24) >> 4; cx <= (FAR_SILO.getX() + 24) >> 4; cx++) {
+            for (int cz = (FAR_SILO.getZ() - 24) >> 4; cz <= (FAR_SILO.getZ() + 24) >> 4; cz++) {
+                level.getChunk(cx, cz);
+            }
+        }
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0) - 1;
         Builder b = new Builder(level, y);
         b.bunker();
@@ -261,6 +270,7 @@ public final class WarRoomRange {
         b.town();
         b.field();
         b.enemySite();
+        b.farSilo();
         b.networks();
         b.player();
         ground = y;
@@ -462,9 +472,9 @@ public final class WarRoomRange {
             }
             // Its signs either side of its console, the ground in front of it clear.
             sign(at(DEAD_HAND.getX() - 2, 1, DEAD_HAND.getZ() - 5), 4, "DEAD HAND", "Armed. A strike", "of magnitude 4", "within 512...");
-            sign(at(DEAD_HAND.getX() - 2, 1, DEAD_HAND.getZ() - 3), 4, "...and in 30 s", "it fires every", "base launcher", "(the war plan).");
-            sign(at(DEAD_HAND.getX() - 2, 1, DEAD_HAND.getZ() + 3), 4, "HOLD on its", "console stops", "it. Set to fire", "on any strike:");
-            sign(at(DEAD_HAND.getX() - 2, 1, DEAD_HAND.getZ() + 5), 4, "set it to when", "command is", "silent and the", "station saves.");
+            sign(at(DEAD_HAND.getX() - 2, 1, DEAD_HAND.getZ() - 3), 4, "...readies all", "base launchers:", "they count down", "and wait.");
+            sign(at(DEAD_HAND.getX() - 2, 1, DEAD_HAND.getZ() + 3), 4, "At 0 its rocket", "flies over them;", "each fires as", "its signal comes.");
+            sign(at(DEAD_HAND.getX() - 2, 1, DEAD_HAND.getZ() + 5), 4, "HOLD stands all", "down. It fires", "on any strike", "(set: command).");
             // The base's launchers east of the bunker: two silos (HE), a complex (a tactical nuke).
             ItemStack he = MissileAssembly.missile(new MissileSpec(new ItemStack(GBOrdnance.HE_WARHEAD.item().get()), SizeClass.M,
                     MissileParts.Motor.SRM_II, MissileParts.Guidance.GPS, false));
@@ -474,6 +484,7 @@ public final class WarRoomRange {
             launcher(GBLaunch.SILO_CONTROLLER.block().get(), GBLaunch.SILO, at(SILO_2), Direction.NORTH, he.copy());
             launcher(GBLaunch.COMPLEX_CONTROLLER.block().get(), GBLaunch.COMPLEX, at(COMPLEX), Direction.NORTH, nuke.copy());
             sign(at(SILO_1.getX() - 4, 1, SILO_1.getZ() + 5), 0, "BASE LAUNCHERS", "Aimed at the", "enemy site", "(900 north).");
+            sign(at(SILO_1.getX() - 4, 1, SILO_1.getZ() + 7), 0, "One more: a", "Missile Silo", "1200 blocks", "east.");
             // The spawn's signs.
             sign(at(-2, 1, 16), 0, "GROUND BURST", "WAR ROOM", "Range: in the", "bunker.");
             sign(at(3, 1, 16), 0, "Codes in your", "pack: Base and", "Enemy. A spare", "Command Rocket.");
@@ -564,13 +575,32 @@ public final class WarRoomRange {
             sign(at(2, 1, -887), 0, "ENEMY LAUNCH", "SITE", "Run from ENEMY", "COMMAND (base).");
         }
 
+        /**
+         * The base's far Missile Silo, 1200 blocks east (DESIGN.md §17.19): dug in, its top ring flush with the ground, a
+         * heavy HE missile in it, aimed (with the rest) at the enemy site. Out of the command rocket's first reach: it fires
+         * as the rocket flies over.
+         */
+        void farSilo() {
+            BlockPos s = at(FAR_SILO);
+            fill(FAR_SILO.getX() - 6, 0, FAR_SILO.getZ() - 4, FAR_SILO.getX() + 6, 0, FAR_SILO.getZ() + 9, this.concrete);
+            place(GBLaunch.MISSILE_SILO_CONTROLLER.block().get(), GBLaunch.MISSILE_SILO, s, Direction.NORTH);
+            power(GBLaunch.MISSILE_SILO, s, Direction.NORTH, true);
+            if (this.level.getBlockEntity(s) instanceof LaunchSiloBlockEntity silo) {
+                silo.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, MissileAssembly.missile(new MissileSpec(
+                        new ItemStack(GBOrdnance.HE_WARHEAD.item().get()), SizeClass.L, MissileParts.Motor.LIQUID, MissileParts.Guidance.GPS, false)));
+                silo.energy().generate(silo.energy().capacity());
+            }
+            sign(at(FAR_SILO.getX() - 4, 1, FAR_SILO.getZ() + 7), 0, "FAR SILO", "On the base's", "network. Fires", "as the rocket");
+            sign(at(FAR_SILO.getX() + 4, 1, FAR_SILO.getZ() + 7), 0, "...comes over:", "its signal is", "heard 256-480", "blocks round.");
+        }
+
         // --- the networks ---------------------------------------------------------------------------------------------
         /** The base's network (its station's) and the enemy's (the booth's): members linked with codes, launchers aimed. */
         void networks() {
             LaunchNetwork nets = LaunchNetwork.of(this.level);
             ItemStack base = codes(at(STATION)), enemy = codes(at(BOOTH));
             List<BlockPos> members = new ArrayList<>(List.of(at(DISPLAY), at(SEISMOGRAPH), at(-HUT, 1, 0), at(HUT, 1, 0), at(RADAR), at(DEAD_HAND),
-                    at(SILO_1), at(SILO_2), at(COMPLEX)));
+                    at(SILO_1), at(SILO_2), at(COMPLEX), at(FAR_SILO)));
             for (BlockPos p : members) {
                 link(base, p);
             }
@@ -588,6 +618,7 @@ public final class WarRoomRange {
             nets.aim(this.level, b.id, List.of(at(SILO_1)), ENEMY_1.getX(), ENEMY_1.getZ(), LaunchNetwork.Pattern.POINT, 0);
             nets.aim(this.level, b.id, List.of(at(SILO_2)), ENEMY_2.getX(), ENEMY_2.getZ(), LaunchNetwork.Pattern.POINT, 0);
             nets.aim(this.level, b.id, List.of(at(COMPLEX)), ENEMY_3.getX() + 2, ENEMY_3.getZ() - 2, LaunchNetwork.Pattern.POINT, 0);
+            nets.aim(this.level, b.id, List.of(at(FAR_SILO)), ENEMY_2.getX() + 2, ENEMY_2.getZ() + 6, LaunchNetwork.Pattern.POINT, 0);
             nets.aim(this.level, e.id, List.of(at(ENEMY_1)), TOWN.getX() - 16, TOWN.getZ() - 14, LaunchNetwork.Pattern.POINT, 0);
             nets.aim(this.level, e.id, List.of(at(ENEMY_2)), TOWN.getX() + 12, TOWN.getZ() + 1, LaunchNetwork.Pattern.POINT, 0);
             nets.aim(this.level, e.id, List.of(at(ENEMY_3)), FIELD.getX(), FIELD.getZ(), LaunchNetwork.Pattern.POINT, 0);
@@ -717,16 +748,22 @@ public final class WarRoomRange {
 
     // --- the demo: the attack played through, photographed and checked ---------------------------------------------------
     /**
-     * The attack in order, each step waiting for what the world does (the silos' ten-second countdowns, the missiles'
-     * flights, the Dead Hand's thirty seconds): the calm; the enemy's salvo launched and in the air (INCOMING, the alarms);
-     * the strikes (the seismographs' records, the network's fixes, ATTACK, the Dead Hand in alert, its console); the Dead
-     * Hand firing (its lid, its rocket); the base's launchers firing back. What the server holds is read into
-     * {@link #polled} every ten ticks.
+     * The attack in order, each step waiting for what the world does (the silos' countdowns, the missiles' flights, the Dead
+     * Hand's thirty seconds, its rocket's flight): the calm; the enemy's salvo launched and in the air (INCOMING, the
+     * alarms); the strikes (the seismographs' records, the network's fixes, ATTACK, the Dead Hand in alert, its console, the
+     * base's launchers standing by); the lid opening; zero (the rocket out of its tube, the base's launchers firing at once,
+     * the War Room Display's screen with the rocket's signal round it); the far silo firing as the rocket comes over; the
+     * rocket down and the base's missiles on their way. What the server holds is read into {@link #polled} every ten ticks.
      */
     static final class Demo {
         private static int phase, at, mark = -1;
-        /** Read on the server: the missiles in the air (all, and the base's), the Dead Hand's state. */
+        /**
+         * Read on the server: the missiles in the air (all, and the base's), the Dead Hand's state and its ticks to zero,
+         * whether the far silo has fired.
+         */
         private static volatile int flying, ours, deadHand;
+        private static volatile long toZero = Long.MAX_VALUE;
+        private static volatile boolean farFired;
 
         private Demo() {}
 
@@ -746,7 +783,10 @@ public final class WarRoomRange {
             List<Flights.Flight> all = Flights.of(level).all();
             flying = all.size();
             ours = (int) all.stream().filter(f -> f.start().z > -300 && !f.harmless()).count();
-            deadHand = deadHandOf(level, y).state().ordinal();
+            DeadHandBlockEntity dh = deadHandOf(level, y);
+            deadHand = dh.state().ordinal();
+            toZero = dh.state() == DeadHandBlockEntity.State.ALERT ? dh.alertUntil() - level.getGameTime() : Long.MAX_VALUE;
+            farFired = farOf(level, y).inventory().getItem(LaunchSiloBlockEntity.SLOT_MISSILE).isEmpty();
         }
 
         static void tick(Minecraft mc, MinecraftServer server) {
@@ -761,6 +801,9 @@ public final class WarRoomRange {
             // Before its console (within a screen's reach), and up by its tube's corner: the lid, the rocket.
             View console = new View("console", new Vec3(16.5, y + 1, 17.5), -127, 8, 0);
             View roof = new View("roof", new Vec3(24.5, y + 5, 22.5), 155, 14, 0);
+            View base = new View("base", new Vec3(52.5, y + 30, 52.5), 135, 24, 0);
+            View far = new View("far", new Vec3(FAR_SILO.getX() - 9.5, y + 6, FAR_SILO.getZ() + 14.5), -145, 14, 0);
+            BlockPos display = new BlockPos(DISPLAY.getX(), y + DISPLAY.getY(), DISPLAY.getZ());
             switch (phase) {
                 case 0 -> {                                      // the calm: in the room, the board at 5
                     if (at == 1) {
@@ -772,15 +815,15 @@ public final class WarRoomRange {
                     } else if (at == 180) {
                         shot(mc, "1b_station_map");
                         mc.gui.setScreen(null);
-                        dev.groundburst.content.command.WarRoomDisplayBlock.screenHook.accept(new BlockPos(DISPLAY.getX(), y + DISPLAY.getY(), DISPLAY.getZ()));
-                    } else if (at == 220) {
-                        shot(mc, "1c_display_settings");
+                        dev.groundburst.content.command.WarRoomDisplayBlock.screenHook.accept(display);
+                    } else if (at == 240) {
+                        shot(mc, "1c_war_room_screen");
                         mc.gui.setScreen(null);
                         teleport(server, new View("seismograph", new Vec3(4.6, y + 1, 4.5), -90, 28, 0));
-                    } else if (at == 270) {
+                    } else if (at == 290) {
                         shot(mc, "1d_seismograph");
                         teleport(server, inside);
-                    } else if (at == 300) {
+                    } else if (at == 320) {
                         server.execute(() -> launchEnemy(level));
                         next();
                     }
@@ -818,30 +861,60 @@ public final class WarRoomRange {
                     } else if (at == 310) {
                         shot(mc, "6_dead_hand_console");
                         mc.gui.setScreen(null);
+                        server.execute(() -> standingBy(level, y));
+                        teleport(server, base);
+                    } else if (at > 310 && mark == -1 && toZero <= 60) {
+                        mark = at;                               // the base's launchers at their last seconds
+                        shot(mc, "6b_launchers_standing_by");
                         teleport(server, roof);
+                    } else if (mark > 0 && toZero <= 15) {
+                        shot(mc, "7_dead_hand_lid");             // its lid swinging open in the last two seconds
+                        mark = -3;
                     } else if (at > 310 && deadHand == DeadHandBlockEntity.State.FIRING.ordinal()) {
                         next();
-                    } else if (at > 1200) {
+                    } else if (at > 1500) {
                         check("the Dead Hand fired within its countdown", false, DeadHandBlockEntity.State.values()[deadHand]);
                         next();
                     }
                 }
-                case 3 -> {                                      // its lid swinging open, the rocket away, the order sent
-                    if (at == 22) {
-                        shot(mc, "7_dead_hand_lid");
-                    } else if (at == 52) {
+                case 3 -> {                                      // zero: the rocket out, the base's launchers away, the screen
+                    if (at == 12) {
                         shot(mc, "8_command_rocket");
-                    } else if (at == 140) {
+                    } else if (at == 30) {
                         server.execute(() -> fired(level, y));
                         teleport(server, inside);
-                    } else if (at > 160 && ours >= 3 && mark != -2) {
-                        mark = -2;
-                        at = 1000;                               // in the air: a moment for the board, then its picture
+                    } else if (at == 45) {
+                        dev.groundburst.content.command.WarRoomDisplayBlock.screenHook.accept(display);
+                    } else if (at == 95) {
+                        shot(mc, "9_war_room_screen_rocket");
+                        mc.gui.setScreen(null);
+                        teleport(server, far);
+                    } else if (at > 95 && farFired) {
+                        server.execute(() -> farCheck(level, y));
+                        next();
+                    } else if (at > 1200) {
+                        check("the far silo fired as the rocket came over", false, "it never fired");
+                        next();
+                    }
+                }
+                case 4 -> {                                      // the far silo's missile away; then the rocket down
+                    if (at == 6) {
+                        shot(mc, "10_far_silo_fires");           // lit at the foot of its shaft, the vents smoking
+                    } else if (at == 66) {
+                        shot(mc, "10b_far_silo_away");           // out of the shaft and climbing
+                    } else if (at > 66 && at < 900 && deadHand == DeadHandBlockEntity.State.SPENT.ordinal()) {
+                        at = 1000;
+                        server.execute(() -> spent(level, y));
+                        teleport(server, inside);
                     } else if (at == 1060) {
-                        shot(mc, "9_retaliation");
+                        dev.groundburst.content.command.WarRoomDisplayBlock.screenHook.accept(display);
+                    } else if (at == 1110) {
+                        shot(mc, "11_war_room_screen_after");
+                        mc.gui.setScreen(null);
                         server.execute(() -> retaliation(level, y));
                         next();
                     } else if (at == 900) {
+                        check("the command rocket came down within its course", false, DeadHandBlockEntity.State.values()[deadHand]);
                         server.execute(() -> retaliation(level, y));
                         next();
                     }
@@ -859,9 +932,7 @@ public final class WarRoomRange {
         private static void next() {
             phase++;
             at = 0;
-            if (mark != -2) {
-                mark = -1;
-            }
+            mark = -1;
         }
 
         static DeadHandBlockEntity deadHandOf(ServerLevel level, int y) {
@@ -876,6 +947,21 @@ public final class WarRoomRange {
             return (SeismographBlockEntity) level.getBlockEntity(new BlockPos(SEISMOGRAPH.getX(), y + SEISMOGRAPH.getY(), SEISMOGRAPH.getZ()));
         }
 
+        static LaunchSiloBlockEntity farOf(ServerLevel level, int y) {
+            return (LaunchSiloBlockEntity) level.getBlockEntity(new BlockPos(FAR_SILO.getX(), y + FAR_SILO.getY(), FAR_SILO.getZ()));
+        }
+
+        /** The base's launchers by the bunker: the two silos and the complex. */
+        static List<LaunchSiloBlockEntity> baseLaunchers(ServerLevel level, int y) {
+            List<LaunchSiloBlockEntity> out = new ArrayList<>();
+            for (BlockPos p : List.of(SILO_1, SILO_2, COMPLEX)) {
+                if (level.getBlockEntity(new BlockPos(p.getX(), y + p.getY(), p.getZ())) instanceof LaunchSiloBlockEntity s) {
+                    out.add(s);
+                }
+            }
+            return out;
+        }
+
         static void calm(ServerLevel level, int y) {
             WarRoomDisplayBlockEntity d = displayOf(level, y);
             check("the display formed, lit and showing the base", d.isFormed() && d.shownPowered() && d.shownNetwork() == baseNetwork,
@@ -884,9 +970,11 @@ public final class WarRoomRange {
             DeadHandBlockEntity dh = deadHandOf(level, y);
             check("the Dead Hand watching, its rocket loaded", dh.state() == DeadHandBlockEntity.State.WATCHING && dh.rocket(), dh.state());
             LaunchNetwork.Network n = LaunchNetwork.of(level).network(baseNetwork);
-            check("the base's network: 8 members (the display shows it, a member it is not)", n != null && n.members().size() == 8
+            check("the base's network: 9 members (the display shows it, a member it is not)", n != null && n.members().size() == 9
                     && n.member(d.getBlockPos()) == null, n == null ? null : n.members().size());
             check("every seismograph powered", seismographOf(level, y).powered(), seismographOf(level, y).status());
+            LaunchSiloBlockEntity far = farOf(level, y);
+            check("the far silo formed, loaded and ready", far.isFormed() && far.readiness() == LaunchSiloBlockEntity.Readiness.READY, far.readiness());
         }
 
         /** The enemy's three launchers armed and launched from its network (as its station's LAUNCH does). */
@@ -926,16 +1014,48 @@ public final class WarRoomRange {
             check("the base's alarms: a blast", a != null && a.kind() == Alarms.Kind.BLAST, a);
         }
 
+        /** In the alert: every base launcher (the far silo too) readied to stand by for the rocket. */
+        static void standingBy(ServerLevel level, int y) {
+            DeadHandBlockEntity dh = deadHandOf(level, y);
+            int n = LaunchNetwork.of(level).standingFor(baseNetwork, dh.getBlockPos());
+            check("the base's four launchers stand by for the Dead Hand", n == 4, n);
+        }
+
+        /** Zero: the rocket away; the three launchers by the bunker lit at once; the far silo still waiting for the signal. */
         static void fired(ServerLevel level, int y) {
             DeadHandBlockEntity dh = deadHandOf(level, y);
-            check("the Dead Hand fired and is spent", dh.state() == DeadHandBlockEntity.State.SPENT && !dh.rocket(), dh.state());
+            check("the Dead Hand fired: its rocket in the air", dh.state() == DeadHandBlockEntity.State.FIRING && !dh.rocket()
+                    && dh.rocketFlight() != null, dh.state());
             var line = dh.log().stream().filter(e -> e.line() == DeadHandBlockEntity.Line.FIRED).findFirst();
-            check("it ordered the base's three launchers to fire", line.isPresent() && line.get().b() == 3, line.map(l -> l.b()).orElse(-1));
+            check("with the base's four launchers standing by", line.isPresent() && line.get().b() == 4, line.map(l -> l.b()).orElse(-1));
+            long lit = baseLaunchers(level, y).stream().filter(s -> s.inventory().getItem(LaunchSiloBlockEntity.SLOT_MISSILE).isEmpty()).count();
+            check("the three by the bunker lit at zero, no countdown after it", lit == 3, lit + " of 3");
+            LaunchSiloBlockEntity far = farOf(level, y);
+            check("the far silo waiting at T-1 for the signal", far.standingBy() && far.countdown() == 1, far.countdown());
+        }
+
+        /** The far silo fired: the rocket was within its signal's reach of it. */
+        static void farCheck(ServerLevel level, int y) {
+            DeadHandBlockEntity dh = deadHandOf(level, y);
+            Flights.Flight rocket = Flights.of(level).all().stream().filter(f -> f.id().equals(dh.rocketFlight())).findFirst().orElse(null);
+            BlockPos far = farOf(level, y).getBlockPos();
+            double d = rocket == null ? -1 : Math.hypot(rocket.position().x - far.getX() - 0.5, rocket.position().z - far.getZ() - 0.5);
+            check("the far silo fired as the rocket came over (within its reach)", rocket != null
+                    && d <= dev.groundburst.content.command.CommandRocket.REACH_TOP + 60, rocket == null ? "the rocket gone" : (int) d + " blocks off");
+            long n = Flights.of(level).all().stream().filter(f -> f.start().z > -300 && !f.harmless()).count();
+            check("all four of the base's missiles in the air", n >= 4, n);
+        }
+
+        static void spent(ServerLevel level, int y) {
+            DeadHandBlockEntity dh = deadHandOf(level, y);
+            var line = dh.log().stream().filter(e -> e.line() == DeadHandBlockEntity.Line.ROCKET_DOWN).findFirst();
+            check("the rocket down harmless: all four had the order", dh.state() == DeadHandBlockEntity.State.SPENT && line.isPresent()
+                    && line.get().b() == 4, line.map(l -> l.b()).orElse(-1));
         }
 
         static void retaliation(ServerLevel level, int y) {
             long n = Flights.of(level).all().stream().filter(f -> f.start().z > -300 && !f.harmless()).count();
-            check("the base's missiles in the air", n >= 3, n);
+            check("the far silo's missile still on its way (the base's by the bunker down)", n >= 1, n);
             WarRoomDisplayBlockEntity d = displayOf(level, y);
             check("the board at 1 still (the strike lately)", d.condition() == 1, d.condition());
         }

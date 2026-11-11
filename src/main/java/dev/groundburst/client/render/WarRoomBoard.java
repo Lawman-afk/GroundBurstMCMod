@@ -120,8 +120,17 @@ public final class WarRoomBoard {
         return this.id;
     }
 
-    /** Where it looks: everything in (the members, the missiles and their targets, blasts, impacts) or centred on it. */
+    /**
+     * Where it looks: everything in (the members, the missiles and their targets, blasts, impacts), centred on it, or as its
+     * screen set it (DESIGN.md §17.19).
+     */
     private void view(WarRoomPayloads.Board b) {
+        if (b.view() == WarRoomDisplayBlockEntity.VIEW_SET) {
+            this.cx = b.viewX() + 0.5;
+            this.cz = b.viewZ() + 0.5;
+            this.zoom = TerrainSurvey.validScale(b.viewZoom()) ? b.viewZoom() : 8;
+            return;
+        }
         if (b.view() > 0) {
             this.cx = b.at().getX() + 0.5;
             this.cz = b.at().getZ() + 0.5;
@@ -245,6 +254,12 @@ public final class WarRoomBoard {
             line(img, x, z - r, x + r, z, 0xFFFF4A3A, 0);
             line(img, x + r, z, x, z + r, 0xFFFF4A3A, 0);
             line(img, x, z + r, x - r, z, 0xFFFF4A3A, 0);
+        }
+        // A Dead Hand's command rocket: the ring of its signal's reach round it (what it reaches fires), pulsing.
+        for (StationPayloads.ContactView c : b.contacts()) {
+            if (c.command()) {
+                ring(img, px(c.x() + 0.5), py(c.z() + 0.5), c.reach() / (float) this.zoom, blink ? 0xCCFFB040 : 0x88FFB040, 6);
+            }
         }
         // Missiles in the air: the network's amber, those its radars track red, each with its line to its target.
         for (StationPayloads.ContactView c : b.contacts()) {

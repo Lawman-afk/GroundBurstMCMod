@@ -131,11 +131,17 @@ public class LaunchStationScreen extends Screen {
                 case DEAD_HAND_ARMED -> "%s armed: watching %s blocks round";
                 case DEAD_HAND_SAFE -> "%s made safe";
                 case DEAD_HAND_ALERT -> "%s ALERT: strike at %s, %s; fires in %s s";
-                case DEAD_HAND_FIRED -> "%s FIRED: %s launchers ordered";
+                case DEAD_HAND_FIRED -> "%s FIRED: command rocket away, %s launchers standing by";
                 case DEAD_HAND_STOOD_DOWN -> "%s stood down%s";
+                case DEAD_HAND_ROCKET_DOWN -> "%s: command rocket down at %s, %s; %s launchers had the order";
             }));
         }
     }
+    // The Dead Hand's stand-by (DESIGN.md §17.19).
+    private static final String T_AWAITING = GBLang.add(P + "state.awaiting", "Awaiting order");
+    private static final String T_STANDING = GBLang.add(P + "state.standing", "Standing by");
+    private static final String T_STANDING_COUNT = GBLang.add(P + "state.standing_count", "Standing by: T-%s");
+    private static final String T_OUT_OF_REACH = GBLang.add(P + "event.out_of_reach", "out of the command rocket's reach");
     private static final String T_LASER = GBLang.add(P + "laser", "Laser");
     private static final String T_ANSWERED = GBLang.add(P + "event.answered", ": the command answered");
     // The war room's members (DESIGN.md §17.17).
@@ -144,7 +150,7 @@ public class LaunchStationScreen extends Screen {
     private static final String T_SAFE = GBLang.add(P + "state.safe", "SAFE");
     private static final String T_WATCHING = GBLang.add(P + "state.watching", "WATCHING %s m");
     private static final String T_ALERT = GBLang.add(P + "state.alert", "ALERT T-%s");
-    private static final String T_FIRING = GBLang.add(P + "state.firing", "FIRING");
+    private static final String T_FIRING = GBLang.add(P + "state.firing", "TRANSMITTING");
     private static final String T_NO_ROCKET = GBLang.add(P + "state.no_rocket", "No rocket");
     private static final String T_SEISMO_SEES = GBLang.add(P + "seismo_sees", "Feels blasts; its last: magnitude %s");
     private static final String T_SEISMO_NONE = GBLang.add(P + "seismo_none", "Feels blasts; none recorded yet");
@@ -651,10 +657,22 @@ public class LaunchStationScreen extends Screen {
         return s / 60 + ":" + String.format(Locale.ROOT, "%02d", s % 60);
     }
 
-    /** What a member is doing, as its row says it, and the colour. */
-    private Component state(StationPayloads.MemberView m, List<StationPayloads.ContactView> contacts) {
+    /**
+     * What a member is doing, as its row says it ({@code now}: the server's time, as its scope or board gave it; the War
+     * Room Display's screen lists the members so too).
+     */
+    public static Component state(StationPayloads.MemberView m, List<StationPayloads.ContactView> contacts, long now) {
         if (m.lost()) {
             return Component.translatable(T_LOST);
+        }
+        if (m.launcher() && m.standingBy()) {                        // readied by the Dead Hand (DESIGN.md §17.19)
+            if (m.awaitingOrder()) {
+                return Component.translatable(T_AWAITING);
+            }
+            if (m.readiness() == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal() && m.countdown() > 1) {
+                return Component.translatable(T_STANDING_COUNT, (m.countdown() + 19) / 20);
+            }
+            return Component.translatable(T_STANDING);
         }
         if (m.radar()) {
             if (!m.contact()) {
@@ -692,7 +710,7 @@ public class LaunchStationScreen extends Screen {
             return Component.translatable(T_STATE[Mth.clamp(r, 0, T_STATE.length - 1)], 0);
         }
         if (m.launchAt() >= 0) {
-            return Component.translatable(T_HELD, clock((int) Math.max(0, m.launchAt() - now())));
+            return Component.translatable(T_HELD, clock((int) Math.max(0, m.launchAt() - now)));
         }
         int r = Mth.clamp(m.readiness(), 0, T_STATE.length - 1);
         if (r == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal()) {
@@ -714,7 +732,8 @@ public class LaunchStationScreen extends Screen {
         return Component.translatable(T_STATE[r]);
     }
 
-    private int stateColor(StationPayloads.MemberView m) {
+    /** A member's colour on the list and the map ({@code ticks}: the screen's clock, for flashing). */
+    public static int stateColor(StationPayloads.MemberView m, long ticks) {
         if (m.lost()) {
             return RED;
         }
@@ -723,10 +742,13 @@ public class LaunchStationScreen extends Screen {
         }
         if (m.deadHand()) {
             boolean alert = m.readiness() == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
-            return alert ? (this.ticks % 20 < 12 ? RED : DIM_RED) : m.armed() ? AMBER : m.working() ? BRIGHT : DIM;
+            return alert ? (ticks % 20 < 12 ? RED : DIM_RED) : m.armed() ? AMBER : m.working() ? BRIGHT : DIM;
+        }
+        if (m.awaitingOrder()) {
+            return ticks % 20 < 12 ? AMBER : 0xFF8A5A20;              // standing by at its last second: flashing amber
         }
         int r = m.readiness();
-        boolean busy = m.launchAt() >= 0 || counting(m) || m.inFlight() >= 0;
+        boolean busy = m.launchAt() >= 0 || counting(m) || m.inFlight() >= 0 || m.standingBy();
         boolean down = r == LaunchSiloBlockEntity.Readiness.EMP.ordinal() || r == LaunchSiloBlockEntity.Readiness.HALTED.ordinal()
                 || r == LaunchSiloBlockEntity.Readiness.BLOCKED.ordinal();
         return busy || down ? AMBER : m.willBeArmed() ? RED : r == LaunchSiloBlockEntity.Readiness.READY.ordinal() ? BRIGHT : DIM;
@@ -764,13 +786,14 @@ public class LaunchStationScreen extends Screen {
         String key = T_EVENT.get(e.kind());
         return switch (e.kind()) {
             case IMPACT, LOST -> Component.translatable(key, who, e.x(), e.z());
-            case FAILED -> Component.translatable(key, who, e.detail() < 0 ? Component.translatable(T_NO_ANSWER)
+            case FAILED -> Component.translatable(key, who, e.detail() == LaunchNetwork.OUT_OF_REACH ? Component.translatable(T_OUT_OF_REACH)
+                    : e.detail() < 0 ? Component.translatable(T_NO_ANSWER)
                     : Component.translatable(T_STATE[Mth.clamp(e.detail(), 0, T_STATE.length - 1)], 0));
             case NEW_CODES -> Component.translatable(key);
             case FIRE_CALLED, DESIGNATED -> Component.translatable(key, who, e.x(), e.z());
             case BLAST -> Component.translatable(key, who, String.format(Locale.ROOT, "%.1f", e.detail() / 10.0), e.x(), e.z());
             case DEAD_HAND_ARMED, DEAD_HAND_FIRED -> Component.translatable(key, who, e.detail());
-            case DEAD_HAND_ALERT -> Component.translatable(key, who, e.x(), e.z(), e.detail());
+            case DEAD_HAND_ALERT, DEAD_HAND_ROCKET_DOWN -> Component.translatable(key, who, e.x(), e.z(), e.detail());
             case DEAD_HAND_STOOD_DOWN -> Component.translatable(key, who, e.detail() == 1 ? Component.translatable(T_ANSWERED) : Component.empty());
             default -> Component.translatable(key, who);
         };
@@ -803,43 +826,24 @@ public class LaunchStationScreen extends Screen {
         }
         this.map.draw(g, x0, y0, here(), this.viewX, this.viewZ, zoom());
         g.enableScissor(x0, y0, x1, y1);
-        // The radars' reach (dim squares), under everything.
-        for (StationPayloads.MemberView m : s.members()) {
-            if (m.radar() && !m.lost() && m.contact() && m.working()) {
-                int ax0 = screenX(m.at().getX() - RadarArrayBlockEntity.RANGE), ax1 = screenX(m.at().getX() + RadarArrayBlockEntity.RANGE);
-                int az0 = screenY(m.at().getZ() - RadarArrayBlockEntity.RANGE), az1 = screenY(m.at().getZ() + RadarArrayBlockEntity.RANGE);
-                Phosphor.line(g, ax0, az0, ax1, az0, DIM, 4);
-                Phosphor.line(g, ax0, az1, ax1, az1, DIM, 4);
-                Phosphor.line(g, ax0, az0, ax0, az1, DIM, 4);
-                Phosphor.line(g, ax1, az0, ax1, az1, DIM, 4);
-            }
-        }
+        NetworkMap.View v = view();
+        NetworkMap.radarReach(g, v, s.members());
         // Each armed (or launching) member's strike round its target, the picked over the rest.
         for (int pass = 0; pass < 2; pass++) {
             for (StationPayloads.MemberView m : s.members()) {
                 boolean picked = this.picked.contains(m.pos());
                 if ((pass == 1) == picked && m.launcher() && m.hasTarget() && m.strike().reach() > 0
-                        && (m.willBeArmed() || counting(m) || m.launchAt() >= 0)) {
+                        && (m.willBeArmed() || counting(m) || m.launchAt() >= 0 || m.standingBy())) {
                     drawStrike(g, m, picked, x0, y0, x1, y1);
                 }
             }
         }
-        // The pattern the picks would take round the cursor.
         // The Dead Hand's radius (dashed; red in alert), and the blasts its seismographs felt (DESIGN.md §17.17).
-        for (StationPayloads.MemberView m : s.members()) {
-            if (m.deadHand() && !m.lost() && m.armed() && m.range() > 0) {
-                boolean alert = m.readiness() == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
-                int r = Math.max(2, (int) Math.round(m.range() / (double) zoom()));
-                Phosphor.ellipse(g, screenX(m.at().getX() + 0.5), screenY(m.at().getZ() + 0.5), r, r, 1, 0,
-                        alert ? (this.ticks % 20 < 12 ? RED : DIM_RED) : 0x99FFB040, 4);
-                if (alert && m.hasTarget()) {
-                    Phosphor.cross(g, screenX(m.targetX() + 0.5), screenY(m.targetZ() + 0.5), 4, RED);
-                }
-            }
-        }
+        NetworkMap.deadHands(g, v, s.members(), this.ticks);
         for (StationPayloads.BlastView b : s.blasts()) {
-            drawBlast(g, b);
+            NetworkMap.blast(g, this.font, v, b);
         }
+        // The pattern the picks would take round the cursor.
         List<StationPayloads.MemberView> launchers = pickedMembers().stream().filter(m -> m.launcher() && !m.lost()).toList();
         if (inMap(mouseX, mouseY) && !this.panning && launchers.size() > 1) {
             int cx = (int) Math.floor(worldX(mouseX)), cz = (int) Math.floor(worldZ(mouseY));
@@ -853,57 +857,12 @@ public class LaunchStationScreen extends Screen {
         g.fill(cx - 2, cz - 2, cx + 3, cz + 3, WHITE);
         g.fill(cx - 1, cz - 1, cx + 2, cz + 2, 0xFF061A0C);
         boolean blink = this.ticks % 20 < 12;
-        for (StationPayloads.MemberView m : s.members()) {
-            boolean picked = this.picked.contains(m.pos());
-            int sx = screenX(m.at().getX() + 0.5), sz = screenY(m.at().getZ() + 0.5);
-            if (m.launcher() && m.hasTarget()) {
-                int tx = screenX(m.targetX() + 0.5), tz = screenY(m.targetZ() + 0.5);
-                boolean armed = m.willBeArmed() || m.launchAt() >= 0;
-                if (armed || picked) {
-                    Phosphor.line(g, sx, sz, tx, tz, armed ? 0xCCFF4A3A : 0x88FF4A3A, 2);
-                }
-                if (!m.pendingAim() || blink) {
-                    Phosphor.cross(g, tx, tz, 3, picked ? RED : DIM_RED);
-                }
-            }
-            int color = m.lost() ? (blink ? RED : DIM_RED) : picked ? WHITE : stateColor(m);
-            if (m.radar()) {
-                Phosphor.ring(g, sx, sz, 3, color);
-            } else if (m.seismograph()) {                            // a diamond
-                Phosphor.line(g, sx - 3, sz, sx, sz - 3, color, 0);
-                Phosphor.line(g, sx, sz - 3, sx + 3, sz, color, 0);
-                Phosphor.line(g, sx + 3, sz, sx, sz + 3, color, 0);
-                Phosphor.line(g, sx, sz + 3, sx - 3, sz, color, 0);
-            } else if (m.deadHand()) {                               // a square with a cross in it
-                g.outline(sx - 3, sz - 3, 7, 7, color);
-                Phosphor.cross(g, sx, sz, 2, color);
-            } else {
-                g.fill(sx - 2, sz - 2, sx + 3, sz + 3, color);
-            }
-            label(g, Integer.toString(number(m.pos())), sx + 4, sz - 6, picked ? WHITE : DIM);
-        }
-        // The network's laser spots: pulsing red diamonds, who lases each beside it.
-        boolean pulse = this.ticks % 10 < 6;
-        for (StationPayloads.SpotView spot : s.spots()) {
-            int px = screenX(spot.x() + 0.5), pz = screenY(spot.z() + 0.5);
-            int r = pulse ? 4 : 3;
-            Phosphor.line(g, px - r, pz, px, pz - r, RED, 0);
-            Phosphor.line(g, px, pz - r, px + r, pz, RED, 0);
-            Phosphor.line(g, px + r, pz, px, pz + r, RED, 0);
-            Phosphor.line(g, px, pz + r, px - r, pz, RED, 0);
-            g.fill(px, pz, px + 1, pz + 1, WHITE);
-            if (!spot.who().isEmpty()) {
-                label(g, spot.who(), px + 6, pz - 3, RED);
-            }
-        }
-        // Missiles in the air: the network's amber, others its radars track red.
-        for (StationPayloads.ContactView c : s.contacts()) {
-            int mx = screenX(c.x()), mz = screenY(c.z());
-            int col = c.own() ? AMBER : RED;
-            Phosphor.line(g, mx, mz, screenX(c.targetX()), screenY(c.targetZ()), c.own() ? 0x88FFB040 : 0x88FF4A3A, 2);
-            g.fill(mx - 1, mz - 1, mx + 2, mz + 2, col);
-            Phosphor.line(g, mx, mz, mx + (int) (Math.sin(c.heading()) * 5), mz + (int) (Math.cos(c.heading()) * 5), col, 0);
-        }
+        NetworkMap.members(g, this.font, v, s.members(), this.ticks,
+                m -> m.lost() ? (blink ? RED : DIM_RED) : this.picked.contains(m.pos()) ? WHITE : stateColor(m, this.ticks),
+                this::number, m -> this.picked.contains(m.pos()), m -> this.picked.contains(m.pos()));
+        NetworkMap.spots(g, this.font, v, s.spots(), this.ticks);
+        // Missiles in the air: the network's amber, others its radars track red; a command rocket's signal round it.
+        NetworkMap.contacts(g, this.font, v, s.contacts(), this.ticks, false);
         if (inMap(mouseX, mouseY) && !this.panning) {
             g.fill(x0, mouseY, x1, mouseY + 1, 0x3340FF70);
             g.fill(mouseX, y0, mouseX + 1, y1, 0x3340FF70);
@@ -912,53 +871,9 @@ public class LaunchStationScreen extends Screen {
         g.disableScissor();
     }
 
-    /**
-     * A blast its seismographs felt: fixed (two or more), a ring as big as it was strong and its magnitude beside it;
-     * from one station alone, the arc it may lie in (its bearing and distance give or take). Both fade over ten minutes.
-     */
-    private void drawBlast(GuiGraphicsExtractor g, StationPayloads.BlastView b) {
-        int alpha = (int) Mth.clamp(255 - b.age() / 12000.0 * 200, 55, 255);
-        int col = alpha << 24 | 0xFFB040;
-        if (b.fixed()) {
-            int x = screenX(b.x() + 0.5), z = screenY(b.z() + 0.5);
-            Phosphor.ring(g, x, z, Math.max(2, Math.round(b.magnitude() * 1.4f)), col);
-            label(g, String.format(Locale.ROOT, "M%.1f", b.magnitude()), x + 5, z - 3, col);
-            return;
-        }
-        double near = Math.max(0, b.distance() - b.distanceSpread()), far = b.distance() + b.distanceSpread();
-        double a0 = Math.toRadians(b.bearing() - b.bearingSpread()), a1 = Math.toRadians(b.bearing() + b.bearingSpread());
-        int steps = 10;
-        int lastNx = 0, lastNz = 0, lastFx = 0, lastFz = 0;
-        for (int i = 0; i <= steps; i++) {
-            double a = a0 + (a1 - a0) * i / steps;
-            int nx = screenX(b.fromX() + Math.sin(a) * near), nz = screenY(b.fromZ() - Math.cos(a) * near);
-            int fx = screenX(b.fromX() + Math.sin(a) * far), fz = screenY(b.fromZ() - Math.cos(a) * far);
-            if (i > 0) {
-                Phosphor.line(g, lastNx, lastNz, nx, nz, col, 0);
-                Phosphor.line(g, lastFx, lastFz, fx, fz, col, 0);
-            } else {
-                Phosphor.line(g, nx, nz, fx, fz, col, 2);
-            }
-            if (i == steps) {
-                Phosphor.line(g, nx, nz, fx, fz, col, 2);
-            }
-            lastNx = nx;
-            lastNz = nz;
-            lastFx = fx;
-            lastFz = fz;
-        }
-        label(g, String.format(Locale.ROOT, "M%.1f?", b.magnitude()), lastFx + 3, lastFz - 3, col);
-    }
-
-    /** Small type (as the list's), drawn on whole screen pixels. */
-    private void label(GuiGraphicsExtractor g, String text, int x, int y, int color) {
-        int gs = Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
-        float scale = Math.max(1, gs * 2 / 3) / (float) gs;
-        g.pose().pushMatrix();
-        g.pose().translate(x, Math.round(y * gs) / (float) gs);
-        g.pose().scale(scale, scale);
-        g.text(this.font, text, 0, 0, color, false);
-        g.pose().popMatrix();
+    /** The map's view now: where it is on the screen, what it centres on, its scale. */
+    private NetworkMap.View view() {
+        return new NetworkMap.View(mapX(), mapY(), MAP, MAP, this.viewX, this.viewZ, zoom());
     }
 
     private void drawStrike(GuiGraphicsExtractor g, StationPayloads.MemberView m, boolean picked, int x0, int y0, int x1, int y1) {
@@ -1014,8 +929,8 @@ public class LaunchStationScreen extends Screen {
             }
             String right = !m.launcher() ? "" : m.hasTarget() ? (int) distance(m) + "m" : Component.translatable(T_NO_TARGET).getString();
             int rightW = this.font.width(right);
-            String label = (this.scroll + i + 1) + ". " + kind(m.kind()).getString() + "  " + state(m, contacts).getString();
-            int color = stateColor(m);
+            String label = (this.scroll + i + 1) + ". " + kind(m.kind()).getString() + "  " + state(m, contacts, now()).getString();
+            int color = stateColor(m, this.ticks);
             if (!m.contact() && !m.lost() && color != RED) {
                 color = blend(color);                                 // asleep (not loaded): a little dimmer
             }

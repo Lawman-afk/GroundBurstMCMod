@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GBNetwork {
-    public static final String PROTOCOL_VERSION = "22";
+    public static final String PROTOCOL_VERSION = "23";
 
     private GBNetwork() {}
 
