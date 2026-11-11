@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.11.1 — 2026-11-11
+
+Ground Burst on Minecraft 1.20.1 with Forge, and a fix for the Depth Charge Rack. For Minecraft 1.20.1 and 1.21.1; the
+26.3 and 26.1.2 builds stay at 0.11.0.
+
+### Minecraft 1.20.1 (Forge)
+- **The whole mod on Minecraft 1.20.1**, as on 1.21.1: every weapon, warhead, missile and launcher, the machines and
+  their power, the radars, alarms and interceptors, healing, fallout, the Field Manual and the world's Cold War sites.
+  It needs Forge 47.4 or later and GeckoLib 4.8.4 or later for 1.20.1; JEI is optional, as on the other versions.
+- **Create** (6.0.8 for 1.20.1, optional), as on 1.21.1: Create can move any of the mod's blocks, a structure or a
+  two-block machine moving as one. Machines and launchers keep working on its moving contraptions (bearings, pistons,
+  gantries, carts, trains): a launcher fires from where it has turned to, the machines aboard share their power and
+  their pipes, a right-click opens a carried machine's menu, and blasts and shells break blocks out of a moving
+  contraption. Healing puts Create's own blocks back turning. Create Aeronautics has no 1.20.1 version, so its ships
+  stay with 1.21.1.
+- **Shader packs** through Oculus (with Embeddium): the blast effects and the machines' glowing parts show under a pack
+  as they do with Iris on the other versions, drawn over the pack's finished picture or, with the client setting
+  "Effects with shader packs" on "Lit by the pack", by the pack itself. Tried with Complementary Reimagined, BSL, Bliss,
+  Photon, Solas, MakeUp and Unbound.
+- **Distant Horizons**: the effects are drawn after its far terrain, as on the other versions.
+- The sites' rooms and shafts underground are closed in rock, as on 1.21.1, so caves and water keep off their walls.
+
+### Fixes
+- The Depth Charge Rack no longer fills the game's log with a warning every frame while it works (it asked for a
+  working animation its model has not; 1.21.1).
+
 ## 0.11.0 — 2026-11-08
 
 The world's Cold War sites fitted out with the bunker doors, the command room, the fittings and the yard, and fixes for
