@@ -118,6 +118,16 @@ public final class FxPhotographer {
                 new Scene("complex_tsar", "complex_tsar", 34, -12, List.of(20)),
                 new Scene("complex_tsar_close", "complex_tsar", 13, -38, List.of(20)),
                 new Scene("nuke_tsar", "tsar_warhead", 900, -16, List.of(3, 40, 160, 500, 1200)),
+                // The far flash (DESIGN.md §21.10): a thermonuclear warhead 2 000 blocks off by day and by night (looked at
+                // straight: it blinds), and the Tsar 3 000 off at night, its glow over the horizon and its cloud rising.
+                new Scene("far_flash", "thermonuclear_warhead", 2000, -3, List.of(1, 3, 10, 30, 60, 100, 160, 400)),
+                new Scene("far_flash_night", "thermonuclear_warhead", 2000, -3, List.of(1, 3, 10, 30, 60, 100, 160, 400), "midnight"),
+                new Scene("far_flash_tsar_night", "tsar_warhead", 3000, -4, List.of(1, 4, 12, 40, 80, 140, 300, 900), "midnight"),
+                // The far aftermath (DESIGN.md §21.10): a thermonuclear warhead's far wave coming over the land toward a camera
+                // 1 200 blocks off (it sets out from 420 at about tick 94, arriving near 139), and its rings seen from inside the
+                // charred land at 560 (best with -PfxWorld=real: the before, then the land changed).
+                new Scene("far_wave", "thermonuclear_warhead", 1200, 2, List.of(96, 118, 128, 134, 139, 150, 260)),
+                new Scene("far_rings", "thermonuclear_warhead", 560, 14, List.of(2, 400, 1000)),
                 // The machines' glow layers (turned on after slice 8d): every machine with a glowmask, at midnight and at
                 // noon, in three rows of single blocks and two of formed multiblocks, shown running (see glowAt).
                 new Scene("glow_machines0_night", "glow_machines0", 9, 12, List.of(60), "midnight"),
@@ -199,6 +209,10 @@ public final class FxPhotographer {
                 // Slice 12e: the wasteland painted round the camera, a crater lake, frozen ground, toxic soil.
                 new Scene("wasteland_aerial", "wasteland", 26, 30, List.of(90)),
                 new Scene("aftermath", "aftermath", 6, 22, List.of(40, 200)),
+                // Black rain (DESIGN.md §21.10): rain over a nuclear wasteland with a strong field, and a ground burst's own
+                // black rain in clear weather (its plume a minute old, raining over the camera).
+                new Scene("black_rain", "black_rain", 10, -8, List.of(120, 240)),
+                new Scene("black_rain_own", "black_rain_own", 8, -6, List.of(40, 120)),
                 // Slice 12b: a tactical warhead's crater and scorched ground from above, once its cloud has gone.
                 new Scene("crater_tactical_aerial", "tactical_nuclear_warhead", 80, 40, List.of(2400)),
                 // A thermonuclear crater from above once its cloud has gone: its streaks eased for its size, no lone blocks.
@@ -3051,6 +3065,22 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("water_smoke")) {
                     waterSmoke(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("black_rain")) {
+                    // The wasteland's biome (it rains there) round the camera and a strong field over it, and rain.
+                    Vec3 c = new Vec3(x + 0.5, ground, 0.5);
+                    dev.groundburst.content.fallout.Wasteland.paintNow(level, c, 72);
+                    dev.groundburst.content.radiation.RadiationSources.of(level).add(dev.groundburst.content.radiation.RadiationSource.lasting(
+                            c, 140, 40_000, 48_000, level.getGameTime(), 1));
+                    level.getServer().setWeatherParameters(0, 12_000, true, false);
+                    return;
+                }
+                if (s.profile().equals("black_rain_own")) {
+                    level.getServer().setWeatherParameters(12_000, 0, false, false);
+                    dev.groundburst.content.fallout.Wind.of(level).hold((float) Math.PI / 2, 0.3f);
+                    dev.groundburst.content.fallout.Plumes.start(level, new Vec3(x + 0.5 - s.distance(), ground, 0.5), 40, 20_000, 2_000, 600, 0, true,
+                            level.getGameTime() - 20 * 60);
                     return;
                 }
                 if (s.profile().equals("fallout")) {

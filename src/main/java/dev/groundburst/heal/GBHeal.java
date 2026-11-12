@@ -64,8 +64,6 @@ public final class GBHeal {
     private static final String COMMAND = GBLang.add(GroundBurst.MODID + ".command.heal.command", "/groundburst heal now");
     private static final String OFF = GBLang.add(GroundBurst.MODID + ".command.heal.off",
             "Healing is off, so new damage is not remembered: turn on Healing > Heal damage over time in the server config.");
-    private static final String MINUTES = GBLang.add(GroundBurst.MODID + ".command.heal.minutes", "%s min %s s");
-    private static final String SECONDS = GBLang.add(GroundBurst.MODID + ".command.heal.seconds", "%s s");
 
     private GBHeal() {}
 
@@ -202,8 +200,8 @@ public final class GBHeal {
         return s.chunks();
     }
 
+    /** A time to go as the config writes times ("12m 30s", "2d 5h"; DESIGN.md §21.10). */
     private static Component time(long ticks) {
-        long seconds = (ticks + 19) / 20;
-        return seconds >= 60 ? Component.translatable(MINUTES, seconds / 60, seconds % 60) : Component.translatable(SECONDS, seconds);
+        return Component.literal(dev.groundburst.config.Durations.formatTicks(ticks));
     }
 }

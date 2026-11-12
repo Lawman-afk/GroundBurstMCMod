@@ -1695,6 +1695,37 @@ Weakly radioactive: a carpet of it reads about 10 RAD/h. Shovel it away (it is d
     links(["safety/radiation", "safety/scorched_ground", "ordnance/nuclear", "safety/reactor_safety"]),
 ])
 
+entry("safety/black_rain", "Black rain", "fallout_ash", [], [
+    text("""
+After Hiroshima a **black rain** fell for hours: the fireball and the fires drew soot and dust up into the cloud, and the rain brought them down again, black and radioactive. Here rain falls black where the land is heavily irradiated: where a radiation field at the ground is strong (grey from about 5 RAD/h, black from 200), over the [wasteland](safety/wasteland) while any radiation lingers there, and under a [fallout plume](safety/fallout).
+"""),
+    text("""
+**A ground burst's own rain.** A nuclear blast on the ground rains black under its cloud whatever the weather: from about 40 seconds after it, for six minutes, round the plume as it drifts off downwind.
+
+**Out in it** you take radiation (up to 100 RAD/h, washed down onto you) and **acid burns**, and your armour corrodes. A full [hazmat suit](safety/hazmat_suits) keeps the burns off and most of the radiation; a roof keeps all of it off.
+
+**What it kills.** Under black rain leaves die on the branch, crops wither, flowers and grass go and now and then a grass block dies; copper weathers a step. It all grows back if the server heals its damage.
+"""),
+    links(["safety/fallout", "safety/radiation", "safety/wasteland", "safety/far_aftermath"]),
+])
+
+entry("safety/far_aftermath", "The far aftermath", "dead_grass_block", [], [
+    text("""
+A nuclear blast reaches far past the zones that kill. **The flash** comes first: white-out near, and from afar a glow over the horizon and the sky lit for a moment; at night it reaches about four times as far. Look straight at it and it **blinds** you for a few seconds while it clears (the client settings can soften or turn this off).
+
+**The far wave.** Past the blast's own reach its shock runs on at the speed of sound. You see it come over the land as a wall of dust; out in the open it throws you off your feet and, nearer the blast, hurts you. Behind a wall or indoors it passes over.
+"""),
+    text("""
+**The rings.** The land changes as the wave passes, out to more than four times the blast's reach (3,000 blocks after the Tsar):
+- **Charred**: what the fireball's heat saw burns: grass scorched, plants and leaves burnt, trees charred, snow gone, and the wasteland's grey over it.
+- **Broken**: glass and windows facing the blast shattered, doors blown open, leaves stripped, torches knocked out.
+- **Withered**: leaves and grass dying in patches, crops withered.
+
+Each ring thins out toward its edge; a hillside turned away from the blast is spared the heat. Chunks far away change when they next load. It all heals back if the server heals its damage; the server can change how far each ring reaches or turn it off.
+"""),
+    links(["safety/scorched_ground", "safety/wasteland", "safety/black_rain", "ordnance/nuclear"]),
+])
+
 entry("safety/scorched_ground", "Scorched ground", "trinitite",
       ["trinitite", "glassed_sand", "slag", "scorched_earth", "scorched_stone", "irradiated_soil", "charred_log", "charred_wood",
        "charred_planks", "dead_grass_block", "dead_leaves", "withered_crops"], [

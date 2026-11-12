@@ -1,7 +1,7 @@
 {
   "title": "Decontamination Shower",
   "icon": "groundburst:decontamination_shower",
-  "order": 8,
+  "order": 10,
   "items": [
     "groundburst:decontamination_shower"
   ],

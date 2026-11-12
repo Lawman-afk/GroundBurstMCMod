@@ -58,6 +58,8 @@ public final class AnnihilationFx {
         /** Client tick erasing finished (NaN: still erasing). */
         double ended = Double.NaN;
         final float flash;
+        /** How much its flash blinds here (DESIGN.md §21.10). */
+        float blind;
         /** Client tick its sound arrives, and the distance it comes from (NaN once played). */
         double soundAt;
         final double distance;
@@ -105,11 +107,18 @@ public final class AnnihilationFx {
         boolean seen = mc.level.clip(new ClipContext(eye, c, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, mc.player)).getType()
                 == HitResult.Type.MISS
                 || mc.level.clip(new ClipContext(eye, over, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, mc.player)).getType() == HitResult.Type.MISS;
-        float facing = 0.35f + 0.65f * (float) Math.max(0, mc.player.getViewVector(1).dot(c.subtract(eye).normalize()));
+        float dot = (float) mc.player.getViewVector(1).dot(c.subtract(eye).normalize());
+        float facing = 0.35f + 0.65f * Math.max(0, dot);
         float near = (float) (1 / (1 + Math.pow(d / (start.radius() * 6 + 40), 2)));
-        float flash = start.age() > 4 ? 0 : 1.3f * GBClientConfig.FLASH_STRENGTH.get().floatValue() * near * facing * (seen ? 1 : 0.25f);
+        // It reaches far as a nuclear flash does, the more so by night, and blinds when looked at (DESIGN.md §21.10).
+        float k = GBClientConfig.FLASH_STRENGTH.get().floatValue();
+        float strength = Math.max(1.3f * near, FarFlash.share(d / (start.radius() * 3 + 40)));
+        float flash = start.age() > 4 ? 0 : k * strength * facing * (seen ? 1 : 0.25f);
+        float blind = start.age() > 4 || k <= 0 ? 0 : FarFlash.blind(Math.min(1, strength * k), dot, seen);
         double soundAt = now - start.age() + d / SOUND_SPEED;
-        ACTIVE.put(start.id(), new Sphere(start, now - start.age(), flash, soundAt < now - 2 ? Double.NaN : soundAt, d));
+        Sphere sphere = new Sphere(start, now - start.age(), flash, soundAt < now - 2 ? Double.NaN : soundAt, d);
+        sphere.blind = blind;
+        ACTIVE.put(start.id(), sphere);
     }
 
     private static void end(AnnihilationPayloads.End end) {
@@ -133,7 +142,7 @@ public final class AnnihilationFx {
         for (Sphere s : ACTIVE.values()) {
             double t = s.age(now);
             if (t >= 0 && s.flash > 0) {
-                sum += s.flash * (float) Math.exp(-t / 14);
+                sum += s.blind > 0 ? FarFlash.level(s.flash, s.blind, 28, t) : s.flash * (float) Math.exp(-t / 14);
             }
         }
         return sum;

@@ -259,14 +259,45 @@ public final class Healer {
         if (c.rushed) {
             return true;
         }
+        // The wait counts by the server's clock: the time played, or real time (DESIGN.md §21.10).
+        long changed = changedOn(c, s), at = nowOn(c, s, now);
         if (s.schedule() == dev.groundburst.config.GBServerConfig.HealSchedule.MORNING && today >= 0 && c.waitedDay < 0
-                && s.enabled() && waited(s, c.changed, c.jitter, now)) {
+                && s.enabled() && waited(s, changed, c.jitter, at)) {
             c.waitedDay = today;                           // the wait ran out today: the next sunrise
             if (chunk != null) {
                 chunk.markUnsaved();
             }
         }
-        return dueAt(s, c.changed, c.jitter, now, c.waitedDay, today);
+        return dueAt(s, changed, c.jitter, at, c.waitedDay, today);
+    }
+
+    /**
+     * When a chunk was last damaged, in ticks of the clock its wait counts by: game time, or with the real clock real
+     * time in twentieths of a second (a record made before real time was kept counts played time).
+     */
+    static long changedOn(ChunkScars c, HealSettings s) {
+        return realClock(c, s) ? c.changedAt / 50 : c.changed;
+    }
+
+    /** Now, on the same clock as {@link #changedOn} ({@code now}: the game time). */
+    static long nowOn(ChunkScars c, HealSettings s, long now) {
+        return realClock(c, s) ? System.currentTimeMillis() / 50 : now;
+    }
+
+    /**
+     * GameTests: whether a chunk last damaged at game time {@code changed} and real time {@code changedAt} (milliseconds;
+     * -1 a record from before real time was kept), with no random share, is due at game time {@code now} (real time being
+     * the clock on the wall).
+     */
+    public static boolean dueForTests(HealSettings s, long changed, long changedAt, long now) {
+        ChunkScars c = new ChunkScars();
+        c.changed = changed;
+        c.changedAt = changedAt;
+        return due(c, s, now, -1, null);
+    }
+
+    private static boolean realClock(ChunkScars c, HealSettings s) {
+        return s.clock() == dev.groundburst.config.GBServerConfig.HealClock.REAL && c.changedAt >= 0;
     }
 
     private static boolean waited(HealSettings s, long changed, float jitter, long now) {
@@ -769,7 +800,7 @@ public final class Healer {
                 best = d;
                 nearest = new BlockPos(chunk.getPos().getMinBlockX() + 8, (int) at.y, chunk.getPos().getMinBlockZ() + 8);
                 soonest = due ? 0 : s.schedule() == dev.groundburst.config.GBServerConfig.HealSchedule.AFTER_WAIT
-                        ? Math.max(0, scars.changed + s.waitTicks() + (long) (scars.jitter * s.randomTicks()) - now) : -1;
+                        ? Math.max(0, changedOn(scars, s) + s.waitTicks() + (long) (scars.jitter * s.randomTicks()) - nowOn(scars, s, now)) : -1;
             }
         }
         return new Status(blocks, chunks, healing, soonest == Long.MAX_VALUE ? -1 : soonest, nearest);

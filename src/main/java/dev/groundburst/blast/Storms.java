@@ -1,5 +1,6 @@
 package dev.groundburst.blast;
 
+import dev.groundburst.GroundBurst;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +110,7 @@ public final class Storms {
 
     /** A storm gathers over {@code at}: a region of {@code radius} for {@code life} ticks. */
     public static void start(ServerLevel level, Vec3 at, float radius, int life, @Nullable Entity by) {
+        radius = BlastSettings.special(GroundBurst.id("storm"), radius);        // the server's settings (DESIGN.md §21.10)
         StormJob job = new StormJob(NET_IDS.incrementAndGet(), level, at, radius, lifeOverride > 0 ? lifeOverride : life, by, !quietOverride,
                 rateOverride);
         RUNNING.computeIfAbsent(level, l -> new ArrayList<>()).add(job);

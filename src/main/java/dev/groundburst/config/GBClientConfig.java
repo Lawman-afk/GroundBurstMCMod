@@ -70,6 +70,12 @@ public final class GBClientConfig {
             .translation(GBLang.config("fx.flashStrength", "Flash strength"))
             .defineInRange("flashStrength", 1.0, 0.0, 1.0);
 
+    public static final ModConfigSpec.BooleanValue FLASH_BLINDING = B
+            .comment("Whether a nuclear flash looked at straight on blinds you for a few seconds, the white-out held and clearing",
+                    "slowly (DESIGN.md §21.10). Off: the flash comes and goes as quickly as any other. Flash strength 0 turns all of it off.")
+            .translation(GBLang.config("fx.flashBlinding", "Blinding flash"))
+            .define("flashBlinding", true);
+
     public static final ModConfigSpec.DoubleValue CAMERA_SHAKE = B
             .comment("Strength of camera shake when shockwaves reach you. 0 disables it.")
             .translation(GBLang.config("fx.cameraShake", "Camera shake"))

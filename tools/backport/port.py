@@ -44,6 +44,8 @@ DROP = [re.compile(p) for p in (
     # on 26.3's renderer. This branch's own FxRenderTypes draws them after the level itself; main's IrisFx (the pipelines
     # handed to a pack's programs) comes over, on 26.1.2's pipeline class (FILE_FIXES).
     r"src/main/java/dev/groundburst/client/fx/DrawnLast\.java",
+    # Main's test worlds' builders (the Aftermath Range: a 26.3 world, built by main's dev run).
+    r"src/main/java/dev/groundburst/devworld/.*",
 )]
 # Main's paths that are this branch's own (build files changed here by hand): never overwritten.
 OWN = {"build.gradle", "gradle.properties"}
@@ -99,6 +101,10 @@ IMPORTS = {
 }
 
 RULES = [
+    # --- the far reach's GameTests (main's DESIGN.md §21.10): 26.3 names with no 26.1.2 twin --------------------------------
+    sub(r"\b(\w+)\.setInvulnerableTime\(([^()]*)\)", r"\1.invulnerableTime = \2"),
+    sub(r"\bBlocks\.COPPER_BLOCK\.weathering\(\)\.unaffected\(\)", "Blocks.COPPER_BLOCK"),
+    sub(r"\bBlocks\.COPPER_BLOCK\.weathering\(\)\.exposed\(\)", "Blocks.EXPOSED_COPPER"),
     # --- names ------------------------------------------------------------------------------------------------------------
     sub(r"\bEntityTypes\.", "EntityType."),
     sub(r"\bPushReaction\.IMMOVEABLE\b", "PushReaction.BLOCK"),
@@ -514,7 +520,7 @@ FILE_FIXES: dict[str, list] = {
         swap("Vector4fc glow = sky.sunriseAndSunsetColor;", f"Vector4fc glow = {SKY}.vector4(sky.sunriseAndSunsetColor);"),
     ],
     "src/main/java/dev/groundburst/client/fx/Spectacle.java": [
-        resub(r"sky\.skyColor = (\w+)\(sky\.skyColor\.x\(\), sky\.skyColor\.y\(\), sky\.skyColor\.z\(\), ",
+        resub(r"sky\.skyColor = ([\w.]+)\(sky\.skyColor\.x\(\), sky\.skyColor\.y\(\), sky\.skyColor\.z\(\), ",
               rf"sky.skyColor = {SKY}.tinted(sky.skyColor, (r_, g_, b_, a_) -> \1(r_, g_, b_, a_), "),
         swap("sky.skyColor != null", "true"),
     ],

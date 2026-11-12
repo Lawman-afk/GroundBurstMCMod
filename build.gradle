@@ -259,6 +259,8 @@ dependencies {
     // Shader packs (optional at runtime): the effects tell Iris which of a pack's programs draws them (compile against
     // its API); -PwithIris runs Iris and Sodium in the dev client too.
     compileOnly "maven.modrinth:iris:${iris_version}"
+    // Distant Horizons (optional): changed chunks handed to its far view (compat/DistantHorizons, main's DESIGN.md §21.10).
+    compileOnly "maven.modrinth:distanthorizons:${dh_version}"
     if (providers.gradleProperty('withIris').isPresent()) {
         localRuntime "maven.modrinth:iris:${iris_version}"
         localRuntime "maven.modrinth:sodium:${sodium_version}"
@@ -266,6 +268,38 @@ dependencies {
     // Distant Horizons (optional at runtime): -PwithDH runs it in the dev client, its far terrain drawn round the effects.
     if (providers.gradleProperty('withDH').isPresent()) {
         localRuntime "maven.modrinth:distanthorizons:${dh_version}"
+    }
+}
+
+// The test runs leave the person at the computer their mouse and their ears (the user's wishes, 2026-11-11): their window
+// is kept behind the other windows without the focus and never grabs the mouse (dev.groundburst.client.DevRuns, set by
+// groundburst.keepMouse), NeoForge's early loading window turned off for them in run/config/fml.toml; and every client
+// run is muted (master volume 0 in run/options.txt; -Psound=on keeps it).
+def testRunNames = ['runManualShots', 'runFxShots', 'runBlastBench', 'runSiteShots', 'runShowroom', 'runHealShots', 'runPlayBench']
+def fmlConfig = file('run/config/fml.toml')
+def clientOptions = file('run/options.txt')
+def withSound = providers.gradleProperty('sound').isPresent()
+neoForge.runs.matching { ('run' + it.name.capitalize()) in testRunNames }.configureEach {
+    systemProperty 'groundburst.keepMouse', 'true'
+}
+tasks.matching { it.name in testRunNames }.configureEach {
+    doFirst {
+        fmlConfig.parentFile.mkdirs()
+        String text = fmlConfig.exists() ? fmlConfig.text : ''
+        fmlConfig.text = text =~ /(?m)^earlyWindowControl\s*=/
+                ? text.replaceAll(/(?m)^earlyWindowControl\s*=.*$/, 'earlyWindowControl = false')
+                : text + 'earlyWindowControl = false' + System.lineSeparator()
+    }
+}
+tasks.matching { it.name.startsWith('run') && !(it.name in ['runGameTestServer', 'runServer', 'runData']) }.configureEach {
+    doFirst {
+        if (!withSound) {
+            String text = clientOptions.exists() ? clientOptions.text : ''
+            clientOptions.parentFile.mkdirs()
+            clientOptions.text = text =~ /(?m)^soundCategory_master:/
+                    ? text.replaceAll(/(?m)^soundCategory_master:.*$/, 'soundCategory_master:0.0')
+                    : text + 'soundCategory_master:0.0' + System.lineSeparator()
+        }
     }
 }
 

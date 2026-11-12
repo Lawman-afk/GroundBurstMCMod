@@ -43,6 +43,7 @@ public final class Annihilations {
 
     /** A sphere of {@code radius} blocks round the block at {@code at} begins to erase. */
     public static void start(ServerLevel level, Vec3 at, float radius, @Nullable Entity by) {
+        radius = BlastSettings.special(GroundBurst.id("antimatter"), radius);   // the server's settings (DESIGN.md §21.10)
         AnnihilationJob job = new AnnihilationJob(NET_IDS.incrementAndGet(), level, BlockPos.containing(at), radius, by);
         RUNNING.computeIfAbsent(level, l -> new ArrayList<>()).add(job);
         PacketDistributor.sendToPlayersInDimension(level, new AnnihilationPayloads.Start(job.netId, job.center, radius, EXPAND, 0));

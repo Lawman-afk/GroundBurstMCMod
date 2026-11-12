@@ -93,6 +93,11 @@ final class FalloutFx {
         return level != null && level == zonesLevel ? zones : List.of();
     }
 
+    /** The radiation sources in {@code level}, as the server last sent them (black rain is reckoned from them too). */
+    static List<RadiationSource> sources(ClientLevel level) {
+        return current(level);
+    }
+
     static boolean active(ClientLevel level) {
         return !current(level).isEmpty();
     }

@@ -56,6 +56,9 @@ public final class BlastBench {
     private static final String KIND = System.getProperty("groundburst.blastBench.kind", "");
     /** How far east of the burst the player watches from ({@code .view}, blocks). */
     private static final int VIEW_DISTANCE = Integer.getInteger("groundburst.blastBench.view", VIEW);
+    /** How high over the ground ({@code .viewHeight}, blocks) and how far down ({@code .viewPitch}, degrees) the player looks. */
+    private static final int VIEW_UP = Integer.getInteger("groundburst.blastBench.viewHeight", VIEW_HEIGHT);
+    private static final int VIEW_PITCH = Integer.getInteger("groundburst.blastBench.viewPitch", 9);
     /**
      * Ticks the record runs on after the blast has finished ({@code .tail}, seconds): its fires, its fallout, its clouds.
      * A weapon that is not a blast is recorded that long after the burst.
@@ -154,8 +157,8 @@ public final class BlastBench {
         GBServerConfig.HEAL_ENABLED.set(HEAL);
         if (HEAL) {
             GBServerConfig.HEAL_SCHEDULE.set(GBServerConfig.HealSchedule.AFTER_WAIT);
-            GBServerConfig.HEAL_WAIT_SECONDS.set(20);
-            GBServerConfig.HEAL_RANDOM_SECONDS.set(0);
+            GBServerConfig.HEAL_WAIT.set("20s");
+            GBServerConfig.HEAL_RANDOM_EXTRA.set("0s");
         }
         player.setGameMode(GameType.SPECTATOR);
         BlockPos spawn = level.getRespawnData().pos();
@@ -168,7 +171,7 @@ public final class BlastBench {
             return;
         }
         // (A special weapon has no blast profile of its own: the ground out to 200 blocks, or as far as asked.)
-        float outer = found.map(f -> f.scaled(GBServerConfig.RADIUS_MULTIPLIER.get().floatValue(), GBServerConfig.MAX_RADIUS.get()).outerRadius())
+        float outer = found.map(f -> BlastSettings.asSetOff(key.identifier(), f, 1).outerRadius())
                 .orElse(168f);
         int r = radius > 0 ? radius : (int) Math.ceil(outer) + 32;
         int cx = spawn.getX() >> 4, cz = spawn.getZ() >> 4, cr = (r >> 4) + 1;
@@ -227,7 +230,7 @@ public final class BlastBench {
             int vx = (int) Math.floor(burst.x) + VIEW_DISTANCE, vz = (int) Math.floor(burst.z);
             level.getChunk(vx >> 4, vz >> 4);
             int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, vx, vz);
-            player.teleportTo(level, vx + 0.5, ground + VIEW_HEIGHT, vz + 0.5, java.util.Set.of(), 90, 9, true);
+            player.teleportTo(level, vx + 0.5, ground + VIEW_UP, vz + 0.5, java.util.Set.of(), 90, VIEW_PITCH, true);
         }
         if (settled < SETTLE) {
             return;
@@ -248,8 +251,9 @@ public final class BlastBench {
             }
         }
         csv.append("tick,tick_ms,blast_ms,shock,terrain,blocks,phase,rays,ray_room,chunks_held,chunks_loaded,sections,rim,deferred,heap_mb,fps,"
-                + "frame_worst_ms,note\n");
+                + "frame_worst_ms,far_ms,note\n");
         fired = level.getGameTime();
+        dev.groundburst.content.fallout.FarAftermath.Stats.reset();
         stage = Stage.RUNNING;
         GroundBurst.LOGGER.info("Blast bench: {} set off at {}", profile, BlockPos.containing(burst).toShortString());
     }
@@ -303,7 +307,9 @@ public final class BlastBench {
                 .append(s == null ? 0 : s.rays()).append(',').append(s == null ? 0 : s.rayRoom()).append(',')
                 .append(s == null ? 0 : s.chunks()).append(',').append(loaded).append(',').append(s == null ? 0 : s.sections()).append(',')
                 .append(s == null ? 0 : s.rim()).append(',').append(s == null ? 0 : s.deferred()).append(',').append(heap >> 20).append(',')
-                .append(f).append(',').append(ms(frame)).append(',').append(note).append('\n');
+                .append(f).append(',').append(ms(frame)).append(',')
+                .append(ms(dev.groundburst.content.fallout.FarAftermath.Stats.lastTickNanos)).append(',').append(note).append('\n');
+        dev.groundburst.content.fallout.FarAftermath.Stats.lastTickNanos = 0;
         if (job == null) {
             if (t >= TAIL_TICKS) {
                 finish(level, "");                         // (a weapon that is not a blast: recorded for the tail from its burst)
@@ -407,7 +413,7 @@ public final class BlastBench {
         b.append("Blast bench: ").append(profile).append(KIND.isEmpty() ? "" : ", set off as " + KIND)
                 .append(problem.isEmpty() ? "" : " (" + problem + ")").append('\n');
         b.append(String.format(Locale.ROOT, "Generated %d chunks out to %d blocks in %.1f s; watched from %d blocks east, %d up; recorded %d s "
-                + "after %s%n", todo.size(), radius, genNanos / 1e9, VIEW_DISTANCE, VIEW_HEIGHT, TAIL_TICKS / 20,
+                + "after %s%n", todo.size(), radius, genNanos / 1e9, VIEW_DISTANCE, VIEW_UP, TAIL_TICKS / 20,
                 job == null ? "the burst (no blast of its own)" : "the blast finished"));
         if (fired < 0) {
             return b.toString();
@@ -480,6 +486,25 @@ public final class BlastBench {
         b.append(String.format(Locale.ROOT, "Peaks: rays %d (arrays room %d, ~%d MB), chunks held %d, chunks loaded %d, sections marked %d, rim %d, "
                 + "fires and rubble waiting %d%n", peakRays, peakRoom, peakRoom * 34L >> 20, peakChunks, peakLoaded, peakSections, peakRim, peakDeferred));
         b.append(String.format(Locale.ROOT, "Heap: peak used %d MB of %d MB%n", peakHeap >> 20, Runtime.getRuntime().maxMemory() >> 20));
+        if (dev.groundburst.content.fallout.FarAftermath.Stats.ticks > 0) {
+            var fs = new Object() {
+                final long chunks = dev.groundburst.content.fallout.FarAftermath.Stats.chunks;
+                final long changed = dev.groundburst.content.fallout.FarAftermath.Stats.changed;
+                final long ticks = dev.groundburst.content.fallout.FarAftermath.Stats.ticks;
+                final long from = dev.groundburst.content.fallout.FarAftermath.Stats.passFrom;
+                final long to = dev.groundburst.content.fallout.FarAftermath.Stats.passTo;
+            };
+            b.append(String.format(Locale.ROOT, "Far aftermath: %d chunks changed of %d seen (%.2f ms a chunk; %d handed to Distant Horizons, "
+                    + "%.3f ms each); its ticks mean %.2f ms, max %.1f ms (budget %d); the pass over %d chunks %s%n", fs.changed, fs.chunks,
+                    fs.chunks == 0 ? 0 : dev.groundburst.content.fallout.FarAftermath.Stats.convertNanos / 1e6 / fs.chunks,
+                    dev.groundburst.compat.DistantHorizons.handed,
+                    fs.changed == 0 ? 0 : dev.groundburst.content.fallout.FarAftermath.Stats.dhNanos / 1e6 / fs.changed,
+                    dev.groundburst.content.fallout.FarAftermath.Stats.tickNanos / 1e6 / fs.ticks,
+                    dev.groundburst.content.fallout.FarAftermath.Stats.maxTickNanos / 1e6, GBServerConfig.AFTERMATH_MS.get(),
+                    dev.groundburst.content.fallout.FarAftermath.Stats.passChunks,
+                    fs.from < 0 ? "not begun" : fs.to < 0 ? "begun at tick " + (fs.from - fired) + ", not done"
+                            : "from tick " + (fs.from - fired) + " to " + (fs.to - fired)));
+        }
         b.append(String.format(Locale.ROOT, "Client fps: mean %.0f, min %d%n", fpsCount == 0 ? 0 : (double) fpsSum / fpsCount,
                 minFps == Integer.MAX_VALUE ? 0 : minFps));
         synchronized (FRAMES) {

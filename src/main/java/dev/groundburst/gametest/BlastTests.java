@@ -36,6 +36,7 @@ final class BlastTests {
         GBGameTests.test("blast_rubble_sinks_in_water", GBGameTests.FLOOR_16, 20, BlastTests::ejectaOverWater);
         GBGameTests.test("blast_leaves_no_floating_blocks", GBGameTests.FLOOR_16, 20, BlastTests::noFloaters);
         GBGameTests.test("blast_fire_only_on_ground", GBGameTests.FLOOR_16, 100, BlastTests::fireOnGround);
+        GBGameTests.test("blast_settings_by_weapon", GBGameTests.FLOOR_16, 20, BlastTests::settingsByWeapon);
     }
 
     private static final BlockPos C = new BlockPos(8, 4, 8);
@@ -274,6 +275,36 @@ final class BlastTests {
                 }
             }
         }
+        helper.succeed();
+    }
+
+    /**
+     * The server's lines for single weapons (DESIGN.md §21.10): a setting set and one multiplied, a pattern matching every
+     * grenade, a radius line scaling every zone, a terrain table chosen, a line that does not read refused, the far
+     * aftermath's share; and a line for another weapon leaving this one as it is.
+     */
+    private static void settingsByWeapon(GameTestHelper helper) {
+        var profiles = helper.getLevel().registryAccess().lookupOrThrow(dev.groundburst.blast.BlastProfile.REGISTRY);
+        var tsar = profiles.getOptional(Blasts.profile("tsar_warhead")).orElseThrow();
+        var grenade = profiles.getOptional(Blasts.profile("frag_grenade")).orElseThrow();
+        var tsarId = dev.groundburst.GroundBurst.id("tsar_warhead");
+        var grenadeId = dev.groundburst.GroundBurst.id("frag_grenade");
+        var deeper = dev.groundburst.blast.BlastSettings.adjustWith(tsarId, tsar, java.util.List.of("groundburst:tsar_warhead depth=x1.5 scorch=600"));
+        helper.assertTrue(Math.abs(deeper.craterDepth() - tsar.craterDepth() * 1.5f) < 1e-4 && deeper.scorch() == 600
+                && deeper.crater() == tsar.crater(), "the Tsar half as deep again, its scorch 600, its crater as it was: depth "
+                + deeper.craterDepth() + ", scorch " + deeper.scorch());
+        var bigger = dev.groundburst.blast.BlastSettings.adjustWith(grenadeId, grenade, java.util.List.of("groundburst:*_grenade radius=2"));
+        helper.assertTrue(bigger.crater() == grenade.crater() * 2 && bigger.damage() == grenade.damage() * 2
+                && bigger.lethalDamage() == grenade.lethalDamage(), "every grenade's zones twice the size, its damage as it was");
+        var other = dev.groundburst.blast.BlastSettings.adjustWith(grenadeId, grenade, java.util.List.of("groundburst:tsar_warhead depth=0.1"));
+        helper.assertTrue(other.equals(grenade), "a line for the Tsar leaves the grenade alone");
+        var glassy = dev.groundburst.blast.BlastSettings.adjustWith(grenadeId, grenade, java.util.List.of("frag_grenade terrain=nuclear knockback=x0"));
+        helper.assertTrue(glassy.terrain().equals(dev.groundburst.blast.TerrainTable.NUCLEAR) && glassy.knockback() == 0,
+                "a table by id (the mod's namespace taken as read), knockback multiplied away");
+        helper.assertTrue(dev.groundburst.blast.BlastSettings.check("groundburst:tsar_warhead") != null
+                && dev.groundburst.blast.BlastSettings.check("groundburst:tsar_warhead size=2") != null
+                && dev.groundburst.blast.BlastSettings.check("groundburst:tsar_warhead depth=deep") != null
+                && dev.groundburst.blast.BlastSettings.check("groundburst:tsar_warhead depth=x1.5 far=0") == null, "lines checked");
         helper.succeed();
     }
 }

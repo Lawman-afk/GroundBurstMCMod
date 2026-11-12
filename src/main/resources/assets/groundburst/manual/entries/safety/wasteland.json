@@ -1,7 +1,7 @@
 {
   "title": "The wasteland",
   "icon": "groundburst:frosted_stone",
-  "order": 3,
+  "order": 5,
   "items": [
     "groundburst:toxic_soil",
     "groundburst:frosted_stone",

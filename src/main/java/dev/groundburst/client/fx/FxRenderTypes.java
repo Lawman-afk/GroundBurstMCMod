@@ -109,6 +109,20 @@ final class FxRenderTypes {
     // The glow adds its light and writes no depth, so it comes out the same in any order: not sorted (main's DESIGN.md §11.10).
     private static final Function<Identifier, RenderType> GLOW = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_glow",
             RenderSetup.builder(GLOW_PIPELINE).withTexture("Sampler0", texture).createRenderSetup()));
+    /**
+     * The far glow (main's DESIGN.md §21.10): a nuclear flash's light over the horizon, beyond the loaded terrain. The
+     * cloud's fragment shader (hazed toward the fog colour, not faded into the render-distance fog) without its cutout
+     * (FX_SOFT), added as the glow is, writing no depth.
+     */
+    static final RenderPipeline FAR_GLOW_PIPELINE = eyes("far_glow")
+            .withFragmentShader(GroundBurst.id("core/fx_cloud"))
+            .withShaderDefine("FX_SOFT")
+            .withShaderDefine("ALPHA_CUTOUT", NEARLY_CLEAR)
+            .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+            .build();
+    private static final Function<Identifier, RenderType> FAR_GLOW = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_far_glow",
+            RenderSetup.builder(FAR_GLOW_PIPELINE).withTexture("Sampler0", texture).createRenderSetup()));
 
     /** This frame's effect geometry, drawn after the translucent terrain (or after the level, {@link #drawnLast}). */
     private record Queued(PoseStack.Pose pose, RenderType type, SubmitNodeCollector.CustomGeometryRenderer renderer) {}
@@ -124,6 +138,7 @@ final class FxRenderTypes {
             event.registerPipeline(GLOW_PIPELINE);
             event.registerPipeline(FIRE_PIPELINE);
             event.registerPipeline(CLOUD_PIPELINE);
+            event.registerPipeline(FAR_GLOW_PIPELINE);
             if (IRIS) {
                 // The machines' glowmasks' own pipeline with Iris (MachineGeoRenderer's GlowLayer)
                 event.registerPipeline(dev.groundburst.client.render.MachineGeoRenderer.glowPipeline());
@@ -141,6 +156,11 @@ final class FxRenderTypes {
         });
         NeoForge.EVENT_BUS.addListener((RenderLevelStageEvent.AfterTranslucentParticles event) -> levelFog = RenderSystem.getShaderFog());
         NeoForge.EVENT_BUS.addListener(FxRenderTypes::drawAfterLevel);
+    }
+
+    /** As {@link #submit} (main keeps its effects' blended quads back to be sorted; this version queues them as they come). */
+    static void submitNow(SubmitNodeCollector collector, PoseStack poseStack, RenderType type, SubmitNodeCollector.CustomGeometryRenderer renderer) {
+        submit(collector, poseStack, type, renderer);
     }
 
     /** Queues effect geometry to be drawn after the translucent terrain (water), where vanilla draws its translucent particles. */
@@ -217,5 +237,10 @@ final class FxRenderTypes {
     /** Additive, unlit, two-sided, with this texture. */
     static RenderType glow(Identifier texture) {
         return GLOW.apply(texture);
+    }
+
+    /** Additive, unlit, two-sided, seen far beyond the render distance (hazed, not fogged out), with this texture. */
+    static RenderType farGlow(Identifier texture) {
+        return FAR_GLOW.apply(texture);
     }
 }

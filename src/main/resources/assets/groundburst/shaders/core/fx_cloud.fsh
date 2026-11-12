@@ -20,10 +20,13 @@ out vec4 fragColor;
 
 void main() {
     vec4 color = texture(Sampler0, texCoord0) * vertexColor * ColorModulator;
-    // Cut out the faint fringe so the cloud can write depth (vanilla's own clouds, drawn later, then stay behind it).
+    // Cut out the faint fringe so the cloud can write depth (vanilla's own clouds, drawn later, then stay behind it). A far
+    // glow (FX_SOFT: a nuclear flash over the horizon, DESIGN.md 21.10) adds its light, writes no depth and keeps its fringe.
+    #ifndef FX_SOFT
     if (color.a < 0.16) {
         discard;
     }
+    #endif
     float cloudsEnd = max(FogCloudsEnd, FogRenderDistanceEnd * 4.0);
     // Fade out at the clouds' range, starting at 60% of it.
     color.a *= 1.0 - linear_fog_value(sphericalVertexDistance, cloudsEnd * 0.6, cloudsEnd);
