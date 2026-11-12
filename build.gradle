@@ -125,6 +125,8 @@ neoForge {
             programArguments.addAll '--width', '1280', '--height', '720'
             systemProperty 'groundburst.fpsCheck', 'true'
             systemProperty 'groundburst.fpsCheck.view', (project.findProperty('fpsView') ?: '12').toString()
+            // -PfpsMachines=true: the mod's machines instead, each structure formed, each looked at (FpsCheck)
+            systemProperty 'groundburst.fpsCheck.machines', (project.findProperty('fpsMachines') ?: 'false').toString()
         }
 
         // Launchers on moving structures (with -PwithCreate: Create, Sable and Create Aeronautics loaded): a Cruise Missile

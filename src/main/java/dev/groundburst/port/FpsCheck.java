@@ -12,7 +12,18 @@ import org.jspecify.annotations.Nullable;
 import com.mojang.datafixers.util.Pair;
 
 import dev.groundburst.GroundBurst;
+import dev.groundburst.content.machine.MachineBlock;
+import dev.groundburst.content.machine.MachineBlockEntity;
+import dev.groundburst.content.multiblock.GBMultiblocks;
+import dev.groundburst.content.multiblock.MultiblockController;
+import dev.groundburst.content.multiblock.MultiblockDefinition;
+import dev.groundburst.content.multiblock.StructureSpawnerItem;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.core.BlockPos;
@@ -56,17 +67,28 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * minute more (fires the lava sets may have grown). At the smithy it counts the fires and the blocks that changed round
  * it while it timed. The log's "Fps check:" lines; the smithy photographed into {@code run/screenshots/fps_smithy.png}.
  * {@code -Dgroundburst.fpsCheck.view} sets the view distance (12).
+ * <p>With {@code -Dgroundburst.fpsCheck.machines} it times the mod's machines instead, in a flat world: every structure
+ * built formed and every machine of a block or two set down, each farther from the next than the view reaches (so each is
+ * drawn alone), each looked at from a few blocks off for five seconds after an empty view's five (each photographed,
+ * {@code fps_m_<name>.png}), so a machine that costs far more than it should stands out.
  */
 @EventBusSubscriber(modid = GroundBurst.MODID, value = Dist.CLIENT)
 public final class FpsCheck {
     private static final boolean ON = Boolean.getBoolean("groundburst.fpsCheck");
+    private static final boolean MACHINES = Boolean.getBoolean("groundburst.fpsCheck.machines");
     private static final String WORLD = "fps_check";
     private static final long SEED = Long.getLong("groundburst.fpsCheck.seed", 20261111L);
     private static final int VIEW = Integer.getInteger("groundburst.fpsCheck.view", 12);
     /** Ticks to let the ground load and draw at a place before timing, the ticks timed, the wait before the smithy's second look. */
     private static final int SETTLE = 300, MEASURE = 400, LATE = 1200;
+    /** A machine's: a short settle and five seconds timed; machines stand farther apart than the view, each seen alone. */
+    private static final int MACHINE_SETTLE = 100, MACHINE_MEASURE = 100, APART = 16 * (VIEW + 6);
 
-    private record Spot(String name, Vec3 eye, Vec3 at, int settle) {}
+    private record Spot(String name, Vec3 eye, Vec3 at, int settle, int measure) {
+        Spot(String name, Vec3 eye, Vec3 at, int settle) {
+            this(name, eye, at, settle, MEASURE);
+        }
+    }
 
     private static boolean started, finished;
     private static int ticks = -1, shown, waited;
@@ -125,8 +147,9 @@ public final class FpsCheck {
             }
             LevelSettings settings = new LevelSettings(WORLD, GameType.CREATIVE, false, Difficulty.NORMAL, true, new GameRules(),
                     WorldDataConfiguration.DEFAULT);
-            mc.createWorldOpenFlows().createFreshLevel(WORLD, settings, new WorldOptions(SEED, true, false),
-                    registries -> registries.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.NORMAL).value().createWorldDimensions(),
+            mc.createWorldOpenFlows().createFreshLevel(WORLD, settings, new WorldOptions(SEED, !MACHINES, false),
+                    registries -> registries.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(MACHINES ? WorldPresets.FLAT : WorldPresets.NORMAL)
+                            .value().createWorldDimensions(),
                     mc.screen);
             return;
         }
@@ -148,7 +171,7 @@ public final class FpsCheck {
             if (server != null) {
                 server.execute(() -> {
                     try {
-                        spots = search(server);
+                        spots = MACHINES ? machines(server) : search(server);
                     } catch (RuntimeException e) {
                         GroundBurst.LOGGER.error("Fps check: failed", e);
                         spots = List.of();
@@ -185,11 +208,12 @@ public final class FpsCheck {
             if (s.name.startsWith("smithy")) {
                 onServer(mc, level -> before = snapshot(level));
             }
-        } else if (waited == s.settle + MEASURE) {
+        } else if (waited == s.settle + s.measure) {
             timing = false;
             report(mc, s);
-            if (s.name.equals("smithy")) {
-                Screenshot.grab(mc.gameDirectory, "fps_smithy.png", mc.getMainRenderTarget(), m -> GroundBurst.LOGGER.info("Fps check: {}", m.getString()));
+            if (s.name.equals("smithy") || MACHINES) {
+                Screenshot.grab(mc.gameDirectory, MACHINES ? "fps_m_" + s.name + ".png" : "fps_smithy.png", mc.getMainRenderTarget(),
+                        m -> GroundBurst.LOGGER.info("Fps check: {}", m.getString()));
             }
             shown++;
             waited = 0;
@@ -309,6 +333,68 @@ public final class FpsCheck {
         }
         GroundBurst.LOGGER.info("Fps check: no weaponsmith with its lava found: WRONG");
         return List.of();
+    }
+
+    /** Every structure built formed and every machine of a block or two set down, along a row; the places to look at each. */
+    private static List<Spot> machines(MinecraftServer server) {
+        ServerLevel level = server.overworld();
+        List<Spot> out = new java.util.ArrayList<>();
+        // Forty blocks up, clear of the flat world's few blocks of ground (a silo reaches far down).
+        int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0) + 40, x = 0;
+        out.add(spot("empty", -40, y, 0, -40, y, 0));
+        for (MultiblockDefinition def : GBMultiblocks.all()) {
+            int left = 0;                                       // how far west of its controller the structure reaches
+            for (MultiblockDefinition.Cell cell : StructureSpawnerItem.buildOrder(def, BlockPos.ZERO, Direction.NORTH)) {
+                left = Math.max(left, -cell.pos().getX());
+            }
+            BlockPos c = new BlockPos(x + left, y, 0);
+            int x0 = Integer.MAX_VALUE, y0 = x0, z0 = x0, x1 = Integer.MIN_VALUE, y1 = x1, z1 = x1;
+            for (MultiblockDefinition.Cell cell : StructureSpawnerItem.buildOrder(def, c, Direction.NORTH)) {
+                BlockState state = cell.key() == '.' ? Blocks.AIR.defaultBlockState() : def.legend().get(cell.key()).preview().get();
+                if (cell.key() == MultiblockDefinition.CONTROLLER) {
+                    state = state.setValue(MachineBlock.FACING, Direction.NORTH);
+                }
+                level.setBlockAndUpdate(cell.pos(), state);
+                BlockPos p = cell.pos();
+                x0 = Math.min(x0, p.getX());
+                y0 = Math.min(y0, p.getY());
+                z0 = Math.min(z0, p.getZ());
+                x1 = Math.max(x1, p.getX());
+                y1 = Math.max(y1, p.getY());
+                z1 = Math.max(z1, p.getZ());
+            }
+            if (level.getBlockEntity(c) instanceof MultiblockController controller) {
+                controller.revalidate();
+            }
+            out.add(spot(def.id().getPath(), x0, y0, z0, x1, y1, z1));
+            x = x1 + APART;
+        }
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (!BuiltInRegistries.BLOCK.getKey(block).getNamespace().equals(GroundBurst.MODID) || !(block instanceof EntityBlock entityBlock)
+                    || !(entityBlock.newBlockEntity(BlockPos.ZERO, block.defaultBlockState()) instanceof MachineBlockEntity machine)
+                    || machine instanceof MultiblockController) {
+                continue;
+            }
+            BlockPos p = new BlockPos(x, y, 0);
+            BlockState state = block.defaultBlockState();
+            if (state.hasProperty(MachineBlock.FACING)) {
+                state = state.setValue(MachineBlock.FACING, Direction.NORTH);
+            }
+            level.setBlockAndUpdate(p, state);
+            block.setPlacedBy(level, p, state, null, new ItemStack(block));        // (a second half where it has one)
+            out.add(spot(BuiltInRegistries.BLOCK.getKey(block).getPath(), x, y, 0, x + 1, y + 1, 1));
+            x += APART;
+        }
+        GroundBurst.LOGGER.info("Fps check: {} machines and structures set out", out.size() - 1);
+        return out;
+    }
+
+    /** Where to look at a thing in the box from: off its north face (its front), a little above. */
+    private static Spot spot(String name, int x0, int y0, int z0, int x1, int y1, int z1) {
+        Vec3 mid = new Vec3((x0 + x1 + 1) / 2.0, (y0 + y1 + 1) / 2.0, (z0 + z1 + 1) / 2.0);
+        double size = Math.max(x1 - x0 + 1, Math.max(y1 - y0 + 1, z1 - z0 + 1));
+        Vec3 eye = new Vec3(mid.x, mid.y + size * 0.35 + 1.5, z0 - size * 0.9 - 3);
+        return new Spot(name, eye, mid, MACHINE_SETTLE, MACHINE_MEASURE);
     }
 
     private static void onServer(Minecraft mc, java.util.function.Consumer<ServerLevel> job) {
