@@ -4,7 +4,7 @@ The picture is the blast bench's at tick 120 (`runBlastBench -Pbench=tsar_warhea
 generated world), the one the first banner (docs/branding/banner.jpg, 2026-11-08) was cut from. Two layouts:
 - `scene`, 1800 x 600 as the first banner: the picture across the whole banner, the title, stripe and tagline centred
   over the hills under the cloud, the land darkened under them;
-- `wide`, 1600 x 400 as the banner the user brought: the title, stripe and tagline on the left over the picture
+- `wide`, 1600 x 400 as hrbs_'s banner: the title, stripe and tagline on the left over the picture
   blurred into the dark, the cloud standing clear on the right.
 
 Usage: tools\\.venv\\Scripts\\python.exe tools\\branding\\banner.py [--source <png>] [--out <folder>]

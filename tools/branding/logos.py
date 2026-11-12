@@ -1,4 +1,4 @@
-"""The mod's logos (the mod page's square avatar), each the glowing missile icon the user brought (docs/branding/icon.png,
+"""The mod's logos (the mod page's square avatar), each the glowing missile icon by hrbs_ (docs/branding/icon.png,
 1024 px: the mod's DF-5 diagonal with a green glow, on transparency) on a ground in the 2026-11 style (style.py).
 
 - dusk:     the first logo's sky (navy over burnt orange, tools/assets/logo.py's) behind the glowing missile;

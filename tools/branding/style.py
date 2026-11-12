@@ -1,9 +1,9 @@
 """The mod's branding style (2026-11): the colours, type and hazard stripe of the banner and logos.
 
-Measured from the 1600 x 400 banner the user brought (a glowing missile, the title, a stripe and the tagline on a dark,
-blurred landscape): the title in Russo One, GROUND white and BURST green; under it a hazard stripe of yellow and
-near-black bands at 45 degrees; the tagline in Rajdhani Bold, cream. Both fonts are under the SIL Open Font License
-(their licences beside them in fonts/).
+Measured from the 1600 x 400 banner by hrbs_ that the user brought (a glowing missile, the title, a stripe and the
+tagline on a dark, blurred landscape): the title in Russo One, GROUND white and BURST green; under it a hazard stripe
+of yellow and near-black bands at 45 degrees; the tagline in Rajdhani Bold, cream. Both fonts are under the SIL Open
+Font License (their licences beside them in fonts/).
 """
 from pathlib import Path
 
