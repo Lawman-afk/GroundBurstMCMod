@@ -5,7 +5,13 @@ branch, `1.20.1`, carries the 1.21.1 build back once more, to Minecraft 1.20.1 o
 players are (main's DESIGN.md §30). It is brought up to the 1.21.1 branch every once in a while, as a whole, as that
 branch is brought up to main.
 
-- **Last brought up to:** the `1.21.1` branch at `e217cd45` (main at `4c88e09b`, 2026-11-12: a player's wishlist
+- **Last brought up to:** the `1.21.1` branch at `ad4100ea` (main at `15431b92`, 2026-11-12: version 0.12.0,
+  released for all four versions as `groundburst-mc1.20.1-0.12.0.jar`: main's changelog. Synced cleanly, 462 GameTests.
+  The release checks: `runFpsCheck -PfpsMachines=true` timed 49 machines and structures alone, the slowest the
+  Particle Uplink Cannon at 2.08 ms a frame (the empty field 1.01: vanilla 1.20.1 draws its chunks more slowly), every
+  model's cubes steady; the reobfJar in a real Forge 47.4.28 client (`prod_client.py`, with GeckoLib 4.8.4 and JEI
+  15.56): the port check 7 OK, none WRONG, no errors, its far flash, far wave and black rain among them); before it, at
+  the `1.21.1` branch's `e217cd45` (main at `4c88e09b`, 2026-11-12: a player's wishlist
   built, main's DESIGN.md §21.10: healing by a real clock with its times in units, settings by weapon, the terrain tables
   as data with swap rules, the far flash, black rain and the far aftermath. This branch's own pieces: the black rain's
   colour through 1.20.1's `color(FFFF)` (`port.py`'s fix of the 1.21.1 build's mixin; its refmap names `m_85950_`);

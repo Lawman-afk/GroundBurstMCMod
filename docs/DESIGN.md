@@ -4914,13 +4914,29 @@ builder left out of the jar.
   hands each changed chunk to DH (its API's `overwriteChunkDataAsync(level, [chunk, level])`, found by the level wrapper
   that wraps the server level). Client: `client/fx/FarWaveFx` (dust thrown up along the wave within 320 blocks of the
   camera's bearing, every 5 blocks, every other tick, over loaded ground; the jolt as it passes).
+- *The test world* (`devworld/AftermathRange`, `runAftermathRange`, left out of the jar; seed 20261112), as built: the
+  nearest village to the spawn the target, the post 1 400 blocks from it along whichever axis has the most grass, trees
+  and plants to wither (the first choice stood among ice spikes, where the withered ring has nothing to take), its ground
+  levelled 28 blocks round (set quietly: no shape updates, nothing dropped; a tree the edge cuts felled whole, so no leaves
+  are left to wither into sticks and saplings over the deck), a concrete deck and a shelter glazed at eye height, the
+  Launch Control Station linked to two Launch Complexes: a thermonuclear missile on the village (the post in its withered
+  land, 140 blocks past its broken ring) and a tactical nuclear one 300 blocks aside (its broken land reaching the post);
+  signs saying what to watch and where the settings are. 26.x's server settings are global (`groundburst-synced.toml`),
+  not a world's own, so the healing clock, weapon lines and swap lines are tried there, not set by the world.
 - *Test runs on main*: `client/DevRuns` and `mixin/DevMouseMixin` (SDL told not to take the focus, the window behind;
   the mouse never grabbed), the test runs muted and their early window off (build.gradle); 26.1.2 has its own
   `DevRuns` on GLFW.
 - *Checks*: 456 GameTests on main (`HealTests`: the clock, the times; `BlastTests`: settings by weapon; `FalloutTests`:
   the tables from data, swap rules, black rain's where and what; `AftermathTests` (5): the rings, once, the wave, healed
   back, and a tree grown as world generation grows one, its leaves killed). Runs: `runGameTestServer -PonlyTests=a,b` on main too. FX scenes `far_flash`, `far_flash_night`,
-  `far_flash_tsar_night`, `black_rain`, `black_rain_own`, `far_wave`, `far_rings` (real world).
+  `far_flash_tsar_night`, `black_rain`, `black_rain_own`, `far_wave`, `far_rings` (real world). The backports: 462
+  GameTests on 1.21.1 and 1.20.1 (main's and their own), 456 on 26.1.2; 26.1.2's photographer and the 1.21.1 and 1.20.1
+  port checks (a far flash at midnight, a far wave's dust by day, black rain both ways) plain, under Complementary and
+  with Distant Horizons (every version hands it the chunks it changes); the 1.20.1 jar in a real Forge client.
+- *Found on the way*: the far wave's dust took the ground's map colour, and over grass came up the grass's lime green
+  (it is earth where things grow now, as the blast's own dust is: `BlastFx.earthColor`); Complementary and BSL draw the
+  game's rain in their own colour and took none of black rain's, so under a shader pack the black rain's own sheets fall
+  in the rain too.
 
 ---
 
