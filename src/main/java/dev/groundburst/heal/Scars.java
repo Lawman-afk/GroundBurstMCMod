@@ -272,6 +272,7 @@ public final class Scars {
                 scars = new ChunkScars();
                 scars.jitter = level.getRandom().nextFloat();
                 scars.changed = level.getGameTime();
+                scars.changedAt = System.currentTimeMillis();
                 chunk.setData(GBHeal.SCARS.get(), scars);
             }
             scars.put(pos, original, be);
@@ -550,6 +551,7 @@ public final class Scars {
                 scars = new ChunkScars();
                 scars.jitter = this.level.getRandom().nextFloat();
                 scars.changed = this.level.getGameTime();
+                scars.changedAt = System.currentTimeMillis();
                 chunk.setData(GBHeal.SCARS.get(), scars);
                 Healer.of(this.level).track(chunk);
             }
@@ -656,6 +658,7 @@ public final class Scars {
             scars = new ChunkScars();
             scars.jitter = level.getRandom().nextFloat();
             scars.changed = level.getGameTime();
+            scars.changedAt = System.currentTimeMillis();
             chunk.setData(GBHeal.SCARS.get(), scars);
         }
         scars.entities.add(tag);

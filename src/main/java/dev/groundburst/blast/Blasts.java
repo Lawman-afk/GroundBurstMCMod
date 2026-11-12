@@ -45,7 +45,8 @@ public final class Blasts {
         if (found.isEmpty()) {
             return null;
         }
-        BlastProfile profile = found.get().scaled(GBServerConfig.RADIUS_MULTIPLIER.get().floatValue() * scale, GBServerConfig.MAX_RADIUS.get());
+        // The server's settings for this weapon and its kind, then its radius multiplier and cap (DESIGN.md §21.10).
+        BlastProfile profile = BlastSettings.asSetOff(key.identifier(), found.get(), scale);
         boolean terrain = GBServerConfig.DESTROY_BLOCKS.get()
                 && !GBServerConfig.PROTECTED_DIMENSIONS.get().contains(level.dimension().identifier().toString());
         BlockPos spawn = null;

@@ -4689,6 +4689,171 @@ TNT by a tree, a creeper by the fence, all set going as in play), with healing o
 after, healing and healed (run/screenshots/heal_*.png), then every block compared with what it was
 (run/heal/heal_check.txt): the farmstead came back 122 719 of its 122 793 blocks exactly, the town 1 660 194 of its 1 660 437 and the cottage
 50 589 of its 50 625; every block that differs is a leaf's count of its distance to its trunk; the six chests had their goods, every item frame and armour stand hung or stood again, and no item lay about. Getting there found the grass dying under rubble, farmland drying and turning to earth, and the crater lake's water taking crops (each now remembered), and a test scene's own mistakes (sand laid on grass, farmland five blocks from its water); the cottage, the third scene, found the fires that never go out far from players (the camera now stays by the cottage: the farmstead and town waited for their fires until the check gave up), and then the wheat a put-out fire's neighbours were told to drop.
+### 21.10 The far aftermath, black rain, the far flash, settings by weapon, swap rules and healing by the clock (2026-11-12; a player's wishlist)
+A commenter on the mod's page, passed on by the user with the frame-rate report of §30's 2026-11-12 row:
+- "Configurable Blast Depth for nukes and individual destruction settings for each Ground Burst explosive."
+- "Blinding flash from distant nukes."
+- "Acid Rain in the heavily irradiated radius."
+- "Configurable reach for nuclear destruction, charred and irradiated terrain. Entire Cities/Regions could transform into
+  environment from the Fallout game series. Seeing a shockwave from 3000 blocks away slow reach and damage you/entities,
+  while loaded chunks transform to reflect their distance from the blast. Each ring of destruction could be gradually
+  adjusted to create a clean immersive blend between the blast, irradiated, and charred/broken chunks. Maybe it could
+  mimic Ecliptic Season's "Distant Horizon Winter LOD" that manages to convert unloaded chunks between snow and dry, but
+  Ground Burst would handle Withered/Healing terrain."
+- "Configurable healing time for real-life days rather than seconds."
+- "A Blocks Swap config for blocks left after a blast. Allowing us to configure our own charred wood or glassed sign id's.
+  Letting a blast spawn a rare custom ore instead of Trinite. For example, [ (Block ID) > (Block ID) + Conversion rate
+  that follows the destruction blend/fall-off calculation ]"
+
+Weighed against the mod first (what each would build on, its size, an order), then the user: "Please build it all at
+once." Built together, on all four versions, shown at the end (the user's way for a set, PLAYBOOK §10).
+
+**Research.**
+- *A nuclear blast at range* (Glasstone and Dolan, *The Effects of Nuclear Weapons*, through the Atomic Archive's summary
+  and NUKEMAP's figures): for about a megaton in the air, 5 psi (most houses down) reaches about 6 km, third-degree
+  burns 12-13 km, 1 psi (windows broken, light damage) 18-21 km: the heat scorches about twice as far as the heavy damage
+  and the windows go out about three times as far. Thermal reach grows faster with yield than blast's, so for the
+  largest weapons the scorching outruns everything but the windows (the Tsar Bomba broke windows hundreds of kilometres
+  off). Far out the blast wave runs at about the speed of sound, 343 m/s, 17 blocks a tick: three kilometres in nine
+  seconds, long after the flash.
+- *Flash blindness*: from a megaton, temporary blindness reaches about 21 km on a clear day and 85 km on a clear night
+  (dark-adapted eyes, about four times as far); retinal burns farther still for those looking straight at it. It is a
+  dazzle that clears over seconds to minutes, not a wound.
+- *Black rain* (the Hiroshima Peace Media Center's notes, RERF and later studies of the soil): from twenty to forty-five
+  minutes after the bombing, for more than two hours, black rain fell from the fireball's updraught and the fires',
+  the soot and dust they drew up mixed with the air's moisture; black with soot and fine radioactive particles (fission
+  products such as caesium, unfissioned uranium), in places like mud; several kilometres out, most of it to the
+  north-west, downwind; how radioactive it was depended on how much of the plume it carried. It stained walls and skin.
+- *Other mods*: HBM's Nuclear Tech kills grass to dead grass by radiation and has a "fallout rain" (in one fork it gives
+  creatures radiation). Ecliptic Seasons shows its snow and seasonal colours in Distant Horizons' far view by having DH
+  draw its far terrain again; DH builds that view from chunks as it sees them, and its API can set a chunk's far data
+  from a loaded chunk (`IDhApiTerrainDataRepo.overwriteChunkDataAsync(level, [chunk, level])`, replaced when DH next
+  sees the chunk itself; in the jar the dev runs load, DH 3.3.4). Explosion't and Forge Creeper Heal count their delays
+  in seconds of play; neither has a clock that runs while the server is off.
+
+**The design.**
+
+*Healing by the clock* (§21.9). `healing.clock`: `PLAYED` (the default, as before: the time the world has been
+running, which stops while a server is off or a single-player world is shut) or `REAL` (real time, as on a clock on the
+wall: a server switched off over the weekend has healed when it starts again). The times are written with units:
+`healing.wait` ("5m"), `healing.randomExtra` ("1m"), `healing.longest` ("5m"), a number and a unit (`s`, `m`, `h`, `d`,
+`w`), several together ("1d12h"), a bare number being seconds; up to 52 weeks for the wait, four for the others. They
+take the place of `waitSeconds`, `randomExtraSeconds` and `longestSeconds` (a server that set those sets the new ones
+once; said in the changelog). With `REAL`, each chunk's record keeps the real time of its last damage beside the game's;
+a record made before keeps counting played time until it is damaged again. The wait is what counts real time; the
+healing itself (blocks a second, the longest heal) is work the server does in the loaded chunk, as before. `MORNING`
+heals at the first sunrise after the wait, by either clock. `/groundburst heal status` gives the times in units.
+
+*Settings by weapon* (§11.6). `blast.byKind`: radius and crater depth multipliers by kind, on top of
+`radiusMultiplier` (conventional, nuclear, special; 0.1-4). `blast.weapons`: lines of `<weapon> <setting>=<value> ...`,
+the weapon a blast profile's id as `/groundburst blast` lists it, a pattern with `*` (`groundburst:tsar*`), or a special
+weapon's (`groundburst:singularity`, `antimatter`, `storm`, `cryo_freeze`); a value a number (blocks for a radius, a
+share for depth) or `x` and a number to multiply (`depth=x1.5`). Settings: `radius` (every radius, as a multiplier),
+`crater`, `depth`, `shock` (the structural band), `scorch`, `fire`, `lethal`, `damage`, `lethalDamage`, `edgeDamage`,
+`knockback`, `speed` (the front's), `streaks`, `lobes`, `ejecta`, `drops`, `terrain` (a terrain table's id, below) and
+`far` (the far aftermath's reach, below; 0 none). Applied as a weapon goes off (`Blasts.detonate`), before the server's
+multiplier and cap; the special weapons' own jobs take `radius`. A line that cannot be read is refused by the config
+screen and skipped with a warning in the log. `/groundburst blast info <profile>` shows a profile as the server will set
+it off.
+
+*Swap rules: the terrain tables as data* (§11.1, §21.7). The tables become a datapack registry,
+`groundburst:terrain_table` (`data/<namespace>/groundburst/terrain_table/<id>.json`, the server's only), the mod's three
+(conventional, nuclear, naval) written by datagen from the code they replace, block for block the same; a profile names
+its table by id as before, so a datapack can add tables and profiles (or a `terrain=` line) can use them. Each table has
+its bands' rules: `shock` (what the shock blows out of its way in the structural band, carrying on through the gap),
+`scorch` (the ground the fireball sees in the scorch band), `lining` (the nuclear crater's wall), and the far rings'
+`charred`, `broken` and `withered`; and its numbers (the fire band's share of ash, whether it lines its crater, whether
+it is naval). A rule: `from` (block ids, `#tags`, id patterns with `*` such as `*:*_wood`, `$replaceable` for anything a
+block may be set into: plants, snow), `to` (a block state as `id[property=value]`, a weighted list, `air`, or `keep` to
+leave the block as it is), `chance` (0-1, default 1) and `fade` (the chance falling to nothing across the band); the
+properties the new block shares with the old carry over (a log's axis, a stair's facing, waterlogging). The first rule
+that matches and whose chance comes up is used; one whose chance fails passes the block to the next, so a rare ore at 5%
+falls through to the trinitite under it. The rules work inside each band's own blend (the scorch band's spokes, the
+lining's three quarters, the far rings' fading edges): "a conversion rate that follows the fall-off". `terrain.swaps`:
+lines of `<tables> <bands> <from>[,<from>...] -> <to> [chance] [fade]`, put in front of the tables' own rules:
+`nuclear lining #minecraft:sand -> mymod:rare_ore 5%`, `nuclear scorch,charred #minecraft:logs -> mymod:burnt_log`,
+`* broken minecraft:glass -> mymod:cracked_glass 60% fade`; a weighted target `a*3|b*1`; `*` for every table or band.
+A block state's matching rules are worked out once and kept (the Tsar visits millions of blocks).
+
+*The far flash* (§12.1). Near, the flash stays as it is. A nuclear blast's (and antimatter's) reaches far: to its own
+share, falling as `(1 - d / flashReach)^1.4`, flashReach 8 of its reaches by day and up to 24 by night (the sky's
+darkness where the player is). Its line of sight is to the fireball's rising centre, not the ground under it; over the
+horizon or behind hills the sky lights instead (a glow on the horizon toward it, the sky and fog brightened for a
+moment) and the screen at a quarter. Blinding: looking toward it (within about 35 degrees) and in sight of it, the
+white-out holds (up to 3 s near, 1 s at the edge) and clears through a pale haze over up to 8 s, by how bright it was
+and how straight it was looked at; no damage (the burns are the near zones'). `fx.flashStrength` scales all of it (0 for
+none); a new `fx.flashBlinding` (on) keeps the flash but drops the held dazzle, for anyone it troubles. (The Flash
+Goggles of §21.5 were never built; nothing yet takes the flash off.)
+
+*Black rain* (§21.8). Rain is black where the land is heavily irradiated: where a radiation source's field at the
+ground is 5 RAD/h or more (grey at 5, black from 200), over the Nuclear Wasteland while a source still gives it 0.5
+RAD/h, and under a fallout plume. And a nuclear ground burst's own cloud rains black: its plume rains round its centre
+for six minutes from 40 s after the burst, whatever the weather (Hiroshima's). It is drawn as the game's rain with its
+colour turned toward soot by its strength (the rain's columns are the game's own; a mixin on the weather renderer's
+colour), the sky and fog greyer under it, dark drips where it lands; the burst's rain in clear weather is drawn by the
+mod round the camera as the storm's is, with the sound of rain. Under open sky in it, once a second: radiation, 100
+RAD/h at full strength (a suit's radiation protection counts), and acid burns (`groundburst:acid`, one every four seconds
+at full strength; a suit's chemical protection counts); worn armour corrodes a little. Plants under it die: columns at
+random in loaded chunks (one a second for every 256 square blocks at full strength): leaves to Dead Leaves, crops
+wither, flowers and grass go, a grass block now and then to Dead Grass, copper weathers a step; remembered to heal as
+`groundburst:black_rain` (the nuclear kind). `radiation.blackRain` (on) and `radiation.blackRainHarms` (on: the dose
+and the burns; off: it only looks and kills plants).
+
+*The far aftermath.* A nuclear blast's (a profile with the nuclear table) reaches past its own zones, in rings out from
+its reach D (the entity zone's outer radius):
+- **charred**, to 1.4 D: what the fireball's heat sees burns: grass to Scorched Earth and coarse dirt in patches, plants
+  burnt off, leaves to Dead Leaves or gone, logs under the open sky charred, snow and ice melted; the Nuclear Wasteland
+  painted over it;
+- **broken**, to 3 D: the blast wave's: glass and panes with a face toward the blast shattered, doors and trapdoors
+  facing it blown open, leaves stripped in part, torches and lanterns knocked off; grass and plants scorched less and
+  less;
+- **withered**, to 4.3 D: the heat's last reach: leaves browning to Dead Leaves in patches, grass dying in patches to
+  Dead Grass, crops withered, flowers gone.
+The Tsar's rings reach 980, 2 100 and 3 010 blocks; a thermonuclear warhead's 590, 1 260 and 1 810; a fission
+warhead's 280, 600 and 860; a tactical warhead's 150, 320 and 450. Each ring fades out over its outer fifth, the edge
+moved in and out by value noise in world space (a tenth of the radius) so no circle shows, and blends into the next; a
+hillside turned away from the blast (the ground's slope from its heights against the way to the fireball) is spared the
+heat. The rules are the tables' own `charred`, `broken` and `withered` bands, so the swaps reach them too.
+
+The **far wave**: from D the shock carries on at the speed of sound to the withered ring's edge. A creature it reaches
+in a loaded chunk, out in the open (the line toward the blast clear for 24 blocks), is thrown away from the blast (0.9 at
+D, falling to 0.1 at the edge) and, in the inner part out to 2 D, hurt (a twentieth of the profile's edge damage at D,
+falling to nothing at 2 D: the Tsar's 8, a fission warhead's 4); the land changes as it passes; players far off see a
+wall of dust come over the land toward them (drawn near the camera only, where the wave is), feel it (the camera shake,
+as now) and hear it (the blast's sound already comes at that speed).
+
+**Chunks.** Loaded chunks change as the wave passes them, nearest the players first, a few milliseconds a tick; then the
+chunks that exist on disk inside the rings (generated, never generated anew) are loaded a few at a time, changed and let
+go, nearest first (`aftermath.loadChunks`); a chunk generated later inside the rings, or one missed, changes when it
+loads. The level keeps each far aftermath (its centre, rings, seed, table and time: a few numbers) and each chunk the
+ones it has had (a data attachment), so nothing changes twice. All of it is remembered to heal as the nuclear kind's
+(§21.9), and once a far aftermath's land would have healed, a chunk loading after is left as it is.
+
+**Distant Horizons.** Its far view is made from chunks as DH sees them: each chunk the far aftermath changes while it is
+loaded is handed to DH at once (`overwriteChunkDataAsync` with the chunk and its level), so the rings show in the far view
+as they change, the biome's grey with them, and a chunk changed as it loads later is handed over then
+(`compat/DistantHorizons`, loaded only with DH there; compiled against DH's jar, `compileOnly`). On a server it reaches
+DH's server side if DH is installed there; a client's own DH sees the changed chunks as they come into view. (Ecliptic
+Seasons' recolouring of far terrain DH already holds would also tint land never loaded; DH's colour override goes by
+block state, not by place, so that waits.)
+
+`aftermath` settings: `enabled` (on), `charredReach` 1.4, `brokenReach` 3.0, `witheredReach` 4.3 (multiples of the
+blast's reach), `maxReach` 4 096 blocks, `farWave` (on), `loadChunks` (on), `convertNewChunks` (on), `msPerTick` 3;
+per weapon, `far=x...` scales its rings (0: none).
+
+**Checks.** GameTests for each: the clock (both, units read and written, an old record), the weapon lines (read,
+applied: the Tsar's depth, a radius, a table), the tables from data (every old rule's result as before: the old tests;
+a swap line; a weighted list whose chance falls through; properties kept), the rings (a chunk's grass, leaves and glass,
+the glass facing away left, the blend), a chunk loaded later changed once, the far wave throwing and hurting a creature
+in the open and not one behind a wall, black rain's dose, burns, plants and the suit, the far rings healed back. FX
+scenes: `far_flash` (a thermonuclear warhead 2 000 blocks off, by day and night), `far_wave` (the dust coming, from 1 200
+blocks), `black_rain` (rain over a wasteland; a burst's own rain in clear weather), and `shader_` scenes for the new
+drawing under the packs and with DH. The blast bench with the Tsar out to its rings (`-PbenchRadius=3100`). The test
+world: "Ground Burst Aftermath Range", a normal world: an observation post on high ground, a Launch Control Station
+linked to two launchers (a Tsar aimed at a village and its forest about 2 200 blocks off, a fission warhead 800 off),
+signs; the world's own server settings with healing on by the real clock and a swap line and a weapon line to try; its
+builder left out of the jar.
+
 ---
 
 ## 22. World structures and loot
@@ -5826,6 +5991,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-12 | **A player's wishlist, all of it at once** (§21.10; the user: "Please build it all at once"): healing by a real clock with times in units; settings by weapon (multipliers by kind, and lines per weapon for any of its blast's numbers, its crater's depth among them); the terrain tables as data with swap rules in the server config, a rule's chance falling through to the next; the far flash, blinding when looked at; black rain over heavily irradiated land and from a ground burst's own cloud, burning and irradiating what is out in it and killing plants; the far aftermath: charred, broken and withered rings out to 4.3 times a nuclear blast's reach (the Tsar's to 3 000 blocks) with blended edges, a far wave at the speed of sound, the chunks on disk changed in the background and the ones generated later as they load, all of it healing; Distant Horizons told of every chunk changed. On all four versions. |
 | 2026-11-12 | **Frame-rate drops on the GeckoLib 4 builds found and fixed** (a player's report, through the user: "significant FPS drops at the smithy" on 1.20.1; the user: "Think they meant smithy related to the mod"). A village's weaponsmith, its lava, showed none, on 1.20.1 or 1.21.1. The backports' FPS check (`runFpsCheck -PfpsMachines=true`) then timed every machine and structure alone: about half a millisecond a frame each, but for the superweapons, whose cost climbed as they were drawn (the Particle Uplink Cannon past 50 ms a frame, the SCUD Storm 30, the War Factory 21). The 1.21.1 and 1.20.1 builds give GeckoLib 4's own baked models their polygon meshes and knew the models done by equality; a baked model is a record hashed from its top bones' cube counts, so a model with a mesh on a top bone (the five superweapons, the Blast Doors, the howitzer, the mortar, the searchlight, the Warning Beacon) was lost once its mesh was in, and every frame read its file again and added the mesh again: the models grew a mesh a frame. Known by identity now: each under 2 ms, its cubes steady. Main and the 26.1.2 build copy the model and never had it. The glow layer, which draws a glowing model whole a second time on every version, is left as it is for now. |
 | 2026-11-11 | **The 1.20.1 port's Create, shader packs and sites** (the user: "add support for the 'Not done yet' stuff, and run test for both bugs across everything, and any performance problems created"; "Make sure that the mod still has create support like the 1.21.1 version"). Create 6 is out for 1.20.1 as for 1.21.1 (the row below was wrong to name 0.5.1: the 6.0 line ships for both, with the same API for what the mod uses), so the 1.21.1 build's support for its contraptions comes over whole through the port tool: machines and launchers carried and working, their menus opened aboard, blasts breaking blocks out of contraptions, Create's blocks healed turning. Create Aeronautics' ships stay the 1.21.1 build's alone: neither Aeronautics nor Sable, the library its ships are made with, has a 1.20.1 build (1.20.1's ships are Valkyrien Skies', a different mod, not supported). Shader packs on 1.20.1 come through Oculus on Embeddium, which the mod treats as Iris (the effects drawn last under a pack); Distant Horizons as on the others. 1.20.1 has no `encapsulate` terrain adjustment (1.21's rock closed round a structure's part), and its data reader takes a value it does not know for none, so the sites' parts underground (a bunker's rooms, a silo's shaft, a waste store's vault) had no rock round them there: on that branch `bury` stands for it (no part of the mod's is buried otherwise) and a beardifier mixin closes those parts in rock with 1.21's formula. A site check on both backports (`runSiteCheck`) finds every site where the other version has it and measures the ground's shaping round the buried parts alike. |
 | 2026-11-11 | **How the 1.20.1 Forge port is made** (the row below; its branch `1.20.1`, docs/BACKPORT.md there): from the 1.21.1 build, the nearest to 1.20.1, by a port tool of its own (the branch's `tools/backport/port.py`, which reads the 1.21.1 branch at a set commit as that branch's reads main), over stand-ins that give NeoForge 21.1's and vanilla 1.21.1's API on Forge 1.20.1 (`dev.groundburst.legacy`: registration holders; item data components kept in a stack's tag; 1.21's stream codecs and payloads over one Forge channel; capabilities in tables, bridged to Forge's own; data attachments as a Forge capability; data maps; recipe holders), so main's code reaches 1.20.1 changed only by the two tools and a few hand-kept files. Forge 47.4.28 (47 or later), Java 17, GeckoLib 4.8.4, JEI 15 (optional), MixinExtras packed in the jar; built with ModDevGradle's legacy plugin (the players' jar in Forge's SRG names, the mixins with a refmap). NeoForge's `c:` tags become Forge's `forge:` ones (a few renamed; concrete, which Forge has none of, the mod's own); the sites' three 1.21 blocks stand in as 1.20.1 blocks (the heavy core a lodestone, the weathered copper doors spruce doors a hand opens, short grass grass). Its test server runs main's GameTests as 1.21's frameworks do (a new flat world each run, each test walled round with barriers): 450 of 450. Create (0.5.1 on 1.20.1) and the shader-pack mods 1.20.1 has (Oculus, Embeddium) come later. |

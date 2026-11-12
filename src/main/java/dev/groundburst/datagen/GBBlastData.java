@@ -27,6 +27,9 @@ public final class GBBlastData {
 
     public static void gather(GatherDataRegistryEntriesEvent event) {
         event.add(BlastProfile.REGISTRY, GBBlastData::profiles);
+        // The mod's terrain tables, as the code that came before them did it (DESIGN.md §21.10).
+        event.add(dev.groundburst.blast.TerrainTable.REGISTRY, ctx -> dev.groundburst.blast.TerrainTable.builtIn().forEach((id, table) ->
+                ctx.register(net.minecraft.resources.ResourceKey.create(dev.groundburst.blast.TerrainTable.REGISTRY, id), table)));
         event.add(Registries.DAMAGE_TYPE, GBBlastData::damageTypes);
     }
 

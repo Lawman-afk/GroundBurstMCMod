@@ -207,6 +207,8 @@ neoForge {
         gameTestServer {
             type = "gameTestServer"
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // -PonlyTests=<name>,<name>: only those tests (GameTestRegistration).
+            systemProperty 'groundburst.onlyTests', (project.findProperty('onlyTests') ?: '').toString()
         }
 
         data {

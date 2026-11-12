@@ -160,7 +160,7 @@ final class HullEffects {
             if (!s.getFluidState().isEmpty()) {
                 return;
             }
-            BlockState burnt = TerrainTable.NUCLEAR_TABLE.scorched(s);
+            BlockState burnt = TerrainTable.byId(TerrainTable.NUCLEAR).scorched(s);
             if (burnt != null && !burnt.isAir() && burnt.getFluidState().isEmpty()) {
                 hull.set(pos, burnt);
             }

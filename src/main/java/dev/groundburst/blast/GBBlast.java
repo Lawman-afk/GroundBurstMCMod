@@ -27,12 +27,29 @@ import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
 public final class GBBlast {
     private static final String UNKNOWN = GBLang.add(GroundBurst.MODID + ".command.blast.unknown", "Unknown blast profile: %s");
     private static final String STARTED = GBLang.add(GroundBurst.MODID + ".command.blast.started", "Set off %s at %s, %s, %s");
+    private static final String INFO = GBLang.add(GroundBurst.MODID + ".command.blast.info", "%s as this server sets it off, blocks: %s");
+    private static final String RINGS = GBLang.add(GroundBurst.MODID + ".command.blast.rings",
+            "Its far aftermath: charred to %s blocks, broken to %s, withered to %s.");
     private static final DynamicCommandExceptionType UNKNOWN_PROFILE = new DynamicCommandExceptionType(id -> Component.translatable(UNKNOWN, id));
 
     private GBBlast() {}
 
     public static void register(IEventBus modBus) {
         modBus.addListener((NewDatapackRegistryEvent event) -> event.worldRegistry(BlastProfile.REGISTRY, BlastProfile.CODEC, BlastProfile.CODEC));
+        // The terrain tables (DESIGN.md §21.10): the server's only (no network codec: clients never need them).
+        modBus.addListener((NewDatapackRegistryEvent event) -> event.worldRegistry(TerrainTable.REGISTRY, TerrainTable.CODEC));
+        // The swap lines read again whenever the server config loads or changes.
+        modBus.addListener((net.neoforged.fml.event.config.ModConfigEvent.Loading event) -> {
+            if (event.getConfig().getSpec() == dev.groundburst.config.GBServerConfig.SPEC) {
+                TerrainRules.reload();
+            }
+        });
+        modBus.addListener((net.neoforged.fml.event.config.ModConfigEvent.Reloading event) -> {
+            if (event.getConfig().getSpec() == dev.groundburst.config.GBServerConfig.SPEC) {
+                TerrainRules.reload();
+            }
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent event) -> TerrainTables.clear());
         GBLang.add("death.attack." + GroundBurst.MODID + ".blast", "%1$s was blown to pieces");
         GBLang.add("death.attack." + GroundBurst.MODID + ".blast.player", "%1$s was blown to pieces by %2$s");
         GBLang.add("death.attack." + GroundBurst.MODID + ".annihilated", "%1$s was annihilated");
@@ -96,10 +113,38 @@ public final class GBBlast {
         dispatcher.register(Commands.literal(GroundBurst.MODID)
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("blast")
+                        .then(Commands.literal("info").then(Commands.argument("profile", ResourceKeyArgument.key(BlastProfile.REGISTRY))
+                                .executes(GBBlast::info)))
                         .then(Commands.argument("profile", ResourceKeyArgument.key(BlastProfile.REGISTRY))
                                 .executes(ctx -> blast(ctx, ctx.getSource().getPosition()))
                                 .then(Commands.argument("position", Vec3Argument.vec3())
                                         .executes(ctx -> blast(ctx, Vec3Argument.getVec3(ctx, "position")))))));
+    }
+
+    /**
+     * {@code /groundburst blast info <profile>}: a profile as the server will set it off (its settings by weapon and kind,
+     * the radius multiplier and cap; DESIGN.md §21.10), with its far aftermath's rings if it has any.
+     */
+    private static int info(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ResourceKey<BlastProfile> key = ResourceKeyArgument.getRegistryKey(ctx, "profile", BlastProfile.REGISTRY, UNKNOWN_PROFILE);
+        var found = ctx.getSource().getLevel().registryAccess().lookupOrThrow(BlastProfile.REGISTRY).getOptional(key);
+        if (found.isEmpty()) {
+            throw UNKNOWN_PROFILE.create(key.identifier());
+        }
+        BlastProfile p = BlastSettings.asSetOff(key.identifier(), found.get(), 1);
+        java.util.Locale l = java.util.Locale.ROOT;
+        String zones = String.format(l, "core %.0f, crater %.0f (depth %.2f), shock %.0f, scorch %.0f, fire %.0f, lethal %.0f, hurts to %.0f",
+                p.core(), p.crater(), p.craterDepth(), p.structural(), p.scorch(), p.fire(), p.lethal(), p.damage());
+        String rest = String.format(l, "lethal damage %.0f, edge damage %.0f, knockback %.1f, front %.1f blocks a tick, streaks %.2f, lobes %.2f, "
+                + "ejecta %.2f, drops %.2f, terrain %s", p.lethalDamage(), p.edgeDamage(), p.knockback(), p.frontSpeed(), p.streaks(), p.lobes(),
+                p.ejecta(), p.drops(), p.terrain());
+        ctx.getSource().sendSuccess(() -> Component.translatable(INFO, key.identifier().toString(), zones), false);
+        ctx.getSource().sendSuccess(() -> Component.literal(rest), false);
+        float[] rings = dev.groundburst.content.fallout.FarAftermath.rings(key.identifier(), p);
+        if (rings != null) {
+            ctx.getSource().sendSuccess(() -> Component.translatable(RINGS, Math.round(rings[0]), Math.round(rings[1]), Math.round(rings[2])), false);
+        }
+        return 1;
     }
 
     private static int blast(CommandContext<CommandSourceStack> ctx, Vec3 at) throws CommandSyntaxException {

@@ -154,8 +154,8 @@ public final class BlastBench {
         GBServerConfig.HEAL_ENABLED.set(HEAL);
         if (HEAL) {
             GBServerConfig.HEAL_SCHEDULE.set(GBServerConfig.HealSchedule.AFTER_WAIT);
-            GBServerConfig.HEAL_WAIT_SECONDS.set(20);
-            GBServerConfig.HEAL_RANDOM_SECONDS.set(0);
+            GBServerConfig.HEAL_WAIT.set("20s");
+            GBServerConfig.HEAL_RANDOM_EXTRA.set("0s");
         }
         player.setGameMode(GameType.SPECTATOR);
         BlockPos spawn = level.getRespawnData().pos();
@@ -168,7 +168,7 @@ public final class BlastBench {
             return;
         }
         // (A special weapon has no blast profile of its own: the ground out to 200 blocks, or as far as asked.)
-        float outer = found.map(f -> f.scaled(GBServerConfig.RADIUS_MULTIPLIER.get().floatValue(), GBServerConfig.MAX_RADIUS.get()).outerRadius())
+        float outer = found.map(f -> BlastSettings.asSetOff(key.identifier(), f, 1).outerRadius())
                 .orElse(168f);
         int r = radius > 0 ? radius : (int) Math.ceil(outer) + 32;
         int cx = spawn.getX() >> 4, cz = spawn.getZ() >> 4, cr = (r >> 4) + 1;
