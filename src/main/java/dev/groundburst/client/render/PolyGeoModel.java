@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.WeakHashMap;
+
 
 import org.joml.Vector3f;
 
@@ -40,8 +40,13 @@ import software.bernie.geckolib.model.DefaultedBlockGeoModel;
  * baked model, once (a resource reload bakes anew).
  */
 public class PolyGeoModel<T extends GeoAnimatable> extends DefaultedBlockGeoModel<T> {
-    /** GeckoLib's baked models already given their meshes, until GeckoLib lets them go. */
-    private static final Set<BakedGeoModel> DONE = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    /**
+     * GeckoLib's baked models already given their meshes, until GeckoLib lets them go; known by identity. A baked model is
+     * a record, its hash its top bones' (GeckoLib 4's counts each bone's cubes), so a set by equality lost a model whose
+     * top bone took a mesh: every frame read its file again and added its meshes once more (the superweapons, whose meshes
+     * are on their top bones, drew slower the longer they were in view).
+     */
+    private static final Set<BakedGeoModel> DONE = Collections.newSetFromMap(new com.google.common.collect.MapMaker().weakKeys().makeMap());
 
     public PolyGeoModel(ResourceLocation id) {
         super(id);
