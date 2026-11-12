@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+- **Minecraft 1.21.1 and 1.20.1: the frame rate no longer sinks near the superweapons and some other blocks.** The
+  Particle Uplink Cannon, the SCUD Storm, the War Factory, the Nuclear Missile Silo and the Arms Dealer, the Blast Doors,
+  the howitzer, the mortar, the searchlight and the Warning Beacon took on another copy of their rounded parts every
+  frame they were drawn, so the game slowed more and more the longer one was in view (a Particle Uplink Cannon cost 51 ms
+  a frame within seconds, an Arms Dealer's model grew from its 95 parts past 2000). Each now costs a millisecond or two.
+
 ## 0.11.1 — 2026-11-11
 
 Ground Burst on Minecraft 1.20.1 with Forge, and a fix for the Depth Charge Rack. For Minecraft 1.20.1 and 1.21.1; the
