@@ -29,3 +29,7 @@ src/main/java/dev/groundburst/gametest/GameTestRegistration.java
 src/main/java/dev/groundburst/client/fx/FxSort.java
 src/main/java/dev/groundburst/content/construction/FilingCabinetBlockEntity.java
 src/main/java/dev/groundburst/client/render/PolyGeoModel.java
+src/main/java/dev/groundburst/mixin/WeatherEffectRendererMixin.java
+src/main/java/dev/groundburst/mixin/ClientLevelRainMixin.java
+src/main/resources/groundburst.mixins.json
+src/main/java/dev/groundburst/content/fallout/FarLoads.java

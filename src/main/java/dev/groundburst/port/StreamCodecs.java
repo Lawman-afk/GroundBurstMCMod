@@ -8,6 +8,15 @@ import net.minecraft.network.codec.StreamCodec;
 public final class StreamCodecs {
     private StreamCodecs() {}
 
+    /** 26.x's {@code Vec3.STREAM_CODEC}: three doubles. */
+    public static final StreamCodec<io.netty.buffer.ByteBuf, net.minecraft.world.phys.Vec3> VEC3 = StreamCodec.of(
+            (buf, v) -> {
+                buf.writeDouble(v.x);
+                buf.writeDouble(v.y);
+                buf.writeDouble(v.z);
+            },
+            buf -> new net.minecraft.world.phys.Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()));
+
     public static <B, C, T1, T2, T3, T4, T5, T6, T7> StreamCodec<B, C> composite(
             StreamCodec<? super B, T1> c1, Function<C, T1> g1,
             StreamCodec<? super B, T2> c2, Function<C, T2> g2,

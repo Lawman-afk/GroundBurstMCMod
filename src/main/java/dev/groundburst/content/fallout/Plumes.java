@@ -79,7 +79,7 @@ public final class Plumes extends SavedData {
 
     private static void tell(Player player) {
         if (player instanceof ServerPlayer p) {
-            PacketDistributor.sendToPlayer(p, Sync.of(of((ServerLevel) p.level()).plumes));
+            PacketDistributor.sendToPlayer(p, Sync.of(of((ServerLevel) p.level()).plumes, p.level().getGameTime()));
         }
     }
 
@@ -88,7 +88,23 @@ public final class Plumes extends SavedData {
      * sources halving every {@code halfLife} ticks (the burst's own), {@code reach} blocks downwind.
      */
     public static void start(ServerLevel level, Vec3 at, float radius, float peak, int halfLife, float reach, float ashRate) {
-        of(level).add(new FalloutPlume(at.x, at.y, at.z, radius, reach, 0, 0, peak, halfLife, ashRate));
+        start(level, at, radius, peak, halfLife, reach, ashRate, false);
+    }
+
+    /** As above; {@code rains}: a nuclear ground burst's, whose cloud rains black for a while (DESIGN.md §21.10, {@link BlackRain}). */
+    public static void start(ServerLevel level, Vec3 at, float radius, float peak, int halfLife, float reach, float ashRate, boolean rains) {
+        start(level, at, radius, peak, halfLife, reach, ashRate, rains, level.getGameTime());
+    }
+
+    /** As above, its burst at game time {@code born} (the photographer's scenes start one that has been raining a while). */
+    public static void start(ServerLevel level, Vec3 at, float radius, float peak, int halfLife, float reach, float ashRate, boolean rains, long born) {
+        of(level).add(new FalloutPlume(at.x, at.y, at.z, radius, reach, 0, 0, peak, halfLife, ashRate, born, rains));
+    }
+
+    /** Every plume in the level as the clients are told of them (black rain is reckoned from them, DESIGN.md §21.10). */
+    public static List<Cloud> clouds(ServerLevel level) {
+        Plumes p = of(level);
+        return p.plumes.isEmpty() ? List.of() : Sync.of(p.plumes, level.getGameTime()).clouds();
     }
 
     /** The half-life of a burst whose centre, {@code peak} RAD/h at first, falls safe after {@code lasts} ticks. */
@@ -129,7 +145,7 @@ public final class Plumes extends SavedData {
         if (this.plumes.isEmpty()) {
             if (this.told) {
                 this.told = false;
-                PacketDistributor.sendToPlayersInDimension(level, Sync.of(List.of()));
+                PacketDistributor.sendToPlayersInDimension(level, Sync.of(List.of(), 0));
             }
             return;
         }
@@ -142,7 +158,7 @@ public final class Plumes extends SavedData {
         this.plumes.removeIf(FalloutPlume::spent);
         setDirty();
         this.told = true;
-        PacketDistributor.sendToPlayersInDimension(level, Sync.of(this.plumes));
+        PacketDistributor.sendToPlayersInDimension(level, Sync.of(this.plumes, level.getGameTime()));
     }
 
     /** A second of one plume: carried by {@code wind} (blocks a second), its fallout laid, its ash let fall. */
@@ -192,11 +208,15 @@ public final class Plumes extends SavedData {
         }
     }
 
-    /** Where each plume is (for the falling ash): its centre, the ground under its start, its radius, its strength. */
-    public record Cloud(float x, float y, float z, float radius, float share) {
-        static final StreamCodec<io.netty.buffer.ByteBuf, Cloud> CODEC = StreamCodec.composite(
+    /**
+     * Where each plume is (for the falling ash and black rain): its centre, the ground under its start, its radius, its
+     * strength, seconds since its burst (-1 unknown) and whether its cloud rains black (DESIGN.md §21.10).
+     */
+    public record Cloud(float x, float y, float z, float radius, float share, float age, boolean rains) {
+        static final StreamCodec<io.netty.buffer.ByteBuf, Cloud> CODEC = dev.groundburst.port.StreamCodecs.composite(
                 ByteBufCodecs.FLOAT, Cloud::x, ByteBufCodecs.FLOAT, Cloud::y, ByteBufCodecs.FLOAT, Cloud::z,
-                ByteBufCodecs.FLOAT, Cloud::radius, ByteBufCodecs.FLOAT, Cloud::share, Cloud::new);
+                ByteBufCodecs.FLOAT, Cloud::radius, ByteBufCodecs.FLOAT, Cloud::share, ByteBufCodecs.FLOAT, Cloud::age,
+                ByteBufCodecs.BOOL, Cloud::rains, Cloud::new);
     }
 
     /** Every plume in the receiving player's level (empty: none). */
@@ -207,10 +227,11 @@ public final class Plumes extends SavedData {
         /** Client hook (set by the client). */
         public static Consumer<Sync> hook = s -> {};
 
-        static Sync of(List<FalloutPlume> plumes) {
+        static Sync of(List<FalloutPlume> plumes, long now) {
             List<Cloud> clouds = new ArrayList<>();
             for (FalloutPlume p : plumes) {
-                clouds.add(new Cloud((float) p.x(), (float) p.y(), (float) p.z(), p.radius(), p.share()));
+                clouds.add(new Cloud((float) p.x(), (float) p.y(), (float) p.z(), p.radius(), p.share(), p.born() == FalloutPlume.UNBORN ? -1 : (now - p.born()) / 20f,
+                        p.rains()));
             }
             return new Sync(clouds);
         }

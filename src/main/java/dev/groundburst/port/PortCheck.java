@@ -24,7 +24,8 @@ import net.neoforged.neoforge.common.NeoForge;
  * the hotbar), photographs them, opens the Field Manual, sets a blast off and photographs that, brings a Particle Uplink
  * beam down beside the row and photographs it and its trench, lays sea mines in a walled sea and photographs them from
  * under the water and from above, sets a depth charge off under them and photographs its column, then quits. The pictures go to
- * run/screenshots/port_*.png; anything that goes wrong is in the log.
+ * run/screenshots/port_*.png; then a nuclear blast's far reach: a far flash at night, a far wave's dust by day, black rain from a burst's own
+ * cloud and over the wasteland in the rain. Anything that goes wrong is in the log.
  */
 public final class PortCheck {
     private static final boolean ON = Boolean.getBoolean("groundburst.portCheck");
@@ -475,7 +476,73 @@ public final class PortCheck {
                 GroundBurst.LOGGER.info("Port check: the searchlight two high and lit {}, the crates' 27 slots {}, four drums {}: {}", light, crates, drums,
                         light && crates && drums ? "OK" : "WRONG");
             });
+            // A nuclear blast's far reach (main's DESIGN.md §21.10), this version's drawing of it: a thermonuclear warhead
+            // 2 000 blocks north at midnight (the flash, the glow over the horizon, the sky lit), one 1 200 blocks west by day
+            // (its far wave's dust coming over the land), black rain from a burst's own cloud in clear weather (the sheets
+            // drawn round the camera) and over the wasteland in the rain (the game's rain recoloured, its splashes sooty).
             case 1480 -> {
+                command(mc, "time set 18000");
+                command(mc, "tp @s 0.5 -40 0.5 180 -3");
+            }
+            case 1500 -> command(mc, "groundburst blast groundburst:thermonuclear_warhead 0 -60 -2000");
+            case 1502 -> shot(mc, "far_flash_2");
+            case 1505 -> shot(mc, "far_flash_5");
+            case 1515 -> shot(mc, "far_flash_15");
+            case 1540 -> shot(mc, "far_flash_40");
+            case 1600 -> shot(mc, "far_flash_100");
+            case 1660 -> shot(mc, "far_flash_160");
+            case 1700 -> {
+                command(mc, "time set 6000");
+                command(mc, "tp @s 0.5 -50 0.5 90 2");
+            }
+            case 1720 -> command(mc, "groundburst blast groundburst:thermonuclear_warhead -1200 -60 0");
+            case 1816 -> shot(mc, "far_wave_96");
+            case 1838 -> shot(mc, "far_wave_118");
+            case 1848 -> shot(mc, "far_wave_128");
+            case 1854 -> shot(mc, "far_wave_134");
+            case 1859 -> shot(mc, "far_wave_139");
+            case 1870 -> shot(mc, "far_wave_150");
+            case 1980 -> shot(mc, "far_wave_260");
+            case 2000 -> {
+                command(mc, "tp @s 300.5 -59 0.5 90 -6");
+                onServer(mc, level -> {
+                    level.setWeatherParameters(12_000, 0, false, false);
+                    dev.groundburst.content.fallout.Wind.of(level).hold((float) Math.PI / 2, 0.3f);
+                    dev.groundburst.content.fallout.Plumes.start(level, new net.minecraft.world.phys.Vec3(292.5, -60, 0.5), 40, 20_000, 2_000, 600, 0,
+                            true, level.getGameTime() - 20 * 60);
+                });
+            }
+            case 2035 -> tidy(mc);
+            case 2040 -> shot(mc, "black_rain_own_40");
+            case 2120 -> shot(mc, "black_rain_own_120");
+            case 2130 -> {
+                command(mc, "tp @s 600.5 -59 0.5 90 -8");
+                onServer(mc, level -> {
+                    var c = new net.minecraft.world.phys.Vec3(600.5, -60, 0.5);
+                    dev.groundburst.content.fallout.Wasteland.paintNow(level, c, 72);
+                    dev.groundburst.content.radiation.RadiationSources.of(level).add(dev.groundburst.content.radiation.RadiationSource.lasting(
+                            c, 140, 40_000, 48_000, level.getGameTime(), 1));
+                    level.setWeatherParameters(0, 12_000, true, false);
+                });
+            }
+            case 2245 -> tidy(mc);
+            case 2250 -> shot(mc, "black_rain_120");
+            case 2370 -> shot(mc, "black_rain_240");
+            case 2375 -> onServer(mc, level -> {
+                var fars = dev.groundburst.content.fallout.FarAftermath.State.of(level).fars();
+                boolean rain = dev.groundburst.content.fallout.BlackRain.fallingAt(level, new BlockPos(600, -59, 0),
+                        dev.groundburst.content.radiation.RadiationSources.of(level).sources(), dev.groundburst.content.fallout.Plumes.clouds(level)) > 0;
+                GroundBurst.LOGGER.info("Port check: far aftermaths {} (two blasts), black rain falling over the wasteland {}: {}", fars.size(), rain,
+                        fars.size() == 2 && rain ? "OK" : "WRONG");
+                if (net.neoforged.fml.ModList.get().isLoaded("distanthorizons")) {
+                    long handed = dev.groundburst.compat.DistantHorizons.handed;
+                    GroundBurst.LOGGER.info("Port check: chunks the far aftermath changed handed to Distant Horizons {}: {}", handed, handed > 0 ? "OK" : "WRONG");
+                }
+            });
+            // Tidied before the far reach's pictures (the commands' lines in the chat).
+            case 1501 -> tidy(mc);
+            case 1810 -> tidy(mc);
+            case 2380 -> {
                 GroundBurst.LOGGER.info("Port check: done");
                 mc.stop();
             }

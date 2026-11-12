@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GBNetwork {
-    public static final String PROTOCOL_VERSION = "21";
+    public static final String PROTOCOL_VERSION = "22";
 
     private GBNetwork() {}
 
@@ -121,6 +121,9 @@ public final class GBNetwork {
                 (payload, context) -> dev.groundburst.content.radiation.RadiationSources.Sync.hook.accept(payload));
         registrar.playToClient(dev.groundburst.content.fallout.Wind.Sync.TYPE, dev.groundburst.content.fallout.Wind.Sync.CODEC,
                 (payload, context) -> dev.groundburst.content.fallout.Wind.Sync.hook.accept(payload));
+        // The far wave (DESIGN.md §21.10): drawn on the client by FarWaveFx.
+        registrar.playToClient(dev.groundburst.content.fallout.FarWave.TYPE, dev.groundburst.content.fallout.FarWave.CODEC,
+                (payload, context) -> dev.groundburst.content.fallout.FarWave.hook.accept(payload));
         registrar.playToClient(dev.groundburst.content.fallout.Plumes.Sync.TYPE, dev.groundburst.content.fallout.Plumes.Sync.CODEC,
                 (payload, context) -> dev.groundburst.content.fallout.Plumes.Sync.hook.accept(payload));
         // Artillery (DESIGN.md §20.1): the crewman's aim, shots and picks; the gun as it is laid.

@@ -181,8 +181,16 @@ public final class AssemblyStats {
         return profile(registries, kind.id);
     }
 
+    /** A charge's blast profile as the server will set it off: its settings by weapon, multiplier and cap (DESIGN.md §21.10). */
     private static Optional<BlastProfile> profile(RegistryAccess registries, String id) {
-        return registries.registryOrThrow(BlastProfile.REGISTRY).getOptional(Blasts.profile(id));
+        var key = Blasts.profile(id);
+        return registries.registryOrThrow(BlastProfile.REGISTRY).getOptional(key).map(p -> {
+            try {
+                return dev.groundburst.blast.BlastSettings.asSetOff(key.location(), p, 1);
+            } catch (IllegalStateException configNotLoaded) {
+                return p;
+            }
+        });
     }
 
     /**

@@ -69,7 +69,53 @@ public final class GBServerConfig {
             .translation(GBLang.config("blast.disabledWeapons", "Disabled weapons"))
             .defineListAllowEmpty("disabledWeapons", List.of(), () -> "groundburst:", GBServerConfig::isIdentifier);
 
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> WEAPON_SETTINGS = B
+            .comment("Settings for single weapons (DESIGN.md §21.10), one line each: the weapon, then its settings, as",
+                    "  \"groundburst:tsar_warhead depth=x1.5 scorch=600\"   (the Tsar's crater half as deep again, its scorch 600 blocks)",
+                    "  \"groundburst:*_grenade radius=x2\"                  (every grenade's blast twice the size)",
+                    "  \"groundburst:singularity radius=x0.5\"              (the singularity's reach halved)",
+                    "The weapon is a blast profile's id as /groundburst blast lists them (a * matches anything), or a special",
+                    "weapon's: groundburst:antimatter, groundburst:singularity, groundburst:storm, groundburst:cryo_freeze.",
+                    "A value is a number (blocks for a radius, a share for depth), or x and a number to multiply the weapon's own.",
+                    "Settings: radius (every radius together; it always multiplies), crater, depth (how deep the crater digs, about",
+                    "0.3-0.7), shock (where glass and leaves are blown out), scorch, fire, lethal, damage (the zones that hurt),",
+                    "lethalDamage, edgeDamage, knockback, speed (of the front, blocks a tick), streaks, lobes (the crater's shape),",
+                    "ejecta (rubble thrown out), drops (the share of destroyed blocks that drop), terrain (a terrain table's id: what",
+                    "the blast turns blocks into), far (a nuclear blast's far aftermath, x0.5 half as far, 0 none).",
+                    "Later lines win. /groundburst blast info <profile> shows a weapon as it will go off.")
+            .translation(GBLang.config("blast.weapons", "Settings for single weapons"))
+            .defineListAllowEmpty("weapons", List.of(), () -> "groundburst:tsar_warhead depth=x1.5",
+                    dev.groundburst.blast.BlastSettings::isLine);
+
     static {
+        B.translation(GBLang.config("blast.byKind", "By kind of weapon"))
+                .comment("Scales every weapon of one kind, on top of the radius multiplier (DESIGN.md §21.10).").push("byKind");
+    }
+
+    public static final ModConfigSpec.DoubleValue CONVENTIONAL_RADIUS = B
+            .comment("Every radius of conventional weapons' blasts: grenades, charges, mines, bombs, shells, and every warhead",
+                    "that is not nuclear or special (chemical weapons' bursts too).")
+            .translation(GBLang.config("blast.byKind.conventionalRadius", "Conventional weapons' radius"))
+            .defineInRange("conventionalRadius", 1.0, 0.1, 4.0);
+    public static final ModConfigSpec.DoubleValue CONVENTIONAL_DEPTH = B
+            .comment("How deep conventional weapons' craters dig, as a share of their usual depth.")
+            .translation(GBLang.config("blast.byKind.conventionalCraterDepth", "Conventional craters' depth"))
+            .defineInRange("conventionalCraterDepth", 1.0, 0.1, 4.0);
+    public static final ModConfigSpec.DoubleValue NUCLEAR_RADIUS = B
+            .comment("Every radius of nuclear blasts (and so their far aftermath, which goes by their reach).")
+            .translation(GBLang.config("blast.byKind.nuclearRadius", "Nuclear weapons' radius"))
+            .defineInRange("nuclearRadius", 1.0, 0.1, 4.0);
+    public static final ModConfigSpec.DoubleValue NUCLEAR_DEPTH = B
+            .comment("How deep nuclear craters dig, as a share of their usual depth.")
+            .translation(GBLang.config("blast.byKind.nuclearCraterDepth", "Nuclear craters' depth"))
+            .defineInRange("nuclearCraterDepth", 1.0, 0.1, 4.0);
+    public static final ModConfigSpec.DoubleValue SPECIAL_RADIUS = B
+            .comment("How far the special weapons reach: antimatter, the singularity, the storm and the cryo freeze.")
+            .translation(GBLang.config("blast.byKind.specialRadius", "Special weapons' reach"))
+            .defineInRange("specialRadius", 1.0, 0.1, 4.0);
+
+    static {
+        B.pop();
         B.pop();
         B.translation(GBLang.config("radiation", "Radiation")).comment("Radiation, fallout and contamination.").push("radiation");
     }
@@ -89,6 +135,18 @@ public final class GBServerConfig {
             .translation(GBLang.config("radiation.spreadEnabled", "Fallout spreads downwind"))
             .define("spreadEnabled", true);
 
+    public static final ModConfigSpec.BooleanValue BLACK_RAIN = B
+            .comment("Black rain (DESIGN.md §21.10): rain over heavily irradiated land (a strong field at the ground, the nuclear",
+                    "wasteland, under fallout plumes) falls black, and a nuclear ground burst's own cloud rains black for six minutes",
+                    "from 40 seconds after it, whatever the weather. Plants under it die.")
+            .translation(GBLang.config("radiation.blackRain", "Black rain"))
+            .define("blackRain", true);
+    public static final ModConfigSpec.BooleanValue BLACK_RAIN_HARMS = B
+            .comment("Whether black rain harms what is out in it: the fallout it washes down (radiation) and acid burns, armour",
+                    "corroding; a hazmat suit keeps its share out. Off: it only looks and kills plants.")
+            .translation(GBLang.config("radiation.blackRainHarms", "Black rain harms"))
+            .define("blackRainHarms", true);
+
     static {
         B.pop();
         B.translation(GBLang.config("terrain", "Terrain")).comment("Blast aftermath on terrain.").push("terrain");
@@ -98,6 +156,75 @@ public final class GBServerConfig {
             .comment("Paint the nuclear wasteland biome over the scorched area of nuclear blasts.")
             .translation(GBLang.config("terrain.convertBiomes", "Create wasteland biome"))
             .define("convertBiomes", true);
+
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> TERRAIN_SWAPS = B
+            .comment("Swap rules for what blasts leave (DESIGN.md §21.10), checked before the terrain tables' own, one a line:",
+                    "  <tables> <bands> <blocks> -> <block> [chance] [fade]",
+                    "  \"nuclear lining #minecraft:sand -> mymod:rare_ore 5%\"   (5% of the sand in a nuclear crater's wall a rare",
+                    "                                                         ore; the rest falls through to the table's trinitite)",
+                    "  \"nuclear scorch,charred #minecraft:logs -> mymod:burnt_log\"",
+                    "  \"* broken minecraft:glass -> mymod:cracked_glass 60% fade\"",
+                    "Tables: conventional, nuclear, naval, or a datapack's (groundburst:terrain_table), * for all. Bands: shock (the",
+                    "light blocks the shock blows out), scorch (the ground the fireball sees), lining (a nuclear crater's wall), and",
+                    "a nuclear blast's far rings charred, broken and withered; * for all. Blocks: ids, #tags or patterns such as",
+                    "*:*_planks, comma-separated. The block it becomes: an id with [properties] if wanted, air, keep (left as it is),",
+                    "or a weighted choice, a*3|b*1. Chance: 0.05 or 5% (default all of them); a rule whose chance fails passes the",
+                    "block on to the next rule. fade: the chance falls to nothing across the band, outward. Each band already",
+                    "thins out toward its edge as it always has; the rules work inside that. A block keeps the properties the",
+                    "new block shares with it (a log's axis, a stair's facing).")
+            .translation(GBLang.config("terrain.swaps", "Swap rules"))
+            .defineListAllowEmpty("swaps", List.of(), () -> "nuclear lining #minecraft:sand -> minecraft:gold_ore 5%",
+                    dev.groundburst.blast.TerrainRules::isLine);
+
+    static {
+        B.pop();
+        B.translation(GBLang.config("aftermath", "Far aftermath"))
+                .comment("A nuclear blast's far aftermath (DESIGN.md §21.10): past the blast's own reach, rings of charred, broken and",
+                        "withered land, a far wave at the speed of sound, all of it healing as the nuclear kind's when healing is on.")
+                .push("aftermath");
+    }
+
+    public static final ModConfigSpec.BooleanValue AFTERMATH_ENABLED = B
+            .comment("Master switch. Off: a nuclear blast changes nothing past its own reach.")
+            .translation(GBLang.config("aftermath.enabled", "Far aftermath"))
+            .define("enabled", true);
+    public static final ModConfigSpec.DoubleValue AFTERMATH_CHARRED = B
+            .comment("How far the charred land reaches (what the fireball's heat sees burns: grass scorched, plants and leaves",
+                    "burnt, logs charred; the wasteland's grey over it), as a multiple of the blast's reach (where it stops hurting).")
+            .translation(GBLang.config("aftermath.charredReach", "Charred land's reach"))
+            .defineInRange("charredReach", 1.4, 1.0, 10.0);
+    public static final ModConfigSpec.DoubleValue AFTERMATH_BROKEN = B
+            .comment("How far the broken land reaches (the blast wave's: glass facing the blast shattered, doors blown open,",
+                    "leaves stripped, torches knocked off), as a multiple of the blast's reach.")
+            .translation(GBLang.config("aftermath.brokenReach", "Broken land's reach"))
+            .defineInRange("brokenReach", 3.0, 1.0, 10.0);
+    public static final ModConfigSpec.DoubleValue AFTERMATH_WITHERED = B
+            .comment("How far the withered land reaches (the heat's last reach: leaves and grass dying in patches, crops withered),",
+                    "as a multiple of the blast's reach. The far wave runs out to here. The Tsar's, at 4.3: about 3 000 blocks.")
+            .translation(GBLang.config("aftermath.witheredReach", "Withered land's reach"))
+            .defineInRange("witheredReach", 4.3, 1.0, 10.0);
+    public static final ModConfigSpec.IntValue AFTERMATH_MAX_REACH = B
+            .comment("The farthest any far aftermath reaches, blocks, whatever the multiples above make it.")
+            .translation(GBLang.config("aftermath.maxReach", "Farthest reach (blocks)"))
+            .defineInRange("maxReach", 4096, 64, 16_384);
+    public static final ModConfigSpec.BooleanValue AFTERMATH_WAVE = B
+            .comment("The far wave: past the blast's reach its shock carries on at the speed of sound to the withered land's edge,",
+                    "throwing creatures out in the open and, nearer, hurting them; players see it come and feel it.")
+            .translation(GBLang.config("aftermath.farWave", "Far wave"))
+            .define("farWave", true);
+    public static final ModConfigSpec.BooleanValue AFTERMATH_LOAD = B
+            .comment("Load the chunks inside the rings that exist but are not loaded, a few at a time, to change them (so maps and",
+                    "Distant Horizons show the land as it is). Never generates chunks. Off: they change when they next load.")
+            .translation(GBLang.config("aftermath.loadChunks", "Change unloaded chunks"))
+            .define("loadChunks", true);
+    public static final ModConfigSpec.BooleanValue AFTERMATH_NEW_CHUNKS = B
+            .comment("Change chunks inside the rings that are generated later (explored after the blast), as they load.")
+            .translation(GBLang.config("aftermath.convertNewChunks", "Change chunks generated later"))
+            .define("convertNewChunks", true);
+    public static final ModConfigSpec.IntValue AFTERMATH_MS = B
+            .comment("Milliseconds a tick the far aftermath may take to change chunks.")
+            .translation(GBLang.config("aftermath.msPerTick", "Time budget per tick (ms)"))
+            .defineInRange("msPerTick", 3, 1, 40);
 
     static {
         B.pop();
@@ -204,28 +331,41 @@ public final class GBServerConfig {
             .translation(GBLang.config("healing.schedule", "When healing happens"))
             .defineEnum("schedule", HealSchedule.AFTER_WAIT);
 
-    public static final ModConfigSpec.IntValue HEAL_WAIT_SECONDS = B
-            .comment("Seconds an area waits after the last damage before it starts to heal. Fresh damage nearby starts the wait again,",
-                    "so a battle is not undone while it is being fought. 300 is five minutes; 3600 an hour.")
-            .translation(GBLang.config("healing.waitSeconds", "Wait before healing (seconds)"))
-            .defineInRange("waitSeconds", 300, 0, 604_800);
+    public static final ModConfigSpec.EnumValue<HealClock> HEAL_CLOCK = B
+            .comment("The clock the waits below are counted by (DESIGN.md §21.10):",
+                    "  PLAYED - the time the world has been running: it stops while the server is off or a single-player",
+                    "           world is shut (the usual: what you wait for is play).",
+                    "  REAL   - real time, as on a clock on the wall: a server switched off over the weekend has healed when",
+                    "           it starts again, so \"7d\" is a week of the calendar.")
+            .translation(GBLang.config("healing.clock", "Clock the wait counts by"))
+            .defineEnum("clock", HealClock.PLAYED);
 
-    public static final ModConfigSpec.IntValue HEAL_RANDOM_SECONDS = B
-            .comment("Up to this many seconds more, chosen at random for each chunk, so a crater heals in patches, not all at once.")
-            .translation(GBLang.config("healing.randomExtraSeconds", "Random extra wait (seconds)"))
-            .defineInRange("randomExtraSeconds", 60, 0, 86_400);
+    public static final ModConfigSpec.ConfigValue<String> HEAL_WAIT = B
+            .comment("How long an area waits after the last damage before it starts to heal: a number and a unit, s (seconds),",
+                    "m (minutes), h (hours), d (days) or w (weeks), several together if you like: \"30m\", \"12h\", \"7d\", \"1d12h\".",
+                    "Fresh damage nearby starts the wait again, so a battle is not undone while it is being fought. At most 52 weeks.",
+                    "(This was waitSeconds, a number of seconds: a value set there before must be set here again.)")
+            .translation(GBLang.config("healing.wait", "Wait before healing"))
+            .define("wait", "5m", o -> Durations.valid(o, GBServerConfig.MAX_HEAL_WAIT));
+
+    public static final ModConfigSpec.ConfigValue<String> HEAL_RANDOM_EXTRA = B
+            .comment("Up to this much longer, chosen at random for each chunk, so a crater heals in patches, not all at once",
+                    "(written as the wait is: \"1m\", \"2h\", \"1d\"; at most 4 weeks).")
+            .translation(GBLang.config("healing.randomExtra", "Random extra wait"))
+            .define("randomExtra", "1m", o -> Durations.valid(o, GBServerConfig.MAX_HEAL_EXTRA));
 
     public static final ModConfigSpec.IntValue HEAL_BLOCKS_PER_SECOND = B
             .comment("Blocks each damaged chunk puts back a second, at the least.")
             .translation(GBLang.config("healing.blocksPerSecond", "Blocks healed a second (each chunk)"))
             .defineInRange("blocksPerSecond", 20, 1, 100_000);
 
-    public static final ModConfigSpec.IntValue HEAL_LONGEST_SECONDS = B
-            .comment("The longest a chunk may take to heal, in seconds: a chunk with much to put back heals faster to keep to it,",
-                    "so a nuclear crater heals in about the same time as a grenade's hole. 0 lets big damage take as long as",
-                    "the speed above makes it.")
-            .translation(GBLang.config("healing.longestSeconds", "Longest heal (seconds)"))
-            .defineInRange("longestSeconds", 300, 0, 86_400);
+    public static final ModConfigSpec.ConfigValue<String> HEAL_LONGEST = B
+            .comment("The longest a chunk may take to heal once it begins (written as the wait is: \"5m\", \"1h\"; at most 4 weeks):",
+                    "a chunk with much to put back heals faster to keep to it, so a nuclear crater heals in about the same time as",
+                    "a grenade's hole. \"0\" lets big damage take as long as the speed above makes it. Healing is work the server",
+                    "does in a loaded chunk, so this counts while the chunk is loaded, whichever clock the wait counts by.")
+            .translation(GBLang.config("healing.longest", "Longest heal"))
+            .define("longest", "5m", o -> Durations.valid(o, GBServerConfig.MAX_HEAL_EXTRA));
 
     public static final ModConfigSpec.EnumValue<HealOrder> HEAL_ORDER = B
             .comment("The order blocks come back in:",
@@ -402,6 +542,21 @@ public final class GBServerConfig {
 
     /** {@code healing.schedule}: when damaged ground heals. */
     public enum HealSchedule { AFTER_WAIT, MORNING, COMMAND_ONLY }
+
+    /** {@code healing.clock}: the clock healing's wait counts by (DESIGN.md §21.10). */
+    public enum HealClock { PLAYED, REAL }
+
+    /** The longest healing wait, and the longest random extra and heal, in seconds (52 weeks; 4 weeks). */
+    public static final long MAX_HEAL_WAIT = 52L * 604_800, MAX_HEAL_EXTRA = 4L * 604_800;
+
+    /** A healing time from the config in ticks (a config value always holds a valid one; the default if not). */
+    public static int healTicks(ModConfigSpec.ConfigValue<String> value) {
+        long s = Durations.seconds(value.get());
+        if (s < 0) {
+            s = Durations.seconds(value.getDefault());
+        }
+        return (int) Math.min(Integer.MAX_VALUE, s * 20);
+    }
 
     /** {@code healing.order}: the order blocks come back in. */
     public enum HealOrder { BOTTOM_UP, RANDOM, ALL_AT_ONCE }

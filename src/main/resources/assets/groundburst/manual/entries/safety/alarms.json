@@ -1,7 +1,7 @@
 {
   "title": "Alarm system",
   "icon": "groundburst:air_raid_siren",
-  "order": 12,
+  "order": 14,
   "items": [
     "groundburst:missile_warning_receiver",
     "groundburst:alarm_panel",

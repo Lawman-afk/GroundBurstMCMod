@@ -385,7 +385,7 @@ final class ParticleBeamJob {
         if (TerrainTable.earth(s) || s.is(Blocks.CLAY) || s.is(net.minecraft.world.level.block.Blocks.MUD)) {
             return GBFallout.SCORCHED_EARTH.block().get().defaultBlockState();
         }
-        return TerrainTable.NUCLEAR_TABLE.scorched(s);
+        return TerrainTable.byId(TerrainTable.NUCLEAR).scorched(s);
     }
 
     /** A column round it, once: leaves and plants on it burn away, logs char, its ground is scorched. */
@@ -408,7 +408,7 @@ final class ParticleBeamJob {
                 continue;
             }
             if (s.is(BlockTags.LOGS)) {
-                BlockState charred = TerrainTable.NUCLEAR_TABLE.scorched(s);
+                BlockState charred = TerrainTable.byId(TerrainTable.NUCLEAR).scorched(s);
                 if (charred != null) {
                     this.scars.set(p, charred, Block.UPDATE_ALL);
                 }
@@ -420,7 +420,7 @@ final class ParticleBeamJob {
         if (!ground.getFluidState().isEmpty() || ground.isAir()) {
             return;
         }
-        BlockState burnt = TerrainTable.NUCLEAR_TABLE.scorched(ground);
+        BlockState burnt = TerrainTable.byId(TerrainTable.NUCLEAR).scorched(ground);
         if (burnt != null && !burnt.isAir() && burnt.getFluidState().isEmpty()) {
             this.scars.set(p, burnt, Block.UPDATE_ALL);
         }

@@ -30,6 +30,9 @@ DROP = [re.compile(p) for p in (
     r"src/main/java/dev/groundburst/datagen/.*",
     r"src/main/java/dev/groundburst/client/fx/(FxPhotographer|SitePhotographer|HealPhotographer|BlastBenchClient|WorldSurveyClient|DevWorlds|Showroom|ShowroomWalk)\.java",
     r"src/main/java/dev/groundburst/client/manual/ManualPhotographer\.java",
+    # Main's test runs' window and mouse (26.3's window is SDL's): this branch's own are port/DevRuns and port/mixin/Dev*Mixin.
+    r"src/main/java/dev/groundburst/client/DevRuns\.java",
+    r"src/main/java/dev/groundburst/mixin/DevMouseMixin\.java",
     # Main's test worlds' builders (the War Room range: a 26.3 world, built by main's dev run).
     r"src/main/java/dev/groundburst/devworld/.*",
     # Main's model loader for polygons (26.x's model API): this branch's FreeRotationModels bakes them.
@@ -78,6 +81,7 @@ def sub(pattern: str, repl, flags: int = 0):
 DROP_LINES = [re.compile(p) for p in (
     r"^\s*dev\.groundburst\.client\.fx\.(FxPhotographer|BlastBenchClient|WorldSurveyClient|SitePhotographer|HealPhotographer|Showroom)\.register\(\);\s*$",
     r"^\s*ManualPhotographer\.register\(\);\s*$",
+    r"^\s*dev\.groundburst\.client\.DevRuns\.register\(\);.*$",
     r"^\s*dev\.groundburst\.client\.render\.PolygonModels\.register\(modBus\);\s*$",
     r"^\s*// Models with flat polygons beside their elements: round parts' caps, rings' sides \(DESIGN\.md §4\.4\)\.\s*$",
     r"^\s*BlastBench\.register\(\);\s*$",
@@ -176,6 +180,11 @@ IMPORTS = {
 }
 
 RULES = [
+    # --- the far reach's code (main's DESIGN.md §21.10) ---------------------------------------------------------------------
+    sub(r"\bVec3\.STREAM_CODEC\b", "dev.groundburst.port.StreamCodecs.VEC3"),
+    sub(r"\b(\w+)\.setInvulnerableTime\(([^()]*)\)", r"\1.invulnerableTime = \2"),
+    sub(r"\bBlocks\.COPPER_BLOCK\.weathering\(\)\.unaffected\(\)", "Blocks.COPPER_BLOCK"),
+    sub(r"\bBlocks\.COPPER_BLOCK\.weathering\(\)\.exposed\(\)", "Blocks.EXPOSED_COPPER"),
     # --- the GameTests' helper (26.x's names and overloads) ----------------------------------------------------------------
     sub(r"\bhelper\.getBlockEntity\(((?:[^(),]|\((?:[^()]|\([^()]*\))*\))+),\s*([\w.]+)\.class\)", r"((\2) helper.getBlockEntity(\1))"),
     sub(r"\bhelper\.makeMockServerPlayer\(((?:[^()]|\([^()]*\))*)\)", r"dev.groundburst.port.Tests.mockServerPlayer(helper, \1)"),
@@ -611,13 +620,20 @@ def pre_remove(text: str) -> str:
 
 
 def saved_data(text: str) -> str:
-    """1.21.1's saved data saves itself (26.x's is saved by its type's codec): it does so through its TYPE."""
+    """1.21.1's saved data saves itself (26.x's is saved by its type's codec): it does so through its TYPE, a method put
+    inside the class that extends SavedData (the file's own, or one nested in it), before that class's closing brace."""
     if not re.search(r"\bextends SavedData\b", text) or re.search(r"\bCompoundTag save\(", text):
         return text
-    end = text.rstrip().rfind("}")
-    hook = ("\n    @Override\n    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {\n"
-            "        return TYPE.save(this, tag_, registries_);\n    }\n")
-    return text[:end] + hook + text[end:]
+
+    def hook(body: str) -> str:
+        indent = re.match(r"[ \t]*", body.splitlines()[-1]).group(0)
+        inner = indent + "    "
+        method = (f"\n{inner}@Override\n{inner}public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, "
+                  f"net.minecraft.core.HolderLookup.Provider registries_) {{\n{inner}    return TYPE.save(this, tag_, registries_);\n{inner}}}\n")
+        end = body.rfind("}")
+        return body[:end].rstrip() + "\n" + method + indent + body[end:]
+
+    return method_bodies(text, r"(?m)^[ \t]*(?:public |private |protected )?(?:static )?(?:final )?class \w+ extends SavedData\b[^{]*\{", hook)
 
 
 def calls(text: str, start: str, fn) -> str:
@@ -849,6 +865,27 @@ def drop_method(signature: str):
 
 
 FILE_FIXES: dict[str, list] = {
+    # The far reach (main's DESIGN.md §21.10).
+    "src/main/java/dev/groundburst/blast/TerrainRule.java": [
+        swap("BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK, text, false)", "BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), text, false)"),
+    ],
+    "src/main/java/dev/groundburst/content/fallout/FarAftermath.java": [
+        # (1.21.1's attachments save through a plain codec: the marks are a bare list here.)
+        swap('.<List<Integer>>xmap(ArrayList::new, List::copyOf).fieldOf("ids")).build());', ".<List<Integer>>xmap(ArrayList::new, List::copyOf)).build());"),
+    ],
+    "src/main/java/dev/groundburst/content/fallout/BlackRain.java": [
+        swap(".getPrecipitationAt(pos, level.getSeaLevel())", ".getPrecipitationAt(pos)"),
+    ],
+    "src/main/java/dev/groundburst/gametest/AftermathTests.java": [
+        swap("lookupOrThrow(net.minecraft.core.registries.Registries.FEATURE)", "lookupOrThrow(net.minecraft.core.registries.Registries.CONFIGURED_FEATURE)"),
+    ],
+    "src/main/java/dev/groundburst/gametest/BlastTests.java": [
+        swap("registryAccess().lookupOrThrow(dev.groundburst.blast.BlastProfile.REGISTRY);", "registryAccess().registryOrThrow(dev.groundburst.blast.BlastProfile.REGISTRY);"),
+    ],
+    "src/main/java/dev/groundburst/gametest/FalloutTests.java": [
+        swap("registryAccess().lookupOrThrow(TerrainTable.REGISTRY);", "registryAccess().registryOrThrow(TerrainTable.REGISTRY);"),
+        swap("registry.getValue(TerrainTable.NUCLEAR)", "registry.get(TerrainTable.NUCLEAR)"),
+    ],
     # A site gives way to the rarer ones near it (main's DESIGN.md §22.8), asking them in a generation context of its own
     # making: this version's has no climate sampler of its own.
     "src/main/java/dev/groundburst/world/structure/SiteStructure.java": [
@@ -1040,6 +1077,18 @@ FILE_FIXES: dict[str, list] = {
     ],
     # Block tints: 1.21.1's block colour handlers (26.x's tint sources).
     "src/main/java/dev/groundburst/client/fallout/FalloutClient.java": [
+        # Black rain's splash: 1.21.1's particle providers take no random, and its water drop is made by its own provider.
+        swap("sprites -> (type, level, x, y, z, dx, dy, dz, random) -> {\n"
+             "                var splash = new net.minecraft.client.particle.WaterDropParticle(level, x, y, z, sprites.get(random));\n"
+             "                splash.setColor(0.2f, 0.18f, 0.15f);\n"
+             "                return splash;",
+             "sprites -> (type, level, x, y, z, dx, dy, dz) -> {\n"
+             "                var splash = new net.minecraft.client.particle.WaterDropParticle.Provider(sprites)\n"
+             "                        .createParticle(net.minecraft.core.particles.ParticleTypes.RAIN, level, x, y, z, dx, dy, dz);\n"
+             "                if (splash != null) {\n"
+             "                    splash.setColor(0.2f, 0.18f, 0.15f);\n"
+             "                }\n"
+             "                return splash;"),
         swap("modBus.addListener((RegisterColorHandlersEvent.BlockTintSources event) -> {", "modBus.addListener((RegisterColorHandlersEvent.Block event) -> {"),
         swap("event.register(List.of(dead(DEAD_GRASS, BiomeColors::getAverageGrassColor)), ", "event.register(dead(DEAD_GRASS, BiomeColors::getAverageGrassColor), "),
         swap("event.register(List.of(dead(FROSTED_GRASS, BiomeColors::getAverageGrassColor)), ", "event.register(dead(FROSTED_GRASS, BiomeColors::getAverageGrassColor), "),
@@ -1112,6 +1161,8 @@ def port_resource(path: str, data: bytes) -> tuple[str, bytes] | None:
         data = port_feature(data)
     if re.match(r"^src/(main|generated)/resources/data/minecraft/tags/block/dirt\.json$", path):
         data = grass_into_dirt(path, data)
+    if re.match(r"^src/(main|generated)/resources/data/minecraft/tags/block/grass_blocks\.json$", path):
+        data = vanilla_grass_blocks(data)
     if re.match(r"^src/(main|generated)/resources/data/\w+/tags/.*\.json$", path):
         data = port_tag(data)
     if re.match(r"^src/(main|generated)/resources/data/\w+/structure/.*\.nbt$", path):
@@ -1451,6 +1502,18 @@ def port_feature(data: bytes) -> bytes:
         if "state" in target:
             target["state"] = block_state(target["state"])
     return (json.dumps({"type": f["type"], "config": config}, indent=2) + "\n").encode("utf-8")
+
+
+def vanilla_grass_blocks(data: bytes) -> bytes:
+    """1.21.1 has no #minecraft:grass_blocks of its own (26.x's: the grass block, podzol and mycelium), so the mod's file,
+    which adds its dead and frosted grass to 26.x's, is the whole tag here: 26.x's three put in with them, so main's data
+    naming the tag (the nuclear terrain table's far rings, a server's swap lines) takes the grass here too."""
+    t = json.loads(data)
+    values = t.setdefault("values", [])
+    for v in reversed(("minecraft:grass_block", "minecraft:podzol", "minecraft:mycelium")):
+        if v not in values:
+            values.insert(0, v)
+    return (json.dumps(t, indent=2) + "\n").encode("utf-8")
 
 
 def grass_into_dirt(path: str, data: bytes) -> bytes:

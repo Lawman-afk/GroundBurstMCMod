@@ -31,6 +31,9 @@ public final class GBFallout {
     /** Ash falling under a fallout plume, drifting with the wind (client: {@code FalloutClient}). */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FALLOUT_ASH_PARTICLE =
             PARTICLES.register("fallout_ash", () -> new SimpleParticleType(false));
+    /** Black rain's splash where it lands (the game's rain splash, dark; DESIGN.md §21.10; client: {@code FalloutClient}). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLACK_RAIN_SPLASH =
+            PARTICLES.register("black_rain_splash", () -> new SimpleParticleType(false));
 
     // --- glassed and molten ground -------------------------------------------------------------------------------------------
     /** Sand the fireball fused into green glass, round a nuclear crater's rim (weakly radioactive). */
@@ -160,6 +163,8 @@ public final class GBFallout {
     public static void register(IEventBus modBus) {
         PARTICLES.register(modBus);
         Withering.register();
+        BlackRain.register();
+        FarAftermath.register(modBus);
         Wind.register();
         Plumes.register();
         Wasteland.register(modBus);

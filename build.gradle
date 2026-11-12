@@ -271,6 +271,8 @@ dependencies {
     // Iris (optional): compiled against its API for shader packs; -PwithIris loads Iris and Sodium into the dev runs
     // (Sodium from run/mods, sodiumToMods below).
     compileOnly "maven.modrinth:iris:${iris_version}"
+    // Distant Horizons (optional): changed chunks handed to its far view (compat/DistantHorizons, main's DESIGN.md §21.10).
+    compileOnly "maven.modrinth:distanthorizons:${dh_version}"
     if (providers.gradleProperty('withIris').isPresent()) {
         localRuntime "maven.modrinth:iris:${iris_version}"
     }

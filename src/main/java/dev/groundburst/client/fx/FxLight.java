@@ -16,6 +16,8 @@ import dev.groundburst.port.render.SkyRenderState;
 final class FxLight {
     /** The light of the frame being drawn (updated from the sky render state as each frame is extracted). */
     static FxLight current = new FxLight();
+    /** How much day it is where the camera is (0 night, 1 full day; the sun's height), as of the last frame. */
+    float day = 1;
 
     final Vector3f sun = new Vector3f(0, 1, 0);
     final Vector3f sunColor = new Vector3f(1, 0.97f, 0.9f);
@@ -29,6 +31,7 @@ final class FxLight {
         l.sun.set(-(float) Math.sin(a), (float) Math.cos(a), 0).normalize();
         float up = l.sun.y;
         float day = smoothstep(-0.12f, 0.3f, up);
+        l.day = day;
         Vector3fc skyColor = sky.skyColor != null ? sky.skyColor : new Vector3f(0.47f, 0.65f, 1f);
         Vector4fc glow = sky.sunriseAndSunsetColor;
         float dusk = glow != null ? Math.max(0, Math.min(1, glow.w())) : 0;

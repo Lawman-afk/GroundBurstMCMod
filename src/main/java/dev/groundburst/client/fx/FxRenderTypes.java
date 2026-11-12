@@ -56,9 +56,10 @@ final class FxRenderTypes {
     private static final Function<ResourceLocation, RenderType> CLOUD = Util.memoize(t -> Shards.make("cloud", t, false, true));
     private static final Function<ResourceLocation, RenderType> FIRE = Util.memoize(t -> Shards.make("fire", t, false, false));
     private static final Function<ResourceLocation, RenderType> GLOW = Util.memoize(t -> Shards.make("glow", t, true, false));
+    private static final Function<ResourceLocation, RenderType> FAR_GLOW = Util.memoize(t -> Shards.farGlow("far_glow", t));
 
-    /** The clouds' shader (loaded with the game's own). */
-    private static @Nullable ShaderInstance cloudShader;
+    /** The clouds' shader and the far glow's (loaded with the game's own). */
+    private static @Nullable ShaderInstance cloudShader, farGlowShader;
 
     private FxRenderTypes() {}
 
@@ -68,6 +69,10 @@ final class FxRenderTypes {
                 event.registerShader(new ShaderInstance(event.getResourceProvider(),
                         ResourceLocation.fromNamespaceAndPath(GroundBurst.MODID, "rendertype_fx_cloud"), DefaultVertexFormat.NEW_ENTITY),
                         shader -> cloudShader = shader);
+                // The far glow (main's DESIGN.md §21.10): the eyes shader without the render-distance fog or a cutout.
+                event.registerShader(new ShaderInstance(event.getResourceProvider(),
+                        ResourceLocation.fromNamespaceAndPath(GroundBurst.MODID, "rendertype_fx_far_glow"), DefaultVertexFormat.NEW_ENTITY),
+                        shader -> farGlowShader = shader);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -101,6 +106,11 @@ final class FxRenderTypes {
         return DISTANT_HORIZONS;
     }
 
+    /** As {@link #submit} (main keeps its effects' blended quads back to be sorted; this version draws them as they come). */
+    static void submitNow(SubmitNodeCollector collector, PoseStack poseStack, RenderType type, SubmitNodeCollector.CustomGeometryRenderer renderer) {
+        submit(collector, poseStack, type, renderer);
+    }
+
     /** A shader pack is on and the player asked it to draw the effects (0.8.1's way): the fire and clouds on its lit program. */
     private static boolean packDraws() {
         if (!IRIS || !IrisFx.packInUse()) {
@@ -127,6 +137,11 @@ final class FxRenderTypes {
         return GLOW.apply(texture);
     }
 
+    /** Additive, unlit, two-sided, not lost in the render-distance fog (a nuclear flash over the horizon), with this texture. */
+    static RenderType farGlow(ResourceLocation texture) {
+        return FAR_GLOW.apply(texture);
+    }
+
     /** Only to reach the render state pieces, which 1.21.1 keeps for render types and their kin. */
     private abstract static class Shards extends RenderType {
         private Shards() {
@@ -145,6 +160,23 @@ final class FxRenderTypes {
          * corners would write depth too, hiding what is drawn behind them after it, a clear rectangle round the puff.
          * The lightmap and overlay are set up for a shader pack's lit program (the game's own shaders here read neither).
          */
+        private static final ShaderStateShard FAR_GLOW_SHADER = new ShaderStateShard(
+                () -> packDraws() ? net.minecraft.client.renderer.GameRenderer.getRendertypeEyesShader() : farGlowShader);
+
+        /** The far glow: added as lightning, writing no depth, on its own shader (no fog, no cutout). */
+        static RenderType farGlow(String name, ResourceLocation texture) {
+            return create(GroundBurst.MODID + "_" + name, DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, false, true,
+                    CompositeState.builder()
+                            .setShaderState(FAR_GLOW_SHADER)
+                            .setTextureState(new TextureStateShard(texture, false, false))
+                            .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                            .setCullState(NO_CULL)
+                            .setLightmapState(LIGHTMAP)
+                            .setOverlayState(OVERLAY)
+                            .setWriteMaskState(COLOR_WRITE)
+                            .createCompositeState(false));
+        }
+
         static RenderType make(String name, ResourceLocation texture, boolean additive, boolean writeDepth) {
             return create(GroundBurst.MODID + "_" + name, DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, false, true,
                     CompositeState.builder()

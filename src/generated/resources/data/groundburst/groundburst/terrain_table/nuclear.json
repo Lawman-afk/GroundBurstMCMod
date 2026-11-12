@@ -1,0 +1,329 @@
+{
+  "ash": 0.4,
+  "broken": [
+    {
+      "chance": 0.85,
+      "from": [
+        "#c:glass_blocks",
+        "#c:glass_panes"
+      ],
+      "to": "air"
+    },
+    {
+      "chance": 0.5,
+      "from": [
+        "#minecraft:doors",
+        "#minecraft:trapdoors"
+      ],
+      "to": "~[open=true]"
+    },
+    {
+      "chance": 0.6,
+      "from": [
+        "minecraft:torch",
+        "minecraft:wall_torch",
+        "minecraft:lantern",
+        "minecraft:soul_torch",
+        "minecraft:soul_wall_torch",
+        "minecraft:soul_lantern"
+      ],
+      "to": "air"
+    },
+    {
+      "chance": 0.3,
+      "from": [
+        "#minecraft:leaves"
+      ],
+      "to": "air"
+    },
+    {
+      "chance": 0.3,
+      "from": [
+        "#minecraft:grass_blocks&!groundburst:dead_grass_block"
+      ],
+      "to": "groundburst:dead_grass_block"
+    },
+    {
+      "chance": 0.35,
+      "from": [
+        "#minecraft:flowers",
+        "minecraft:short_grass",
+        "minecraft:tall_grass",
+        "minecraft:fern",
+        "minecraft:large_fern",
+        "minecraft:bush",
+        "minecraft:short_dry_grass",
+        "minecraft:tall_dry_grass"
+      ],
+      "to": "air"
+    },
+    {
+      "chance": 0.35,
+      "from": [
+        "#minecraft:crops"
+      ],
+      "to": "groundburst:withered_crops"
+    },
+    {
+      "chance": 0.5,
+      "from": [
+        "minecraft:snow"
+      ],
+      "to": "air"
+    }
+  ],
+  "charred": [
+    {
+      "chance": 0.9,
+      "from": [
+        "#minecraft:grass_blocks&!groundburst:dead_grass_block",
+        "minecraft:mycelium",
+        "minecraft:podzol"
+      ],
+      "to": "groundburst:scorched_earth*2|minecraft:coarse_dirt*1|groundburst:dead_grass_block*2"
+    },
+    {
+      "chance": 0.9,
+      "from": [
+        "#minecraft:flowers",
+        "minecraft:short_grass",
+        "minecraft:tall_grass",
+        "minecraft:fern",
+        "minecraft:large_fern",
+        "minecraft:bush",
+        "minecraft:short_dry_grass",
+        "minecraft:tall_dry_grass"
+      ],
+      "to": "air"
+    },
+    {
+      "chance": 0.6,
+      "from": [
+        "#minecraft:saplings"
+      ],
+      "to": "minecraft:dead_bush"
+    },
+    {
+      "chance": 0.85,
+      "from": [
+        "#minecraft:leaves&!groundburst:dead_leaves"
+      ],
+      "to": "groundburst:dead_leaves*3|air*1"
+    },
+    {
+      "chance": 0.5,
+      "from": [
+        "#minecraft:logs&*:*_wood",
+        "#minecraft:logs&*:*_hyphae"
+      ],
+      "to": "groundburst:charred_wood"
+    },
+    {
+      "chance": 0.5,
+      "from": [
+        "#minecraft:logs&!groundburst:charred_log"
+      ],
+      "to": "groundburst:charred_log"
+    },
+    {
+      "chance": 0.7,
+      "from": [
+        "#minecraft:crops"
+      ],
+      "to": "groundburst:withered_crops"
+    },
+    {
+      "from": [
+        "minecraft:snow",
+        "minecraft:snow_block",
+        "minecraft:powder_snow"
+      ],
+      "to": "air"
+    },
+    {
+      "from": [
+        "minecraft:ice"
+      ],
+      "to": "minecraft:water"
+    },
+    {
+      "chance": 0.8,
+      "from": [
+        "#c:glass_blocks",
+        "#c:glass_panes"
+      ],
+      "to": "air"
+    },
+    {
+      "chance": 0.8,
+      "from": [
+        "minecraft:torch",
+        "minecraft:wall_torch",
+        "minecraft:lantern",
+        "minecraft:soul_torch",
+        "minecraft:soul_wall_torch",
+        "minecraft:soul_lantern"
+      ],
+      "to": "air"
+    }
+  ],
+  "harsh": true,
+  "lining": [
+    {
+      "from": [
+        "#minecraft:base_stone_overworld",
+        "#c:cobblestones",
+        "groundburst:scorched_stone"
+      ],
+      "to": "groundburst:slag"
+    },
+    {
+      "from": [
+        "#minecraft:sand",
+        "#c:sandstone/blocks",
+        "groundburst:glassed_sand"
+      ],
+      "to": "groundburst:trinitite"
+    },
+    {
+      "from": [
+        "#minecraft:dirt",
+        "#minecraft:grass_blocks",
+        "#minecraft:moss_blocks",
+        "minecraft:farmland",
+        "groundburst:scorched_earth"
+      ],
+      "to": "groundburst:irradiated_soil"
+    }
+  ],
+  "scorch": [
+    {
+      "from": [
+        "#minecraft:dirt",
+        "#minecraft:grass_blocks",
+        "#minecraft:moss_blocks",
+        "minecraft:farmland",
+        "minecraft:dirt_path",
+        "#minecraft:mud"
+      ],
+      "to": "groundburst:scorched_earth"
+    },
+    {
+      "from": [
+        "#minecraft:base_stone_overworld",
+        "#c:cobblestones"
+      ],
+      "to": "groundburst:scorched_stone"
+    },
+    {
+      "from": [
+        "#minecraft:sand",
+        "#c:sandstone/blocks"
+      ],
+      "to": "groundburst:glassed_sand"
+    },
+    {
+      "from": [
+        "#minecraft:logs&*:*_wood",
+        "#minecraft:logs&*:*_hyphae"
+      ],
+      "to": "groundburst:charred_wood"
+    },
+    {
+      "from": [
+        "#minecraft:logs"
+      ],
+      "to": "groundburst:charred_log"
+    },
+    {
+      "from": [
+        "#minecraft:planks"
+      ],
+      "to": "groundburst:charred_planks"
+    },
+    {
+      "from": [
+        "minecraft:grass_block",
+        "minecraft:mycelium",
+        "minecraft:podzol"
+      ],
+      "to": "minecraft:coarse_dirt"
+    },
+    {
+      "from": [
+        "minecraft:snow_block",
+        "minecraft:powder_snow"
+      ],
+      "to": "air"
+    },
+    {
+      "from": [
+        "minecraft:ice",
+        "minecraft:packed_ice"
+      ],
+      "to": "minecraft:water"
+    },
+    {
+      "from": [
+        "minecraft:farmland",
+        "minecraft:dirt_path"
+      ],
+      "to": "minecraft:dirt"
+    }
+  ],
+  "shock": [
+    {
+      "from": [
+        "#c:glass_blocks",
+        "#c:glass_panes",
+        "#minecraft:leaves",
+        "#minecraft:doors",
+        "#minecraft:trapdoors",
+        "#minecraft:flowers",
+        "minecraft:snow",
+        "minecraft:torch",
+        "minecraft:wall_torch",
+        "minecraft:lantern",
+        "$replaceable"
+      ],
+      "to": "air"
+    }
+  ],
+  "withered": [
+    {
+      "chance": 0.35,
+      "from": [
+        "#minecraft:leaves&!groundburst:dead_leaves"
+      ],
+      "to": "groundburst:dead_leaves"
+    },
+    {
+      "chance": 0.3,
+      "from": [
+        "#minecraft:grass_blocks&!groundburst:dead_grass_block"
+      ],
+      "to": "groundburst:dead_grass_block"
+    },
+    {
+      "chance": 0.4,
+      "from": [
+        "#minecraft:flowers",
+        "minecraft:short_grass",
+        "minecraft:tall_grass",
+        "minecraft:fern",
+        "minecraft:large_fern",
+        "minecraft:bush",
+        "minecraft:short_dry_grass",
+        "minecraft:tall_dry_grass"
+      ],
+      "to": "air*4|minecraft:dead_bush*1"
+    },
+    {
+      "chance": 0.5,
+      "from": [
+        "#minecraft:crops"
+      ],
+      "to": "groundburst:withered_crops"
+    }
+  ]
+}
