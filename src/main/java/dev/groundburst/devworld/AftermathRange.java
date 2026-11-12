@@ -142,10 +142,12 @@ public final class AftermathRange {
     private static boolean photos(Minecraft mc, MinecraftServer server) {
         BlockPos p = post;
         float face = toVillage.toYRot();
-        Vec3 back = Vec3.atBottomCenterOf(p).subtract(Vec3.atLowerCornerOf(toVillage.getUnitVec3i()).scale(30));
+        // From over the cleared ground behind the post; from its window at a standing player's eyes (the glass band).
+        Vec3 side = Vec3.atLowerCornerOf(toVillage.getClockWise().getUnitVec3i());
         List<View> views = List.of(
-                new View("post", back.add(12, 18, 12), face - 30, 25, 200),
-                new View("toward_village", Vec3.atBottomCenterOf(p).add(0, 2, 0), face, 2, 120),
+                new View("post", Vec3.atBottomCenterOf(p).subtract(Vec3.atLowerCornerOf(toVillage.getUnitVec3i()).scale(22)).add(side.scale(12)).add(0, 16, 0),
+                        face - 25, 22, 200),
+                new View("toward_village", Vec3.atBottomCenterOf(p).add(0, 1, 0).add(Vec3.atLowerCornerOf(toVillage.getUnitVec3i()).scale(1.5)), face, 2, 120),
                 new View("station", Vec3.atBottomCenterOf(p).add(Vec3.atLowerCornerOf(toVillage.getClockWise().getUnitVec3i()).scale(-4)).add(0, 1, 0),
                         toVillage.getClockWise().toYRot(), 15, 100));
         if (!mc.gui.hud.isHidden()) {
@@ -189,11 +191,24 @@ public final class AftermathRange {
             GroundBurst.LOGGER.error("Aftermath range: no village near the spawn");
             village = spawn.offset(800, 0, 0);
         }
-        // The post 1 400 blocks from the village, on the side of the spawn (or west of it), along the nearest axis.
+        // The post 1 400 blocks from the village along an axis: on the land the withered ring has most to wither (grass,
+        // trees and plants: plains, forest, savanna, taiga; not snow, ice, sea or desert), the spawn's side first.
         int dx = spawn.getX() - village.getX(), dz = spawn.getZ() - village.getZ();
-        Direction away = Math.abs(dx) >= Math.abs(dz) ? (dx >= 0 ? Direction.EAST : Direction.WEST) : (dz >= 0 ? Direction.SOUTH : Direction.NORTH);
-        if (dx == 0 && dz == 0) {
-            away = Direction.WEST;
+        Direction toward = Math.abs(dx) >= Math.abs(dz) ? (dx >= 0 ? Direction.EAST : Direction.WEST) : (dz >= 0 ? Direction.SOUTH : Direction.NORTH);
+        Direction away = toward;
+        int best = Integer.MIN_VALUE;
+        for (Direction d : List.of(toward, toward.getClockWise(), toward.getCounterClockWise(), toward.getOpposite())) {
+            int score = 0;
+            for (int i = -2; i <= 2; i++) {          // the post's spot and the ground either side of it
+                BlockPos at = village.relative(d, FROM_VILLAGE).relative(d.getClockWise(), i * 24).atY(64);
+                score += land(level.getBiome(at));
+            }
+            score -= d == toward ? 0 : 1;           // (the spawn's side when it does as well)
+            GroundBurst.LOGGER.info("Aftermath range: {} of the village scores {}", d, score);
+            if (score > best) {
+                best = score;
+                away = d;
+            }
         }
         toVillage = away.getOpposite();
         int px = village.getX() + away.getStepX() * FROM_VILLAGE, pz = village.getZ() + away.getStepZ() * FROM_VILLAGE;
@@ -215,10 +230,27 @@ public final class AftermathRange {
         b.signs();
         List<ItemStack> codes = b.networks(station, thermo, tactical, new BlockPos(village.getX(), vy, village.getZ()), side);
         b.player(codes);
+        b.clearDrops();
         post = new BlockPos(px, y, pz);
         GroundBurst.LOGGER.info("Aftermath range: village at {}, post at {} {} {} (toward the village: {}), tactical aim {} {}",
                 village.toShortString(), px, y, pz, toVillage, side.getX(), side.getZ());
     }
+
+    /** How well a biome shows the withered ring: grass, trees and plants (2), anything else on land (0), snow, ice, sea (-3). */
+    static int land(net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biome) {
+        if (biome.is(net.minecraft.tags.BiomeTags.IS_OCEAN) || biome.is(net.minecraft.tags.BiomeTags.IS_RIVER)
+                || biome.is(net.neoforged.neoforge.common.Tags.Biomes.IS_SNOWY) || biome.is(net.neoforged.neoforge.common.Tags.Biomes.IS_COLD)) {
+            return -3;
+        }
+        if (biome.is(net.neoforged.neoforge.common.Tags.Biomes.IS_PLAINS) || biome.is(net.minecraft.tags.BiomeTags.IS_FOREST)
+                || biome.is(net.minecraft.tags.BiomeTags.IS_SAVANNA) || biome.is(net.minecraft.tags.BiomeTags.IS_TAIGA)) {
+            return 2;
+        }
+        return 0;
+    }
+
+    /** The clearing's block sets: to clients, no shape updates (no leaf litter or plant popping off), nothing dropped. */
+    static final int QUIET = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
 
     /** Builds the post, its ground at {@code y} (the deck's floor is y + 1), the village {@code front} of it. */
     static final class Builder {
@@ -246,18 +278,51 @@ public final class AftermathRange {
             this.level.setBlock(p, s, Block.UPDATE_ALL);
         }
 
-        /** The ground round the post levelled: earth up to its level, nothing standing over it (trees cut, hills taken down). */
+        /**
+         * The ground round the post levelled: earth up to its level, nothing standing over it (trees cut, hills taken down).
+         * A tree the clearing cuts through is felled whole, nothing dropped (its leaves left without a trunk would wither and
+         * drop sticks and saplings over the deck for as long as the world is played), and anything dropped is cleared.
+         */
         void ground() {
+            java.util.ArrayDeque<BlockPos> cut = new java.util.ArrayDeque<>();
             for (int i = -CLEAR; i <= CLEAR; i++) {
                 for (int j = -CLEAR; j <= CLEAR; j++) {
                     int gx = this.x + i, gz = this.z + j;
                     for (int gy = this.y - 4; gy <= this.y + 40; gy++) {
+                        BlockPos p = new BlockPos(gx, gy, gz);
+                        if (Math.max(Math.abs(i), Math.abs(j)) == CLEAR && tree(this.level.getBlockState(p))) {
+                            cut.add(p);                    // (a tree crossing the edge: felled whole below)
+                        }
                         BlockState s = gy < this.y ? Blocks.DIRT.defaultBlockState() : gy == this.y ? Blocks.GRASS_BLOCK.defaultBlockState()
                                 : Blocks.AIR.defaultBlockState();
-                        this.level.setBlock(new BlockPos(gx, gy, gz), s, Block.UPDATE_CLIENTS);
+                        this.level.setBlock(p, s, QUIET);
                     }
                 }
             }
+            // The trees the edge cut: their trunks and leaves outside it, as far as they reach (and no farther than 14 out).
+            java.util.Set<BlockPos> seen = new java.util.HashSet<>(cut);
+            while (!cut.isEmpty()) {
+                BlockPos p = cut.poll();
+                for (BlockPos n : BlockPos.betweenClosed(p.offset(-1, -1, -1), p.offset(1, 1, 1))) {
+                    BlockPos q = n.immutable();
+                    if (Math.max(Math.abs(q.getX() - this.x), Math.abs(q.getZ() - this.z)) > CLEAR + 14 || !seen.add(q)
+                            || !tree(this.level.getBlockState(q))) {
+                        continue;
+                    }
+                    this.level.setBlock(q, Blocks.AIR.defaultBlockState(), QUIET);
+                    cut.add(q);
+                }
+            }
+        }
+
+        /** Anything dropped round the post as it was built (the leaf litter, seeds and saplings of what it cleared) taken away. */
+        void clearDrops() {
+            this.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(
+                    this.x - CLEAR - 24, this.y - 16, this.z - CLEAR - 24, this.x + CLEAR + 25, this.y + 64, this.z + CLEAR + 25)).forEach(e -> e.discard());
+        }
+
+        private static boolean tree(BlockState s) {
+            return s.is(net.minecraft.tags.BlockTags.LOGS) || s.is(net.minecraft.tags.BlockTags.LEAVES);
         }
 
         /** A concrete deck, and a shelter on it glazed all round (its windows to see the wave's broken glass by). */
