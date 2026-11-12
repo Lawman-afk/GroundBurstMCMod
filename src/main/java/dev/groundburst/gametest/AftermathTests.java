@@ -31,6 +31,35 @@ final class AftermathTests {
         GBGameTests.testOpenSky("far_aftermath_changes_a_chunk_once", GBGameTests.FLOOR_16, 20, AftermathTests::once);
         GBGameTests.testOpenSky("far_wave_throws_what_is_in_the_open", GBGameTests.FLOOR_16, 20, AftermathTests::wave);
         GBGameTests.testOpenSky("far_aftermath_heals_back", GBGameTests.FLOOR_16, 20, AftermathTests::heals);
+        GBGameTests.testOpenSky("far_rings_kill_a_trees_leaves", GBGameTests.FLOOR_16, 20, AftermathTests::tree);
+    }
+
+    /** A tree grown as the world grows them (its leaves not persistent, its trunk under them): in the charred ring its leaves die. */
+    private static void tree(GameTestHelper helper) {
+        for (BlockPos p : BlockPos.betweenClosed(0, 0, 0, 15, 0, 15)) {
+            helper.setBlock(p, Blocks.GRASS_BLOCK);
+        }
+        var level = helper.getLevel();
+        var oak = level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.FEATURE)
+                .getOrThrow(net.minecraft.data.worldgen.features.TreeFeatures.OAK).value();
+        BlockPos root = helper.absolutePos(new BlockPos(8, 1, 8));
+        helper.assertTrue(oak.place(level, level.getChunkSource().getGenerator(), net.minecraft.util.RandomSource.create(7), root), "the oak grows");
+        int before = count3(helper, s -> s.is(Blocks.OAK_LEAVES));
+        convert(helper, far(helper, 120, 16));
+        int green = count3(helper, s -> s.is(Blocks.OAK_LEAVES)), dead = count3(helper, s -> s.is(GBFallout.DEAD_LEAVES.block().get()));
+        helper.assertTrue(before >= 20, "a tree with leaves (" + before + ")");
+        helper.assertTrue(green <= before / 3, "most of its leaves dead or gone (" + green + " of " + before + " green, " + dead + " dead)");
+        helper.succeed();
+    }
+
+    private static int count3(GameTestHelper helper, java.util.function.Predicate<BlockState> test) {
+        int n = 0;
+        for (BlockPos p : BlockPos.betweenClosed(0, 1, 0, 15, 15, 15)) {
+            if (test.test(helper.getBlockState(p))) {
+                n++;
+            }
+        }
+        return n;
     }
 
     /** A far aftermath whose burst is {@code west} blocks west of the plot's middle: reach 60, rings to 200, 400 and 520. */

@@ -17,6 +17,8 @@ import net.neoforged.fml.ModList;
 public final class DistantHorizons {
     private static final boolean LOADED = ModList.get().isLoaded("distanthorizons");
     private static volatile boolean broken;
+    /** Chunks handed over since the server started (the blast bench reports it). */
+    public static long handed;
 
     private DistantHorizons() {}
 
@@ -42,6 +44,7 @@ public final class DistantHorizons {
             for (IDhApiLevelWrapper wrapper : DhApi.Delayed.worldProxy.getAllLoadedLevelWrappers()) {
                 if (wrapper.getWrappedMcObject() == level) {
                     DhApi.Delayed.terrainRepo.overwriteChunkDataAsync(wrapper, new Object[] {chunk, level});
+                    handed++;
                     return;
                 }
             }

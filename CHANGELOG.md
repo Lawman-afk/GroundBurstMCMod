@@ -8,8 +8,9 @@
   the plants and the trees and the wasteland's grey spreads; **broken** land, where the windows facing the blast shatter,
   doors are blown open and leaves stripped; and **withered** land, where leaves and grass die in patches. Each ring thins
   out toward its edge, so the land blends from one to the next, and a hillside turned away from the blast is spared the
-  heat. Chunks far off change as they load, and with Distant Horizons the far view shows the land as it now is. All of
-  it heals back when healing is on.
+  heat. Land already explored far off changes in the background, a little at a time and without slowing the server;
+  land loaded later changes as it loads; and with Distant Horizons the far view shows the land as it now is. All of it
+  heals back when healing is on.
 - **The far wave.** Past the blast's reach its shock runs on at the speed of sound: you see a wall of dust come over the
   land toward you, and out in the open it throws you off your feet and, nearer, hurts you.
 - **The far flash.** A nuclear flash now reaches far, farther by night, with a glow over the horizon and the sky lit for a

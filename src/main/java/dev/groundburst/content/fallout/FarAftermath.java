@@ -44,8 +44,6 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
-import net.neoforged.neoforge.common.world.chunk.TicketController;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
@@ -59,7 +57,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -93,8 +90,10 @@ public final class FarAftermath {
     static final float EDGE_NOISE = 0.1f, NOISE_GRAIN = 48;
     /** How deep down a column the far aftermath looks (blocks from its top). */
     static final int DEPTH = 28;
-    /** Chunk reads and chunk loads a background pass keeps going at once. */
-    static final int READS = 48, LOADS = 12;
+    /** Chunk reads and chunk loads a background pass keeps going at once (a tile's worth of loads). */
+    static final int READS = 48, LOADS = 16;
+    /** The background pass goes tile by tile (this many chunks a side), nearest tile first: chunks loaded side by side. */
+    static final int TILE = 4;
     /** Ticks a background load may wait for its chunk. */
     static final int PATIENCE = 400;
     /** How many far aftermaths a level keeps (the oldest let go first). */
@@ -108,13 +107,6 @@ public final class FarAftermath {
     public static final Supplier<AttachmentType<List<Integer>>> MARKS = ATTACHMENTS.register("far_marks",
             () -> AttachmentType.<List<Integer>>builder(() -> new ArrayList<>())
                     .serialize(Codec.INT.listOf().<List<Integer>>xmap(ArrayList::new, List::copyOf).fieldOf("ids")).build());
-    /** Holds the chunks a background pass works in (not ticking); tickets a stopped server left are dropped as the world loads. */
-    static final TicketController TICKETS = new TicketController(GroundBurst.id("far_aftermath"), (level, tickets) -> {
-        for (UUID owner : List.copyOf(tickets.getEntityTickets().keySet())) {
-            tickets.removeAllTickets(owner);
-        }
-    });
-
     private FarAftermath() {}
 
 
@@ -300,7 +292,7 @@ public final class FarAftermath {
 
     public static void register(IEventBus modBus) {
         ATTACHMENTS.register(modBus);
-        modBus.addListener((RegisterTicketControllersEvent e) -> e.register(TICKETS));
+        FarLoads.register(modBus);
         NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
             if (e.getLevel() instanceof ServerLevel level) {
                 tick(level);
@@ -350,8 +342,12 @@ public final class FarAftermath {
             }
             s.waveAt.put(f.id(), at);
         }
-        convertQueued(level, s);
-        background(level, s, now);
+        // One budget a tick for all of it: the chunks the wave has passed first, then the pass over the chunks on disk.
+        long start = System.nanoTime();
+        long until = start + GBServerConfig.AFTERMATH_MS.get() * 1_000_000L;
+        convertQueued(level, s, until);
+        background(level, s, now, until);
+        Stats.tick(System.nanoTime() - start);
         // A far aftermath is let go once its pass is done and its land would have healed (healing on), or never.
         s.fars.removeIf(f -> f.next() > Integer.MAX_VALUE / 2 && healed(level, f, now));
     }
@@ -451,11 +447,10 @@ public final class FarAftermath {
     }
 
     /** Changes chunks from the queue for the tick's budget (each once loaded; one gone in the meantime is left for later). */
-    private static void convertQueued(ServerLevel level, State s) {
+    private static void convertQueued(ServerLevel level, State s, long until) {
         if (s.queue.isEmpty()) {
             return;
         }
-        long until = System.nanoTime() + GBServerConfig.AFTERMATH_MS.get() * 1_000_000L;
         while (!s.queue.isEmpty() && System.nanoTime() < until) {
             long key = s.queue.removeFirstLong();
             Integer id = s.queuedFor.remove(key);
@@ -520,6 +515,7 @@ public final class FarAftermath {
             return false;
         }
         mark(chunk, f.id());
+        long t0 = System.nanoTime();
         TerrainTable table = TerrainTable.byId(f.table());
         RandomSource random = RandomSource.create(f.seed() ^ chunk.getPos().pack() * 0x9E3779B97F4A7C15L);
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
@@ -566,11 +562,43 @@ public final class FarAftermath {
         if (paintBiome(level, chunk, f, charredCells, scars)) {
             changed = true;
         }
+        long dh = 0;
         if (changed) {
             chunk.markUnsaved();
+            long t1 = System.nanoTime();
             dev.groundburst.compat.DistantHorizons.chunkChanged(level, chunk);
+            dh = System.nanoTime() - t1;
+        }
+        if (only == null) {
+            Stats.chunk(changed, System.nanoTime() - t0, dh);
         }
         return changed;
+    }
+
+    /** What the far aftermath has done since the server started (the blast bench reports it). */
+    public static final class Stats {
+        public static long chunks, changed, convertNanos, dhNanos, ticks, tickNanos, maxTickNanos, passChunks;
+        public static long passFrom = -1, passTo = -1;
+
+        private Stats() {}
+
+        static void chunk(boolean changed, long nanos, long dh) {
+            Stats.chunks++;
+            Stats.changed += changed ? 1 : 0;
+            Stats.convertNanos += nanos;
+            Stats.dhNanos += dh;
+        }
+
+        static void tick(long nanos) {
+            Stats.ticks++;
+            Stats.tickNanos += nanos;
+            Stats.maxTickNanos = Math.max(Stats.maxTickNanos, nanos);
+        }
+
+        public static void reset() {
+            chunks = changed = convertNanos = dhNanos = ticks = tickNanos = maxTickNanos = passChunks = 0;
+            passFrom = passTo = -1;
+        }
     }
 
     /** One column, from the top down (see {@link #convert}). */
@@ -769,7 +797,7 @@ public final class FarAftermath {
      * Once a far aftermath's wave has gone its way, the chunks that exist on disk inside its rings (fully generated: never
      * generated anew) are loaded a few at a time, nearest first, changed and let go. One pass at a time in a level.
      */
-    private static void background(ServerLevel level, State s, long now) {
+    private static void background(ServerLevel level, State s, long now, long until) {
         Pass p = s.pass;
         if (p == null) {
             if (!GBServerConfig.AFTERMATH_LOAD.get()) {
@@ -778,6 +806,8 @@ public final class FarAftermath {
             for (Far f : s.fars) {
                 if (f.land() && f.next() <= Integer.MAX_VALUE / 2 && f.wave(now) >= f.withered()) {
                     s.pass = p = new Pass(f, discFrom(f));
+                    Stats.passFrom = now;
+                    Stats.passChunks += p.keys.length;
                     break;
                 }
             }
@@ -791,38 +821,57 @@ public final class FarAftermath {
             s.pass = null;
             return;
         }
-        if (p.step(level, s, f)) {
+        if (p.step(level, s, f, until)) {
             p.release(level);
             s.replace(f.withNext(Integer.MAX_VALUE));      // done
             s.pass = null;
+            Stats.passTo = now;
         } else if (p.next != f.next()) {
             s.replace(f.withNext(p.next));
         }
     }
 
-    /** A far aftermath's chunks inside its rings, nearest first. */
+    /**
+     * A far aftermath's chunks inside its rings, tile by tile ({@link #TILE} chunks a side), nearest tile first: the chunks
+     * loading at once lie side by side, sharing what is loaded round them, and the land changes outward from the blast.
+     */
     private static long[] discFrom(Far f) {
-        LongArrayList list = new LongArrayList();
         double cx = f.centre().x, cz = f.centre().z;
         float r = f.withered(), in = f.inner() * 0.85f - 16;
-        for (int x = SectionPos.blockToSectionCoord(cx - r); x <= SectionPos.blockToSectionCoord(cx + r); x++) {
-            for (int z = SectionPos.blockToSectionCoord(cz - r); z <= SectionPos.blockToSectionCoord(cz + r); z++) {
-                double d = Math.hypot(x * 16 + 8 - cx, z * 16 + 8 - cz);
-                if (d <= r + 12 && d >= in) {
-                    list.add(ChunkPos.pack(x, z));
+        int t0 = Math.floorDiv(SectionPos.blockToSectionCoord(cx - r), TILE), t1 = Math.floorDiv(SectionPos.blockToSectionCoord(cx + r), TILE);
+        int u0 = Math.floorDiv(SectionPos.blockToSectionCoord(cz - r), TILE), u1 = Math.floorDiv(SectionPos.blockToSectionCoord(cz + r), TILE);
+        // The tiles first (a sixteenth as many to sort), each by its middle's distance; then each tile's chunks in the ring.
+        int across = u1 - u0 + 1, tiles = (t1 - t0 + 1) * across;
+        double[] dist = new double[tiles];
+        int[] order = new int[tiles];
+        for (int i = 0; i < tiles; i++) {
+            int tx = t0 + i / across, tz = u0 + i % across;
+            dist[i] = Math.hypot((tx * TILE + TILE / 2.0) * 16 - cx, (tz * TILE + TILE / 2.0) * 16 - cz);
+            order[i] = i;
+        }
+        it.unimi.dsi.fastutil.ints.IntArrays.quickSort(order, (a, b) -> Double.compare(dist[a], dist[b]));
+        LongArrayList list = new LongArrayList();
+        for (int i : order) {
+            if (dist[i] > r + TILE * 16 || dist[i] < in - TILE * 16) {
+                continue;                                  // the whole tile outside the rings
+            }
+            int tx = t0 + i / across, tz = u0 + i % across;
+            for (int x = tx * TILE; x < tx * TILE + TILE; x++) {
+                for (int z = tz * TILE; z < tz * TILE + TILE; z++) {
+                    double d = Math.hypot(x * 16 + 8 - cx, z * 16 + 8 - cz);
+                    if (d <= r + 12 && d >= in) {
+                        list.add(ChunkPos.pack(x, z));
+                    }
                 }
             }
         }
-        return java.util.Arrays.stream(list.toLongArray()).boxed()
-                .sorted(java.util.Comparator.comparingDouble(k -> Math.hypot(ChunkPos.getX(k) * 16 + 8 - cx, ChunkPos.getZ(k) * 16 + 8 - cz)))
-                .mapToLong(Long::longValue).toArray();
+        return list.toLongArray();
     }
 
     /** A background pass over one far aftermath's chunks: reads in flight, loads in flight, how far through. */
     private static final class Pass {
         final int far;
         final long[] keys;
-        final UUID owner = UUID.randomUUID();
         int next;
         /** What the disk said about each chunk asked (filled in from the IO thread): full, or not there. */
         final Map<Long, Boolean> known = new ConcurrentHashMap<>();
@@ -835,8 +884,8 @@ public final class FarAftermath {
             this.next = Math.max(0, f.next());
         }
 
-        /** A tick's share; true when every chunk has been seen to. */
-        boolean step(ServerLevel level, State s, Far f) {
+        /** A tick's share, as far as the tick's budget ({@code until}) goes; true when every chunk has been seen to. */
+        boolean step(ServerLevel level, State s, Far f, long until) {
             // Ask the disk ahead of the loads.
             for (int i = this.next; i < this.keys.length && this.asked.size() - this.known.size() < READS && i < this.next + 512; i++) {
                 long k = this.keys[i];
@@ -845,31 +894,37 @@ public final class FarAftermath {
                         this.known.put(k, Boolean.TRUE);
                         continue;
                     }
-                    level.getChunkSource().chunkMap.read(new ChunkPos(ChunkPos.getX(k), ChunkPos.getZ(k)))
-                            .thenAccept(tag -> this.known.put(k, tag.isPresent() && tag.get().getStringOr("Status", "").endsWith("full")))
+                    var status = new net.minecraft.nbt.visitors.CollectFields(
+                            new net.minecraft.nbt.visitors.FieldSelector(net.minecraft.nbt.StringTag.TYPE, "Status"));
+                    level.getChunkSource().chunkMap.chunkScanner().scanChunk(new ChunkPos(ChunkPos.getX(k), ChunkPos.getZ(k)), status)
+                            .thenRun(() -> this.known.put(k, status.getResult() instanceof net.minecraft.nbt.CompoundTag tag
+                                    && tag.getStringOr("Status", "").endsWith("full")))
                             .exceptionally(error -> {
                                 this.known.put(k, Boolean.FALSE);
                                 return null;
                             });
                 }
             }
-            // Loads in flight: changed once there, let go after.
+            // Loads in flight: changed once there (as the budget allows), let go after.
             for (var it = this.loading.entrySet().iterator(); it.hasNext(); ) {
                 var e = it.next();
                 long k = e.getKey();
                 LevelChunk chunk = level.getChunkSource().getChunkNow(ChunkPos.getX(k), ChunkPos.getZ(k));
+                if (chunk != null && System.nanoTime() >= until) {
+                    continue;                              // here, but the tick's time is spent: next tick
+                }
                 if (chunk != null || e.getValue() > PATIENCE) {
                     if (chunk != null) {
                         convert(level, chunk, f);
                     }
-                    TICKETS.forceChunk(level, this.owner, ChunkPos.getX(k), ChunkPos.getZ(k), false, false);
+                    FarLoads.letGo(level, k);
                     it.remove();
                 } else {
                     e.setValue(e.getValue() + 1);
                 }
             }
-            // On through the list in order, as the disk answers.
-            while (this.next < this.keys.length && this.loading.size() < LOADS) {
+            // On through the list in order, as the disk answers and the budget allows.
+            while (this.next < this.keys.length && this.loading.size() < LOADS && System.nanoTime() < until) {
                 long k = this.keys[this.next];
                 Boolean full = this.known.get(k);
                 if (full == null) {
@@ -885,7 +940,7 @@ public final class FarAftermath {
                 if (chunk != null) {
                     convert(level, chunk, f);               // loaded already (marked if it has been changed)
                 } else {
-                    TICKETS.forceChunk(level, this.owner, ChunkPos.getX(k), ChunkPos.getZ(k), true, false);
+                    FarLoads.hold(level, k);
                     this.loading.put(k, 0);
                 }
             }
@@ -894,7 +949,7 @@ public final class FarAftermath {
 
         void release(ServerLevel level) {
             for (long k : this.loading.keySet()) {
-                TICKETS.forceChunk(level, this.owner, ChunkPos.getX(k), ChunkPos.getZ(k), false, false);
+                FarLoads.letGo(level, k);
             }
             this.loading.clear();
         }

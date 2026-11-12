@@ -4854,6 +4854,69 @@ linked to two launchers (a Tsar aimed at a village and its forest about 2 200 bl
 signs; the world's own server settings with healing on by the real clock and a swap line and a weapon line to try; its
 builder left out of the jar.
 
+**As built (2026-11-12).**
+- *Healing by the clock* (`config/Durations`: times read and written in units; `GBServerConfig.HEAL_CLOCK`, `HEAL_WAIT`,
+  `HEAL_RANDOM_EXTRA`, `HEAL_LONGEST` in place of the seconds; `HealSettings.clock`; `ChunkScars.changedAt`, saved as
+  `changed_at`, -1 for a record from before; `Healer.changedOn`/`nowOn` put a chunk's wait on the real clock in
+  twentieths of a second so the rest of the healing's arithmetic stands; `/groundburst heal status` in units).
+- *Settings by weapon* (`blast/BlastSettings`: the lines read once each time the config's list changes, a bad line
+  skipped with a warning; `asSetOff` = kind multipliers, lines, then the server's multiplier and cap, used by
+  `Blasts.detonate`, the blast bench and the missile bench's stats (`AssemblyStats`), whose client reads the synced
+  config; the special weapons' starts take `special(...)`; `/groundburst blast info`).
+- *The tables as data* (`blast/TerrainTable`, now a class with its codec and the `groundburst:terrain_table` registry,
+  the server's only; `TerrainRule`: matchers and targets worked out on first use, a missing block or tag never matching,
+  a target that does not read leaving its rule out; `TerrainTables`: the server's tables by id, the mod's own as the
+  fallback; `TerrainRules`: the config's lines, read again on every config load (`ModConfigEvent`), a version number the
+  tables' caches go by). Each table keeps, per band, an identity map of block state to the rules that take it.
+  `datagen/GBBlastData` writes the three tables; GameTests check them against the code they replace.
+- *The far flash* (`client/fx/FarFlash`; `Spectacle.start` aims at the fireball's top for a nuclear preset; `BlastFx`'s
+  `farShare` (the glow's strength), `skyFlash`, `blind`; the white-out held and cleared through `FarFlash.level`, its
+  colour turning to a pale haze as a blinding flash clears (`Spectacle.haze`); `fx.flashBlinding`; antimatter's too
+  (`AnnihilationFx`)). The glow over the horizon: three quads of the puff sheet's soft cell, just past the loaded terrain,
+  on `FxRenderTypes.farGlow` (main: the cloud's fragment shader with `FX_SOFT`, no cutout, added, no depth, its own OIT
+  set, handed to Iris as the glow; 26.1.2: an eyes pipeline on its cloud shader with `FX_SOFT`; 1.21.1: a core shader of
+  its own, `rendertype_fx_far_glow`, as its cloud shader there fades with the render-distance fog).
+- *Black rain* (`content/fallout/BlackRain`, shared by the server and `client/fx/BlackRainFx`; `FalloutPlume.born` and
+  `rains`, sent in `Plumes.Cloud` as an age; the server's dose through `Radiation.rateAt`; the burns, corrosion and
+  rotting once a second; `radiation.blackRain`, `radiation.blackRainHarms`; the splash particle
+  `groundburst:black_rain_splash`, the game's splash sprites tinted). The game's rain recoloured by a mixin of each
+  version's own: 26.3 `WeatherEffectRenderer.prepareInstances`, 26.1.2 `renderInstances`, 1.21.1 and 1.20.1
+  `LevelRenderer.renderSnowAndRain` (a `setColor` wrapped where the precipitation is rain); the splashes from 26.3's
+  `ClientLevel.tickWeatherEffects`, 26.1.2's `WeatherEffectRenderer.tickRainParticles`, 1.21.1's and 1.20.1's
+  `LevelRenderer.tickRain`. A bug found on the way: a backdated plume (the photographer's) had a birth time below zero,
+  which read as "not kept"; unknown is now `Long.MIN_VALUE`.
+- *The far aftermath* (`content/fallout/FarAftermath`: its saved data `far_aftermaths.dat`, the chunk attachment
+  `groundburst:far_marks`; `FarLoads`, its chunk ticket `groundburst:far_aftermath`; `FarWave`, the payload;
+  `Blasts.detonate` starts it, not on the GameTest server). Each chunk's ground is found first, column by column under trees and roofs, and
+  the slopes judged from that before anything changes (a first version read the no-leaves heightmap as it went and the
+  mod's Dead Leaves, in `#blocks_motion_no_leaves`, made false slopes behind the columns already changed). Columns are
+  taken from the top down: what the open sky sees to the charred, then the withered rules; to the broken rules what is in
+  the open or a window, door, trapdoor or lamp with air on its side toward the blast; a roof shelters what is under it from
+  the heat, leaves and trunks do not; natural ground ends the column. The far wave's creatures: every loaded living
+  entity and vehicle in the ring it crossed this tick, their line toward the blast checked for cover. The background pass
+  goes four chunks by four, nearest tile first; it asks the disk ahead for each chunk's status alone (48 at a time,
+  streamed from the region file off the server thread: only a chunk saved whole is loaded, none is ever generated) and
+  keeps a tile's 16 chunks loading on a ticket of its own at the full chunk's level, which loads as any chunk loads, never
+  waited for in the tick, and goes as the chunk has changed (a minute after it loaded if forgotten). Everything the far
+  aftermath does in a tick, the queued chunks first and then the pass, shares one budget (`aftermath.msPerTick`, 3 ms);
+  a loaded chunk is left for the next tick once it is spent. A chunk in reach of a running wave or done pass is queued as
+  it loads (`ChunkEvent.Load`), one generated later only if `convertNewChunks`. Found by the blast bench (a
+  thermonuclear warhead on a world generated 1 900 blocks round, Distant Horizons on; its report's "Far aftermath" line):
+  the first version forced each chunk through NeoForge's ticket controller, which loads the chunk there and then, inside
+  the tick, and changed the chunks it found loaded without a budget; the server fell 20 s behind for two minutes and held
+  up to 18 000 chunks. Now its ticks average 7.9 ms through the blast and the pass (14 over 50 ms, the blast's own), the
+  far aftermath's share 0.84 ms; the pass saw 39 902 chunks on disk and changed 24 047 of them (0.11 ms each) in 157 s. `compat/DistantHorizons`
+  hands each changed chunk to DH (its API's `overwriteChunkDataAsync(level, [chunk, level])`, found by the level wrapper
+  that wraps the server level). Client: `client/fx/FarWaveFx` (dust thrown up along the wave within 320 blocks of the
+  camera's bearing, every 5 blocks, every other tick, over loaded ground; the jolt as it passes).
+- *Test runs on main*: `client/DevRuns` and `mixin/DevMouseMixin` (SDL told not to take the focus, the window behind;
+  the mouse never grabbed), the test runs muted and their early window off (build.gradle); 26.1.2 has its own
+  `DevRuns` on GLFW.
+- *Checks*: 456 GameTests on main (`HealTests`: the clock, the times; `BlastTests`: settings by weapon; `FalloutTests`:
+  the tables from data, swap rules, black rain's where and what; `AftermathTests` (5): the rings, once, the wave, healed
+  back, and a tree grown as world generation grows one, its leaves killed). Runs: `runGameTestServer -PonlyTests=a,b` on main too. FX scenes `far_flash`, `far_flash_night`,
+  `far_flash_tsar_night`, `black_rain`, `black_rain_own`, `far_wave`, `far_rings` (real world).
+
 ---
 
 ## 22. World structures and loot

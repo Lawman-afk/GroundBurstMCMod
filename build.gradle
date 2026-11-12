@@ -124,12 +124,14 @@ neoForge {
                 systemProperty 'groundburst.blastBench.seed', project.findProperty('benchSeed').toString()
             }
             // -PbenchKind=<ChargeKind>: the warhead set off by its own path (its fallout and the special weapons too);
-            // -PbenchView=<blocks> watched from that far east (360); -PbenchTail=<seconds> recorded on that long after the
+            // -PbenchView=<blocks> watched from that far east (360), -PbenchViewHeight=<blocks> that high over the ground (60),
+            // -PbenchViewPitch=<degrees> looking that far down (9); -PbenchTail=<seconds> recorded on that long after the
             // blast has finished (2), or after the burst for a weapon that is not a blast; -PbenchRadius=<blocks> generated.
             // For the mod page's pictures: -PbenchMoments=0,40,... when to take them, -PbenchRender=<chunks> how far the
             // player sees (12), -PbenchClean=true no hand, hotbar or tutorial pop-ups.
-            ['benchKind': 'kind', 'benchView': 'view', 'benchTail': 'tail', 'benchRadius': 'radius', 'benchMoments': 'moments',
-             'benchRender': 'render', 'benchClean': 'clean'].each { p, key ->
+            ['benchKind': 'kind', 'benchView': 'view', 'benchViewHeight': 'viewHeight', 'benchViewPitch': 'viewPitch',
+             'benchTail': 'tail', 'benchRadius': 'radius', 'benchMoments': 'moments', 'benchRender': 'render',
+             'benchClean': 'clean'].each { p, key ->
                 if (project.findProperty(p) != null) {
                     systemProperty "groundburst.blastBench.${key}", project.findProperty(p).toString()
                 }
