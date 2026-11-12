@@ -148,6 +148,19 @@ legacyForge {
             systemProperty 'groundburst.keepMouse', 'true'
         }
 
+        // The 1.21.1 build's frame-rate check at a village smithy (a player's report of drops there on 1.20.1): every frame
+        // and server tick timed at open ground, the village's middle and the smithy's lava (dev.groundburst.port.FpsCheck;
+        // the log's "Fps check:" lines; -PfpsView=<chunks>, 12).
+        fpsCheck {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.fpsCheck', 'true'
+            systemProperty 'groundburst.fpsCheck.view', (project.findProperty('fpsView') ?: '12').toString()
+            // -PfpsMachines=true: the mod's machines instead, each structure formed, each looked at alone (FpsCheck)
+            systemProperty 'groundburst.fpsCheck.machines', (project.findProperty('fpsMachines') ?: 'false').toString()
+            systemProperty 'groundburst.keepMouse', 'true'
+        }
+
         // Machines and launchers on Create's contraptions (with -PwithCreate: Create loaded), the 1.21.1 build's check less its
         // ships' scenes (Create Aeronautics has no 1.20.1 build): pictures in run/screenshots/create_*.png, the log's
         // "Create check: ... OK" lines (dev.groundburst.compat.CreateCheck).
@@ -198,7 +211,7 @@ legacyForge {
 // without the focus and never grabs the mouse (dev.groundburst.legacy.client.DevRuns; the runs turn the camera
 // themselves). Forge's early loading window, made before any mod code runs, is turned off for them in run/config/fml.toml.
 def fmlConfig = file('run/config/fml.toml')
-tasks.matching { it.name in ['runPortCheck', 'runSiteCheck', 'runPlayBench', 'runCreateCheck'] }.configureEach {
+tasks.matching { it.name in ['runPortCheck', 'runSiteCheck', 'runFpsCheck', 'runPlayBench', 'runCreateCheck'] }.configureEach {
     doFirst {
         fmlConfig.parentFile.mkdirs()
         String text = fmlConfig.exists() ? fmlConfig.text : ''
