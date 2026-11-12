@@ -93,14 +93,20 @@ public final class BlackRainFx {
     /** The burst's own rain round the camera while it falls on it (in clear weather, where the game draws no rain). */
     static void submit(SubmitNodeCollector collector, PoseStack poseStack, ClientLevel level, Vec3 camera, double now) {
         List<Plumes.Cloud> clouds = FalloutClient.clouds();
-        if (clouds.isEmpty()) {
+        float k;
+        if (level.getRainLevel(1) > 0.5f) {
+            // In rain the game's own columns are drawn black instead; but a shader pack draws its rain in its own colour
+            // (Complementary's and BSL's take no colour from the game), so under one the sheets fall in the rain too, as
+            // dark as the rain is black there.
+            k = FxRenderTypes.IRIS && IrisFx.packInUse() ? level.getRainLevel(1) * weather(level, camera.x, camera.y, camera.z) : 0;
+        } else {
+            k = clouds.isEmpty() ? 0 : BlackRain.ownRain(clouds, camera.x, camera.z);
+        }
+        if (k < 0.05f || !level.canSeeSky(BlockPos.containing(camera))) {
             return;
         }
-        float own = BlackRain.ownRain(clouds, camera.x, camera.z);
-        if (own < 0.05f || level.getRainLevel(1) > 0.5f || !level.canSeeSky(BlockPos.containing(camera))) {
-            return;                                        // (in rain the game's own columns are drawn black instead)
-        }
-        FxRenderTypes.submit(collector, poseStack, FxRenderTypes.fire(RAIN), (pose, buffer) -> sheets(buffer, pose, now, own));
+        float strength = k;
+        FxRenderTypes.submit(collector, poseStack, FxRenderTypes.fire(RAIN), (pose, buffer) -> sheets(buffer, pose, now, strength));
     }
 
     /** Sheets of falling rain round the camera, sooty: two rings, the near one denser. */
