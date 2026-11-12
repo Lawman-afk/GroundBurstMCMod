@@ -117,6 +117,16 @@ neoForge {
             systemProperty 'groundburst.siteCheck', 'true'
         }
 
+        // The frame rate at a village smithy (a player's report of drops there): a normal world, a village weaponsmith with
+        // its lava found, every frame and server tick timed at open ground, the village's middle and the smithy, then it
+        // quits (dev.groundburst.port.FpsCheck; the log's "Fps check:" lines; -PfpsView=<chunks>, 12).
+        fpsCheck {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.fpsCheck', 'true'
+            systemProperty 'groundburst.fpsCheck.view', (project.findProperty('fpsView') ?: '12').toString()
+        }
+
         // Launchers on moving structures (with -PwithCreate: Create, Sable and Create Aeronautics loaded): a Cruise Missile
         // Launcher on a Create bearing and one made into a Sable ship fire, the log saying whether each missile lit where
         // its launcher is and headed the way it points; pictures in run/screenshots/create_*.png
@@ -197,7 +207,7 @@ neoForge {
 // groundburst.keepMouse; the runs turn the camera themselves), NeoForge's early loading window (made before any mod code
 // runs) turned off for them in run/config/fml.toml; and every client run is muted (master volume 0 in run/options.txt;
 // -Psound=on keeps it).
-def testRunNames = ['runPortCheck', 'runSiteCheck', 'runCreateCheck', 'runTestRange', 'runPlayBench']
+def testRunNames = ['runPortCheck', 'runSiteCheck', 'runFpsCheck', 'runCreateCheck', 'runTestRange', 'runPlayBench']
 def fmlConfig = file('run/config/fml.toml')
 def clientOptions = file('run/options.txt')
 def withSound = providers.gradleProperty('sound').isPresent()
