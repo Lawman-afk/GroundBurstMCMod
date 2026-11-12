@@ -1,17 +1,18 @@
-"""Example logos for the mod page (its square avatar), each the glowing missile icon the user brought (icon-1024.png:
-the mod's DF-5 diagonal with a green glow, on transparency) on a ground in the 2026-11 style (style.py).
+"""The mod's logos (the mod page's square avatar), each the glowing missile icon the user brought (docs/branding/icon.png,
+1024 px: the mod's DF-5 diagonal with a green glow, on transparency) on a ground in the 2026-11 style (style.py).
 
-- dusk:     the first logo's sky (docs/branding/logo.png: navy over burnt orange) behind the glowing missile;
+- dusk:     the first logo's sky (navy over burnt orange, tools/assets/logo.py's) behind the glowing missile;
 - night:    the banner's dark, lit a little behind the missile;
 - cloud:    the Tsar Bomba's mushroom cloud (the banner's picture) darkened behind it;
-- hazard:   the banner's hazard stripe as a tape under the missile, on the dark;
+- hazard:   the banner's hazard stripe as a tape under the missile, on the dark: the user's choice (2026-11-12), the
+            mod's logo, written to docs/branding/logo.png too;
 - scope:    a green phosphor radar scope (the mod's own screens' look) with the missile across it;
 - wordmark: the missile over the title, GROUND white and BURST green;
 - badge:    the night logo in a ring, round, for places that crop avatars to a circle.
 
-Usage: tools\\.venv\\Scripts\\python.exe tools\\branding\\logos.py --icon <icon-1024.png> [--out <folder>]
-Writes logo_<name>.png (400 x 400) and logo_<name>_1024.png into the folder (default build/branding/logos), and a
-sheet of them at 400, 128 and 48 px (build/branding/logos_sheet.png).
+Usage: tools\\.venv\\Scripts\\python.exe tools\\branding\\logos.py [--icon <png>] [--out <folder>]
+Writes logo_<name>.png (400 x 400) and logo_<name>_1024.png into the folder (default build/branding/logos), a sheet of
+them at 400, 128 and 48 px (build/branding/logos_sheet.png) and the chosen one as docs/branding/logo.png.
 """
 import argparse
 from pathlib import Path
@@ -22,6 +23,9 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 import style as S
 
 N = 1024                                 # every logo is made at 1024 and scaled down
+ICON = S.ROOT / "docs" / "branding" / "icon.png"
+CHOSEN = "hazard"                        # the user's pick (2026-11-12): the mod's logo
+LOGO = S.ROOT / "docs" / "branding" / "logo.png"
 SCENE = S.ROOT / "run" / "screenshots" / "bench_tsar_warhead_120.png"
 DUSK_TOP, DUSK_BOTTOM = (22, 28, 56), (188, 98, 56)     # the first logo's sky, top to bottom
 PHOSPHOR = (110, 230, 90)
@@ -166,7 +170,7 @@ def sheet(logos: dict, path: Path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--icon", required=True)
+    ap.add_argument("--icon", default=str(ICON))
     ap.add_argument("--out", default=str(S.ROOT / "build" / "branding" / "logos"))
     args = ap.parse_args()
     out = Path(args.out)
@@ -185,7 +189,8 @@ def main():
         logo.save(out / f"logo_{name}_1024.png", optimize=True)
         logo.resize((400, 400), Image.LANCZOS).save(out / f"logo_{name}.png", optimize=True)
     sheet(logos, out.parent / "logos_sheet.png")
-    print("wrote", ", ".join(logos), "to", out)
+    logos[CHOSEN].resize((400, 400), Image.LANCZOS).convert("RGB").save(LOGO, optimize=True)
+    print("wrote", ", ".join(logos), "to", out, "and", CHOSEN, "as", LOGO)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,13 @@
-"""The project logo (the CurseForge page's icon): one of the mod's own models, drawn from its in-game model and
-textures by the preview renderer, tilted across a 400 x 400 square over a plain sky.
+"""The first project logo (the CurseForge page's icon from 2026-10-28 to 2026-11-12): one of the mod's own models,
+drawn from its in-game model and textures by the preview renderer, tilted across a 400 x 400 square over a plain sky.
+Since 2026-11-12 the logo is tools/branding/logos.py's hazard (docs/branding/logo.png), so this one writes elsewhere.
 
 Two subjects: the DF-5 that the Nuclear Missile Silo fires (an XL missile, silver with red bands) laid corner to
 corner on a dusk sky, the logo; and the Tsar warhead as it sits in the world, leaning, on a day sky.
 
     tools\\.venv\\Scripts\\python.exe tools\\assets\\logo.py [--subject missile|tsar] [--out path] [--review]
-        writes docs/branding/logo.png (the missile unless --subject says otherwise); --review writes a sheet of both
-        at full size and at the sizes a listing shows them (tools/out/previews/logo_review.png)
+        writes tools/out/previews/logo_first.png (the missile unless --subject says otherwise); --review writes a
+        sheet of both at full size and at the sizes a listing shows them (tools/out/previews/logo_review.png)
 """
 from __future__ import annotations
 
@@ -25,7 +26,7 @@ from gb import paths  # noqa: E402
 import render as R  # noqa: E402
 
 SIZE = 400
-OUT = paths.ROOT / "docs" / "branding" / "logo.png"
+OUT = paths.ROOT / "tools" / "out" / "previews" / "logo_first.png"   # the page's logo is tools/branding/logos.py's now
 #: Light from the upper left, towards the viewer (view space: x right, y up, z towards the camera).
 LIGHT = np.array([-0.45, 0.75, 0.55])
 
