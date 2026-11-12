@@ -1,0 +1,26 @@
+{
+  "title": "Black rain",
+  "icon": "groundburst:fallout_ash",
+  "order": 2,
+  "items": [],
+  "pages": [
+    {
+      "type": "text",
+      "text": "After Hiroshima a **black rain** fell for hours: the fireball and the fires drew soot and dust up into the cloud, and the rain brought them down again, black and radioactive. Here rain falls black where the land is heavily irradiated: where a radiation field at the ground is strong (grey from about 5 RAD/h, black from 200), over the [wasteland](safety/wasteland) while any radiation lingers there, and under a [fallout plume](safety/fallout)."
+    },
+    {
+      "type": "text",
+      "text": "**A ground burst's own rain.** A nuclear blast on the ground rains black under its cloud whatever the weather: from about 40 seconds after it, for six minutes, round the plume as it drifts off downwind.\n\n**Out in it** you take radiation (up to 100 RAD/h, washed down onto you) and **acid burns**, and your armour corrodes. A full [hazmat suit](safety/hazmat_suits) keeps the burns off and most of the radiation; a roof keeps all of it off.\n\n**What it kills.** Under black rain leaves die on the branch, crops wither, flowers and grass go and now and then a grass block dies; copper weathers a step. It all grows back if the server heals its damage."
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/fallout",
+        "safety/radiation",
+        "safety/wasteland",
+        "safety/far_aftermath"
+      ],
+      "text": ""
+    }
+  ]
+}

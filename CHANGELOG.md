@@ -2,6 +2,34 @@
 
 ## Unreleased
 
+### A nuclear blast's far reach
+- **The far aftermath.** A nuclear blast now changes the land far past the zones that kill, in rings out to more than
+  four times its reach (about 3,000 blocks after the Tsar): **charred** land, where the fireball's heat burns the grass,
+  the plants and the trees and the wasteland's grey spreads; **broken** land, where the windows facing the blast shatter,
+  doors are blown open and leaves stripped; and **withered** land, where leaves and grass die in patches. Each ring thins
+  out toward its edge, so the land blends from one to the next, and a hillside turned away from the blast is spared the
+  heat. Chunks far off change as they load, and with Distant Horizons the far view shows the land as it now is. All of
+  it heals back when healing is on.
+- **The far wave.** Past the blast's reach its shock runs on at the speed of sound: you see a wall of dust come over the
+  land toward you, and out in the open it throws you off your feet and, nearer, hurts you.
+- **The far flash.** A nuclear flash now reaches far, farther by night, with a glow over the horizon and the sky lit for a
+  moment; looked at straight on it blinds you for a few seconds (the client setting "Blinding flash" turns that off).
+- **Black rain.** Rain falls black over heavily irradiated land, over the wasteland and under fallout plumes, and a
+  nuclear ground burst's own cloud rains black for six minutes whatever the weather. Out in it you take radiation and
+  acid burns (a hazmat suit keeps them off), armour corrodes, and the plants under it die.
+
+### Settings
+- **Healing by the calendar.** Healing's times are now written with units ("30m", "12h", "7d", "1d12h", up to 52 weeks),
+  and a new clock setting can count them in **real time**, so a server switched off over the weekend has healed when it
+  starts again. (The times were seconds before, under other names: a server that changed them sets them once more.)
+- **Settings for single weapons.** Lines in the server config set any of a weapon's blast numbers, or multiply them: its
+  crater's depth, its radius, its scorch and fire, its damage, its far aftermath (`groundburst:tsar_warhead depth=x1.5`),
+  with multipliers for every conventional, nuclear and special weapon besides. `/groundburst blast info <weapon>` shows a
+  weapon as the server will set it off.
+- **Swap rules.** What blasts turn blocks into is now data, and lines in the server config can change it: your own
+  charred wood, or a rare ore in a nuclear crater's wall instead of trinitite at a chance you choose
+  (`nuclear lining #minecraft:sand -> mymod:rare_ore 5%`), each rule following its band's fall-off.
+
 ### Fixes
 - **Minecraft 1.21.1 and 1.20.1: the frame rate no longer sinks near the superweapons and some other blocks.** The
   Particle Uplink Cannon, the SCUD Storm, the War Factory, the Nuclear Missile Silo and the Arms Dealer, the Blast Doors,

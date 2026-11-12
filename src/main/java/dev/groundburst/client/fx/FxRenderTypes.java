@@ -75,6 +75,11 @@ final class FxRenderTypes {
     static final OitPipelineSet OIT_FIRE = OitPipelineSet.builder(GroundBurst.id("fire"),
             RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withCull(false)).build();
     static final RenderPipeline CLOUD_PIPELINE = cloud();
+    static final RenderPipeline FAR_GLOW_PIPELINE = farGlow();
+    static final OitPipelineSet OIT_FAR_GLOW = OitPipelineSet.builder(GroundBurst.id("far_glow"),
+            RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withFragmentShader(CLOUD_SHADER)
+                    .withShaderDefine("FX_SOFT").withShaderDefine("OIT_ADDITIVE").withCull(false))
+            .build();
     static final OitPipelineSet OIT_CLOUD = OitPipelineSet.builder(GroundBurst.id("cloud"),
             RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withFragmentShader(CLOUD_SHADER).withCull(false))
             .build();
@@ -112,6 +117,23 @@ final class FxRenderTypes {
     }
 
     /**
+     * The far glow (DESIGN.md §21.10): a nuclear flash's light over the horizon, beyond the loaded terrain. The cloud's
+     * fragment shader (hazed toward the fog colour, not faded into the render-distance fog) without its cutout, added as the
+     * glow is, writing no depth.
+     */
+    private static RenderPipeline farGlow() {
+        return RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
+                .withLocation(GroundBurst.id("pipeline/far_glow"))
+                .withFragmentShader(CLOUD_SHADER)
+                .withShaderDefine("FX_SOFT")
+                .withShaderDefine("ALPHA_CUTOUT", NEARLY_CLEAR)
+                .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
+                .withCull(false)
+                .build();
+    }
+
+    /**
      * Each blended type's twin, which leaves its quads in the order they come: the effects' own quads are sorted by the
      * mod ({@link FxSort}) and drawn under it; anything else (a reticle, a laser) under the sorting type as before.
      */
@@ -131,6 +153,8 @@ final class FxRenderTypes {
     // sorting every effect's quads each frame was a tenth of the frame's work under a mushroom cloud).
     private static final Function<Identifier, RenderType> GLOW = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_glow",
             RenderSetup.builder(GLOW_PIPELINE).setOitPipelines(OIT_GLOW).withTexture("Sampler0", texture).createRenderSetup()));
+    private static final Function<Identifier, RenderType> FAR_GLOW = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_far_glow",
+            RenderSetup.builder(FAR_GLOW_PIPELINE).setOitPipelines(OIT_FAR_GLOW).withTexture("Sampler0", texture).createRenderSetup()));
 
     private FxRenderTypes() {}
 
@@ -142,6 +166,8 @@ final class FxRenderTypes {
             event.registerOitPipelineSet(OIT_FIRE);
             event.registerPipeline(CLOUD_PIPELINE);
             event.registerOitPipelineSet(OIT_CLOUD);
+            event.registerPipeline(FAR_GLOW_PIPELINE);
+            event.registerOitPipelineSet(OIT_FAR_GLOW);
             if (IRIS) {
                 try {
                     IrisFx.register();
@@ -211,5 +237,10 @@ final class FxRenderTypes {
     /** Additive, unlit, two-sided, with this texture. */
     static RenderType glow(Identifier texture) {
         return GLOW.apply(texture);
+    }
+
+    /** Additive, unlit, two-sided, seen far beyond the render distance (hazed, not fogged out), with this texture. */
+    static RenderType farGlow(Identifier texture) {
+        return FAR_GLOW.apply(texture);
     }
 }

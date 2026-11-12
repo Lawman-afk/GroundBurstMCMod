@@ -1,0 +1,26 @@
+{
+  "title": "The far aftermath",
+  "icon": "groundburst:dead_grass_block",
+  "order": 3,
+  "items": [],
+  "pages": [
+    {
+      "type": "text",
+      "text": "A nuclear blast reaches far past the zones that kill. **The flash** comes first: white-out near, and from afar a glow over the horizon and the sky lit for a moment; at night it reaches about four times as far. Look straight at it and it **blinds** you for a few seconds while it clears (the client settings can soften or turn this off).\n\n**The far wave.** Past the blast's own reach its shock runs on at the speed of sound. You see it come over the land as a wall of dust; out in the open it throws you off your feet and, nearer the blast, hurts you. Behind a wall or indoors it passes over."
+    },
+    {
+      "type": "text",
+      "text": "**The rings.** The land changes as the wave passes, out to more than four times the blast's reach (3,000 blocks after the Tsar):\n- **Charred**: what the fireball's heat saw burns: grass scorched, plants and leaves burnt, trees charred, snow gone, and the wasteland's grey over it.\n- **Broken**: glass and windows facing the blast shattered, doors blown open, leaves stripped, torches knocked out.\n- **Withered**: leaves and grass dying in patches, crops withered.\n\nEach ring thins out toward its edge; a hillside turned away from the blast is spared the heat. Chunks far away change when they next load. It all heals back if the server heals its damage; the server can change how far each ring reaches or turn it off."
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/scorched_ground",
+        "safety/wasteland",
+        "safety/black_rain",
+        "ordnance/nuclear"
+      ],
+      "text": ""
+    }
+  ]
+}

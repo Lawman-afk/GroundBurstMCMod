@@ -34,6 +34,11 @@ final class BlastFx {
     final double distance, reaches;
     /** Peak flash strength here (after distance, line of sight and which way the camera faced). */
     float flash;
+    /**
+     * A nuclear blast's far flash here (DESIGN.md §21.10; {@link FarFlash}): its strength before line of sight (the glow
+     * over the horizon), how far it lights the sky, and how much it blinds (0 to 1).
+     */
+    float farShare, skyFlash, blind;
     float serverRadius;
     boolean ended;
     private boolean shook;
@@ -503,11 +508,8 @@ final class BlastFx {
     // --- flash and sky ---------------------------------------------------------------------------------------------------------
     /** Flash brightness at {@code t} ticks (0 to 1). */
     float flashAt(double t) {
-        if (this.flash <= 0 || t < 0) {
-            return 0;
-        }
-        double hold = 1.5;
-        return (float) (t < hold ? this.flash : this.flash * Math.exp(-(t - hold) / (this.preset.flashTicks() * 0.5)));
+        // Held a moment and faded; held longer and cleared slowly when it blinds (DESIGN.md §21.10).
+        return FarFlash.level(this.flash, this.blind, this.preset.flashTicks(), t);
     }
 
     /** How far the sky is tinted by this blast at {@code t} ticks (0 to 1). */

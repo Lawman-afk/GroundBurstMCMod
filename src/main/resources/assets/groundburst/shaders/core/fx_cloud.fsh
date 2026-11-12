@@ -23,8 +23,9 @@ layout(location = 0) out vec4 fragColor;
 
 void main() {
     vec4 color = texture(Sampler0, texCoord0) * vertexColor * ColorModulator;
-    // Cut out the faint fringe so the cloud can write depth (vanilla's own clouds, drawn later, then stay behind it).
-    #if !defined(OIT_ALPHA_ONLY) && !defined(OIT_ACCUMULATE)
+    // Cut out the faint fringe so the cloud can write depth (vanilla's own clouds, drawn later, then stay behind it). A far
+    // glow (FX_SOFT: a nuclear flash over the horizon, DESIGN.md 21.10) adds its light, writes no depth and keeps its fringe.
+    #if !defined(OIT_ALPHA_ONLY) && !defined(OIT_ACCUMULATE) && !defined(FX_SOFT)
     if (color.a < 0.16) {
         discard;
     }

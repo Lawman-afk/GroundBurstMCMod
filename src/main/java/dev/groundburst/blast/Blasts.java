@@ -59,6 +59,8 @@ public final class Blasts {
                 level.getRandom().nextLong(), source, terrain, spawn, spawnRadius);
         // Sound and visuals are the clients' (ClientBlasts, Spectacle), from the blast_start packet.
         BlastManager.of(level).add(job);
+        // A nuclear blast's far aftermath: its far wave, and its rings when it may change terrain (DESIGN.md §21.10).
+        dev.groundburst.content.fallout.FarAftermath.start(level, key.identifier(), center, profile, job.seed, terrain);
         return job;
     }
 

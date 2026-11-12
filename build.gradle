@@ -67,6 +67,8 @@ tasks.named('jar', Jar) {
     from('LICENSE') {
         rename { licenceName }
     }
+    // The test worlds' builders (devworld: the Aftermath Range) are for the dev runs only, never in a released jar.
+    exclude('dev/groundburst/devworld/**')
 }
 
 // Mojang ships Java 25 to end users in 26.3, so the mod targets Java 25.
@@ -168,6 +170,15 @@ neoForge {
             systemProperty 'groundburst.showroom.walk', (project.findProperty('showroomWalk') ?: 'false').toString()
         }
 
+        // Makes the test world "Ground Burst Aftermath Range" (DESIGN.md §21.10) in a normal world: an observation post
+        // 1 400 blocks from a village, a Launch Control Station and two Launch Complexes (thermonuclear on the village,
+        // tactical 300 blocks aside), powered, loaded, linked and aimed; photographs it and quits, the world saved to
+        // run/saves/ground_burst_aftermath_range to copy into an instance (see devworld/AftermathRange, left out of the jar).
+        aftermathRange {
+            client()
+            systemProperty 'groundburst.aftermathRange', 'true'
+        }
+
         // Makes a flat world, turns healing on with short waits, builds a farmstead and a little town, blows them up (a
         // thermobaric warhead, a tactical nuke), photographs them before, after, healing and healed into
         // run/screenshots/heal_<scene>_<stage>.png, compares every block with what it was (run/heal/heal_check.txt), then
@@ -264,6 +275,8 @@ dependencies {
     // Shader packs (optional at runtime): the effects tell Iris which of a pack's programs draws them (compile against
     // its API); -PwithIris runs Iris and Sodium in the dev client too.
     compileOnly "maven.modrinth:iris:${iris_version}"
+    // Distant Horizons (optional): changed chunks handed to its far view (compat/DistantHorizons, DESIGN.md §21.10).
+    compileOnly "maven.modrinth:distanthorizons:${dh_version}"
     if (providers.gradleProperty('withIris').isPresent()) {
         localRuntime "maven.modrinth:iris:${iris_version}"
         localRuntime "maven.modrinth:sodium:${sodium_version}"
@@ -271,6 +284,39 @@ dependencies {
     // Distant Horizons (optional at runtime): -PwithDH runs it in the dev client, its far terrain drawn round the effects.
     if (providers.gradleProperty('withDH').isPresent()) {
         localRuntime "maven.modrinth:distanthorizons:${dh_version}"
+    }
+}
+
+// The test runs leave the person at the computer their mouse and their ears (the user's wishes, 2026-11-11): their window
+// shows behind the other windows without the focus and never grabs the mouse (dev.groundburst.client.DevRuns, set by
+// groundburst.keepMouse; the runs turn the camera themselves), NeoForge's early loading window turned off for them in
+// run/config/fml.toml; and every client run is muted (master volume 0 in run/options.txt; -Psound=on keeps it).
+def testRunNames = ['runManualShots', 'runFxShots', 'runBlastBench', 'runWorldSurvey', 'runSiteShots', 'runShowroom', 'runHealShots',
+        'runPlayBench', 'runAftermathRange']
+def fmlConfig = file('run/config/fml.toml')
+def clientOptions = file('run/options.txt')
+def withSound = providers.gradleProperty('sound').isPresent()
+neoForge.runs.matching { ('run' + it.name.capitalize()) in testRunNames }.configureEach {
+    systemProperty 'groundburst.keepMouse', 'true'
+}
+tasks.matching { it.name in testRunNames }.configureEach {
+    doFirst {
+        fmlConfig.parentFile.mkdirs()
+        String text = fmlConfig.exists() ? fmlConfig.text : ''
+        fmlConfig.text = text =~ /(?m)^earlyWindowControl\s*=/
+                ? text.replaceAll(/(?m)^earlyWindowControl\s*=.*$/, 'earlyWindowControl = false')
+                : text + 'earlyWindowControl = false\n'
+    }
+}
+tasks.matching { it.name.startsWith('run') && !(it.name in ['runGameTestServer', 'runServer', 'runData']) }.configureEach {
+    doFirst {
+        if (!withSound) {
+            String text = clientOptions.exists() ? clientOptions.text : ''
+            clientOptions.parentFile.mkdirs()
+            clientOptions.text = text =~ /(?m)^soundCategory_master:/
+                    ? text.replaceAll(/(?m)^soundCategory_master:.*$/, 'soundCategory_master:0.0')
+                    : text + 'soundCategory_master:0.0\n'
+        }
     }
 }
 

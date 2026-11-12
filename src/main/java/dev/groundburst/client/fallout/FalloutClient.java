@@ -54,8 +54,15 @@ public final class FalloutClient {
             event.register(List.of(dead(FROSTED_GRASS, BiomeColors::getAverageGrassColor)), GBFallout.FROSTED_GRASS_BLOCK.block().get());
             event.register(List.of(net.minecraft.client.color.block.BlockTintSources.constant(FROZEN_PLANT)), GBFallout.FROZEN_PLANT.block().get());
         });
-        modBus.addListener((RegisterParticleProvidersEvent event) ->
-                event.registerSpriteSet(GBFallout.FALLOUT_ASH_PARTICLE.get(), AshFlakeParticle.Provider::new));
+        modBus.addListener((RegisterParticleProvidersEvent event) -> {
+            event.registerSpriteSet(GBFallout.FALLOUT_ASH_PARTICLE.get(), AshFlakeParticle.Provider::new);
+            // Black rain's splash: the game's own rain splash, sooty (DESIGN.md §21.10).
+            event.registerSpriteSet(GBFallout.BLACK_RAIN_SPLASH.get(), sprites -> (type, level, x, y, z, dx, dy, dz, random) -> {
+                var splash = new net.minecraft.client.particle.WaterDropParticle(level, x, y, z, sprites.get(random));
+                splash.setColor(0.2f, 0.18f, 0.15f);
+                return splash;
+            });
+        });
         Wind.Sync.hook = s -> {
             windHeading = s.heading();
             windSpeed = s.speed();
@@ -63,6 +70,11 @@ public final class FalloutClient {
         Plumes.Sync.hook = s -> clouds = s.clouds();
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> tick(Minecraft.getInstance()));
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> clouds = List.of());
+    }
+
+    /** The plumes in the player's level, as the server last told of them (black rain is reckoned from them). */
+    public static List<Plumes.Cloud> clouds() {
+        return clouds;
     }
 
     /** The wind in the player's level: where it carries things in a second, blocks. */

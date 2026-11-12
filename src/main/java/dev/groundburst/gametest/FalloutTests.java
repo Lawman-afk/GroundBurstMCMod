@@ -37,6 +37,8 @@ final class FalloutTests {
         GBGameTests.test("nuclear_table_burns_and_lines_the_ground", GBGameTests.FLOOR_16, 20, FalloutTests::table);
         GBGameTests.test("terrain_tables_come_from_data", GBGameTests.FLOOR_16, 20, FalloutTests::tablesFromData);
         GBGameTests.test("terrain_swap_rules_fall_through", GBGameTests.FLOOR_16, 20, FalloutTests::swapRules);
+        GBGameTests.test("black_rain_where_the_land_is_irradiated", GBGameTests.FLOOR_16, 20, FalloutTests::blackRainWhere);
+        GBGameTests.testOpenSky("black_rain_kills_plants_and_burns", GBGameTests.FLOOR_16, 40, FalloutTests::blackRainHarm);
         GBGameTests.testOpenSky("strong_fields_wither_plants", GBGameTests.FLOOR_16, 20, FalloutTests::wither);
         GBGameTests.test("dead_grass_under_cover_turns_to_dirt", GBGameTests.FLOOR_16, 20, FalloutTests::covered);
         GBGameTests.testOpenSky("nuclear_blast_glasses_the_sand_round_it", GBGameTests.FLOOR_16, 200, FalloutTests::glassed);
@@ -70,7 +72,7 @@ final class FalloutTests {
         var level = helper.getLevel();
         Vec3 start = helper.absoluteVec(new Vec3(2.5, 1, 8.5));
         int halfLife = Plumes.halfLife(40_000, 720_000);
-        FalloutPlume plume = new FalloutPlume(start.x, start.y, start.z, 2, 11, 0, 0, 40_000, halfLife, 30);
+        FalloutPlume plume = new FalloutPlume(start.x, start.y, start.z, 2, 11, 0, 0, 40_000, halfLife, 30, helper.getLevel().getGameTime(), false);
         long now = level.getGameTime();
         List<RadiationSource> before = RadiationSources.of(level).sources();
         for (int s = 0; s < 12 && !plume.spent(); s++) {
@@ -228,6 +230,80 @@ final class FalloutTests {
                 && dev.groundburst.blast.TerrainRules.check("nuclear lining #minecraft:sand mymod:rare_ore") != null
                 && dev.groundburst.blast.TerrainRules.check("nuclear deep #minecraft:sand -> air") != null
                 && dev.groundburst.blast.TerrainRules.check("nuclear lining #minecraft:sand -> air 150%") != null, "the server's lines checked");
+        helper.succeed();
+    }
+
+    /**
+     * Where rain falls black, and how black (DESIGN.md §21.10): a strong field at the ground black, a weaker one grey, a
+     * weak one plain; under a plume; a ground burst's own rain only in its window (from 40 s for six minutes) and only
+     * under its cloud, and never from a plume that does not rain.
+     */
+    private static void blackRainWhere(GameTestHelper helper) {
+        var level = helper.getLevel();
+        long now = level.getGameTime();
+        Vec3 c = helper.absoluteVec(new Vec3(8, 1, 8));
+        // A source whose peak at its centre is 40 000 RAD/h: hundreds at 60 blocks out of 100, a few near its edge.
+        RadiationSource strong = new RadiationSource(c, 100, 40_000, 100_000, now);
+        float black = dev.groundburst.content.fallout.BlackRain.strength(level, List.of(strong), List.of(), c.x, c.y, c.z, now);
+        float edge = dev.groundburst.content.fallout.BlackRain.strength(level, List.of(strong), List.of(), c.x + 99.5, c.y, c.z, now);
+        float none = dev.groundburst.content.fallout.BlackRain.strength(level, List.of(strong), List.of(), c.x + 150, c.y, c.z, now);
+        helper.assertTrue(black == 1, "black where the field is strong: " + black);
+        helper.assertTrue(edge == 0 || edge >= 0.25f && edge < 1, "grey to nothing at the field's edge: " + edge);
+        helper.assertTrue(none == 0, "plain rain outside it: " + none);
+        Plumes.Cloud under = new Plumes.Cloud((float) c.x, (float) c.y, (float) c.z, 30, 0.5f, 100, true);
+        float plume = dev.groundburst.content.fallout.BlackRain.strength(level, List.of(), List.of(under), c.x + 10, c.y, c.z, now);
+        helper.assertTrue(Math.abs(plume - (0.3f + 0.7f * 0.5f)) < 1e-4, "black under a plume, by its strength: " + plume);
+        helper.assertTrue(dev.groundburst.content.fallout.BlackRain.ownRain(List.of(under), c.x + 10, c.z) > 0.3f, "its own rain falls now");
+        helper.assertTrue(dev.groundburst.content.fallout.BlackRain.ownRain(List.of(under), c.x + 40, c.z) == 0, "but only under it");
+        Plumes.Cloud young = new Plumes.Cloud((float) c.x, (float) c.y, (float) c.z, 30, 1, 10, true);
+        Plumes.Cloud old = new Plumes.Cloud((float) c.x, (float) c.y, (float) c.z, 30, 0.2f, 450, true);
+        Plumes.Cloud dry = new Plumes.Cloud((float) c.x, (float) c.y, (float) c.z, 30, 1, 100, false);
+        helper.assertTrue(dev.groundburst.content.fallout.BlackRain.ownRain(List.of(young, old, dry), c.x, c.z) == 0,
+                "not before 40 s, not after its six minutes, and never from a plume that does not rain");
+        helper.succeed();
+    }
+
+    /**
+     * What black rain does (DESIGN.md §21.10): a column under it rots from the top (leaves dead on the branch, the grass
+     * under it), crops wither, copper weathers a step; out in it a pig is burnt by the acid, a husk's iron helmet
+     * corrodes, and a husk in a full hazmat suit is not burnt.
+     */
+    private static void blackRainHarm(GameTestHelper helper) {
+        floor(helper);
+        var level = helper.getLevel();
+        var random = net.minecraft.util.RandomSource.create(3);
+        helper.setBlock(new BlockPos(3, 1, 3), Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true));
+        helper.setBlock(new BlockPos(5, 1, 5), Blocks.WHEAT);
+        helper.setBlock(new BlockPos(7, 1, 7), Blocks.COPPER_BLOCK.weathering().unaffected());
+        for (int[] at : new int[][] {{3, 3}, {5, 5}, {7, 7}}) {
+            BlockPos abs = helper.absolutePos(new BlockPos(at[0], 1, at[1]));
+            dev.groundburst.content.fallout.BlackRain.rot(level, abs.getX(), abs.getZ(), random);
+        }
+        helper.assertBlockPresent(GBFallout.DEAD_LEAVES.block().get(), new BlockPos(3, 1, 3));
+        helper.assertBlockPresent(GBFallout.WITHERED_CROPS.block().get(), new BlockPos(5, 1, 5));
+        helper.assertBlockPresent(Blocks.COPPER_BLOCK.weathering().exposed(), new BlockPos(7, 1, 7));
+        var pig = helper.spawn(net.minecraft.world.entity.EntityTypes.PIG, new BlockPos(10, 1, 10));
+        var suited = helper.spawn(net.minecraft.world.entity.EntityTypes.HUSK, new BlockPos(12, 1, 12));
+        suited.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new net.minecraft.world.item.ItemStack(dev.groundburst.content.gear.GBArmor.HAZMAT_HOOD.get()));
+        suited.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new net.minecraft.world.item.ItemStack(dev.groundburst.content.gear.GBArmor.HAZMAT_COAT.get()));
+        suited.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, new net.minecraft.world.item.ItemStack(dev.groundburst.content.gear.GBArmor.HAZMAT_TROUSERS.get()));
+        suited.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, new net.minecraft.world.item.ItemStack(dev.groundburst.content.gear.GBArmor.HAZMAT_BOOTS.get()));
+        var helmeted = helper.spawn(net.minecraft.world.entity.EntityTypes.HUSK, new BlockPos(2, 1, 12));
+        net.minecraft.world.item.ItemStack helmet = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_HELMET);
+        helmeted.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, helmet);
+        float suitWas = suited.getHealth();
+        for (int i = 0; i < 300; i++) {
+            pig.setInvulnerableTime(0);
+            suited.setInvulnerableTime(0);
+            dev.groundburst.content.fallout.BlackRain.soak(level, pig, 1, random);
+            dev.groundburst.content.fallout.BlackRain.soak(level, suited, 1, random);
+            dev.groundburst.content.fallout.BlackRain.soak(level, helmeted, 1, random);
+            pig.setHealth(pig.getMaxHealth());              // (kept alive: it is the burns that are counted)
+        }
+        helper.assertTrue(pig.getLastDamageSource() != null && pig.getLastDamageSource().is(dev.groundburst.content.fluid.ChemLiquidBlock.ACID),
+                "the acid burns a pig out in it");
+        helper.assertTrue(suited.getHealth() >= suitWas && suited.getLastDamageSource() == null, "a full hazmat suit keeps it off");
+        helper.assertTrue(helmeted.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).getDamageValue() > 0, "an iron helmet corrodes");
         helper.succeed();
     }
 

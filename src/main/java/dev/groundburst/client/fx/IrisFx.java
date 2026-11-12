@@ -62,6 +62,7 @@ final class IrisFx {
         assign(api, FxRenderTypes.GLOW_PIPELINE, programs.get(Fx.GLOW));
         assign(api, FxRenderTypes.FIRE_PIPELINE, programs.get(Fx.FIRE));
         assign(api, FxRenderTypes.CLOUD_PIPELINE, programs.get(Fx.CLOUD));
+        assign(api, FxRenderTypes.FAR_GLOW_PIPELINE, programs.get(Fx.GLOW));     // (a nuclear flash over the horizon: glow)
         GroundBurst.LOGGER.info("Blast effects handed to Iris's programs (when a pack is to draw them): {}", programs);
         // The machines' glowmasks (GeckoLib's own pipeline, which Iris does not know): drawn by the pack's emissive entity
         // program, as spider eyes are. Unknown, a pack drew their vertices as long streaks across the sky.

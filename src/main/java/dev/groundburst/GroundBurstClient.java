@@ -44,6 +44,7 @@ public class GroundBurstClient {
         // Models with flat polygons beside their elements: round parts' caps, rings' sides (DESIGN.md §4.4).
         dev.groundburst.client.render.PolygonModels.register(modBus);
         dev.groundburst.client.blast.ClientBlasts.register(modBus);
+        dev.groundburst.client.DevRuns.register();       // the dev test runs leave the mouse alone (DevRuns)
         dev.groundburst.client.fx.Spectacle.register(modBus);
         dev.groundburst.client.fx.LaserFx.register();
         dev.groundburst.client.fx.SearchlightFx.register();

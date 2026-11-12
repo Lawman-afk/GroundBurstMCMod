@@ -135,6 +135,18 @@ public final class GBServerConfig {
             .translation(GBLang.config("radiation.spreadEnabled", "Fallout spreads downwind"))
             .define("spreadEnabled", true);
 
+    public static final ModConfigSpec.BooleanValue BLACK_RAIN = B
+            .comment("Black rain (DESIGN.md §21.10): rain over heavily irradiated land (a strong field at the ground, the nuclear",
+                    "wasteland, under fallout plumes) falls black, and a nuclear ground burst's own cloud rains black for six minutes",
+                    "from 40 seconds after it, whatever the weather. Plants under it die.")
+            .translation(GBLang.config("radiation.blackRain", "Black rain"))
+            .define("blackRain", true);
+    public static final ModConfigSpec.BooleanValue BLACK_RAIN_HARMS = B
+            .comment("Whether black rain harms what is out in it: the fallout it washes down (radiation) and acid burns, armour",
+                    "corroding; a hazmat suit keeps its share out. Off: it only looks and kills plants.")
+            .translation(GBLang.config("radiation.blackRainHarms", "Black rain harms"))
+            .define("blackRainHarms", true);
+
     static {
         B.pop();
         B.translation(GBLang.config("terrain", "Terrain")).comment("Blast aftermath on terrain.").push("terrain");
