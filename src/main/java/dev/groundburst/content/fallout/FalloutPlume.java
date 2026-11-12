@@ -18,9 +18,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
  * @param peak0        its first source's peak dose rate, RAD/h
  * @param halfLife     its sources' half-life, ticks (the burst's own)
  * @param ashRate      Fallout Ash layers it lets fall a second at full strength
+ * @param born         game time of the burst ({@link #UNBORN}: a plume saved before it was kept)
+ * @param rains        a nuclear ground burst's: its cloud rains black for a while whatever the weather (DESIGN.md §21.10)
  */
 public record FalloutPlume(double x, double y, double z, float radius0, float reach, float travelled, float sinceDeposit, float peak0,
-        int halfLife, float ashRate) {
+        int halfLife, float ashRate, long born, boolean rains) {
     public static final Codec<FalloutPlume> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.DOUBLE.fieldOf("x").forGetter(FalloutPlume::x),
             Codec.DOUBLE.fieldOf("y").forGetter(FalloutPlume::y),
@@ -31,8 +33,13 @@ public record FalloutPlume(double x, double y, double z, float radius0, float re
             Codec.FLOAT.fieldOf("since_deposit").forGetter(FalloutPlume::sinceDeposit),
             Codec.FLOAT.fieldOf("peak0").forGetter(FalloutPlume::peak0),
             Codec.INT.fieldOf("half_life").forGetter(FalloutPlume::halfLife),
-            Codec.FLOAT.fieldOf("ash_rate").forGetter(FalloutPlume::ashRate)
+            Codec.FLOAT.fieldOf("ash_rate").forGetter(FalloutPlume::ashRate),
+            Codec.LONG.optionalFieldOf("born", FalloutPlume.UNBORN).forGetter(FalloutPlume::born),
+            Codec.BOOL.optionalFieldOf("rains", false).forGetter(FalloutPlume::rains)
     ).apply(i, FalloutPlume::new));
+
+    /** A plume saved before its burst's time was kept (a game time no burst can have: a backdated one may be below zero). */
+    public static final long UNBORN = Long.MIN_VALUE;
 
     /** Its radius now, blocks. */
     public float radius() {
@@ -52,11 +59,12 @@ public record FalloutPlume(double x, double y, double z, float radius0, float re
     FalloutPlume moved(double dx, double dz) {
         float step = (float) Math.sqrt(dx * dx + dz * dz);
         return new FalloutPlume(this.x + dx, this.y, this.z + dz, this.radius0, this.reach, this.travelled + step, this.sinceDeposit + step,
-                this.peak0, this.halfLife, this.ashRate);
+                this.peak0, this.halfLife, this.ashRate, this.born, this.rains);
     }
 
     /** Having just laid a source. */
     FalloutPlume deposited() {
-        return new FalloutPlume(this.x, this.y, this.z, this.radius0, this.reach, this.travelled, 0, this.peak0, this.halfLife, this.ashRate);
+        return new FalloutPlume(this.x, this.y, this.z, this.radius0, this.reach, this.travelled, 0, this.peak0, this.halfLife, this.ashRate,
+                this.born, this.rains);
     }
 }

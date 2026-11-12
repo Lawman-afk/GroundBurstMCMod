@@ -74,6 +74,7 @@ public final class Freezes {
 
     /** A deep freeze from {@code at}: its front {@code radius} round, its cold snap {@code life} ticks. */
     public static void start(ServerLevel level, Vec3 at, float radius, int life, @Nullable Entity by) {
+        radius = BlastSettings.special(GroundBurst.id("cryo_freeze"), radius);  // the server's settings (DESIGN.md §21.10)
         FreezeJob job = new FreezeJob(NET_IDS.incrementAndGet(), level, at, radius, lifeOverride > 0 ? lifeOverride : life, by);
         RUNNING.computeIfAbsent(level, l -> new ArrayList<>()).add(job);
         PacketDistributor.sendToPlayersInDimension(level, job.startPayload());

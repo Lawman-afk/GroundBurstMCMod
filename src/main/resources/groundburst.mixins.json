@@ -12,6 +12,10 @@
     "ServerExplosionMixin",
     "SpreadingSnowyBlockMixin"
   ],
+  "client": [
+    "ClientLevelRainMixin",
+    "WeatherEffectRendererMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   },

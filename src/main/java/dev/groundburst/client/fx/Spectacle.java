@@ -86,10 +86,13 @@ public final class Spectacle {
         StormFx.register();
         FreezeFx.register();
         ParticleBeamFx.register();
+        FarWaveFx.register();
         modBus.addListener((RegisterGuiLayersEvent event) -> event.registerAboveAll(GroundBurst.id("blast_flash"), (graphics, delta) -> {
             float flash = flash();
             if (flash > 0.002f) {
-                graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), ARGB.color((int) (flash * 255), 0xFFF6E6));
+                // Warm white; clearing after a blinding flash, a pale haze (DESIGN.md §21.10).
+                int colour = ARGB.srgbLerp(haze(), 0xFFFFF6E6, 0xFFE2EAF2) & 0xFFFFFF;
+                graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), ARGB.color((int) (flash * 255), colour));
             }
         }));
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent event) -> { if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return; tick(); });
@@ -110,6 +113,7 @@ public final class Spectacle {
 
     private static void clear() {
         EffectFx.clear();
+        FarWaveFx.clear();
         AnnihilationFx.clear();
         SingularityFx.clear();
         StormFx.clear();
@@ -152,14 +156,26 @@ public final class Spectacle {
         }
         Vec3 eye = mc.gameRenderer.getMainCamera().getPosition();
         BlastFx fx = new BlastFx(start, ticks, mc.level, eye);
-        // Flash: in sight or not, and facing it or not.
-        boolean seen = mc.level.clip(new ClipContext(eye, start.center(), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, mc.player))
+        // Flash: in sight or not, and facing it or not. A nuclear fireball is seen by its top from afar (its foot is behind
+        // whatever stands between), and its flash reaches far, the more so by night (DESIGN.md §21.10, FarFlash).
+        boolean nuclear = FarFlash.nuclear(fx.preset);
+        Vec3 aim = nuclear ? start.center().add(0, fx.fireballRadius(), 0) : start.center();
+        boolean seen = mc.level.clip(new ClipContext(eye, aim, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, mc.player))
                 .getType() == HitResult.Type.MISS;
         Vec3 look = mc.player.getViewVector(1);
-        Vec3 toward = start.center().subtract(eye).normalize();
-        float facing = 0.35f + 0.65f * (float) Math.max(0, look.dot(toward));
+        Vec3 toward = aim.subtract(eye).normalize();
+        float dot = (float) look.dot(toward);
+        float facing = 0.35f + 0.65f * Math.max(0, dot);
         float near = 1 / (1 + (float) (fx.reaches * fx.reaches) / 9);
-        fx.flash = fx.preset.flash() * GBClientConfig.FLASH_STRENGTH.get().floatValue() * near * (seen ? 1 : 0.25f) * facing;
+        float k = GBClientConfig.FLASH_STRENGTH.get().floatValue();
+        float far = nuclear ? FarFlash.share(fx.reaches) : 0;
+        float strength = Math.max(fx.preset.flash() * near, far);
+        fx.flash = strength * k * (seen ? 1 : 0.25f) * facing;
+        if (nuclear && fx.age(ticks) < 20) {
+            fx.farShare = strength * k;                   // (the glow over the horizon: the fireball's own light)
+            fx.skyFlash = 0.7f * strength * k;
+            fx.blind = k > 0 ? FarFlash.blind(strength * k, dot, seen) : 0;
+        }
         if (fx.water != null && mc.player.isUnderWater() && fx.reaches < 3) {
             fx.flash = 0.3f * GBClientConfig.FLASH_STRENGTH.get().floatValue() * near;     // a diver near a charge going off sees it
         }
@@ -791,6 +807,8 @@ public final class Spectacle {
         }
         ticks++;
         trauma = Math.max(0, trauma - 0.035f);
+        BlackRainFx.tick(mc.level);                        // a ground burst's own black rain heard
+        FarWaveFx.tick(mc.level, PUFFS, quality(), mc.gameRenderer.getMainCamera().getPosition());   // far waves' dust
         float q = quality();
         Vec3 eye = mc.gameRenderer.getMainCamera().getPosition();
         EffectFx.tick(PUFFS, q, eye);
@@ -814,6 +832,19 @@ public final class Spectacle {
             SEEN_DROPPED.keySet().removeIf(id -> !(mc.level.getEntity(id) instanceof dev.groundburst.content.launch.MissileEntity));
             LAST_STREAK.keySet().removeIf(id -> !(mc.level.getEntity(id) instanceof dev.groundburst.content.launch.MissileEntity));
         }
+    }
+
+    /** How far the white-out has turned to the haze of a blinding flash clearing (0 to 1). */
+    private static float haze() {
+        double now = now();
+        float most = 0;
+        for (BlastFx fx : BLASTS.values()) {
+            if (fx.blind > 0) {
+                double hold = 1.5 + FarFlash.HOLD * fx.blind;
+                most = Math.max(most, fx.blind * FxLight.smoothstep((float) hold, (float) hold + 40, (float) fx.age(now)));
+            }
+        }
+        return most;
     }
 
     private static float flash() {
@@ -966,6 +997,20 @@ public final class Spectacle {
             event.setGreen(c.y);
             event.setBlue(c.z);
         }
+        float br = BlackRainFx.tint(Minecraft.getInstance().level, Minecraft.getInstance().gameRenderer.getMainCamera().getPosition());
+        if (br > 0) {
+            Vector3f c = BlackRainFx.sooty(event.getRed(), event.getGreen(), event.getBlue(), br);
+            event.setRed(c.x);
+            event.setGreen(c.y);
+            event.setBlue(c.z);
+        }
+        float fl = FarFlash.skyFlare(BLASTS.values(), now());
+        if (fl > 0) {
+            Vector3f c = FarFlash.flared(event.getRed(), event.getGreen(), event.getBlue(), fl);
+            event.setRed(c.x);
+            event.setGreen(c.y);
+            event.setBlue(c.z);
+        }
     }
 
     private static void extract(ExtractLevelRenderStateEvent event) {
@@ -1019,6 +1064,20 @@ public final class Spectacle {
             Vector3f c = fallout(ARGB.red(cloud) / 255f, ARGB.green(cloud) / 255f, ARGB.blue(cloud) / 255f, f * 0.8f);
             event.getRenderState().cloudColor = ARGB.color(ARGB.alpha(cloud), (int) (c.x * 255), (int) (c.y * 255), (int) (c.z * 255));
         }
+        float br = Minecraft.getInstance().level == null ? 0
+                : BlackRainFx.tint(Minecraft.getInstance().level, Minecraft.getInstance().gameRenderer.getMainCamera().getPosition());
+        if (br > 0) {
+            if (sky.skyColor != null) {
+                sky.skyColor = BlackRainFx.sooty(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), br);
+            }
+            int cloud = event.getRenderState().cloudColor;
+            Vector3f c = BlackRainFx.sooty(ARGB.red(cloud) / 255f, ARGB.green(cloud) / 255f, ARGB.blue(cloud) / 255f, br);
+            event.getRenderState().cloudColor = ARGB.color(ARGB.alpha(cloud), (int) (c.x * 255), (int) (c.y * 255), (int) (c.z * 255));
+        }
+        float fl = FarFlash.skyFlare(BLASTS.values(), now());
+        if (fl > 0 && sky.skyColor != null) {
+            sky.skyColor = FarFlash.flared(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), fl);   // a nuclear flash lights the sky
+        }
         FxLight.update(sky);                               // smoke is lit by this frame's (tinted) sky
     }
 
@@ -1027,7 +1086,8 @@ public final class Spectacle {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null || (BLASTS.isEmpty() && PUFFS.size() == 0 && DEBRIS.size() == 0 && SpentStages.isEmpty() && !FalloutFx.active(level)
-                && AnnihilationFx.isEmpty() && SingularityFx.isEmpty() && StormFx.isEmpty() && FreezeFx.isEmpty() && ParticleBeamFx.isEmpty())) {
+                && AnnihilationFx.isEmpty() && SingularityFx.isEmpty() && StormFx.isEmpty() && FreezeFx.isEmpty() && ParticleBeamFx.isEmpty()
+                && dev.groundburst.client.fallout.FalloutClient.clouds().isEmpty())) {
             return;
         }
         SubmitNodeCollector collector = event.getSubmitNodeCollector();
@@ -1050,6 +1110,8 @@ public final class Spectacle {
             fireball(fx, t, camera.pos, fire, cores);
             shell(fx, t, camera.pos, shells);
         }
+        FarFlash.submit(BLASTS.values(), now, camera.pos, collector, poseStack);   // far nuclear flashes over the horizon
+        BlackRainFx.submit(collector, poseStack, level, camera.pos, now);          // a ground burst's own black rain
         if (!shells.isEmpty()) {
             FxRenderTypes.submit(collector, poseStack, FxRenderTypes.glow(SHOCK), (pose, buffer) -> spheres(buffer, pose, shells));
         }

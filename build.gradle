@@ -305,6 +305,8 @@ dependencies {
         }
     }
     // Distant Horizons (optional at runtime): -PwithDH runs it in the dev client, its far terrain drawn round the effects.
+    // Its API is compiled against for compat/DistantHorizons (the far aftermath hands it the chunks it changes).
+    modCompileOnly("maven.modrinth:distanthorizons:${dh_version}") { transitive = false }
     if (providers.gradleProperty('withDH').isPresent()) {
         modRuntimeOnly "maven.modrinth:distanthorizons:${dh_version}"
     }

@@ -107,7 +107,9 @@ public final class Radiation {
             field *= (float) Shielding.ambient(level, eye);
         }
         float blocks = nearby ? Emitters.blocks(level, eye) : 0;
-        float outside = (field + blocks) * (1 - GBArmor.radiationProtection(body));
+        // Black rain washes fallout onto a body out in it (DESIGN.md §21.10).
+        float rain = dev.groundburst.content.fallout.BlackRain.rate(level, body);
+        float outside = (field + blocks + rain) * (1 - GBArmor.radiationProtection(body));
         float carried = nearby ? Emitters.carried(body) : 0;
         return (outside + carried) * uptake(body);
     }

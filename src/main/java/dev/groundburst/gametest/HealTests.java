@@ -62,6 +62,8 @@ final class HealTests {
         GBGameTests.test("heal_drops_what_players_built", GBGameTests.FLOOR_16, 20, HealTests::dropsPlayers);
         GBGameTests.test("heal_record_survives_saving", GBGameTests.FLOOR_16, 20, HealTests::saving);
         GBGameTests.test("heal_waits_as_the_server_says", GBGameTests.FLOOR_16, 20, HealTests::schedule);
+        GBGameTests.test("heal_waits_by_the_clock_set", GBGameTests.FLOOR_16, 20, HealTests::clock);
+        GBGameTests.test("heal_times_read_and_written_in_units", GBGameTests.FLOOR_16, 20, HealTests::durations);
         GBGameTests.test("heal_leaves_explosives_and_exclusions", GBGameTests.FLOOR_16, 20, HealTests::exclusions);
         GBGameTests.test("heal_thaws_a_freeze", GBGameTests.FLOOR_16, 20, HealTests::freeze);
         GBGameTests.test("heal_turns_the_wasteland_back", GBGameTests.FLOOR_16, 20, HealTests::biomes);
@@ -227,6 +229,40 @@ final class HealTests {
         helper.assertTrue(Healer.dueAt(morning, 0, 0, 30_000, 3, 4), "sunrise on day 4: it heals");
         helper.assertTrue(Healer.dueAt(morning, 0, 0, 30, -1, -1), "where there is no day and night, the wait alone");
         helper.assertFalse(Healer.dueAt(base.withSchedule(true, HealSchedule.COMMAND_ONLY, 0, 0), 0, 0, 1_000_000, 3, 9), "never by itself");
+        helper.succeed();
+    }
+
+    /**
+     * The wait counted by the clock the server sets (DESIGN.md §21.10): played time, or real time, so damage done before a
+     * server was switched off has waited while it was off; a record made before real time was kept counts played time.
+     */
+    private static void clock(GameTestHelper helper) {
+        HealSettings played = HealSettings.forTests(HealPlayerBlocks.KEEP, 0).withSchedule(true, HealSchedule.AFTER_WAIT, 100, 0);
+        HealSettings real = played.withClock(dev.groundburst.config.GBServerConfig.HealClock.REAL);
+        long wall = System.currentTimeMillis();
+        // Damaged at game time 1 000, six real seconds ago (the server was off for them); the game's clock now 1 010.
+        helper.assertFalse(Healer.dueForTests(played, 1_000, wall - 6_000, 1_010), "by played time, 10 ticks of a 100-tick wait");
+        helper.assertTrue(Healer.dueForTests(real, 1_000, wall - 6_000, 1_010), "by the real clock, 6 s of a 5 s wait");
+        helper.assertFalse(Healer.dueForTests(real, 1_000, wall - 1_000, 1_010), "a real second is not five");
+        helper.assertFalse(Healer.dueForTests(real, 1_000, -1, 1_010), "a record from before keeps to played time");
+        helper.assertTrue(Healer.dueForTests(real, 1_000, -1, 1_100), "and heals when that wait is over");
+        helper.succeed();
+    }
+
+    /** Times written as the config writes them: units, several together, a bare number as seconds; and back. */
+    private static void durations(GameTestHelper helper) {
+        java.util.function.ToLongFunction<String> s = dev.groundburst.config.Durations::seconds;
+        helper.assertTrue(s.applyAsLong("5m") == 300 && s.applyAsLong("300") == 300 && s.applyAsLong("30s") == 30, "seconds and minutes");
+        helper.assertTrue(s.applyAsLong("1d12h") == 129_600 && s.applyAsLong("1.5h") == 5_400 && s.applyAsLong("2w") == 1_209_600,
+                "days with hours, a fraction, weeks");
+        helper.assertTrue(s.applyAsLong("7 days") == 604_800 && s.applyAsLong("12 Hours") == 43_200, "the units' longer names");
+        helper.assertTrue(s.applyAsLong("") < 0 && s.applyAsLong("soon") < 0 && s.applyAsLong("5x") < 0 && s.applyAsLong("h5") < 0,
+                "not times");
+        helper.assertTrue(dev.groundburst.config.Durations.format(129_600).equals("1d 12h") && dev.groundburst.config.Durations.format(300)
+                .equals("5m") && dev.groundburst.config.Durations.format(45).equals("45s"), "written back: "
+                + dev.groundburst.config.Durations.format(129_600));
+        helper.assertTrue(!dev.groundburst.config.Durations.valid("53w", dev.groundburst.config.GBServerConfig.MAX_HEAL_WAIT)
+                && dev.groundburst.config.Durations.valid("52w", dev.groundburst.config.GBServerConfig.MAX_HEAL_WAIT), "the wait's limit");
         helper.succeed();
     }
 

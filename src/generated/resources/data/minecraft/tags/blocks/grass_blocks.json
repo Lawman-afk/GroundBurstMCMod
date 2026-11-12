@@ -1,5 +1,17 @@
 {
   "values": [
+    {
+      "id": "minecraft:grass_block",
+      "required": false
+    },
+    {
+      "id": "minecraft:podzol",
+      "required": false
+    },
+    {
+      "id": "minecraft:mycelium",
+      "required": false
+    },
     "groundburst:dead_grass_block",
     "groundburst:frosted_grass_block"
   ]

@@ -1,0 +1,44 @@
+{
+  "scorch": [
+    {
+      "from": [
+        "minecraft:grass_block",
+        "minecraft:mycelium",
+        "minecraft:podzol"
+      ],
+      "to": "minecraft:dirt"
+    },
+    {
+      "from": [
+        "minecraft:snow_block",
+        "minecraft:powder_snow"
+      ],
+      "to": "air"
+    },
+    {
+      "from": [
+        "minecraft:farmland",
+        "minecraft:dirt_path"
+      ],
+      "to": "minecraft:dirt"
+    }
+  ],
+  "shock": [
+    {
+      "from": [
+        "#forge:glass",
+        "#forge:glass_panes",
+        "#minecraft:leaves",
+        "#minecraft:doors",
+        "#minecraft:trapdoors",
+        "#minecraft:flowers",
+        "minecraft:snow",
+        "minecraft:torch",
+        "minecraft:wall_torch",
+        "minecraft:lantern",
+        "$replaceable"
+      ],
+      "to": "air"
+    }
+  ]
+}

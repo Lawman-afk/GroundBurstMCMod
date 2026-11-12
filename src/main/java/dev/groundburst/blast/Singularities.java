@@ -133,6 +133,10 @@ public final class Singularities {
      * {@code feed} times the cube root of what it eats, at most to {@code max}.
      */
     public static void start(ServerLevel level, Vec3 at, float seed, float feed, float max, int life, @Nullable Entity by) {
+        // The server's settings (DESIGN.md §21.10): its seed and its greatest reach scaled alike.
+        float k = BlastSettings.special(GroundBurst.id("singularity"), 1);
+        seed *= k;
+        max *= k;
         int ticks = lifeOverride > 0 ? lifeOverride : life;
         SingularityJob job = new SingularityJob(NET_IDS.incrementAndGet(), level, BlockPos.containing(at), seed, feed, max, ticks, by);
         RUNNING.computeIfAbsent(level, l -> new ArrayList<>()).add(job);

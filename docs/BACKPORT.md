@@ -5,7 +5,19 @@ branch, `1.20.1`, carries the 1.21.1 build back once more, to Minecraft 1.20.1 o
 players are (main's DESIGN.md §30). It is brought up to the 1.21.1 branch every once in a while, as a whole, as that
 branch is brought up to main.
 
-- **Last brought up to:** the `1.21.1` branch at `9a3b8c05` (main at `97a5792e`, 2026-11-11: the site check,
+- **Last brought up to:** the `1.21.1` branch at `e217cd45` (main at `4c88e09b`, 2026-11-12: a player's wishlist
+  built, main's DESIGN.md §21.10: healing by a real clock with its times in units, settings by weapon, the terrain tables
+  as data with swap rules, the far flash, black rain and the far aftermath. This branch's own pieces: the black rain's
+  colour through 1.20.1's `color(FFFF)` (`port.py`'s fix of the 1.21.1 build's mixin; its refmap names `m_85950_`);
+  the far glow's shader file of its own, `rendertype_fx_far_glow.json` (OWN: a 1.20.1 core shader sets its own
+  blending, added, and the clouds' vertex shader here wants the view's rotation); the terrain tables' block names as
+  1.20.1's (`port_terrain_table`: 1.20.3's short grass is 1.20.1's grass, in the code's built-in tables too); NeoForge's
+  `c:sandstone/blocks` as Forge's `forge:sandstone` (`TAG_RENAMES` and `legacy/Tags2`); `ServerLifecycleHooks`'
+  Forge package; black rain's corrosion through 1.20.1's `hurtAndBreak` with its breaking callback; Distant Horizons'
+  API on the compile path (`modCompileOnly`) for `compat/DistantHorizons`. 462 GameTests; the port check (with the
+  1.21.1 build's far reach scenes) plain, under Oculus with Complementary and with Distant Horizons (1 391 changed
+  chunks handed to it), and its reobfJar's in a real Forge 47.4.28 client (prod_client.py: every check OK, the
+  black rain and the far wave drawn as in the dev runs); before it, at `9a3b8c05` (main at `97a5792e`, 2026-11-11: the site check,
   `port/SiteCheck`, which here asks a part itself whether it is closed in rock). Synced cleanly; before it, at `1cfbf920`
   (the Depth Charge Rack holds its rest pose while it works; a carried machine's client copy carried too,
   `compat/create/CarriedClient`; the 1.21.1 build's own test-run hooks left out, this branch has its own); before it, at

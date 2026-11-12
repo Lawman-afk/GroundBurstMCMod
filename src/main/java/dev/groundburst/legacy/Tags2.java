@@ -34,7 +34,8 @@ public final class Tags2 {
             Map.entry("gunpowders", "gunpowder"),
             Map.entry("sands/colorless", "sand/colorless"),
             Map.entry("sands/red", "sand/red"),
-            Map.entry("netherracks", "netherrack"));
+            Map.entry("netherracks", "netherrack"),
+            Map.entry("sandstone/blocks", "sandstone"));
 
     /** The common tag {@code c:<path>} (NeoForge 1.21's) as Forge 1.20.1's: {@code forge:<path>}, or its own name. */
     public static ResourceLocation common(String path) {

@@ -1,7 +1,7 @@
 {
   "title": "Alert Display and Alarm Relay",
   "icon": "groundburst:alert_display",
-  "order": 18,
+  "order": 20,
   "items": [
     "groundburst:alert_display",
     "groundburst:alarm_relay"

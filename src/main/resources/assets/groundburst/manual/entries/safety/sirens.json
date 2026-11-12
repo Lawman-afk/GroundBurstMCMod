@@ -1,7 +1,7 @@
 {
   "title": "Sirens, klaxons and bells",
   "icon": "groundburst:air_raid_siren",
-  "order": 16,
+  "order": 18,
   "items": [
     "groundburst:air_raid_siren",
     "groundburst:klaxon",

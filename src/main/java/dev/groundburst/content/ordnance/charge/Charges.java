@@ -442,7 +442,8 @@ public final class Charges {
         float reach = plumeReach(kind);
         if (reach > 0) {
             dev.groundburst.content.fallout.Plumes.start(level, at, Math.max(4, contaminationRadius(kind) * 0.5f * scale), falloutPeak(kind) * 0.5f,
-                    dev.groundburst.content.fallout.Plumes.halfLife(falloutPeak(kind), contaminationTicks(kind)), reach * scale, plumeAsh(kind));
+                    dev.groundburst.content.fallout.Plumes.halfLife(falloutPeak(kind), contaminationTicks(kind)), reach * scale, plumeAsh(kind),
+                    kind.nuclear());                       // a nuclear burst's cloud rains black for a while (DESIGN.md §21.10)
         }
     }
 

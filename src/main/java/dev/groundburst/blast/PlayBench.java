@@ -166,10 +166,10 @@ public final class PlayBench {
         if (HEAL) {
             GBServerConfig.HEAL_ENABLED.set(true);
             GBServerConfig.HEAL_SCHEDULE.set(GBServerConfig.HealSchedule.AFTER_WAIT);
-            GBServerConfig.HEAL_WAIT_SECONDS.set(20);
-            GBServerConfig.HEAL_RANDOM_SECONDS.set(6);
+            GBServerConfig.HEAL_WAIT.set("20s");
+            GBServerConfig.HEAL_RANDOM_EXTRA.set("6s");
             GBServerConfig.HEAL_BLOCKS_PER_SECOND.set(150);
-            GBServerConfig.HEAL_LONGEST_SECONDS.set(30);
+            GBServerConfig.HEAL_LONGEST.set("30s");
         } else {
             GBServerConfig.HEAL_ENABLED.set(false);
         }

@@ -35,6 +35,11 @@ public final class ChunkScars {
 
     /** Game time of the last damage here that holds healing off. */
     long changed;
+    /**
+     * Real time (milliseconds since 1970) of that damage, for a wait counted by the real clock (DESIGN.md §21.10); -1 for a
+     * record made before it was kept, which counts played time until it is damaged again.
+     */
+    long changedAt = -1;
     /** The day (since the clock began) of that damage, and the day its wait ran out (MORNING); -1 none or not yet. */
     long day = -1, waitedDay = -1;
     /** This chunk's share (0 to 1) of the random extra wait, fixed when it was first damaged. */
@@ -151,6 +156,7 @@ public final class ChunkScars {
     /** Fresh damage: the wait starts again, and so does any healing already under way. */
     void heldOff(long now, long day) {
         this.changed = now;
+        this.changedAt = System.currentTimeMillis();
         this.day = day;
         this.waitedDay = -1;
         this.started = -1;
@@ -355,10 +361,11 @@ public final class ChunkScars {
         ).apply(i, SavedBiomes::new));
     }
 
-    private record Saved(long changed, long day, long waitedDay, float jitter, long started, int total, boolean rushed,
+    private record Saved(long changed, long changedAt, long day, long waitedDay, float jitter, long started, int total, boolean rushed,
             List<SavedSection> sections, List<CompoundTag> entities, List<SavedBiomes> biomes) {
         static final MapCodec<Saved> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Codec.LONG.fieldOf("changed").forGetter(Saved::changed),
+                Codec.LONG.optionalFieldOf("changed_at", -1L).forGetter(Saved::changedAt),
                 Codec.LONG.optionalFieldOf("day", -1L).forGetter(Saved::day),
                 Codec.LONG.optionalFieldOf("waited_day", -1L).forGetter(Saved::waitedDay),
                 Codec.FLOAT.optionalFieldOf("jitter", 0f).forGetter(Saved::jitter),
@@ -407,6 +414,7 @@ public final class ChunkScars {
     private static ChunkScars of(Saved saved) {
         ChunkScars c = new ChunkScars();
         c.changed = saved.changed;
+        c.changedAt = saved.changedAt;
         c.day = saved.day;
         c.waitedDay = saved.waitedDay;
         c.jitter = saved.jitter;
@@ -447,7 +455,7 @@ public final class ChunkScars {
             }
             b.add(new SavedBiomes(e.getIntKey(), cells));
         }
-        return new Saved(this.changed, this.day, this.waitedDay, this.jitter, this.started, this.total, this.rushed, s,
+        return new Saved(this.changed, this.changedAt, this.day, this.waitedDay, this.jitter, this.started, this.total, this.rushed, s,
                 List.copyOf(this.entities), b);
     }
 }

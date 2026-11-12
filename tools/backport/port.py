@@ -52,7 +52,10 @@ OWN = {"build.gradle", "gradle.properties", "settings.gradle", "src/main/templat
        # The clouds' shader (the 1.21.1 build's own): 1.20.1's fog distance takes the model view.
        "src/main/resources/assets/groundburst/shaders/core/rendertype_fx_cloud.vsh",
        "src/main/resources/assets/groundburst/shaders/core/rendertype_fx_cloud.fsh",
-       "src/main/resources/assets/groundburst/shaders/core/rendertype_fx_cloud.json"}
+       "src/main/resources/assets/groundburst/shaders/core/rendertype_fx_cloud.json",
+       # The far glow's (main's DESIGN.md §21.10): a 1.20.1 core shader sets its own blending (added, as the glow is), and
+       # the clouds' vertex shader here wants the view's rotation.
+       "src/main/resources/assets/groundburst/shaders/core/rendertype_fx_far_glow.json"}
 
 
 def git(*args: str) -> bytes:
@@ -109,6 +112,7 @@ IMPORTS = {
     "net.neoforged.fml.loading.FMLPaths": "net.minecraftforge.fml.loading.FMLPaths",
     "net.neoforged.fml.loading.FMLEnvironment": "net.minecraftforge.fml.loading.FMLEnvironment",
     "net.neoforged.neoforge.common.NeoForge": "net.minecraftforge.common.MinecraftForge",
+    "net.neoforged.neoforge.server.ServerLifecycleHooks": "net.minecraftforge.server.ServerLifecycleHooks",
     "net.neoforged.neoforge.common.ModConfigSpec": "net.minecraftforge.common.ForgeConfigSpec",
     "net.neoforged.neoforge.common.SoundActions": "net.minecraftforge.common.SoundActions",
     "net.neoforged.neoforge.common.Tags": "net.minecraftforge.common.Tags",
@@ -1574,6 +1578,20 @@ FILE_FIXES_BEFORE: dict[str, list] = {
     ],
 }
 FILE_FIXES: dict[str, list] = {
+    # The built-in terrain tables: 1.20.3's short grass is 1.20.1's grass (as the data's, port_terrain_table).
+    "src/main/java/dev/groundburst/blast/TerrainTable.java": [
+        swap('"minecraft:short_grass"', '"minecraft:grass"'),
+    ],
+    # Black rain's corrosion (main's DESIGN.md §21.10): 1.20.1 wears an item down with a callback for its breaking.
+    "src/main/java/dev/groundburst/content/fallout/BlackRain.java": [
+        swap("worn.hurtAndBreak(1, body, slot);", "worn.hurtAndBreak(1, body, e -> e.broadcastBreakEvent(slot));"),
+    ],
+    # Black rain's colour: 1.20.1's rain vertices take their colour through color(FFFF) (1.21.1's setColor).
+    "src/main/java/dev/groundburst/mixin/WeatherEffectRendererMixin.java": [
+        swap("Lcom/mojang/blaze3d/vertex/VertexConsumer;setColor(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;",
+             "Lcom/mojang/blaze3d/vertex/VertexConsumer;color(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;"),
+        swap("this version's way: 1.21.1 draws its rain", "this version's way: 1.20.1 draws its rain"),
+    ],
     # Forge 1.20.1 makes a mod with no arguments: its bus and container are found; this branch's stand-ins start first,
     # and the client half (no mod of its own here) is started by the mod on the client.
     "src/main/java/dev/groundburst/GroundBurst.java": [
@@ -1688,7 +1706,7 @@ FILE_FIXES: dict[str, list] = {
         swap('static final boolean IRIS = net.minecraftforge.fml.ModList.get().isLoaded("iris");',
              'static final boolean IRIS = net.minecraftforge.fml.ModList.get().isLoaded("iris")\n'
              '            || net.minecraftforge.fml.ModList.get().isLoaded("oculus");'),
-        after("    private static @Nullable ShaderInstance cloudShader;\n",
+        after("    private static @Nullable ShaderInstance cloudShader, farGlowShader;\n",
               "    /** The glow's shader: the eyes shader, its own file blending it additively (1.20.1's shaders set their blending). */\n"
               "    private static @Nullable ShaderInstance glowShader;\n"),
         after("                        shader -> cloudShader = shader);\n",
@@ -1844,7 +1862,8 @@ DATA_FOLDERS = {"recipe": "recipes", "loot_table": "loot_tables", "advancement":
 TAG_RENAMES = {"glass_blocks": "glass", "glass_blocks/colorless": "glass/colorless", "glass_panes/colorless": "glass_panes/colorless",
                "slime_balls": "slimeballs", "sands": "sand", "gravels": "gravel", "stones": "stone", "cobblestones": "cobblestone",
                "obsidians": "obsidian", "strings": "string", "leathers": "leather", "gunpowders": "gunpowder",
-               "sands/colorless": "sand/colorless", "sands/red": "sand/red", "netherracks": "netherrack"}
+               "sands/colorless": "sand/colorless", "sands/red": "sand/red", "netherracks": "netherrack",
+               "sandstone/blocks": "sandstone"}
 # c: fluid tags that are vanilla's on 1.20.1.
 VANILLA_FLUID_TAGS = {"water": "minecraft:water", "lava": "minecraft:lava"}
 # c: tags Forge 1.20.1 has no counterpart of: the mod's own here (src/main/resources/data/groundburst/tags, this branch's;
@@ -1938,7 +1957,29 @@ def port_data_json(path: str, data: bytes) -> bytes | None:
         obj = port_tag(obj, "/tags/fluids/" in path)
     elif "/worldgen/structure/" in path:
         obj = port_site(obj)
+    elif "/groundburst/terrain_table/" in path:
+        obj = port_terrain_table(obj)
     return (json.dumps(obj, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+
+
+def port_terrain_table(obj):
+    """A terrain table's rules (main's DESIGN.md §21.7, §21.10): the blocks they name by 1.20.1's ids (PALETTE_RENAMES:
+    1.20.3's short grass is 1.20.1's grass); blocks 1.20.1 has not at all (1.21's bush and dry grass) stay, taking nothing."""
+    def rename(text: str) -> str:
+        for old, (new, _) in PALETTE_RENAMES.items():
+            text = re.sub(r"(?<![\w:])" + re.escape(old) + r"(?![\w])", new, text)
+        return text
+
+    def walk(o):
+        if isinstance(o, dict):
+            return {k: walk(v) for k, v in o.items()}
+        if isinstance(o, list):
+            return [walk(v) for v in o]
+        if isinstance(o, str):
+            return rename(o)
+        return o
+
+    return walk(obj)
 
 
 def port_site(obj):

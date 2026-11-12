@@ -499,9 +499,13 @@ final class BlastJob implements Blast {
             f.kill(k);
             return;
         }
-        if (r <= this.profile.structural() && this.table.blowsOut(state)) {
-            write(this.pos, hollow(this.pos));             // blown out; the shock carries on through the gap
-            return;
+        if (r <= this.profile.structural()) {
+            BlockState out = this.table.shocked(state, this.random);
+            if (out != null) {
+                // Blown out (or broken, by a swap rule: DESIGN.md §21.10); the shock carries on through the gap.
+                write(this.pos, out.isAir() ? hollow(this.pos) : out);
+                return;
+            }
         }
         f.kill(k);                                         // (the ground pass scorches and sets fires)
     }
@@ -581,7 +585,7 @@ final class BlastJob implements Blast {
         // it and nothing catches fire on it.
         boolean wet = !this.level.getBlockState(this.pos).getFluidState().isEmpty();
         if (dist <= p.scorch() && dist / p.scorch() < edge && this.random.nextFloat() > 0.08f) {
-            BlockState scorched = this.table.scorched(this.level.getBlockState(this.pos));
+            BlockState scorched = this.table.scorched(this.level.getBlockState(this.pos), this.random);
             if (scorched != null) {
                 write(this.pos, scorched);
                 if (this.table.blowsOut(this.level.getBlockState(above))) {
@@ -590,7 +594,7 @@ final class BlastJob implements Blast {
             }
         }
         if (!wet && dist <= p.fire() && this.random.nextFloat() < 0.6f * (1 - dist / Math.max(1, p.fire()))) {
-            if (this.table.nuclear() && this.random.nextFloat() < ASH_SHARE) {
+            if (this.random.nextFloat() < this.table.ash()) {
                 // What the firestorm left: a layer or two of ash, put down after the front like rubble.
                 this.rubbleAt.add(above.asLong());
                 this.rubbleState.add(dev.groundburst.content.fallout.GBFallout.ASH.block().get().layers(1 + this.random.nextInt(2)));
@@ -846,7 +850,9 @@ final class BlastJob implements Blast {
         if (isProtected() || !this.level.isLoaded(this.pos)) {
             return;
         }
-        BlockState lined = this.table.lining(this.level.getBlockState(this.pos));
+        // How far out across the lining it stands, for a swap rule that fades (DESIGN.md §21.10).
+        float t = (float) Mth.clamp((Math.sqrt(dx * dx + dy * dy + dz * dz) - this.profile.crater()) / Math.max(1, reach - this.profile.crater()), 0, 1);
+        BlockState lined = this.table.lining(this.level.getBlockState(this.pos), this.random, t);
         if (lined != null) {
             write(this.pos, lined);
         }

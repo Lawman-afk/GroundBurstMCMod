@@ -264,7 +264,7 @@ final class HullBlast {
             BlastProfile p = HullBlast.this.profile;
             RandomSource random = HullBlast.this.random;
             if (d <= p.scorch() && random.nextFloat() > 0.08f) {
-                BlockState scorched = HullBlast.this.table.scorched(state);
+                BlockState scorched = HullBlast.this.table.scorched(state, random);
                 if (scorched != null && hull.set(pos, scorched)) {
                     state = scorched;
                 }
@@ -278,7 +278,7 @@ final class HullBlast {
             if (at == null || !hull.state(above).isAir()) {
                 return;
             }
-            if (HullBlast.this.table.nuclear() && random.nextFloat() < BlastJob.ASH_SHARE) {
+            if (random.nextFloat() < HullBlast.this.table.ash()) {
                 hull.set(above, dev.groundburst.content.fallout.GBFallout.ASH.block().get().layers(1 + random.nextInt(2)));
             } else if (BaseFireBlock.canBePlacedAt(HullBlast.this.level, at, Direction.UP)) {
                 hull.set(above, BaseFireBlock.getState(HullBlast.this.level, at));

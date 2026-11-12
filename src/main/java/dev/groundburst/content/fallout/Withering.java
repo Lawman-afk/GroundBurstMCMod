@@ -27,7 +27,7 @@ public final class Withering {
     public static final float AREA_PER_COLUMN = 64;
     public static final int MAX_COLUMNS = 1_500;
     /** How deep a column is looked through from its top. */
-    private static final int DEPTH = 32;
+    static final int DEPTH = 32;
 
     private Withering() {}
 
