@@ -577,7 +577,7 @@ public final class FarAftermath {
 
     /** What the far aftermath has done since the server started (the blast bench reports it). */
     public static final class Stats {
-        public static long chunks, changed, convertNanos, dhNanos, ticks, tickNanos, maxTickNanos, passChunks;
+        public static long chunks, changed, convertNanos, dhNanos, ticks, tickNanos, maxTickNanos, passChunks, lastTickNanos;
         public static long passFrom = -1, passTo = -1;
 
         private Stats() {}
@@ -593,6 +593,7 @@ public final class FarAftermath {
             Stats.ticks++;
             Stats.tickNanos += nanos;
             Stats.maxTickNanos = Math.max(Stats.maxTickNanos, nanos);
+            Stats.lastTickNanos += nanos;
         }
 
         public static void reset() {

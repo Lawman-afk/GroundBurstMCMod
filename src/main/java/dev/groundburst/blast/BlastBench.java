@@ -251,7 +251,7 @@ public final class BlastBench {
             }
         }
         csv.append("tick,tick_ms,blast_ms,shock,terrain,blocks,phase,rays,ray_room,chunks_held,chunks_loaded,sections,rim,deferred,heap_mb,fps,"
-                + "frame_worst_ms,note\n");
+                + "frame_worst_ms,far_ms,note\n");
         fired = level.getGameTime();
         dev.groundburst.content.fallout.FarAftermath.Stats.reset();
         stage = Stage.RUNNING;
@@ -307,7 +307,9 @@ public final class BlastBench {
                 .append(s == null ? 0 : s.rays()).append(',').append(s == null ? 0 : s.rayRoom()).append(',')
                 .append(s == null ? 0 : s.chunks()).append(',').append(loaded).append(',').append(s == null ? 0 : s.sections()).append(',')
                 .append(s == null ? 0 : s.rim()).append(',').append(s == null ? 0 : s.deferred()).append(',').append(heap >> 20).append(',')
-                .append(f).append(',').append(ms(frame)).append(',').append(note).append('\n');
+                .append(f).append(',').append(ms(frame)).append(',')
+                .append(ms(dev.groundburst.content.fallout.FarAftermath.Stats.lastTickNanos)).append(',').append(note).append('\n');
+        dev.groundburst.content.fallout.FarAftermath.Stats.lastTickNanos = 0;
         if (job == null) {
             if (t >= TAIL_TICKS) {
                 finish(level, "");                         // (a weapon that is not a blast: recorded for the tail from its burst)

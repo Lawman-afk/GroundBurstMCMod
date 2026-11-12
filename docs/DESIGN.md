@@ -4905,7 +4905,12 @@ builder left out of the jar.
   the first version forced each chunk through NeoForge's ticket controller, which loads the chunk there and then, inside
   the tick, and changed the chunks it found loaded without a budget; the server fell 20 s behind for two minutes and held
   up to 18 000 chunks. Now its ticks average 7.9 ms through the blast and the pass (14 over 50 ms, the blast's own), the
-  far aftermath's share 0.84 ms; the pass saw 39 902 chunks on disk and changed 24 047 of them (0.11 ms each) in 157 s. `compat/DistantHorizons`
+  far aftermath's share 0.84 ms; the pass saw 39 902 chunks on disk and changed 24 047 of them (0.11 ms each) in 157 s.
+  Every changed chunk is handed to Distant Horizons (0.003 ms each), and from 400 blocks up the far view shows the crater,
+  the charred land and the wasteland's water round it, the browned forests beyond. The few far-aftermath ticks over its
+  budget (28-39 ms, the CSV's `far_ms`) are young garbage collections falling in them (to the millisecond in a flight
+  recording): over the pass the far aftermath allocated about 3 GB of the 480 GB allocated, most of it by the game's
+  chunk loading (the pass's 40 000 loads) and by Distant Horizons' own terrain generation. `compat/DistantHorizons`
   hands each changed chunk to DH (its API's `overwriteChunkDataAsync(level, [chunk, level])`, found by the level wrapper
   that wraps the server level). Client: `client/fx/FarWaveFx` (dust thrown up along the wave within 320 blocks of the
   camera's bearing, every 5 blocks, every other tick, over loaded ground; the jolt as it passes).
