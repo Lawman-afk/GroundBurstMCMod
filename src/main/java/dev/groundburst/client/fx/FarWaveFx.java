@@ -45,6 +45,18 @@ final class FarWaveFx {
     }
 
     /** Once a client tick: dust thrown up along each wave near the camera, and the jolt of one passing it. */
+    /**
+     * The dust a column throws up: earth where things grow (grass, leaves and plants are torn up, as the blast's own dust
+     * has it), spray over water, the ground's own colour otherwise; greyed a little with the dust of the air.
+     */
+    static int dust(ClientLevel level, BlockPos at) {
+        if (!level.getBlockState(at).getFluidState().isEmpty()) {
+            return 0xC9CED2;
+        }
+        int colour = BlastFx.earthColor(level, at);
+        return Puffs.lerpRgb(colour == 0 ? 0x9A8A70 : colour, 0x9A8A70, 0.35f);
+    }
+
     static void tick(ClientLevel level, Puffs puffs, float quality, Vec3 camera) {
         if (WAVES.isEmpty()) {
             return;
@@ -87,10 +99,7 @@ final class FarWaveFx {
                 }
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, column.getX(), column.getZ());
                 BlockPos under = new BlockPos(column.getX(), ground - 1, column.getZ());
-                int colour = level.getBlockState(under).getMapColor(level, under).col;
-                if (colour == 0) {
-                    colour = 0x9A8A70;
-                }
+                int colour = dust(level, under);
                 Puffs.Puff p = new Puffs.Puff();
                 p.kind = Puffs.Kind.DUST;
                 p.x = px;

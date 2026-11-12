@@ -116,8 +116,8 @@ final class BlastFx {
         return c.add(0, this.preset.fireballRise() * crater() / 20 * t, 0);
     }
 
-    /** The colour of the ground at {@code at}: soil for grass and plants (they are torn up). */
-    private static int earthColor(ClientLevel level, BlockPos at) {
+    /** The colour of the ground at {@code at}: soil for grass and plants (they are torn up). The far wave's dust too. */
+    static int earthColor(ClientLevel level, BlockPos at) {
         MapColor map = level.getBlockState(at).getMapColor(level, at);
         return map == MapColor.GRASS || map == MapColor.PLANT || map == MapColor.NONE ? MapColor.DIRT.col : map.col;
     }
