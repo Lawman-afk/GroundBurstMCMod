@@ -5,7 +5,9 @@ NeoForge 21.1 for players still on that version. It is not kept in step with eve
 every once in a while, as a whole.
 
 - **Fixed 2026-11-12** (a player's report of FPS drops on 1.20.1, whose build is this one's): this branch's `client/render/PolyGeoModel` knew the GeckoLib models it had given their polygon meshes by equality, and GeckoLib 4's baked model is a record whose hash its top bones' cube counts make, so a model with a mesh on a top bone (the five superweapons, the Blast Doors, the howitzer, the mortar, the searchlight, the Warning Beacon) was lost to it once its mesh was in: every frame read its file again and added its mesh once more. Its models grew a mesh a frame (the Arms Dealer from its 95 cubes past 2000 within seconds) and drew ever slower (the Particle Uplink Cannon 51 ms a frame after a few seconds in view, the SCUD Storm 30, the War Factory 21). Now known by identity: each 2 ms or under, its cubes steady (`runFpsCheck -PfpsMachines=true`). Main's and the 26.1.2 build's copy the model and never had it.
-- **Last brought up to:** `main` at `4c88e09b` (2026-11-12: a player's wishlist built, main's DESIGN.md §21.10: healing by a
+- **Last brought up to:** `main` at `15431b92` (2026-11-12: version 0.12.0, released for all four versions as
+  `groundburst-mc1.21.1-0.12.0.jar`, out with the 1.20.1 build's `groundburst-mc1.20.1-0.12.0.jar`: main's changelog.
+  Synced cleanly, 462 GameTests); before it, at `4c88e09b` (2026-11-12: a player's wishlist built, main's DESIGN.md §21.10: healing by a
   real clock with its times in units, settings by weapon, the terrain tables as data with swap rules, the far flash, black
   rain and the far aftermath. This branch's own pieces: `content/fallout/FarLoads` (`manual.txt`: a region ticket, 1.21.1's
   ticket types being made, not registered); the black rain's mixins on `LevelRenderer.renderSnowAndRain` (a `setColor`
