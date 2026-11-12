@@ -84,11 +84,37 @@ public final class FpsCheck {
     /** A machine's: a short settle and five seconds timed; machines stand farther apart than the view, each seen alone. */
     private static final int MACHINE_SETTLE = 100, MACHINE_MEASURE = 100, APART = 16 * (VIEW + 6);
 
-    private record Spot(String name, Vec3 eye, Vec3 at, int settle, int measure) {
+    /** A place to stand and time; {@code thing}: the block whose model it looks at (a machine's), or null. */
+    private record Spot(String name, Vec3 eye, Vec3 at, int settle, int measure, @Nullable BlockPos thing) {
         Spot(String name, Vec3 eye, Vec3 at, int settle) {
-            this(name, eye, at, settle, MEASURE);
+            this(name, eye, at, settle, MEASURE, null);
         }
     }
+
+    /** The cubes of the GeckoLib model drawn for the block at {@code pos}, as GeckoLib keeps it (-1: none drawn there). */
+    private static int cubes(Minecraft mc, @Nullable BlockPos pos) {
+        if (pos == null || mc.level == null || !(mc.level.getBlockEntity(pos) instanceof software.bernie.geckolib.animatable.GeoAnimatable animatable)
+                || !(mc.getBlockEntityRenderDispatcher().getRenderer((net.minecraft.world.level.block.entity.BlockEntity) animatable)
+                        instanceof software.bernie.geckolib.renderer.GeoRenderer<?> renderer)) {
+            return -1;
+        }
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        net.minecraft.resources.ResourceLocation location = ((software.bernie.geckolib.model.GeoModel) renderer.getGeoModel()).getModelResource(animatable);
+        var model = software.bernie.geckolib.cache.GeckoLibCache.getBakedModels().get(location);
+        if (model == null) {
+            return -1;
+        }
+        int n = 0;
+        java.util.ArrayDeque<software.bernie.geckolib.cache.object.GeoBone> bones = new java.util.ArrayDeque<>(model.topLevelBones());
+        while (!bones.isEmpty()) {
+            var bone = bones.poll();
+            n += bone.getCubes().size();
+            bones.addAll(bone.getChildBones());
+        }
+        return n;
+    }
+
+    private static int cubesBefore = -1;
 
     private static boolean started, finished;
     private static int ticks = -1, shown, waited;
@@ -205,6 +231,7 @@ public final class FpsCheck {
                 TICKS.clear();
             }
             timing = true;
+            cubesBefore = cubes(mc, s.thing);
             if (s.name.startsWith("smithy")) {
                 onServer(mc, level -> before = snapshot(level));
             }
@@ -246,6 +273,10 @@ public final class FpsCheck {
                 GroundBurst.LOGGER.info("Fps check: {}: frames ms mean/p95/max {} ({} fps, {} frames); server tick ms {}; fires round it {}, blocks changed {}",
                         s.name, frames, Math.round(fps), f.length, server, fires, changed);
             });
+        } else if (s.thing != null) {
+            // (Its model's cubes as it was timed: a model that grows as it is drawn keeps slowing.)
+            GroundBurst.LOGGER.info("Fps check: {}: frames ms mean/p95/max {} ({} fps, {} frames); server tick ms {}; its model's cubes {} -> {}", s.name,
+                    frames, Math.round(fps), f.length, server, cubesBefore, cubes(mc, s.thing));
         } else {
             GroundBurst.LOGGER.info("Fps check: {}: frames ms mean/p95/max {} ({} fps, {} frames); server tick ms {}", s.name, frames,
                     Math.round(fps), f.length, server);
@@ -341,7 +372,7 @@ public final class FpsCheck {
         List<Spot> out = new java.util.ArrayList<>();
         // Forty blocks up, clear of the flat world's few blocks of ground (a silo reaches far down).
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0) + 40, x = 0;
-        out.add(spot("empty", -40, y, 0, -40, y, 0));
+        out.add(spot("empty", null, -40, y, 0, -40, y, 0));
         for (MultiblockDefinition def : GBMultiblocks.all()) {
             int left = 0;                                       // how far west of its controller the structure reaches
             for (MultiblockDefinition.Cell cell : StructureSpawnerItem.buildOrder(def, BlockPos.ZERO, Direction.NORTH)) {
@@ -366,7 +397,7 @@ public final class FpsCheck {
             if (level.getBlockEntity(c) instanceof MultiblockController controller) {
                 controller.revalidate();
             }
-            out.add(spot(def.id().getPath(), x0, y0, z0, x1, y1, z1));
+            out.add(spot(def.id().getPath(), c, x0, y0, z0, x1, y1, z1));
             x = x1 + APART;
         }
         for (Block block : BuiltInRegistries.BLOCK) {
@@ -382,7 +413,7 @@ public final class FpsCheck {
             }
             level.setBlockAndUpdate(p, state);
             block.setPlacedBy(level, p, state, null, new ItemStack(block));        // (a second half where it has one)
-            out.add(spot(BuiltInRegistries.BLOCK.getKey(block).getPath(), x, y, 0, x + 1, y + 1, 1));
+            out.add(spot(BuiltInRegistries.BLOCK.getKey(block).getPath(), p, x, y, 0, x + 1, y + 1, 1));
             x += APART;
         }
         GroundBurst.LOGGER.info("Fps check: {} machines and structures set out", out.size() - 1);
@@ -390,11 +421,11 @@ public final class FpsCheck {
     }
 
     /** Where to look at a thing in the box from: off its north face (its front), a little above. */
-    private static Spot spot(String name, int x0, int y0, int z0, int x1, int y1, int z1) {
+    private static Spot spot(String name, @Nullable BlockPos thing, int x0, int y0, int z0, int x1, int y1, int z1) {
         Vec3 mid = new Vec3((x0 + x1 + 1) / 2.0, (y0 + y1 + 1) / 2.0, (z0 + z1 + 1) / 2.0);
         double size = Math.max(x1 - x0 + 1, Math.max(y1 - y0 + 1, z1 - z0 + 1));
         Vec3 eye = new Vec3(mid.x, mid.y + size * 0.35 + 1.5, z0 - size * 0.9 - 3);
-        return new Spot(name, eye, mid, MACHINE_SETTLE, MACHINE_MEASURE);
+        return new Spot(name, eye, mid, MACHINE_SETTLE, MACHINE_MEASURE, thing);
     }
 
     private static void onServer(Minecraft mc, java.util.function.Consumer<ServerLevel> job) {
