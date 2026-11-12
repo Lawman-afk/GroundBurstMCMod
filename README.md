@@ -1,12 +1,9 @@
 <p align="center">
-  <img src="docs/branding/logo.png" width="160" alt="The Ground Burst logo: a DF-5 missile on a dusk sky">
+  <img src="docs/branding/banner_cloud.jpg" alt="Ground Burst: assemble it, launch it, watch the horizon. A mushroom cloud rising over cherry groves">
 </p>
 
-<h1 align="center">Ground Burst</h1>
-
 <p align="center">
-  <b>Assemble it. Launch it. Watch the horizon.</b><br>
-  A Minecraft mod for NeoForge 26.3, 26.1.2 and 1.21.1 ·
+  A Minecraft mod for NeoForge 26.3, 26.1.2 and 1.21.1, and Forge 1.20.1 ·
   <a href="https://www.curseforge.com/minecraft/mc-mods/ground-burst">Download on CurseForge</a>
 </p>
 
@@ -15,9 +12,8 @@
 </p>
 
 Mine, refine and assemble your own arsenal, from grenades, mines and mortars to missiles and the Tsar Bomba, then
-watch real craters, mushroom clouds and radioactive fallout reshape the world.
-
-![The Tsar Bomba's mushroom cloud rising over cherry groves and green hills](docs/screenshots/tsar_bomba.jpg)
+watch real craters, mushroom clouds and radioactive fallout reshape the world, and a nuclear blast change the land for
+kilometres round it.
 
 ## What's in it
 
@@ -47,10 +43,19 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
   over alarm channels.
 - **Nuclear weapons and their aftermath:** mushroom clouds, craters, fallout drifting with the wind, radiation you can
   measure, hazmat suits, and a wasteland biome over the scorched ground.
+- **A nuclear blast's far reach:** land charred by the fireball's heat, windows and doors blown in farther out, leaves
+  and grass withered at the edge, out to about 3,000 blocks after the Tsar Bomba, each ring blending into the next; a
+  flash seen from thousands of blocks away that blinds you if you look at it; a wall of dust coming over the land at
+  the speed of sound; black rain from a ground burst's cloud and over irradiated land, burning whoever is out in it.
+  Land already explored changes in the background without slowing the server, and Distant Horizons' far view shows it
+  as it now is.
 - **Healing, if you want it** (off by default): turn it on in the server config and the damage grows back over time,
   block for block as it was: chests with their contents, machines with their settings, cables and pipes that carry
-  again, other mods' blocks too, at a speed and on a schedule you choose. Creepers' and TNT's holes and other mods'
-  explosions heal too, if you like. For forever worlds that still want their wars.
+  again, other mods' blocks too, at a speed and on a schedule you choose, counted in play time or in real days.
+  Creepers' and TNT's holes and other mods' explosions heal too, if you like. For forever worlds that still want their
+  wars.
+- **Settings for every weapon:** any one weapon's blast made bigger or smaller, its crater deeper, its far reach
+  shorter, and swap rules for what blasts turn blocks into (your own charred wood, a rare ore in a crater's wall).
 - **Industry and power:** new ores, processing machines on FE power with upgrade chips for speed and efficiency, and
   multiblock fission, fusion and singularity reactors.
 - **Chips made the hard way:** silicon purified and grown into crystals in a Crystal Puller, sapphire for
@@ -81,9 +86,11 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
   and a bunk bed two players can sleep in.
 - **The yard:** Jersey barriers and dragon's teeth as tough as reinforced concrete, Czech hedgehogs, a searchlight that
   sweeps the night sky with its beam, ammo crates on a pallet that store items, and oil, fuel and rusty drums.
-- **Shader packs:** fireballs, smoke and mushroom clouds draw right with Iris shader packs and look the same in every
-  pack (tried with Bliss, Complementary Reimagined and Unbound, BSL, Photon, Solas and MakeUp Ultra Fast), and stand
-  in front of Distant Horizons' far terrain, on Minecraft 26.3 and 1.21.1.
+- **Shader packs:** fireballs, smoke and mushroom clouds draw right with shader packs (Iris on 26.3, 26.1.2 and
+  1.21.1, Oculus on 1.20.1) and look the same in every pack (tried with Bliss, Complementary Reimagined and Unbound,
+  BSL, Photon, Solas and MakeUp Ultra Fast), and stand in front of Distant Horizons' far terrain, on every version.
+- **Create** (1.21.1 and 1.20.1) **and Create Aeronautics** (1.21.1): launchers and machines on trains, bearings and
+  airships, working as they move, and weapons that hit contraptions and ships.
 - **The Field Manual**, an in-game guide to all of it.
 
 What changed in each version is in the [changelog](CHANGELOG.md).
@@ -91,6 +98,10 @@ What changed in each version is in the [changelog](CHANGELOG.md).
 ## Screenshots
 
 <table>
+  <tr>
+    <td><img src="docs/screenshots/highlight_far_reach.jpg" width="380" alt="Charred land and dead trees 560 blocks from a thermonuclear blast, its mushroom cloud rising behind"><br>The far aftermath: charred land 560 blocks out</td>
+    <td><img src="docs/screenshots/far_aftermath_dh.jpg" width="380" alt="From high above: a crater, a ring of charred land and browned forests round it, a lake turned murky, seen in Distant Horizons' far view"><br>The land a thermonuclear blast changed, in Distant Horizons</td>
+  </tr>
   <tr>
     <td><img src="docs/screenshots/crater.jpg" width="380" alt="A tactical nuke's crater from above, the forest flattened and burning"><br>A tactical nuclear warhead's crater</td>
     <td><img src="docs/screenshots/launch.jpg" width="380" alt="A missile climbing from its launch silo on a column of exhaust"><br>Lift-off from a Launch Silo</td>
@@ -140,29 +151,36 @@ What changed in each version is in the [changelog](CHANGELOG.md).
 ## Settings
 
 Ground Burst can be tuned to your world: how big blasts are and how much they may destroy (or that they destroy
-nothing at all), radiation and fallout, missile range, the superweapons, your own effects (flash, camera shake, quality),
-and **healing**, which makes the damage grow back over time. Healing is **off** until you turn it on.
+nothing at all), for every weapon of a kind or for a single weapon; what blasts turn blocks into; radiation, black rain
+and fallout; how far a nuclear blast's far aftermath reaches; missile range, the superweapons, your own effects (flash,
+blinding, camera shake, quality), and **healing**, which makes the damage grow back over time. Healing is **off** until
+you turn it on.
 
 **In game:** open **Mods**, choose **Ground Burst**, then **Config**. Hover over any setting to see what it does.
 - Minecraft 26.3: the world settings are under **Synced Settings**. Change them from the title screen or in a
   single-player world.
 - Minecraft 26.1.2 and 1.21.1: the world settings are under **Server Settings**. Open a single-player world, press
   Esc, then **Mods**, **Ground Burst**, **Config**.
+- Minecraft 1.20.1: there is no settings screen in game; edit the files below.
 - On a multiplayer server, a player can't change the world settings: the server's owner edits its file (below).
 
-**In the file:** open the `config` folder inside your Minecraft folder (on a server, inside the server's folder) and
-edit one of these in any text editor. Every setting has a note above it saying what it does.
-- `groundburst-synced.toml` (26.3) or `groundburst-server.toml` (26.1.2 and 1.21.1): the world settings, healing among
-  them
-- `groundburst-client.toml`: your own effects and the HUD
+**In the file:** open it in any text editor. Every setting has a note above it saying what it does.
+- Minecraft 26.3: `config/groundburst-synced.toml` inside your Minecraft folder (on a server, inside the server's
+  folder): the world settings, healing among them.
+- Minecraft 26.1.2 and 1.21.1: `config/groundburst-server.toml`, the same way.
+- Minecraft 1.20.1: each world has its own, `serverconfig/groundburst-server.toml` inside the world's folder (in
+  `saves` in single player; on a server, inside its `world` folder). To give every new world your settings, put a copy
+  in the `defaultconfigs` folder.
+- Every version: `config/groundburst-client.toml` for your own effects and the HUD.
 
 Save the file, then start the game (or the server) again.
 
 **Healing in short:** under `[healing]`, set `enabled = true` (in game: **Healing**, then **Heal damage over time**). By
 default an area starts to grow back 5 minutes after the last blast near it and takes at most 5 minutes to heal, with
 everything just as it was: chests and their contents, machines and their settings, cables and pipes working again, other
-mods' blocks too. You can change when it heals (after a wait, every morning, or
-only when an operator says), how fast and in what order, which weapons, blocks and dimensions heal, and what happens to
+mods' blocks too. Times are written with units (`wait = "30m"`, `"12h"`, `"7d"`, up to 52 weeks), and with
+`clock = "REAL"` they count real time, so a server switched off over the weekend has healed when it starts again. You
+can change when it heals (after a wait, every morning, or only when an operator says), how fast and in what order, which weapons, blocks and dimensions heal, and what happens to
 blocks players have built in a crater. The game's own explosions heal too (creepers, TNT, end crystals, ghasts'
 fireballs, the Wither, beds and respawn anchors), and other mods' explosions that use the game's explosion code, each
 with a switch under **Other explosions**. Operators also have `/groundburst heal now`, `/groundburst heal forget` and
@@ -170,20 +188,27 @@ with a switch under **Other explosions**. Operators also have `/groundburst heal
 
 ## Requirements
 
-Ground Burst comes in three files, one for each version of Minecraft; take the one for yours:
+Ground Burst comes in four files, one for each version of Minecraft; take the one for yours:
 
 - **Minecraft 26.3**: NeoForge 26.3.0.92 or newer, and [GeckoLib](https://www.curseforge.com/minecraft/mc-mods/geckolib)
   5.5.7 or newer (required)
 - **Minecraft 26.1.2**: NeoForge 26.1.2.126 or newer, and [GeckoLib](https://www.curseforge.com/minecraft/mc-mods/geckolib)
-  5.5.2 or newer (required). The recipes that use Minecraft 26.2's sulfur and cinnabar are not in it.
+  5.5.2 or newer (required)
 - **Minecraft 1.21.1**: NeoForge 21.1.265 or newer, and [GeckoLib](https://www.curseforge.com/minecraft/mc-mods/geckolib)
-  4.9.3 or newer (required). A few things are simpler on it: Rad-Away, Potassium Iodide Tablets and the Anti-Rad
-  Injector are used as food is (with no nourishment), the pointer stays an arrow over the mod's screens, and flash
-  particles are not tinted.
+  4.9.3 or newer (required)
+- **Minecraft 1.20.1**: Forge 47.4 or newer, and [GeckoLib](https://www.curseforge.com/minecraft/mc-mods/geckolib)
+  4.8.4 or newer (required)
 - [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) (optional) on any
-- [Iris](https://www.curseforge.com/minecraft/mc-mods/irisshaders) (optional) on 26.3 and 1.21.1, for shader packs
-- [Distant Horizons](https://www.curseforge.com/minecraft/mc-mods/distant-horizons) (optional) on 26.3 and 1.21.1:
-  blast effects stand in front of its far terrain
+- [Iris](https://www.curseforge.com/minecraft/mc-mods/irisshaders) (optional) on 26.3, 26.1.2 and 1.21.1, or
+  [Oculus](https://www.curseforge.com/minecraft/mc-mods/oculus) with Embeddium on 1.20.1, for shader packs
+- [Distant Horizons](https://www.curseforge.com/minecraft/mc-mods/distant-horizons) (optional) on any: blast effects
+  stand in front of its far terrain, which shows the land a nuclear blast has changed
+- [Create](https://www.curseforge.com/minecraft/mc-mods/create) 6 (optional, 1.21.1 and 1.20.1) and Create Aeronautics
+  with Sable 2 (optional, 1.21.1)
+
+On 26.1.2, 1.21.1 and 1.20.1 the recipes that use Minecraft 26.2's sulfur and cinnabar are not in it. On 1.21.1 and
+1.20.1 a few things are simpler: Rad-Away, Potassium Iodide Tablets and the Anti-Rad Injector are used as food is (with
+no nourishment), the pointer stays an arrow over the mod's screens, and flash particles are not tinted.
 
 Install it on the server and on every player's game: it adds blocks and items, so both sides need it.
 
@@ -210,10 +235,12 @@ You need JDK 25. Then:
 ```
 
 The jar lands in `build/libs/`. Other useful tasks: `runClient` (a development client), `runGameTestServer` (the
-GameTests) and `runData` (data generation). The 1.21.1 build is made from the `1.21.1` branch with JDK 21, and the
-26.1.2 build from the `26.1.2` branch; each branch's `docs/BACKPORT.md`
+GameTests) and `runData` (data generation). The 1.21.1 build is made from the `1.21.1` branch with JDK 21, the
+26.1.2 build from the `26.1.2` branch, and the Forge 1.20.1 build from the `1.20.1` branch (made from the 1.21.1 build;
+Java 17); each branch's `docs/BACKPORT.md`
 ([1.21.1](https://github.com/Lawman-afk/GroundBurstMCMod/blob/1.21.1/docs/BACKPORT.md),
-[26.1.2](https://github.com/Lawman-afk/GroundBurstMCMod/blob/26.1.2/docs/BACKPORT.md)) says how. The models, textures and sounds are generated by the Python scripts in
+[26.1.2](https://github.com/Lawman-afk/GroundBurstMCMod/blob/26.1.2/docs/BACKPORT.md),
+[1.20.1](https://github.com/Lawman-afk/GroundBurstMCMod/blob/1.20.1/docs/BACKPORT.md)) says how. The models, textures and sounds are generated by the Python scripts in
 `tools/` (set up a virtual environment with `pip install -r tools/requirements.txt`).
 
 ## Licence
