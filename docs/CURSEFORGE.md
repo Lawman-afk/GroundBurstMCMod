@@ -304,7 +304,8 @@ You are free to include Ground Burst in any modpack.
 
 - [GeckoLib](https://github.com/bernie-g/geckolib) for the animated models, and
   [JEI](https://github.com/mezz/JustEnoughItems) for recipe lookup.
-- Graphics by **hrbs_**: the banner's design and the logo's glowing missile.
+- Graphics by [hrbs_](https://www.curseforge.com/members/hrbs_/projects): the banner and gallery designs and the logo's
+  glowing missile.
 - The superweapons are a homage to *Command & Conquer: Generals – Zero Hour*. Ground Burst is not affiliated with
   Electronic Arts.
 - Ground Burst is released under the [MIT licence](https://github.com/Lawman-afk/GroundBurstMCMod/blob/main/LICENSE).
