@@ -6,7 +6,9 @@ Main is written for Minecraft 26.3 (NeoForge 26.3). This branch is the same mod 
 - **Why a backport from main** (main's DESIGN.md §30): 26.1.2 is two minor versions before 26.3 and shares most of its
   code (the same rendering by render states and submitted geometry, item model definitions, data components, the same
   GameTest framework); a forward port from the 1.21.1 branch would cross every change from 1.21.2 to 26.1.
-- **Last brought up to:** `main` at `4c88e09b` (2026-11-12: a player's wishlist built, main's DESIGN.md §21.10: healing by a
+- **Last brought up to:** `main` at `15431b92` (2026-11-12: version 0.12.0, released for all four versions as
+  `groundburst-mc26.1.2-0.12.0.jar`: main's changelog. Synced cleanly, 456 GameTests); before it, at `4c88e09b`
+  (2026-11-12: a player's wishlist built, main's DESIGN.md §21.10: healing by a
   real clock with its times in units, settings by weapon, the terrain tables as data with swap rules, the far flash, black
   rain and the far aftermath. This branch's own pieces: the far glow as an eyes pipeline on its cloud shader with
   `FX_SOFT` (`FxRenderTypes`, `manual.txt`; the cloud's fragment shader skips its cutout under `FX_SOFT`); the black

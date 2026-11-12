@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.12.0 — 2026-11-12
+
+A nuclear blast's far reach (land charred, broken and withered for kilometres round it, the far wave, the far flash
+and black rain), settings for single weapons, swap rules and healing by the calendar, all from a player's wishlist; and
+the frame rate near the superweapons fixed on 1.21.1 and 1.20.1. For Minecraft 26.3, 26.1.2, 1.21.1 and 1.20.1.
 
 ### A nuclear blast's far reach
 - **The far aftermath.** A nuclear blast now changes the land far past the zones that kill, in rings out to more than
